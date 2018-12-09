@@ -16,12 +16,15 @@ namespace Sunrise\Http\Router;
  */
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Message\ResponseFactory;
 
 /**
  * RequestHandler
+ *
+ * @link https://www.php-fig.org/psr/psr-15/
+ * @link https://www.php-fig.org/psr/psr-15/meta/
  */
 class RequestHandler implements RequestHandlerInterface
 {
@@ -54,7 +57,7 @@ class RequestHandler implements RequestHandlerInterface
 	{
 		if (empty($this->middlewareStack))
 		{
-			return (new ResponseFactory)->createResponse();
+			return (new ResponseFactory)->createResponse(200);
 		}
 
 		$middleware = \array_shift($this->middlewareStack);

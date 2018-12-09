@@ -189,10 +189,6 @@ class Route implements RouteInterface
 	 */
 	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
 	{
-		$action = $this->getAction();
-
-		$response = $handler->handle($request);
-
-		return \call_user_func($action, $request, $response);
+		return \call_user_func($this->action, $request, $handler->handle($request));
 	}
 }
