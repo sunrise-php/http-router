@@ -14,19 +14,22 @@ namespace Sunrise\Http\Router\Exception;
 /**
  * Import classes
  */
-use RuntimeException;
+use Psr\Http\Message\ServerRequestInterface;
+use Sunrise\Http\Message\ResponseFactory;
 
 /**
- * RouteNotFoundException
+ * BadRequestException
  */
-class RouteNotFoundException extends RuntimeException
+class BadRequestException extends HttpException
 {
 
 	/**
 	 * Constructor of the class
+	 *
+	 * @param ServerRequestInterface $request
 	 */
-	public function __construct()
+	public function __construct(ServerRequestInterface $request)
 	{
-		parent::__construct('Route not found.');
+		parent::__construct($request, (new ResponseFactory)->createResponse(400));
 	}
 }

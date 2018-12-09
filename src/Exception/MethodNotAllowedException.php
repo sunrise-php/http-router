@@ -14,12 +14,13 @@ namespace Sunrise\Http\Router\Exception;
 /**
  * Import classes
  */
-use RuntimeException;
+use Psr\Http\Message\ServerRequestInterface;
+use Sunrise\Http\Message\ResponseFactory;
 
 /**
  * MethodNotAllowedException
  */
-class MethodNotAllowedException extends RuntimeException
+class MethodNotAllowedException extends HttpException
 {
 
 	/**
@@ -32,13 +33,17 @@ class MethodNotAllowedException extends RuntimeException
 	/**
 	 * Constructor of the class
 	 *
+	 * @param ServerRequestInterface $request
 	 * @param array $allowedMethods
 	 */
-	public function __construct(array $allowedMethods)
+	public function __construct(ServerRequestInterface $request, array $allowedMethods)
 	{
 		$this->allowedMethods = $allowedMethods;
 
-		parent::__construct('Method not allowed.');
+		parent::__construct($request, (new ResponseFactory)
+			->createResponse(405)
+			->withHeader('Allow', \implode(', ', $allowedMethods))
+		);
 	}
 
 	/**
