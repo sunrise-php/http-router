@@ -14,119 +14,159 @@
 composer require sunrise/http-router
 ```
 
-## How to use
+## How to use?
+
+#### QuickStart
 
 ```php
-use Fig\Http\Message\RequestMethodInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Sunrise\Http\Message\ResponseFactory;
 use Sunrise\Http\Router\Router;
-use Sunrise\Http\Router\Exception\MethodNotAllowedException;
-use Sunrise\Http\Router\Exception\RouteNotFoundException;
 use Sunrise\Http\ServerRequest\ServerRequestFactory;
 use Sunrise\Stream\StreamFactory;
 
 $router = new Router();
 
-$router->middleware(new MiddlewareFoo());
-$router->middleware(new MiddlewareBar());
-$router->middleware(new MiddlewareBaz());
-
 $router->get('home', '/', function(ServerRequestInterface $request, ResponseInterface $response) : ResponseInterface {
-	return $response->withBody(
-		(new StreamFactory)->createStream('Welcome'));
-})
-->middleware(new MiddlewareQux())
-->middleware(new MiddlewareQuxx());
+	return $response->withBody((new StreamFactory)->createStream('Welcome'));
+});
 
-$router->post('post.create', '/post', function(ServerRequestInterface $request, ResponseInterface $response) : ResponseInterface {
-	return $response->withBody(
-		(new StreamFactory)->createStream('Create a post'));
-})
-->middleware(new MiddlewareQux())
-->middleware(new MiddlewareQuxx());
+$response = $router->handle(
+	ServerRequestFactory::fromGlobals()
+);
 
-$router->patch('post.update', '/post/{id}', function(ServerRequestInterface $request, ResponseInterface $response) : ResponseInterface {
-	return $response->withBody(
-		(new StreamFactory)->createStream(
-			\sprintf('Update the post #%d', $request->getAttribute('id'))));
-})
-->pattern('id', '\d+')
-->middleware(new MiddlewareQux())
-->middleware(new MiddlewareQuxx());
+\header(\sprintf('HTTP/%s %d %s',
+	$response->getProtocolVersion(),
+	$response->getStatusCode(),
+	$response->getReasonPhrase()
+));
 
-$router->delete('post.delete', '/post/{id}', function(ServerRequestInterface $request, ResponseInterface $response) : ResponseInterface {
-	return $response->withBody(
-		(new StreamFactory)->createStream(
-			\sprintf('Delete the post #%d', $request->getAttribute('id'))));
-})
-->pattern('id', '\d+')
-->middleware(new MiddlewareQux())
-->middleware(new MiddlewareQuxx());
-
-$router->get('post.read', '/post/{id}', function(ServerRequestInterface $request, ResponseInterface $response) : ResponseInterface {
-	return $response->withBody(
-		(new StreamFactory)->createStream(
-			\sprintf('Read the post #%d', $request->getAttribute('id'))));
-})
-->pattern('id', '\d+')
-->middleware(new MiddlewareQux())
-->middleware(new MiddlewareQuxx());
-
-$router->get('post.all', '/post', function(ServerRequestInterface $request, ResponseInterface $response) : ResponseInterface {
-	return $response->withBody(
-		(new StreamFactory)->createStream('All posts'));
-})
-->middleware(new MiddlewareQux())
-->middleware(new MiddlewareQuxx());
-
-// Custom HTTP methods
-$router->add('test', '/test', function(ServerRequestInterface $request, ResponseInterface $response) : ResponseInterface {
-	return $response->withBody(
-		(new StreamFactory)->createStream('Test'));
-})
-->method(RequestMethodInterface::METHOD_HEAD)
-->method(RequestMethodInterface::METHOD_GET)
-->method(RequestMethodInterface::METHOD_POST)
-->method(RequestMethodInterface::METHOD_PUT)
-->method(RequestMethodInterface::METHOD_PATCH)
-->method(RequestMethodInterface::METHOD_DELETE)
-->method(RequestMethodInterface::METHOD_PURGE)
-->method(RequestMethodInterface::METHOD_OPTIONS)
-->method(RequestMethodInterface::METHOD_TRACE)
-->method(RequestMethodInterface::METHOD_CONNECT)
-->middleware(new MiddlewareQux())
-->middleware(new MiddlewareQuxx());
-
-// All methods
-// $router->head(...);
-// $router->get(...);
-// $router->post(...);
-// $router->put(...);
-// $router->patch(...);
-// $router->delete(...);
-// $router->purge(...);
-// $router->options(...);
-// $router->trace(...);
-// $router->connect(...);
-// $router->safe(...);
-// $router->any(...);
-
-// Run router (handle the given request)
-try {
-	$response = $router->handle(ServerRequestFactory::fromGlobals());
-} catch (RouteNotFoundException $e) {
-	$response = (new ResponseFactory)
-	->createResponse(404);
-} catch (MethodNotAllowedException $e) {
-	$response = (new ResponseFactory)
-	->createResponse(405)
-	->withHeader('allow', implode(', ', $e->getAllowedMethods()));
+foreach ($response->getHeaders() as $name => $values) {
+	foreach ($values as $value) {
+		\header(\sprintf('%s: %s', $name, $value));
+	}
 }
 
-// Send the response
-print_r($response);
+echo $response->getBody(); // -> Welcome
+```
+
+#### Error handling
+
+```php
+use Sunrise\Http\Router\Exception\HttpException;
+use Sunrise\Http\Router\Exception\MethodNotAllowedException;
+use Sunrise\Http\Router\Exception\PageNotFoundException;
+
+try {
+	$response = $router->handle(...);
+} catch (HttpException $e) {
+	$response = $e->getResponse();
+} catch (\Throwable $e) {
+	throw $e;
+}
+
+// or
+
+try {
+	$response = $router->handle(...);
+} catch (MethodNotAllowedException $e) {
+	$response = $e->getResponse();
+
+	// getting the allowed methods...
+	$allowedMethods = $e->getAllowedMethods();
+} catch (PageNotFoundException $e) {
+	$response = $e->getResponse();
+} catch (HttpException $e) {
+	$response = $e->getResponse();
+} catch (\Throwable $e) {
+	throw $e;
+}
+```
+
+#### Creating routes
+
+```php
+// Adds a new route to the router map
+$route = $router->add(string $id, string $path, callable $action);
+
+// Adds a new route to the router map that will respond to HEAD requests
+$route = $router->head(string $id, string $path, callable $action);
+
+// Adds a new route to the router map that will respond to GET requests
+$route = $router->get(string $id, string $path, callable $action);
+
+// Adds a new route to the router map that will respond to POST requests
+$route = $router->post(string $id, string $path, callable $action);
+
+// Adds a new route to the router map that will respond to PUT requests
+$route = $router->put(string $id, string $path, callable $action);
+
+// Adds a new route to the router map that will respond to PATCH requests
+$route = $router->patch(string $id, string $path, callable $action);
+
+// Adds a new route to the router map that will respond to DELETE requests
+$route = $router->delete(string $id, string $path, callable $action);
+
+// Adds a new route to the router map that will respond to PURGE requests
+$route = $router->purge(string $id, string $path, callable $action);
+
+// Adds a new route to the router map that will respond to OPTIONS requests
+$route = $router->options(string $id, string $path, callable $action);
+
+// Adds a new route to the router map that will respond to TRACE requests
+$route = $router->trace(string $id, string $path, callable $action);
+
+// Adds a new route to the router map that will respond to CONNECT requests
+$route = $router->connect(string $id, string $path, callable $action);
+
+// Adds a new route to the router map that will respond to safe requests
+$route = $router->safe(string $id, string $path, callable $action);
+
+// Adds a new route to the router map that will respond to any requests
+$route = $router->any(string $id, string $path, callable $action);
+```
+
+#### Middlewares
+
+```php
+// Adds a new middleware to the router
+$router
+->middleware(new MiddlewareFoo())
+->middleware(new MiddlewareBar());
+
+// Adds a new middleware to the route
+$route
+->middleware(new MiddlewareBaz())
+->middleware(new MiddlewareQux());
+
+// Handles the request
+$response = $router->handle(
+	ServerRequestFactory::fromGlobals()
+);
+```
+
+#### Patterns (validation a route attributes)
+
+```php
+$router->patch('post.update', '/post/{id}', callable $action)
+->pattern('id', '\d+');
+
+$router->patch('menu.item.move', '/menu/{menu}/item/{item}/{direction}', callable $action)
+->pattern('menu', '\d+')
+->pattern('item', '\d+')
+->pattern('direction', 'up|down');
+```
+
+## PSR-15 middlewares collection
+
+> Fully compatible with this repository.
+
+https://github.com/middlewares
+
+## Test run
+
+```bash
+php vendor/bin/phpunit
 ```
 
 ## Api documentation
@@ -136,4 +176,5 @@ https://phpdoc.fenric.ru/
 ## Useful links
 
 https://www.php-fig.org/psr/psr-7/<br>
-https://www.php-fig.org/psr/psr-15/
+https://www.php-fig.org/psr/psr-15/<br>
+https://github.com/middlewares

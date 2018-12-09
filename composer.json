@@ -19,7 +19,8 @@
 	},
 	"require-dev": {
 		"phpunit/phpunit": "7.4.3",
-		"sunrise/http-server-request": "^1.0"
+		"sunrise/http-server-request": "^1.0",
+		"sunrise/stream": "^1.0"
 	},
 	"autoload": {
 		"psr-4": {
