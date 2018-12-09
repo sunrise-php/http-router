@@ -1,0 +1,32 @@
+{
+	"name": "sunrise/http-router",
+	"description": "Sunrise HTTP Router",
+	"keywords": ["fenric", "sunrise", "http-router", "psr-7", "psr-15"],
+	"homepage": "https://github.com/sunrise-php/http-router",
+	"license": "MIT",
+	"authors": [{
+		"name": "Anatoly Fenric",
+		"email": "anatoly@fenric.ru",
+		"homepage": "https://anatoly.fenric.ru/"
+	}],
+	"require": {
+		"php": "^7.2",
+		"fig/http-message-util": "^1.1",
+		"psr/http-message": "^1.0",
+		"psr/http-server-handler": "^1.0",
+		"psr/http-server-middleware": "^1.0",
+		"sunrise/http-message": "^1.0"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "7.4.3",
+		"sunrise/http-server-request": "^1.0"
+	},
+	"autoload": {
+		"psr-4": {
+			"Sunrise\\Http\\Router\\": "src/"
+		},
+		"files": [
+			"functions/route_regex.php"
+		]
+	}
+}
