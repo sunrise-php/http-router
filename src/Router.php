@@ -19,7 +19,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Sunrise\Http\Router\Exception\MethodNotAllowedException;
-use Sunrise\Http\Router\Exception\RouteNotFoundException;
+use Sunrise\Http\Router\Exception\PageNotFoundException;
 
 /**
  * Router
@@ -207,12 +207,10 @@ class Router implements RouterInterface
 		{
 			$allowedVerbs = \array_unique($allowedVerbs);
 
-			\sort($allowedVerbs);
-
-			throw new MethodNotAllowedException($allowedVerbs);
+			throw new MethodNotAllowedException($request, $allowedVerbs);
 		}
 
-		throw new RouteNotFoundException();
+		throw new PageNotFoundException($request);
 	}
 
 	/**
