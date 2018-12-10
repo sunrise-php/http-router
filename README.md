@@ -23,107 +23,58 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Sunrise\Http\Router\Router;
 use Sunrise\Http\ServerRequest\ServerRequestFactory;
-use Sunrise\Stream\StreamFactory;
 
 $router = new Router();
 
-$router->get('home', '/', function(ServerRequestInterface $request, ResponseInterface $response) : ResponseInterface {
-	return $response->withBody((new StreamFactory)->createStream('Welcome'));
+$router->get('home', '/', function(ServerRequestInterface $request, ResponseInterface $response) : ResponseInterface
+{
+	$response->getBody()->write('Hello, world!');
+
+	return $response;
 });
 
-$response = $router->handle(
-	ServerRequestFactory::fromGlobals()
-);
+$request = ServerRequestFactory::fromGlobals();
 
-\header(\sprintf('HTTP/%s %d %s',
-	$response->getProtocolVersion(),
-	$response->getStatusCode(),
-	$response->getReasonPhrase()
-));
-
-foreach ($response->getHeaders() as $name => $values) {
-	foreach ($values as $value) {
-		\header(\sprintf('%s: %s', $name, $value));
-	}
-}
-
-echo $response->getBody(); // -> Welcome
+$response = $router->handle($request);
 ```
 
-#### Error handling
+#### Routes
 
 ```php
-use Sunrise\Http\Router\Exception\HttpException;
-use Sunrise\Http\Router\Exception\MethodNotAllowedException;
-use Sunrise\Http\Router\Exception\PageNotFoundException;
-
-try {
-	$response = $router->handle(...);
-} catch (HttpException $e) {
-	$response = $e->getResponse();
-} catch (\Throwable $e) {
-	throw $e;
-}
-
-// or
-
-try {
-	$response = $router->handle(...);
-} catch (MethodNotAllowedException $e) {
-	$response = $e->getResponse();
-
-	// getting the allowed methods...
-	$allowedMethods = $e->getAllowedMethods();
-} catch (PageNotFoundException $e) {
-	$response = $e->getResponse();
-} catch (HttpException $e) {
-	$response = $e->getResponse();
-} catch (\Throwable $e) {
-	throw $e;
-}
-```
-
-#### Creating routes
-
-```php
-// Adds a new route to the router map
+// Register a new route
 $route = $router->add(string $id, string $path, callable $action);
-
-// Adds a new route to the router map that will respond to HEAD requests
+// Register a new route that will respond to HEAD requests
 $route = $router->head(string $id, string $path, callable $action);
-
-// Adds a new route to the router map that will respond to GET requests
+// Register a new route that will respond to GET requests
 $route = $router->get(string $id, string $path, callable $action);
-
-// Adds a new route to the router map that will respond to POST requests
+// Register a new route that will respond to POST requests
 $route = $router->post(string $id, string $path, callable $action);
-
-// Adds a new route to the router map that will respond to PUT requests
+// Register a new route that will respond to PUT requests
 $route = $router->put(string $id, string $path, callable $action);
-
-// Adds a new route to the router map that will respond to PATCH requests
+// Register a new route that will respond to PATCH requests
 $route = $router->patch(string $id, string $path, callable $action);
-
-// Adds a new route to the router map that will respond to DELETE requests
+// Register a new route that will respond to DELETE requests
 $route = $router->delete(string $id, string $path, callable $action);
-
-// Adds a new route to the router map that will respond to PURGE requests
+// Register a new route that will respond to PURGE requests
 $route = $router->purge(string $id, string $path, callable $action);
-
-// Adds a new route to the router map that will respond to OPTIONS requests
+// Register a new route that will respond to OPTIONS requests
 $route = $router->options(string $id, string $path, callable $action);
-
-// Adds a new route to the router map that will respond to TRACE requests
+// Register a new route that will respond to TRACE requests
 $route = $router->trace(string $id, string $path, callable $action);
-
-// Adds a new route to the router map that will respond to CONNECT requests
+// Register a new route that will respond to CONNECT requests
 $route = $router->connect(string $id, string $path, callable $action);
-
-// Adds a new route to the router map that will respond to safe requests
+// Register a new route that will respond to safe requests
 $route = $router->safe(string $id, string $path, callable $action);
-
-// Adds a new route to the router map that will respond to any requests
+// Register a new route that will respond to any requests
 $route = $router->any(string $id, string $path, callable $action);
+```
+
+#### Patterns
+
+```php
+$route = $router->patch('post.update', '/post/{id}', callable $action);
+
+$route->pattern('id', '\d+');
 ```
 
 #### Middlewares
@@ -138,30 +89,61 @@ $router
 $route
 ->middleware(new MiddlewareBaz())
 ->middleware(new MiddlewareQux());
-
-// Handles the request
-$response = $router->handle(
-	ServerRequestFactory::fromGlobals()
-);
 ```
 
-#### Patterns (validation a route attributes)
-
-```php
-$router->patch('post.update', '/post/{id}', callable $action)
-->pattern('id', '\d+');
-
-$router->patch('menu.item.move', '/menu/{menu}/item/{item}/{direction}', callable $action)
-->pattern('menu', '\d+')
-->pattern('item', '\d+')
-->pattern('direction', 'up|down');
-```
-
-## PSR-15 middlewares collection
+## Awesome PSR-15 Middlewares
 
 > Fully compatible with this repository.
 
 https://github.com/middlewares
+
+#### Handling 404 (Page Not Found)
+
+```php
+use Sunrise\Http\Router\Exception\PageNotFoundException;
+
+try
+{
+	$response = $router->handle(...);
+}
+catch (PageNotFoundException $e)
+{
+	$response = $e->getResponse();
+}
+```
+
+#### Handling 405 (Method Not Allowed)
+
+```php
+use Sunrise\Http\Router\Exception\MethodNotAllowedException;
+
+try
+{
+	$response = $router->handle(...);
+}
+catch (MethodNotAllowedException $e)
+{
+	$response = $e->getResponse();
+
+	// getting the allowed methods...
+	$allowedMethods = $e->getAllowedMethods();
+}
+```
+
+#### Handling other error
+
+```php
+use Sunrise\Http\Router\Exception\HttpException;
+
+try
+{
+	$response = $router->handle(...);
+}
+catch (HttpException $e)
+{
+	$response = $e->getResponse();
+}
+```
 
 ## Test run
 
