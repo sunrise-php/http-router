@@ -153,7 +153,7 @@ catch (MethodNotAllowedException $e)
 }
 ```
 
-#### Handling other error
+#### Handling other HTTP errors
 
 ```php
 use Sunrise\Http\Router\Exception\HttpException;
@@ -166,6 +166,39 @@ catch (HttpException $e)
 {
     $response = $e->getResponse();
 }
+```
+
+## Practice
+
+#### Handling PHP errors ([whoops](https://github.com/filp/whoops))
+
+```bash
+composer require middlewares/whoops
+```
+
+```php
+$router->middleware(new \Middlewares\Whoops());
+```
+
+#### Payload ([payload](https://github.com/middlewares/payload))
+
+```bash
+composer require middlewares/payload
+```
+
+```php
+$router->middleware(new \Middlewares\JsonPayload());
+$router->middleware(new \Middlewares\UrlEncodePayload());
+```
+
+#### Encoding ([encoder](https://github.com/middlewares/encoder))
+
+```bash
+composer require middlewares/encoder
+```
+
+```php
+$router->middleware(new \Middlewares\GzipEncoder());
 ```
 
 ## Awesome PSR-15 Middlewares
