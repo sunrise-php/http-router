@@ -28,9 +28,11 @@ $router = new Router();
 
 $router->get('home', '/', function(ServerRequestInterface $request, ResponseInterface $response) : ResponseInterface
 {
-	$response->getBody()->write('Hello, world!');
+    $response->getBody()->write(
+    	$request->getAttribute('@route')
+    );
 
-	return $response;
+    return $response;
 });
 
 $request = ServerRequestFactory::fromGlobals();
@@ -42,60 +44,81 @@ $response = $router->handle($request);
 
 ```php
 // Register a new route
-$route = $router->add(string $id, string $path, callable $action);
+$router->add($id, $path, $action);
 // Register a new route that will respond to HEAD requests
-$route = $router->head(string $id, string $path, callable $action);
+$router->head($id, $path, $action);
 // Register a new route that will respond to GET requests
-$route = $router->get(string $id, string $path, callable $action);
+$router->get($id, $path, $action);
 // Register a new route that will respond to POST requests
-$route = $router->post(string $id, string $path, callable $action);
+$router->post($id, $path, $action);
 // Register a new route that will respond to PUT requests
-$route = $router->put(string $id, string $path, callable $action);
+$router->put($id, $path, $action);
 // Register a new route that will respond to PATCH requests
-$route = $router->patch(string $id, string $path, callable $action);
+$router->patch($id, $path, $action);
 // Register a new route that will respond to DELETE requests
-$route = $router->delete(string $id, string $path, callable $action);
+$router->delete($id, $path, $action);
 // Register a new route that will respond to PURGE requests
-$route = $router->purge(string $id, string $path, callable $action);
+$router->purge($id, $path, $action);
 // Register a new route that will respond to OPTIONS requests
-$route = $router->options(string $id, string $path, callable $action);
+$router->options($id, $path, $action);
 // Register a new route that will respond to TRACE requests
-$route = $router->trace(string $id, string $path, callable $action);
+$router->trace($id, $path, $action);
 // Register a new route that will respond to CONNECT requests
-$route = $router->connect(string $id, string $path, callable $action);
+$router->connect($id, $path, $action);
 // Register a new route that will respond to safe requests
-$route = $router->safe(string $id, string $path, callable $action);
+$router->safe($id, $path, $action);
 // Register a new route that will respond to any requests
-$route = $router->any(string $id, string $path, callable $action);
+$router->any($id, $path, $action);
+```
+
+#### Methods ([http-message-util](https://github.com/php-fig/http-message-util))
+
+```php
+$router->add($id, $path, $action)
+->method('HEAD')
+->method('GET')
+->method('POST')
+->method('PUT')
+->method('PATCH')
+->method('DELETE')
+->method('PURGE')
+->method('OPTIONS')
+->method('TRACE')
+->method('CONNECT');
 ```
 
 #### Patterns
 
 ```php
-$route = $router->patch('post.update', '/post/{id}', callable $action);
-
-$route->pattern('id', '\d+');
+$router->any($id, '/post/{id}/{action}', $action)
+->pattern('id', '\d+')
+->pattern('action', 'read|update|delete');
 ```
 
-#### Middlewares
+#### Middlewares ([awesome-psr15-middlewares](https://github.com/middlewares/awesome-psr15-middlewares))
 
 ```php
 // Adds a new middleware to the router
-$router
-->middleware(new MiddlewareFoo())
+$router->middleware(new MiddlewareFoo())
 ->middleware(new MiddlewareBar());
 
 // Adds a new middleware to the route
-$route
+$router->add($id, $path, $action)
 ->middleware(new MiddlewareBaz())
 ->middleware(new MiddlewareQux());
 ```
 
-## Awesome PSR-15 Middlewares
+#### Attributes
 
-> Fully compatible with this repository.
+```php
+$router->get('post.read', '/post/{id}', $action);
 
-https://github.com/middlewares
+// Gets the route ID
+$request->getAttribute('@route');
+
+// Gets the route attribute "id"
+$request->getAttribute('id');
+```
 
 #### Handling 404 (Page Not Found)
 
@@ -104,11 +127,11 @@ use Sunrise\Http\Router\Exception\PageNotFoundException;
 
 try
 {
-	$response = $router->handle(...);
+    $response = $router->handle(...);
 }
 catch (PageNotFoundException $e)
 {
-	$response = $e->getResponse();
+    $response = $e->getResponse();
 }
 ```
 
@@ -119,14 +142,14 @@ use Sunrise\Http\Router\Exception\MethodNotAllowedException;
 
 try
 {
-	$response = $router->handle(...);
+    $response = $router->handle(...);
 }
 catch (MethodNotAllowedException $e)
 {
-	$response = $e->getResponse();
+    $response = $e->getResponse();
 
-	// getting the allowed methods...
-	$allowedMethods = $e->getAllowedMethods();
+    // Receipt the allowed methods...
+    $allowedMethods = $e->getAllowedMethods();
 }
 ```
 
@@ -137,13 +160,19 @@ use Sunrise\Http\Router\Exception\HttpException;
 
 try
 {
-	$response = $router->handle(...);
+    $response = $router->handle(...);
 }
 catch (HttpException $e)
 {
-	$response = $e->getResponse();
+    $response = $e->getResponse();
 }
 ```
+
+## Awesome PSR-15 Middlewares
+
+> Fully compatible with this repository.
+
+https://github.com/middlewares
 
 ## Test run
 
