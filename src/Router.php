@@ -186,7 +186,7 @@ class Router implements RouterInterface
 	 */
 	public function match(ServerRequestInterface $request) : RouteInterface
 	{
-		$allowedVerbs = [];
+		$allow = [];
 
 		foreach ($this->map as $route)
 		{
@@ -194,7 +194,7 @@ class Router implements RouterInterface
 
 			if (\preg_match($regex, $request->getUri()->getPath(), $attributes))
 			{
-				$allowedVerbs = \array_merge($allowedVerbs, $route->getMethods());
+				$allow = \array_merge($allow, $route->getMethods());
 
 				if (\in_array($request->getMethod(), $route->getMethods()))
 				{
@@ -203,11 +203,9 @@ class Router implements RouterInterface
 			}
 		}
 
-		if (! empty($allowedVerbs))
+		if (! empty($allow))
 		{
-			$allowedVerbs = \array_unique($allowedVerbs);
-
-			throw new MethodNotAllowedException($request, $allowedVerbs);
+			throw new MethodNotAllowedException($request, $allow);
 		}
 
 		throw new PageNotFoundException($request);

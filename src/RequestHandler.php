@@ -30,14 +30,22 @@ class RequestHandler implements RequestHandlerInterface
 {
 
 	/**
-	 * The request handler middleware stack
+	 * The request handler middleware queue
 	 *
-	 * @var MiddlewareInterface[]
+	 * @var \SplQueue
 	 */
-	protected $middlewareStack = [];
+	protected $middlewareQueue;
 
 	/**
-	 * Adds the given middleware to the request handler middleware stack
+	 * Constructor of the class
+	 */
+	public function __construct()
+	{
+		$this->middlewareQueue = new \SplQueue();
+	}
+
+	/**
+	 * Adds the given middleware to the request handler middleware queue
 	 *
 	 * @param MiddlewareInterface $middleware
 	 *
@@ -45,7 +53,7 @@ class RequestHandler implements RequestHandlerInterface
 	 */
 	public function add(MiddlewareInterface $middleware) : RequestHandlerInterface
 	{
-		$this->middlewareStack[] = $middleware;
+		$this->middlewareQueue->enqueue($middleware);
 
 		return $this;
 	}
@@ -55,12 +63,12 @@ class RequestHandler implements RequestHandlerInterface
 	 */
 	public function handle(ServerRequestInterface $request) : ResponseInterface
 	{
-		if (empty($this->middlewareStack))
+		if ($this->middlewareQueue->isEmpty())
 		{
 			return (new ResponseFactory)->createResponse(200);
 		}
 
-		$middleware = \array_shift($this->middlewareStack);
+		$middleware = $this->middlewareQueue->dequeue();
 
 		return $middleware->process($request, $this);
 	}
