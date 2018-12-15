@@ -89,6 +89,16 @@ class Route implements RouteInterface
 	/**
 	 * {@inheritDoc}
 	 */
+	public function prefix(string $prefix) : RouteInterface
+	{
+		$this->path = $prefix . $this->path;
+
+		return $this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
 	public function method(string $method) : RouteInterface
 	{
 		$this->methods[] = \strtoupper($method);

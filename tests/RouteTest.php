@@ -1,6 +1,6 @@
 <?php
 
-namespace Sunrise\Http\ServerRequest\Tests;
+namespace Sunrise\Http\Router\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
@@ -71,6 +71,14 @@ class RouteTest extends TestCase
 		$route = new Route('home', '/', $this->getRouteAction());
 
 		$this->assertEquals([], $route->getAttributes());
+	}
+
+	public function testAddPrefix()
+	{
+		$route = new Route('home', '/', $this->getRouteAction());
+
+		$this->assertInstanceOf(RouteInterface::class, $route->prefix('/foo'));
+		$this->assertEquals('/foo/', $route->getPath());
 	}
 
 	public function testAddMethod()

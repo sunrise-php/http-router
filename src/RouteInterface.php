@@ -32,7 +32,16 @@ interface RouteInterface extends MiddlewareInterface
 	public function __construct(string $id, string $path, callable $action);
 
 	/**
-	 * Adds a new method to the route
+	 * Adds the given prefix to the route path
+	 *
+	 * @param string $prefix
+	 *
+	 * @return RouteInterface
+	 */
+	public function prefix(string $prefix) : RouteInterface;
+
+	/**
+	 * Adds the given method to the route
 	 *
 	 * @param string $method
 	 *
@@ -41,7 +50,7 @@ interface RouteInterface extends MiddlewareInterface
 	public function method(string $method) : RouteInterface;
 
 	/**
-	 * Adds a new pattern to the route
+	 * Adds the given pattern to the route
 	 *
 	 * @param string $name
 	 * @param string $value
@@ -51,7 +60,7 @@ interface RouteInterface extends MiddlewareInterface
 	public function pattern(string $name, string $value) : RouteInterface;
 
 	/**
-	 * Adds a new middleware to the route middleware stack
+	 * Adds the given middleware to the route middleware stack
 	 *
 	 * @param MiddlewareInterface $middleware
 	 *
@@ -109,7 +118,7 @@ interface RouteInterface extends MiddlewareInterface
 	public function getAttributes() : array;
 
 	/**
-	 * Creates a new route instance with the given attributes
+	 * Returns the route clone with the given attributes
 	 *
 	 * @param array $attributes
 	 *
