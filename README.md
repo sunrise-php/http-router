@@ -41,6 +41,36 @@ $request = ServerRequestFactory::fromGlobals();
 $response = $router->handle($request);
 ```
 
+#### Grouping
+
+```php
+use Sunrise\Http\Router\RouteCollectionInterface;
+
+$router->group('/api', function(RouteCollectionInterface $collection)
+{
+    $collection->middleware(...);
+
+    $collection->group('/v1', function(RouteCollectionInterface $collection)
+    {
+        $collection->middleware(...);
+
+        $collection->group('/post', function(RouteCollectionInterface $collection)
+        {
+            $collection->middleware(...);
+
+            $collection->get(...);
+        });
+
+        $collection->group('/user', function(RouteCollectionInterface $collection)
+        {
+            $collection->middleware(...);
+
+            $collection->get(...);
+        });
+    });
+});
+```
+
 #### Routes
 
 ```php
