@@ -1,18 +1,17 @@
 <?php
 
-namespace Sunrise\Http\ServerRequest\Tests;
+namespace Sunrise\Http\Router\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Message\ResponseFactory;
 use Sunrise\Http\Router\RequestHandler;
 use Sunrise\Http\ServerRequest\ServerRequestFactory;
 
 class RequestHandlerTest extends TestCase
 {
+	use HelpersInjectTest;
+
 	public function testConstructor()
 	{
 		$handler = new RequestHandler();
@@ -24,139 +23,71 @@ class RequestHandlerTest extends TestCase
 	{
 		$handler = new RequestHandler();
 
-		$this->assertInstanceOf(RequestHandlerInterface::class, $handler->add(new class implements MiddlewareInterface {
-			public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface {
-				return $handler->handle($request);
-			}
-		}));
+		$this->assertInstanceOf(RequestHandlerInterface::class, $handler->add($this->getMiddlewareFoo()));
 	}
 
 	public function testHandleQueue()
 	{
 		$handler = new RequestHandler();
 
-		$handler->add(new class implements MiddlewareInterface {
-			public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface {
-				return $handler->handle($request)->withAddedHeader('x-queue', 'foo');
-			}
-		});
-
-		$handler->add(new class implements MiddlewareInterface {
-			public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface {
-				return $handler->handle($request)->withAddedHeader('x-queue', 'bar');
-			}
-		});
-
-		$handler->add(new class implements MiddlewareInterface {
-			public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface {
-				return $handler->handle($request)->withAddedHeader('x-queue', 'baz');
-			}
-		});
+		$handler->add($this->getMiddlewareFoo());
+		$handler->add($this->getMiddlewareBar());
+		$handler->add($this->getMiddlewareBaz());
 
 		$request = (new ServerRequestFactory)
 		->createServerRequest('GET', '/');
 
 		$response = $handler->handle($request);
 
-		$this->assertEquals([
-			'x-queue' => ['baz', 'bar', 'foo'],
-		], $response->getHeaders());
+		$this->assertEquals(['baz', 'bar', 'foo'], $response->getHeader('x-middleware'));
 	}
 
 	public function testHandleBreakQueueAtBeginning()
 	{
 		$handler = new RequestHandler();
 
-		$handler->add(new class implements MiddlewareInterface {
-			public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface {
-				return (new ResponseFactory)->createResponse()->withAddedHeader('x-queue', 'foo');
-			}
-		});
-
-		$handler->add(new class implements MiddlewareInterface {
-			public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface {
-				return $handler->handle($request)->withAddedHeader('x-queue', 'bar');
-			}
-		});
-
-		$handler->add(new class implements MiddlewareInterface {
-			public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface {
-				return $handler->handle($request)->withAddedHeader('x-queue', 'baz');
-			}
-		});
+		$handler->add($this->getMiddlewareFoo(false));
+		$handler->add($this->getMiddlewareBar());
+		$handler->add($this->getMiddlewareBaz());
 
 		$request = (new ServerRequestFactory)
 		->createServerRequest('GET', '/');
 
 		$response = $handler->handle($request);
 
-		$this->assertEquals([
-			'x-queue' => ['foo'],
-		], $response->getHeaders());
+		$this->assertEquals(['foo'], $response->getHeader('x-middleware'));
 	}
 
 	public function testHandleBreakQueueAtMiddle()
 	{
 		$handler = new RequestHandler();
 
-		$handler->add(new class implements MiddlewareInterface {
-			public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface {
-				return $handler->handle($request)->withAddedHeader('x-queue', 'foo');
-			}
-		});
-
-		$handler->add(new class implements MiddlewareInterface {
-			public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface {
-				return (new ResponseFactory)->createResponse()->withAddedHeader('x-queue', 'bar');
-			}
-		});
-
-		$handler->add(new class implements MiddlewareInterface {
-			public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface {
-				return $handler->handle($request)->withAddedHeader('x-queue', 'baz');
-			}
-		});
+		$handler->add($this->getMiddlewareFoo());
+		$handler->add($this->getMiddlewareBar(false));
+		$handler->add($this->getMiddlewareBaz());
 
 		$request = (new ServerRequestFactory)
 		->createServerRequest('GET', '/');
 
 		$response = $handler->handle($request);
 
-		$this->assertEquals([
-			'x-queue' => ['bar', 'foo'],
-		], $response->getHeaders());
+		$this->assertEquals(['bar', 'foo'], $response->getHeader('x-middleware'));
 	}
 
 	public function testHandleBreakQueueAtEnd()
 	{
 		$handler = new RequestHandler();
 
-		$handler->add(new class implements MiddlewareInterface {
-			public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface {
-				return $handler->handle($request)->withAddedHeader('x-queue', 'foo');
-			}
-		});
-
-		$handler->add(new class implements MiddlewareInterface {
-			public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface {
-				return $handler->handle($request)->withAddedHeader('x-queue', 'bar');
-			}
-		});
-
-		$handler->add(new class implements MiddlewareInterface {
-			public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface {
-				return (new ResponseFactory)->createResponse()->withAddedHeader('x-queue', 'baz');
-			}
-		});
+		$handler->add($this->getMiddlewareFoo());
+		$handler->add($this->getMiddlewareBar());
+		$handler->add($this->getMiddlewareBaz(false));
 
 		$request = (new ServerRequestFactory)
 		->createServerRequest('GET', '/');
 
 		$response = $handler->handle($request);
 
-		$this->assertEquals([
-			'x-queue' => ['baz', 'bar', 'foo'],
-		], $response->getHeaders());
+		$this->assertEquals(['baz', 'bar', 'foo'], $response->getHeader('x-middleware'));
 	}
 
 	public function testHandleWithoutStack()

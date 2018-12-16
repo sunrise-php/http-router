@@ -1,6 +1,6 @@
 <?php
 
-namespace Sunrise\Http\ServerRequest\Tests;
+namespace Sunrise\Http\Router\Tests;
 
 use Fig\Http\Message\RequestMethodInterface;
 use PHPUnit\Framework\TestCase;
@@ -9,227 +9,35 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Message\ResponseFactory;
-use Sunrise\Http\Router\RouteInterface;
-use Sunrise\Http\Router\Router;
-use Sunrise\Http\Router\RouterInterface;
-use Sunrise\Http\ServerRequest\ServerRequestFactory;
 use Sunrise\Http\Router\Exception\BadRequestException;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 use Sunrise\Http\Router\Exception\MethodNotAllowedException;
 use Sunrise\Http\Router\Exception\PageNotFoundException;
+use Sunrise\Http\Router\RouteInterface;
+use Sunrise\Http\Router\RouteCollection;
+use Sunrise\Http\Router\Router;
+use Sunrise\Http\Router\RouterInterface;
+use Sunrise\Http\ServerRequest\ServerRequestFactory;
 
 class RouterTest extends TestCase
 {
+	use HelpersInjectTest;
+
 	public function testConstructor()
 	{
 		$router = new Router();
 
 		$this->assertInstanceOf(RouterInterface::class, $router);
 		$this->assertInstanceOf(RequestHandlerInterface::class, $router);
-	}
-
-	public function testCreateRoute()
-	{
-		$router = new Router();
-
-		$action = $this->getRouteAction();
-		$route = $router->add('home', '/', $action);
-
-		$this->assertInstanceOf(RouteInterface::class, $route);
-		$this->assertEquals('home', $route->getId());
-		$this->assertEquals('/', $route->getPath());
-		$this->assertEquals($action, $route->getAction());
-		$this->assertEquals([], $route->getMethods());
-	}
-
-	public function testCreateRouteWithMethodHead()
-	{
-		$router = new Router();
-
-		$action = $this->getRouteAction();
-		$route = $router->head('home', '/', $action);
-
-		$this->assertInstanceOf(RouteInterface::class, $route);
-		$this->assertEquals('home', $route->getId());
-		$this->assertEquals('/', $route->getPath());
-		$this->assertEquals($action, $route->getAction());
-		$this->assertEquals([RequestMethodInterface::METHOD_HEAD], $route->getMethods());
-	}
-
-	public function testCreateRouteWithMethodGet()
-	{
-		$router = new Router();
-
-		$action = $this->getRouteAction();
-		$route = $router->get('home', '/', $action);
-
-		$this->assertInstanceOf(RouteInterface::class, $route);
-		$this->assertEquals('home', $route->getId());
-		$this->assertEquals('/', $route->getPath());
-		$this->assertEquals($action, $route->getAction());
-		$this->assertEquals([RequestMethodInterface::METHOD_GET], $route->getMethods());
-	}
-
-	public function testCreateRouteWithMethodPost()
-	{
-		$router = new Router();
-
-		$action = $this->getRouteAction();
-		$route = $router->post('home', '/', $action);
-
-		$this->assertInstanceOf(RouteInterface::class, $route);
-		$this->assertEquals('home', $route->getId());
-		$this->assertEquals('/', $route->getPath());
-		$this->assertEquals($action, $route->getAction());
-		$this->assertEquals([RequestMethodInterface::METHOD_POST], $route->getMethods());
-	}
-
-	public function testCreateRouteWithMethodPut()
-	{
-		$router = new Router();
-
-		$action = $this->getRouteAction();
-		$route = $router->put('home', '/', $action);
-
-		$this->assertInstanceOf(RouteInterface::class, $route);
-		$this->assertEquals('home', $route->getId());
-		$this->assertEquals('/', $route->getPath());
-		$this->assertEquals($action, $route->getAction());
-		$this->assertEquals([RequestMethodInterface::METHOD_PUT], $route->getMethods());
-	}
-
-	public function testCreateRouteWithMethodPatch()
-	{
-		$router = new Router();
-
-		$action = $this->getRouteAction();
-		$route = $router->patch('home', '/', $action);
-
-		$this->assertInstanceOf(RouteInterface::class, $route);
-		$this->assertEquals('home', $route->getId());
-		$this->assertEquals('/', $route->getPath());
-		$this->assertEquals($action, $route->getAction());
-		$this->assertEquals([RequestMethodInterface::METHOD_PATCH], $route->getMethods());
-	}
-
-	public function testCreateRouteWithMethodDelete()
-	{
-		$router = new Router();
-
-		$action = $this->getRouteAction();
-		$route = $router->delete('home', '/', $action);
-
-		$this->assertInstanceOf(RouteInterface::class, $route);
-		$this->assertEquals('home', $route->getId());
-		$this->assertEquals('/', $route->getPath());
-		$this->assertEquals($action, $route->getAction());
-		$this->assertEquals([RequestMethodInterface::METHOD_DELETE], $route->getMethods());
-	}
-
-	public function testCreateRouteWithMethodPurge()
-	{
-		$router = new Router();
-
-		$action = $this->getRouteAction();
-		$route = $router->purge('home', '/', $action);
-
-		$this->assertInstanceOf(RouteInterface::class, $route);
-		$this->assertEquals('home', $route->getId());
-		$this->assertEquals('/', $route->getPath());
-		$this->assertEquals($action, $route->getAction());
-		$this->assertEquals([RequestMethodInterface::METHOD_PURGE], $route->getMethods());
-	}
-
-	public function testCreateRouteWithMethodOptions()
-	{
-		$router = new Router();
-
-		$action = $this->getRouteAction();
-		$route = $router->options('home', '/', $action);
-
-		$this->assertInstanceOf(RouteInterface::class, $route);
-		$this->assertEquals('home', $route->getId());
-		$this->assertEquals('/', $route->getPath());
-		$this->assertEquals($action, $route->getAction());
-		$this->assertEquals([RequestMethodInterface::METHOD_OPTIONS], $route->getMethods());
-	}
-
-	public function testCreateRouteWithMethodTrace()
-	{
-		$router = new Router();
-
-		$action = $this->getRouteAction();
-		$route = $router->trace('home', '/', $action);
-
-		$this->assertInstanceOf(RouteInterface::class, $route);
-		$this->assertEquals('home', $route->getId());
-		$this->assertEquals('/', $route->getPath());
-		$this->assertEquals($action, $route->getAction());
-		$this->assertEquals([RequestMethodInterface::METHOD_TRACE], $route->getMethods());
-	}
-
-	public function testCreateRouteWithMethodConnect()
-	{
-		$router = new Router();
-
-		$action = $this->getRouteAction();
-		$route = $router->connect('home', '/', $action);
-
-		$this->assertInstanceOf(RouteInterface::class, $route);
-		$this->assertEquals('home', $route->getId());
-		$this->assertEquals('/', $route->getPath());
-		$this->assertEquals($action, $route->getAction());
-		$this->assertEquals([RequestMethodInterface::METHOD_CONNECT], $route->getMethods());
-	}
-
-	public function testCreateRouteWithMethodSafe()
-	{
-		$router = new Router();
-
-		$action = $this->getRouteAction();
-		$route = $router->safe('home', '/', $action);
-
-		$this->assertInstanceOf(RouteInterface::class, $route);
-		$this->assertEquals('home', $route->getId());
-		$this->assertEquals('/', $route->getPath());
-		$this->assertEquals($action, $route->getAction());
-		$this->assertEquals([
-			RequestMethodInterface::METHOD_HEAD,
-			RequestMethodInterface::METHOD_GET,
-		], $route->getMethods());
-	}
-
-	public function testCreateRouteWithMethodAny()
-	{
-		$router = new Router();
-
-		$action = $this->getRouteAction();
-		$route = $router->any('home', '/', $action);
-
-		$this->assertInstanceOf(RouteInterface::class, $route);
-		$this->assertEquals('home', $route->getId());
-		$this->assertEquals('/', $route->getPath());
-		$this->assertEquals($action, $route->getAction());
-		$this->assertEquals([
-			RequestMethodInterface::METHOD_HEAD,
-			RequestMethodInterface::METHOD_GET,
-			RequestMethodInterface::METHOD_POST,
-			RequestMethodInterface::METHOD_PUT,
-			RequestMethodInterface::METHOD_PATCH,
-			RequestMethodInterface::METHOD_DELETE,
-			RequestMethodInterface::METHOD_PURGE,
-			RequestMethodInterface::METHOD_OPTIONS,
-			RequestMethodInterface::METHOD_TRACE,
-			RequestMethodInterface::METHOD_CONNECT,
-		], $route->getMethods());
+		$this->assertInstanceOf(RouteCollection::class, $router);
 	}
 
 	public function testMatch()
 	{
 		$router = new Router();
 
-		$router->get('home', '/', $this->getRouteAction());
+		$router->get('home', '/', $this->getRouteActionFoo());
 
 		$request = (new ServerRequestFactory)
 		->createServerRequest('GET', '/');
@@ -245,7 +53,7 @@ class RouterTest extends TestCase
 
 		$router = new Router();
 
-		$router->get('home', '/', $this->getRouteAction());
+		$router->get('home', '/', $this->getRouteActionFoo());
 
 		$request = (new ServerRequestFactory)
 		->createServerRequest('GET', '/404');
@@ -259,7 +67,7 @@ class RouterTest extends TestCase
 
 		$router = new Router();
 
-		$router->safe('home', '/', $this->getRouteAction());
+		$router->safe('home', '/', $this->getRouteActionFoo());
 
 		$request = (new ServerRequestFactory)
 		->createServerRequest('POST', '/');
@@ -287,7 +95,7 @@ class RouterTest extends TestCase
 	{
 		$router = new Router();
 
-		$router->patch('post.update', '/post/{id}', $this->getRouteAction());
+		$router->patch('post.update', '/post/{id}', $this->getRouteActionFoo());
 
 		$request = (new ServerRequestFactory)
 		->createServerRequest('PATCH', '/post/100');
@@ -302,7 +110,7 @@ class RouterTest extends TestCase
 	{
 		$router = new Router();
 
-		$router->patch('post.update', '/post/{section}/{post}', $this->getRouteAction());
+		$router->patch('post.update', '/post/{section}/{post}', $this->getRouteActionFoo());
 
 		$request = (new ServerRequestFactory)
 		->createServerRequest('PATCH', '/post/100/200');
@@ -320,7 +128,7 @@ class RouterTest extends TestCase
 	{
 		$router = new Router();
 
-		$route = $router->patch('menu.item.move', '/menu/item/{id}/{direction}', $this->getRouteAction());
+		$route = $router->patch('menu.item.move', '/menu/item/{id}/{direction}', $this->getRouteActionFoo());
 		$route->pattern('id', '\d+');
 		$route->pattern('direction', 'up|down');
 
@@ -349,7 +157,7 @@ class RouterTest extends TestCase
 
 		$router = new Router();
 
-		$route = $router->delete('post.delete', '/post/{id}', $this->getRouteAction());
+		$route = $router->delete('post.delete', '/post/{id}', $this->getRouteActionFoo());
 		$route->pattern('id', '\d+');
 
 		$request = (new ServerRequestFactory)
@@ -361,12 +169,12 @@ class RouterTest extends TestCase
 	public function testHandle()
 	{
 		$router = new Router();
-		$router->middleware($this->getRouteMiddlewareFoo());
-		$router->middleware($this->getRouteMiddlewareBar());
+		$router->middleware($this->getMiddlewareFoo());
+		$router->middleware($this->getMiddlewareBar());
 
-		$route = $router->get('home', '/', $this->getRouteAction());
-		$route->middleware($this->getRouteMiddlewareBaz());
-		$route->middleware($this->getRouteMiddlewareQux());
+		$route = $router->get('home', '/', $this->getRouteActionFoo());
+		$route->middleware($this->getMiddlewareBaz());
+		$route->middleware($this->getMiddlewareQux());
 
 		$request = (new ServerRequestFactory)
 		->createServerRequest('GET', '/');
@@ -374,7 +182,7 @@ class RouterTest extends TestCase
 		$response = $router->handle($request);
 
 		$this->assertEquals([
-			'route',
+			'route-foo',
 			'middleware-qux',
 			'middleware-baz',
 			'middleware-bar',
@@ -408,57 +216,5 @@ class RouterTest extends TestCase
 		$this->assertInstanceOf(HttpException::class, $methodNotAllowedException);
 		$this->assertEquals(['HEAD', 'GET'], $methodNotAllowedException->getAllowedMethods());
 		$this->assertEquals(405, $methodNotAllowedException->getResponse()->getStatusCode());
-	}
-
-	private function getRouteAction() : callable
-	{
-		return function(ServerRequestInterface $request, ResponseInterface $response) : ResponseInterface
-		{
-			return $response->withAddedHeader('x-queue', 'route');
-		};
-	}
-
-	private function getRouteMiddlewareFoo() : MiddlewareInterface
-	{
-		return new class implements MiddlewareInterface
-		{
-			public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
-			{
-				return $handler->handle($request)->withAddedHeader('x-queue', 'middleware-foo');
-			}
-		};
-	}
-
-	private function getRouteMiddlewareBar() : MiddlewareInterface
-	{
-		return new class implements MiddlewareInterface
-		{
-			public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
-			{
-				return $handler->handle($request)->withAddedHeader('x-queue', 'middleware-bar');
-			}
-		};
-	}
-
-	private function getRouteMiddlewareBaz() : MiddlewareInterface
-	{
-		return new class implements MiddlewareInterface
-		{
-			public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
-			{
-				return $handler->handle($request)->withAddedHeader('x-queue', 'middleware-baz');
-			}
-		};
-	}
-
-	private function getRouteMiddlewareQux() : MiddlewareInterface
-	{
-		return new class implements MiddlewareInterface
-		{
-			public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
-			{
-				return $handler->handle($request)->withAddedHeader('x-queue', 'middleware-qux');
-			}
-		};
 	}
 }
