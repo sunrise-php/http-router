@@ -4,9 +4,6 @@ namespace Sunrise\Http\Router\Tests;
 
 use Fig\Http\Message\RequestMethodInterface;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Message\ResponseFactory;
 use Sunrise\Http\Router\Exception\BadRequestException;
@@ -14,7 +11,6 @@ use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 use Sunrise\Http\Router\Exception\MethodNotAllowedException;
 use Sunrise\Http\Router\Exception\PageNotFoundException;
-use Sunrise\Http\Router\RouteInterface;
 use Sunrise\Http\Router\RouteCollection;
 use Sunrise\Http\Router\Router;
 use Sunrise\Http\Router\RouterInterface;

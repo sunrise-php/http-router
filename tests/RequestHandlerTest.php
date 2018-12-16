@@ -58,7 +58,7 @@ class RequestHandlerTest extends TestCase
 		$this->assertEquals(['foo'], $response->getHeader('x-middleware'));
 	}
 
-	public function testHandleBreakQueueAtMiddle()
+	public function testHandleBreakQueueInMiddle()
 	{
 		$handler = new RequestHandler();
 

@@ -23,16 +23,20 @@ class RouteTest extends TestCase
 
 	public function testGetId()
 	{
-		$route = new Route('home', '/', $this->getRouteActionFoo());
+		$id = 'home';
 
-		$this->assertEquals('home', $route->getId());
+		$route = new Route($id, '/', $this->getRouteActionFoo());
+
+		$this->assertEquals($id, $route->getId());
 	}
 
 	public function testGetPath()
 	{
-		$route = new Route('home', '/', $this->getRouteActionFoo());
+		$path = '/';
 
-		$this->assertEquals('/', $route->getPath());
+		$route = new Route('home', $path, $this->getRouteActionFoo());
+
+		$this->assertEquals($path, $route->getPath());
 	}
 
 	public function testGetAction()
