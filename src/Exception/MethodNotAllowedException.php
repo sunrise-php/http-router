@@ -38,12 +38,13 @@ class MethodNotAllowedException extends HttpException
 	 */
 	public function __construct(ServerRequestInterface $request, array $allowedMethods)
 	{
-		$this->allowedMethods = $allowedMethods;
+		$response = (new ResponseFactory)->createResponse(405);
 
-		parent::__construct($request, (new ResponseFactory)
-			->createResponse(405)
-			->withHeader('Allow', \implode(', ', $allowedMethods))
-		);
+		$response = $response->withHeader('Allow', \implode(', ', $allowedMethods));
+
+		parent::__construct($request, $response);
+
+		$this->allowedMethods = $allowedMethods;
 	}
 
 	/**

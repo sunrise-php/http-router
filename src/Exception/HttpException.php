@@ -50,7 +50,7 @@ class HttpException extends \RuntimeException implements HttpExceptionInterface
 
 		$this->response = $response;
 
-		parent::__construct(\sprintf('%d %s', $response->getStatusCode(), $response->getReasonPhrase()), 0, $previous);
+		parent::__construct(\sprintf('[%d] %s', $response->getStatusCode(), $response->getReasonPhrase()), 0, $previous);
 	}
 
 	/**

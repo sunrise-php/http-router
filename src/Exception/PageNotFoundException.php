@@ -30,6 +30,8 @@ class PageNotFoundException extends HttpException
 	 */
 	public function __construct(ServerRequestInterface $request)
 	{
-		parent::__construct($request, (new ResponseFactory)->createResponse(404));
+		$response = (new ResponseFactory)->createResponse(404);
+
+		parent::__construct($request, $response);
 	}
 }

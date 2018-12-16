@@ -20,7 +20,7 @@ use Psr\Http\Message\ServerRequestInterface;
 /**
  * HttpExceptionInterface
  */
-interface HttpExceptionInterface
+interface HttpExceptionInterface extends \Throwable
 {
 
 	/**

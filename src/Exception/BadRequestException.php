@@ -30,6 +30,8 @@ class BadRequestException extends HttpException
 	 */
 	public function __construct(ServerRequestInterface $request)
 	{
-		parent::__construct($request, (new ResponseFactory)->createResponse(400));
+		$response = (new ResponseFactory)->createResponse(400);
+
+		parent::__construct($request, $response);
 	}
 }
