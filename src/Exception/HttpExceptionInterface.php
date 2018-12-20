@@ -14,13 +14,12 @@ namespace Sunrise\Http\Router\Exception;
 /**
  * Import classes
  */
-use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * HttpExceptionInterface
  */
-interface HttpExceptionInterface extends \Throwable
+interface HttpExceptionInterface
 {
 
 	/**
@@ -29,11 +28,4 @@ interface HttpExceptionInterface extends \Throwable
 	 * @return ServerRequestInterface
 	 */
 	public function getRequest() : ServerRequestInterface;
-
-	/**
-	 * Gets Response instance
-	 *
-	 * @return ResponseInterface
-	 */
-	public function getResponse() : ResponseInterface;
 }

@@ -16,29 +16,72 @@ namespace Sunrise\Http\Router;
  */
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
 use Sunrise\Http\Router\Exception\MethodNotAllowedException;
-use Sunrise\Http\Router\Exception\PageNotFoundException;
+use Sunrise\Http\Router\Exception\RouteNotFoundException;
 
 /**
  * Router
  */
-class Router extends RouteCollection implements RouterInterface
+class Router implements RouterInterface
 {
+
+	/**
+	 * The router map
+	 *
+	 * @var RouteCollectionInterface
+	 */
+	protected $routes;
+
+	/**
+	 * The router middleware stack
+	 *
+	 * @var MiddlewareInterface[]
+	 */
+	protected $middlewareStack = [];
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function __construct(RouteCollectionInterface $routes)
+	{
+		$this->routes = $routes;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function addMiddleware(MiddlewareInterface $middleware) : RouterInterface
+	{
+		$this->middlewareStack[] = $middleware;
+
+		return $this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function getMiddlewareStack() : array
+	{
+		return $this->middlewareStack;
+	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	public function match(ServerRequestInterface $request) : RouteInterface
 	{
-		$allow = [];
+		$routes = $this->routes->getRoutes();
 
-		foreach ($this->getRoutes() as $route)
+		$allowedMethods = [];
+
+		foreach ($routes as $route)
 		{
 			$regex = route_regex($route->getPath(), $route->getPatterns());
 
 			if (\preg_match($regex, $request->getUri()->getPath(), $attributes))
 			{
-				$allow = \array_merge($allow, $route->getMethods());
+				$allowedMethods = \array_merge($allowedMethods, $route->getMethods());
 
 				if (\in_array($request->getMethod(), $route->getMethods()))
 				{
@@ -47,12 +90,12 @@ class Router extends RouteCollection implements RouterInterface
 			}
 		}
 
-		if (! empty($allow))
+		if (! empty($allowedMethods))
 		{
-			throw new MethodNotAllowedException($request, $allow);
+			throw new MethodNotAllowedException($request, $allowedMethods);
 		}
 
-		throw new PageNotFoundException($request);
+		throw new RouteNotFoundException($request);
 	}
 
 	/**
@@ -62,16 +105,9 @@ class Router extends RouteCollection implements RouterInterface
 	{
 		$route = $this->match($request);
 
-		foreach ($route->getAttributes() as $name => $value)
-		{
-			$request = $request->withAttribute($name, $value);
-		}
-
-		$request = $request->withAttribute('@route', $route->getId());
-
 		$requestHandler = new RequestHandler();
 
-		foreach ($this->getMiddlewareStack() as $middleware)
+		foreach ($this->middlewareStack as $middleware)
 		{
 			$requestHandler->add($middleware);
 		}
@@ -81,7 +117,12 @@ class Router extends RouteCollection implements RouterInterface
 			$requestHandler->add($middleware);
 		}
 
-		$requestHandler->add($route);
+		foreach ($route->getAttributes() as $name => $value)
+		{
+			$request = $request->withAttribute($name, $value);
+		}
+
+		$request = $request->withAttribute('@route', $route->getId());
 
 		return $requestHandler->handle($request);
 	}

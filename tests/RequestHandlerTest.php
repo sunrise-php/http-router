@@ -8,10 +8,13 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\RequestHandler;
 use Sunrise\Http\ServerRequest\ServerRequestFactory;
 
+// fake middlewares
+use Sunrise\Http\Router\Tests\Middleware\FooMiddlewareTest;
+use Sunrise\Http\Router\Tests\Middleware\BarMiddlewareTest;
+use Sunrise\Http\Router\Tests\Middleware\BazMiddlewareTest;
+
 class RequestHandlerTest extends TestCase
 {
-	use HelpersInjectTest;
-
 	public function testConstructor()
 	{
 		$handler = new RequestHandler();
@@ -23,74 +26,87 @@ class RequestHandlerTest extends TestCase
 	{
 		$handler = new RequestHandler();
 
-		$this->assertInstanceOf(RequestHandlerInterface::class, $handler->add($this->getMiddlewareFoo()));
+		$this->assertInstanceOf(RequestHandlerInterface::class, $handler->add(new FooMiddlewareTest()));
 	}
 
-	public function testHandleQueue()
+	public function testQueue()
 	{
 		$handler = new RequestHandler();
 
-		$handler->add($this->getMiddlewareFoo());
-		$handler->add($this->getMiddlewareBar());
-		$handler->add($this->getMiddlewareBaz());
+		$handler->add(new FooMiddlewareTest());
+		$handler->add(new BarMiddlewareTest());
+		$handler->add(new BazMiddlewareTest());
 
 		$request = (new ServerRequestFactory)
 		->createServerRequest('GET', '/');
 
 		$response = $handler->handle($request);
 
-		$this->assertEquals(['baz', 'bar', 'foo'], $response->getHeader('x-middleware'));
+		$this->assertEquals([
+			'baz',
+			'bar',
+			'foo',
+		], $response->getHeader('x-middleware'));
 	}
 
-	public function testHandleBreakQueueAtBeginning()
+	public function testBreakingQueueAtBeginning()
 	{
 		$handler = new RequestHandler();
 
-		$handler->add($this->getMiddlewareFoo(false));
-		$handler->add($this->getMiddlewareBar());
-		$handler->add($this->getMiddlewareBaz());
+		$handler->add(new FooMiddlewareTest(true));
+		$handler->add(new BarMiddlewareTest());
+		$handler->add(new BazMiddlewareTest());
 
 		$request = (new ServerRequestFactory)
 		->createServerRequest('GET', '/');
 
 		$response = $handler->handle($request);
 
-		$this->assertEquals(['foo'], $response->getHeader('x-middleware'));
+		$this->assertEquals([
+			'foo',
+		], $response->getHeader('x-middleware'));
 	}
 
-	public function testHandleBreakQueueInMiddle()
+	public function testBreakingQueueInMiddle()
 	{
 		$handler = new RequestHandler();
 
-		$handler->add($this->getMiddlewareFoo());
-		$handler->add($this->getMiddlewareBar(false));
-		$handler->add($this->getMiddlewareBaz());
+		$handler->add(new FooMiddlewareTest());
+		$handler->add(new BarMiddlewareTest(true));
+		$handler->add(new BazMiddlewareTest());
 
 		$request = (new ServerRequestFactory)
 		->createServerRequest('GET', '/');
 
 		$response = $handler->handle($request);
 
-		$this->assertEquals(['bar', 'foo'], $response->getHeader('x-middleware'));
+		$this->assertEquals([
+			'bar',
+			'foo',
+		], $response->getHeader('x-middleware'));
 	}
 
-	public function testHandleBreakQueueAtEnd()
+	public function testBreakingQueueAtEnd()
 	{
 		$handler = new RequestHandler();
 
-		$handler->add($this->getMiddlewareFoo());
-		$handler->add($this->getMiddlewareBar());
-		$handler->add($this->getMiddlewareBaz(false));
+		$handler->add(new FooMiddlewareTest());
+		$handler->add(new BarMiddlewareTest());
+		$handler->add(new BazMiddlewareTest(true));
 
 		$request = (new ServerRequestFactory)
 		->createServerRequest('GET', '/');
 
 		$response = $handler->handle($request);
 
-		$this->assertEquals(['baz', 'bar', 'foo'], $response->getHeader('x-middleware'));
+		$this->assertEquals([
+			'baz',
+			'bar',
+			'foo',
+		], $response->getHeader('x-middleware'));
 	}
 
-	public function testHandleWithoutStack()
+	public function testEmptyStack()
 	{
 		$handler = new RequestHandler();
 
@@ -100,5 +116,6 @@ class RequestHandlerTest extends TestCase
 		$response = $handler->handle($request);
 
 		$this->assertInstanceOf(ResponseInterface::class, $response);
+		$this->assertEquals(200, $response->getStatusCode());
 	}
 }

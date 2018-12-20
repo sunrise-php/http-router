@@ -14,8 +14,8 @@ namespace Sunrise\Http\Router;
 /**
  * Creates Regular Expression for the given path from the given patterns
  *
- * @param  string  $path
- * @param  array   $patterns
+ * @param string $path
+ * @param array $patterns
  *
  * @return string
  */

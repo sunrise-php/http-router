@@ -14,10 +14,7 @@ namespace Sunrise\Http\Router;
 /**
  * Import classes
  */
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * Route
@@ -40,16 +37,9 @@ class Route implements RouteInterface
 	protected $path;
 
 	/**
-	 * The route action
-	 *
-	 * @var callable
-	 */
-	protected $action;
-
-	/**
 	 * The route methods
 	 *
-	 * @var array
+	 * @var string[]
 	 */
 	protected $methods = [];
 
@@ -77,19 +67,22 @@ class Route implements RouteInterface
 	/**
 	 * {@inheritDoc}
 	 */
-	public function __construct(string $id, string $path, callable $action)
+	public function __construct(string $id, string $path, array $methods)
 	{
 		$this->id = $id;
 
 		$this->path = $path;
 
-		$this->action = $action;
+		foreach ($methods as $method)
+		{
+			$this->methods[] = \strtoupper($method);
+		}
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public function prefix(string $prefix) : RouteInterface
+	public function addPrefix(string $prefix) : RouteInterface
 	{
 		$this->path = $prefix . $this->path;
 
@@ -99,17 +92,7 @@ class Route implements RouteInterface
 	/**
 	 * {@inheritDoc}
 	 */
-	public function method(string $method) : RouteInterface
-	{
-		$this->methods[] = \strtoupper($method);
-
-		return $this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function pattern(string $name, string $value) : RouteInterface
+	public function addPattern(string $name, string $value) : RouteInterface
 	{
 		$this->patterns[$name] = $value;
 
@@ -119,7 +102,7 @@ class Route implements RouteInterface
 	/**
 	 * {@inheritDoc}
 	 */
-	public function middleware(MiddlewareInterface $middleware) : RouteInterface
+	public function addMiddleware(MiddlewareInterface $middleware) : RouteInterface
 	{
 		$this->middlewareStack[] = $middleware;
 
@@ -140,14 +123,6 @@ class Route implements RouteInterface
 	public function getPath() : string
 	{
 		return $this->path;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function getAction() : callable
-	{
-		return $this->action;
 	}
 
 	/**
@@ -192,15 +167,5 @@ class Route implements RouteInterface
 		$clone->attributes = $attributes;
 
 		return $clone;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
-	{
-		$response = $handler->handle($request);
-
-		return ($this->action)($request, $response);
 	}
 }

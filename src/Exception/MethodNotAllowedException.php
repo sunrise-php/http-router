@@ -14,19 +14,26 @@ namespace Sunrise\Http\Router\Exception;
 /**
  * Import classes
  */
+use RuntimeException, Throwable;
 use Psr\Http\Message\ServerRequestInterface;
-use Sunrise\Http\Message\ResponseFactory;
 
 /**
  * MethodNotAllowedException
  */
-class MethodNotAllowedException extends HttpException
+class MethodNotAllowedException extends RuntimeException implements HttpExceptionInterface
 {
+
+	/**
+	 * Server Request instance
+	 *
+	 * @var ServerRequestInterface
+	 */
+	protected $request;
 
 	/**
 	 * The request allowed methods
 	 *
-	 * @var array
+	 * @var string[]
 	 */
 	protected $allowedMethods;
 
@@ -34,23 +41,31 @@ class MethodNotAllowedException extends HttpException
 	 * Constructor of the class
 	 *
 	 * @param ServerRequestInterface $request
-	 * @param array $allowedMethods
+	 * @param string[] $allowedMethods
+	 * @param int $code
+	 * @param null|Throwable $previous
 	 */
-	public function __construct(ServerRequestInterface $request, array $allowedMethods)
+	public function __construct(ServerRequestInterface $request, array $allowedMethods, int $code = 0, Throwable $previous = null)
 	{
-		$response = (new ResponseFactory)->createResponse(405);
-
-		$response = $response->withHeader('Allow', \implode(', ', $allowedMethods));
-
-		parent::__construct($request, $response);
+		$this->request = $request;
 
 		$this->allowedMethods = $allowedMethods;
+
+		parent::__construct('The requested resource is not available for the HTTP method', $code, $previous);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function getRequest() : ServerRequestInterface
+	{
+		return $this->request;
 	}
 
 	/**
 	 * Gets the request allowed methods
 	 *
-	 * @return array
+	 * @return string[]
 	 */
 	public function getAllowedMethods() : array
 	{

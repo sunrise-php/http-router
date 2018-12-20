@@ -3,191 +3,174 @@
 namespace Sunrise\Http\Router\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Server\MiddlewareInterface;
-use Sunrise\Http\Router\RequestHandler;
 use Sunrise\Http\Router\Route;
 use Sunrise\Http\Router\RouteInterface;
-use Sunrise\Http\ServerRequest\ServerRequestFactory;
+
+// fake middlewares
+use Sunrise\Http\Router\Tests\Middleware\FooMiddlewareTest;
+use Sunrise\Http\Router\Tests\Middleware\BarMiddlewareTest;
 
 class RouteTest extends TestCase
 {
-	use HelpersInjectTest;
-
 	public function testConstructor()
 	{
-		$route = new Route('home', '/', $this->getRouteActionFoo());
+		$route = new Route('home', '/', []);
 
 		$this->assertInstanceOf(RouteInterface::class, $route);
-		$this->assertInstanceOf(MiddlewareInterface::class, $route);
 	}
 
 	public function testGetId()
 	{
-		$id = 'home';
+		$foo = 'home';
 
-		$route = new Route($id, '/', $this->getRouteActionFoo());
+		$route = new Route($foo, '/', []);
 
-		$this->assertEquals($id, $route->getId());
+		$this->assertEquals($foo, $route->getId());
 	}
 
 	public function testGetPath()
 	{
-		$path = '/';
+		$foo = '/';
 
-		$route = new Route('home', $path, $this->getRouteActionFoo());
+		$route = new Route('home', $foo, []);
 
-		$this->assertEquals($path, $route->getPath());
-	}
-
-	public function testGetAction()
-	{
-		$action = $this->getRouteActionFoo();
-
-		$route = new Route('home', '/', $action);
-
-		$this->assertEquals($action, $route->getAction());
+		$this->assertEquals($foo, $route->getPath());
 	}
 
 	public function testGetMethods()
 	{
-		$route = new Route('home', '/', $this->getRouteActionFoo());
+		$foo = ['HEAD', 'GET'];
 
-		$this->assertEquals([], $route->getMethods());
+		$route = new Route('home', '/', $foo);
+
+		$this->assertEquals($foo, $route->getMethods());
 	}
 
 	public function testGetPatterns()
 	{
-		$route = new Route('home', '/', $this->getRouteActionFoo());
+		$foo = [];
 
-		$this->assertEquals([], $route->getPatterns());
+		$route = new Route('home', '/', []);
+
+		$this->assertEquals($foo, $route->getPatterns());
 	}
 
 	public function testGetMiddlewareStack()
 	{
-		$route = new Route('home', '/', $this->getRouteActionFoo());
+		$foo = [];
 
-		$this->assertEquals([], $route->getMiddlewareStack());
+		$route = new Route('home', '/', []);
+
+		$this->assertEquals($foo, $route->getMiddlewareStack());
 	}
 
 	public function testGetAttributes()
 	{
-		$route = new Route('home', '/', $this->getRouteActionFoo());
+		$foo = [];
 
-		$this->assertEquals([], $route->getAttributes());
+		$route = new Route('home', '/', []);
+
+		$this->assertEquals($foo, $route->getAttributes());
 	}
 
 	public function testAddPrefix()
 	{
-		$route = new Route('home', '/', $this->getRouteActionFoo());
+		$foo = '/foo';
+		$bar = '/bar';
 
-		$this->assertInstanceOf(RouteInterface::class, $route->prefix('/foo'));
-		$this->assertEquals('/foo/', $route->getPath());
+		$route = new Route('home', $foo, []);
+
+		$this->assertInstanceOf(RouteInterface::class, $route->addPrefix($bar));
+
+		$this->assertEquals($bar.$foo, $route->getPath());
 	}
 
 	public function testAddSeveralPrefixex()
 	{
-		$route = new Route('home', '/', $this->getRouteActionFoo());
+		$foo = '/foo';
+		$bar = '/bar';
+		$baz = '/baz';
 
-		$route->prefix('/foo');
-		$route->prefix('/bar');
+		$route = new Route('home', $foo, []);
 
-		$this->assertEquals('/bar/foo/', $route->getPath());
-	}
+		$route->addPrefix($bar);
+		$route->addPrefix($baz);
 
-	public function testAddMethod()
-	{
-		$route = new Route('home', '/', $this->getRouteActionFoo());
-
-		$this->assertInstanceOf(RouteInterface::class, $route->method('GET'));
-		$this->assertEquals(['GET'], $route->getMethods());
-	}
-
-	public function testAddSeveralMethods()
-	{
-		$route = new Route('home', '/', $this->getRouteActionFoo());
-
-		$route->method('GET');
-		$route->method('POST');
-
-		$this->assertEquals(['GET', 'POST'], $route->getMethods());
-	}
-
-	public function testAddLowercasedMethod()
-	{
-		$route = new Route('home', '/', $this->getRouteActionFoo());
-
-		$route->method('get');
-
-		$this->assertEquals(['GET'], $route->getMethods());
+		$this->assertEquals($baz.$bar.$foo, $route->getPath());
 	}
 
 	public function testAddPattern()
 	{
-		$route = new Route('home', '/', $this->getRouteActionFoo());
+		$foo = ['id', '\d+'];
 
-		$this->assertInstanceOf(RouteInterface::class, $route->pattern('id', '\d+'));
-		$this->assertEquals(['id' => '\d+'], $route->getPatterns());
+		$route = new Route('home', '/', []);
+
+		$this->assertInstanceOf(RouteInterface::class, $route->addPattern($foo[0], $foo[1]));
+
+		$this->assertEquals([$foo[0] => $foo[1]], $route->getPatterns());
 	}
 
 	public function testAddSeveralPatterns()
 	{
-		$route = new Route('home', '/', $this->getRouteActionFoo());
+		$foo = ['id', '\d+'];
+		$bar = ['word', '\w+'];
 
-		$route->pattern('id', '\d+');
-		$route->pattern('word', '\w+');
+		$route = new Route('home', '/', []);
+
+		$route->addPattern($foo[0], $foo[1]);
+		$route->addPattern($bar[0], $bar[1]);
 
 		$this->assertEquals([
-			'id' => '\d+',
-			'word' => '\w+',
+			$foo[0] => $foo[1],
+			$bar[0] => $bar[1],
 		], $route->getPatterns());
 	}
 
 	public function testAddMiddleware()
 	{
-		$foo = $this->getMiddlewareFoo();
+		$foo = new FooMiddlewareTest();
 
-		$route = new Route('home', '/', $this->getRouteActionFoo());
+		$route = new Route('home', '/', []);
 
-		$this->assertInstanceOf(RouteInterface::class, $route->middleware($foo));
+		$this->assertInstanceOf(RouteInterface::class, $route->addMiddleware($foo));
+
 		$this->assertEquals([$foo], $route->getMiddlewareStack());
 	}
 
-	public function testAddSeveralMiddleware()
+	public function testAddSeveralMiddlewares()
 	{
-		$foo = $this->getMiddlewareFoo();
-		$bar = $this->getMiddlewareBar();
+		$foo = new FooMiddlewareTest();
+		$bar = new BarMiddlewareTest();
 
-		$route = new Route('home', '/', $this->getRouteActionFoo());
+		$route = new Route('home', '/', []);
 
-		$route->middleware($foo);
-		$route->middleware($bar);
+		$route->addMiddleware($foo);
+		$route->addMiddleware($bar);
 
-		$this->assertEquals([$foo, $bar], $route->getMiddlewareStack());
+		$this->assertEquals([
+			$foo,
+			$bar,
+		], $route->getMiddlewareStack());
 	}
 
 	public function testSetAttributes()
 	{
-		$route = new Route('home', '/', $this->getRouteActionFoo());
+		$foo = ['id' => '1'];
 
-		$clone = $route->withAttributes(['id' => '1']);
+		$route = new Route('home', '/', []);
+		$clone = $route->withAttributes($foo);
+
 		$this->assertInstanceOf(RouteInterface::class, $clone);
-		$this->assertEquals(['id' => '1'], $clone->getAttributes());
+		$this->assertNotEquals($clone, $route);
 
+		$this->assertEquals($foo, $clone->getAttributes());
 		$this->assertEquals([], $route->getAttributes());
 	}
 
-	public function testProcess()
+	public function testLowercasedMethod()
 	{
-		$route = new Route('home', '/', $this->getRouteActionFoo());
+		$route = new Route('home', '/', ['foo', 'bar']);
 
-		$handler = new RequestHandler();
-		$handler->add($route);
-
-		$request = (new ServerRequestFactory)
-		->createServerRequest('GET', '/');
-
-		$response = $handler->handle($request);
-
-		$this->assertEquals(['foo'], $response->getHeader('x-route'));
+		$this->assertEquals(['FOO', 'BAR'], $route->getMethods());
 	}
 }

@@ -15,7 +15,6 @@ namespace Sunrise\Http\Router;
  * Import classes
  */
 use Fig\Http\Message\RequestMethodInterface;
-use Psr\Http\Server\MiddlewareInterface;
 
 /**
  * RouteCollection
@@ -31,210 +30,13 @@ class RouteCollection implements RouteCollectionInterface
 	protected $routes = [];
 
 	/**
-	 * The collection middleware stack
-	 *
-	 * @var MiddlewareInterface[]
-	 */
-	protected $middlewareStack = [];
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function group(string $prefix, callable $callback) : void
-	{
-		$collection = new self;
-
-		$callback($collection);
-
-		if ($collection->count() > 0)
-		{
-			foreach ($collection->getRoutes() as $route)
-			{
-				$route->prefix($prefix);
-
-				foreach ($collection->getMiddlewareStack() as $middleware)
-				{
-					$route->middleware($middleware);
-				}
-
-				$this->addRoute($route);
-			}
-		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function add(string $id, string $path, callable $action, array $methods = []) : RouteInterface
-	{
-		$route = new Route($id, $path, $action);
-
-		foreach ($methods as $method)
-		{
-			$route->method($method);
-		}
-
-		$this->addRoute($route);
-
-		return $route;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function head(string $id, string $path, callable $action) : RouteInterface
-	{
-		return $this->add($id, $path, $action, [
-			RequestMethodInterface::METHOD_HEAD,
-		]);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function get(string $id, string $path, callable $action) : RouteInterface
-	{
-		return $this->add($id, $path, $action, [
-			RequestMethodInterface::METHOD_GET,
-		]);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function post(string $id, string $path, callable $action) : RouteInterface
-	{
-		return $this->add($id, $path, $action, [
-			RequestMethodInterface::METHOD_POST,
-		]);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function put(string $id, string $path, callable $action) : RouteInterface
-	{
-		return $this->add($id, $path, $action, [
-			RequestMethodInterface::METHOD_PUT,
-		]);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function patch(string $id, string $path, callable $action) : RouteInterface
-	{
-		return $this->add($id, $path, $action, [
-			RequestMethodInterface::METHOD_PATCH,
-		]);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function delete(string $id, string $path, callable $action) : RouteInterface
-	{
-		return $this->add($id, $path, $action, [
-			RequestMethodInterface::METHOD_DELETE,
-		]);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function purge(string $id, string $path, callable $action) : RouteInterface
-	{
-		return $this->add($id, $path, $action, [
-			RequestMethodInterface::METHOD_PURGE,
-		]);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function options(string $id, string $path, callable $action) : RouteInterface
-	{
-		return $this->add($id, $path, $action, [
-			RequestMethodInterface::METHOD_OPTIONS,
-		]);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function trace(string $id, string $path, callable $action) : RouteInterface
-	{
-		return $this->add($id, $path, $action, [
-			RequestMethodInterface::METHOD_TRACE,
-		]);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function connect(string $id, string $path, callable $action) : RouteInterface
-	{
-		return $this->add($id, $path, $action, [
-			RequestMethodInterface::METHOD_CONNECT,
-		]);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function safe(string $id, string $path, callable $action) : RouteInterface
-	{
-		return $this->add($id, $path, $action, [
-			RequestMethodInterface::METHOD_HEAD,
-			RequestMethodInterface::METHOD_GET,
-		]);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function any(string $id, string $path, callable $action) : RouteInterface
-	{
-		return $this->add($id, $path, $action, [
-			RequestMethodInterface::METHOD_HEAD,
-			RequestMethodInterface::METHOD_GET,
-			RequestMethodInterface::METHOD_POST,
-			RequestMethodInterface::METHOD_PUT,
-			RequestMethodInterface::METHOD_PATCH,
-			RequestMethodInterface::METHOD_DELETE,
-			RequestMethodInterface::METHOD_PURGE,
-			RequestMethodInterface::METHOD_OPTIONS,
-			RequestMethodInterface::METHOD_TRACE,
-			RequestMethodInterface::METHOD_CONNECT,
-		]);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function middleware(MiddlewareInterface $middleware) : RouteCollectionInterface
-	{
-		$this->middlewareStack[] = $middleware;
-
-		return $this;
-	}
-
-	/**
 	 * {@inheritDoc}
 	 */
 	public function addRoute(RouteInterface $route) : RouteCollectionInterface
 	{
-		$this->routes[$route->getId()] = $route;
+		$this->routes[] = $route;
 
 		return $this;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function getRoute(string $routeId) : ?RouteInterface
-	{
-		return $this->routes[$routeId] ?? null;
 	}
 
 	/**
@@ -248,18 +50,126 @@ class RouteCollection implements RouteCollectionInterface
 	/**
 	 * {@inheritDoc}
 	 */
-	public function getMiddlewareStack() : array
+	public function route(string $id, string $path, array $methods) : RouteInterface
 	{
-		return $this->middlewareStack;
+		$route = new Route($id, $path, $methods);
+
+		$this->addRoute($route);
+
+		return $route;
 	}
 
 	/**
-	 * Gets the number of routes in the collection
-	 *
-	 * @return int
+	 * {@inheritDoc}
 	 */
-	public function count()
+	public function head(string $id, string $path) : RouteInterface
 	{
-		return \count($this->routes);
+		$methods[] = RequestMethodInterface::METHOD_HEAD;
+
+		return $this->route($id, $path, $methods);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function get(string $id, string $path) : RouteInterface
+	{
+		$methods[] = RequestMethodInterface::METHOD_GET;
+
+		return $this->route($id, $path, $methods);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function post(string $id, string $path) : RouteInterface
+	{
+		$methods[] = RequestMethodInterface::METHOD_POST;
+
+		return $this->route($id, $path, $methods);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function put(string $id, string $path) : RouteInterface
+	{
+		$methods[] = RequestMethodInterface::METHOD_PUT;
+
+		return $this->route($id, $path, $methods);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function patch(string $id, string $path) : RouteInterface
+	{
+		$methods[] = RequestMethodInterface::METHOD_PATCH;
+
+		return $this->route($id, $path, $methods);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function delete(string $id, string $path) : RouteInterface
+	{
+		$methods[] = RequestMethodInterface::METHOD_DELETE;
+
+		return $this->route($id, $path, $methods);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function purge(string $id, string $path) : RouteInterface
+	{
+		$methods[] = RequestMethodInterface::METHOD_PURGE;
+
+		return $this->route($id, $path, $methods);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function safe(string $id, string $path) : RouteInterface
+	{
+		$methods[] = RequestMethodInterface::METHOD_HEAD;
+		$methods[] = RequestMethodInterface::METHOD_GET;
+
+		return $this->route($id, $path, $methods);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function any(string $id, string $path) : RouteInterface
+	{
+		$methods[] = RequestMethodInterface::METHOD_HEAD;
+		$methods[] = RequestMethodInterface::METHOD_GET;
+		$methods[] = RequestMethodInterface::METHOD_POST;
+		$methods[] = RequestMethodInterface::METHOD_PUT;
+		$methods[] = RequestMethodInterface::METHOD_PATCH;
+		$methods[] = RequestMethodInterface::METHOD_DELETE;
+		$methods[] = RequestMethodInterface::METHOD_PURGE;
+
+		return $this->route($id, $path, $methods);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function group(string $prefix, callable $callback) : void
+	{
+		$collection = new self;
+
+		$callback($collection);
+
+		foreach ($collection->getRoutes() as $route)
+		{
+			$route->addPrefix($prefix);
+
+			$this->addRoute($route);
+		}
 	}
 }

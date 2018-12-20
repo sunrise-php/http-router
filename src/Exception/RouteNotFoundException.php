@@ -14,13 +14,13 @@ namespace Sunrise\Http\Router\Exception;
 /**
  * Import classes
  */
-use Psr\Http\Message\ResponseInterface;
+use RuntimeException, Throwable;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * HttpException
+ * RouteNotFoundException
  */
-class HttpException extends \RuntimeException implements HttpExceptionInterface
+class RouteNotFoundException extends RuntimeException implements HttpExceptionInterface
 {
 
 	/**
@@ -31,26 +31,17 @@ class HttpException extends \RuntimeException implements HttpExceptionInterface
 	protected $request;
 
 	/**
-	 * Response instance
-	 *
-	 * @var ResponseInterface
-	 */
-	protected $response;
-
-	/**
 	 * Constructor of the class
 	 *
 	 * @param ServerRequestInterface $request
-	 * @param ResponseInterface $response
-	 * @param null|\Throwable $previous
+	 * @param int $code
+	 * @param null|Throwable $previous
 	 */
-	public function __construct(ServerRequestInterface $request, ResponseInterface $response, \Throwable $previous = null)
+	public function __construct(ServerRequestInterface $request, int $code = 0, Throwable $previous = null)
 	{
 		$this->request = $request;
 
-		$this->response = $response;
-
-		parent::__construct(\sprintf('[%d] %s', $response->getStatusCode(), $response->getReasonPhrase()), 0, $previous);
+		parent::__construct('Unable to find a route for the request', $code, $previous);
 	}
 
 	/**
@@ -59,13 +50,5 @@ class HttpException extends \RuntimeException implements HttpExceptionInterface
 	public function getRequest() : ServerRequestInterface
 	{
 		return $this->request;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function getResponse() : ResponseInterface
-	{
-		return $this->response;
 	}
 }

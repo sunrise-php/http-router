@@ -19,7 +19,7 @@ use Psr\Http\Server\MiddlewareInterface;
 /**
  * RouteInterface
  */
-interface RouteInterface extends MiddlewareInterface
+interface RouteInterface
 {
 
 	/**
@@ -27,9 +27,9 @@ interface RouteInterface extends MiddlewareInterface
 	 *
 	 * @param string $id
 	 * @param string $path
-	 * @param callable $action
+	 * @param string[] $methods
 	 */
-	public function __construct(string $id, string $path, callable $action);
+	public function __construct(string $id, string $path, array $methods);
 
 	/**
 	 * Adds the given prefix to the route path
@@ -38,16 +38,7 @@ interface RouteInterface extends MiddlewareInterface
 	 *
 	 * @return RouteInterface
 	 */
-	public function prefix(string $prefix) : RouteInterface;
-
-	/**
-	 * Adds the given method to the route
-	 *
-	 * @param string $method
-	 *
-	 * @return RouteInterface
-	 */
-	public function method(string $method) : RouteInterface;
+	public function addPrefix(string $prefix) : RouteInterface;
 
 	/**
 	 * Adds the given pattern to the route
@@ -57,7 +48,7 @@ interface RouteInterface extends MiddlewareInterface
 	 *
 	 * @return RouteInterface
 	 */
-	public function pattern(string $name, string $value) : RouteInterface;
+	public function addPattern(string $name, string $value) : RouteInterface;
 
 	/**
 	 * Adds the given middleware to the route middleware stack
@@ -66,7 +57,7 @@ interface RouteInterface extends MiddlewareInterface
 	 *
 	 * @return RouteInterface
 	 */
-	public function middleware(MiddlewareInterface $middleware) : RouteInterface;
+	public function addMiddleware(MiddlewareInterface $middleware) : RouteInterface;
 
 	/**
 	 * Gets the route ID
@@ -83,16 +74,9 @@ interface RouteInterface extends MiddlewareInterface
 	public function getPath() : string;
 
 	/**
-	 * Gets the route action
-	 *
-	 * @return callable
-	 */
-	public function getAction() : callable;
-
-	/**
 	 * Gets the route methods
 	 *
-	 * @return array
+	 * @return string[]
 	 */
 	public function getMethods() : array;
 
