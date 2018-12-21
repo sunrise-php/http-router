@@ -11,6 +11,7 @@
 
 ## Benchmarks
 
+```
 +---------------------+------+--------------+-------+
 | subject             | revs | mean         | diff  |
 +---------------------+------+--------------+-------+
@@ -19,6 +20,7 @@
 | Aura                | 1000 | 80,421.077μs | 3.49x |
 | Zend                | 1000 | 98,939.878μs | 4.30x |
 +---------------------+------+--------------+-------+
+```
 
 ## Installation
 
@@ -77,11 +79,11 @@ php vendor/bin/phpunit
 
 ## Benchmarks run
 
-> Before running the benchmarks, install other packages:
-> `nikic/fast-route`
-> `aura/router`
-> `zendframework/zend-router`
-> `zendframework/zend-psr7bridge`
+Before running the benchmarks, install other packages:
+
+`aura/router`, `nikic/fast-route`, `zendframework/zend-router`, `zendframework/zend-psr7bridge`
+
+After run benchmarks:
 
 ```bash
 php vendor/bin/phpbench run --report='generator: "table", cols: ["subject", "revs", "mean", "diff"], sort: {mean: "asc"}'
