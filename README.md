@@ -89,7 +89,7 @@ php vendor/bin/phpbench run --report='generator: "table", cols: ["subject", "rev
 
 ## Api documentation
 
-* https://phpdoc.fenric.ru/
+https://phpdoc.fenric.ru/
 
 ## Useful links
 
