@@ -71,17 +71,15 @@ class Router implements RouterInterface
 	 */
 	public function match(ServerRequestInterface $request) : RouteInterface
 	{
-		$routes = $this->routes->getRoutes();
+		$allowed = [];
 
-		$allowedMethods = [];
-
-		foreach ($routes as $route)
+		foreach ($this->routes->getRoutes() as $route)
 		{
 			$regex = route_regex($route->getPath(), $route->getPatterns());
 
 			if (\preg_match($regex, $request->getUri()->getPath(), $attributes))
 			{
-				$allowedMethods = \array_merge($allowedMethods, $route->getMethods());
+				$allowed = \array_merge($allowed, $route->getMethods());
 
 				if (\in_array($request->getMethod(), $route->getMethods()))
 				{
@@ -90,9 +88,9 @@ class Router implements RouterInterface
 			}
 		}
 
-		if (! empty($allowedMethods))
+		if (! empty($allowed))
 		{
-			throw new MethodNotAllowedException($request, $allowedMethods);
+			throw new MethodNotAllowedException($request, $allowed);
 		}
 
 		throw new RouteNotFoundException($request);
