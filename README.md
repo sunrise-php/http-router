@@ -67,8 +67,6 @@ $router->addMiddleware(new \Middlewares\GzipEncoder());
 
 ## Awesome PSR-15 Middlewares
 
-> Fully compatible with this repository.
-
 https://github.com/middlewares
 
 ## Test run
