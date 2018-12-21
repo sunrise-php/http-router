@@ -134,22 +134,21 @@ class RouterTest extends TestCase
 		$dynamic   = $routes->get('dynamic', '/bar/{p}');
 		$digit     = $routes->get('digit', '/baz/{p}')->addPattern('p', '\d+');
 		$word      = $routes->get('word', '/qux/{p}')->addPattern('p', '\w+');
-		$asterisk  = $routes->get('asterisk', '{p}')->addPattern('p', '.*?');
 		$ephemeral = $routes->get('ephemeral', '/quux(/{p1}(/{p2}))');
+		$asterisk  = $routes->get('asterisk', '{p}')->addPattern('p', '.*?');
 
 		$router = new Router($routes);
 
 		$route = $router->match((new ServerRequestFactory)->createServerRequest('GET', '/quux'));
 		$this->assertEquals($ephemeral->getId(), $route->getId());
-		$this->assertArraySubset(['p1' => '', 'p2' => ''], $route->getAttributes());
 
-		$route = $router->match((new ServerRequestFactory)->createServerRequest('GET', ''));
-		$this->assertEquals($asterisk->getId(), $route->getId());
-		$this->assertArraySubset(['p' => ''], $route->getAttributes());
+		$route = $router->match((new ServerRequestFactory)->createServerRequest('GET', '/quux/v1'));
+		$this->assertEquals($ephemeral->getId(), $route->getId());
+		$this->assertArraySubset(['p1' => 'v1'], $route->getAttributes());
 
-		$route = $router->match((new ServerRequestFactory)->createServerRequest('GET', '/123/qwerty'));
-		$this->assertEquals($asterisk->getId(), $route->getId());
-		$this->assertArraySubset(['p' => '/123/qwerty'], $route->getAttributes());
+		$route = $router->match((new ServerRequestFactory)->createServerRequest('GET', '/quux/v1/v2'));
+		$this->assertEquals($ephemeral->getId(), $route->getId());
+		$this->assertArraySubset(['p1' => 'v1', 'p2' => 'v2'], $route->getAttributes());
 
 		$route = $router->match((new ServerRequestFactory)->createServerRequest('GET', '/qux/qwerty'));
 		$this->assertEquals($word->getId(), $route->getId());
@@ -169,6 +168,14 @@ class RouterTest extends TestCase
 
 		$route = $router->match((new ServerRequestFactory)->createServerRequest('GET', '/foo'));
 		$this->assertEquals($static->getId(), $route->getId());
+
+		$route = $router->match((new ServerRequestFactory)->createServerRequest('GET', ''));
+		$this->assertEquals($asterisk->getId(), $route->getId());
+		$this->assertArraySubset(['p' => ''], $route->getAttributes());
+
+		$route = $router->match((new ServerRequestFactory)->createServerRequest('GET', '/123/qwerty'));
+		$this->assertEquals($asterisk->getId(), $route->getId());
+		$this->assertArraySubset(['p' => '/123/qwerty'], $route->getAttributes());
 	}
 
 	public function testHandle()
