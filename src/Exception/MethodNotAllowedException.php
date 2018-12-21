@@ -31,7 +31,7 @@ class MethodNotAllowedException extends RuntimeException implements HttpExceptio
 	protected $request;
 
 	/**
-	 * The request allowed methods
+	 * Allowed HTTP methods
 	 *
 	 * @var string[]
 	 */
@@ -63,7 +63,7 @@ class MethodNotAllowedException extends RuntimeException implements HttpExceptio
 	}
 
 	/**
-	 * Gets the request allowed methods
+	 * Gets allowed HTTP methods
 	 *
 	 * @return string[]
 	 */
