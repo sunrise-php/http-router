@@ -10,7 +10,7 @@
 		"homepage": "https://anatoly.fenric.ru/"
 	}],
 	"require": {
-		"php": "^7.2",
+		"php": "^7.1",
 		"fig/http-message-util": "^1.1",
 		"psr/http-message": "^1.0",
 		"psr/http-server-handler": "^1.0",
