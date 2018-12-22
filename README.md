@@ -34,6 +34,10 @@ composer require sunrise/http-router
 
 > The example uses other sunrise packages, but you can use for example `zend/diactoros`, or any other.
 
+```bash
+composer require sunrise/http-message sunrise/http-server-request
+```
+
 ```php
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -195,8 +199,7 @@ $route = $routes->route('route.id', '/route/path', ['HEAD', 'GET']);
 #### Route grouping
 
 ```php
-// Add a route to the collection with the path:
-// /foo/bar/baz/qux
+// Add a route to the collection with the path: /foo/bar/baz/qux
 $routes->group('/foo', function($routes)
 {
 	$routes->group('/bar', function($routes)
