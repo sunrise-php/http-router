@@ -32,6 +32,8 @@ composer require sunrise/http-router
 
 #### QuickStart
 
+> The example uses other sunrise packages, but you can use for example `zend/diactoros`, or any other.
+
 ```php
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -46,7 +48,9 @@ use Sunrise\Http\ServerRequest\ServerRequestFactory;
 
 class DemoMiddleware implements MiddlewareInterface
 {
-	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
+	public function process(
+		ServerRequestInterface $request,
+		RequestHandlerInterface $handler) : ResponseInterface
 	{
 		$response = $handler->handle($request);
 
@@ -182,7 +186,7 @@ $route = $routes->safe('route.id', '/route/path');
 $route = $routes->any('route.id', '/route/path');
 ```
 
-###### Custom
+###### Specify methods manually
 
 ```php
 $route = $routes->route('route.id', '/route/path', ['HEAD', 'GET']);
