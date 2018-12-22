@@ -26,8 +26,7 @@ class FastRouteBench
 
 	/**
 	 * @Warmup(1)
-	 * @Revs(10)
-	 * @Iterations(100)
+	 * @Iterations(1000)
 	 */
 	public function benchFastRouteMatch()
 	{

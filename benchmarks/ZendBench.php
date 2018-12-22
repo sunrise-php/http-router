@@ -24,8 +24,7 @@ class ZendBench
 
 	/**
 	 * @Warmup(1)
-	 * @Revs(10)
-	 * @Iterations(100)
+	 * @Iterations(1000)
 	 */
 	public function benchZendMatch()
 	{
