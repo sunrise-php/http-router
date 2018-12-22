@@ -32,7 +32,99 @@ composer require sunrise/http-router
 
 #### QuickStart
 
-<script src="https://gist.github.com/fenric/40adcdf313f33d784e24b7dcc8564fa6.js"></script>
+```php
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Message\ResponseFactory;
+use Sunrise\Http\Router\Exception\MethodNotAllowedException;
+use Sunrise\Http\Router\Exception\RouteNotFoundException;
+use Sunrise\Http\Router\RouteCollection;
+use Sunrise\Http\Router\Router;
+use Sunrise\Http\ServerRequest\ServerRequestFactory;
+
+class DemoMiddleware implements MiddlewareInterface
+{
+	public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
+	{
+		$response = $handler->handle($request);
+
+		$response->getBody()->write(sprintf('Requested page "%s" with attributes "%s"',
+			$request->getUri(), var_export($request->getAttributes(), true)
+		));
+
+		return $response;
+	}
+}
+
+$routes = new RouteCollection();
+
+$routes->get('home', '/')
+->addMiddleware(new DemoMiddleware);
+
+$routes->group('/api', function($routes)
+{
+	$routes->group('/v1', function($routes)
+	{
+		$routes->post('resource.create', '/resource')
+		->addMiddleware(new DemoMiddleware);
+
+		$routes->patch('resource.update', '/resource/{id}')
+		->addPattern('id', '\d+')
+		->addMiddleware(new DemoMiddleware);
+
+		$routes->delete('resource.delete', '/resource/{id}')
+		->addPattern('id', '\d+')
+		->addMiddleware(new DemoMiddleware);
+
+		$routes->get('resource.read', '/resource/{id}')
+		->addPattern('id', '\d+')
+		->addMiddleware(new DemoMiddleware);
+
+		$routes->get('resource.all', '/resource')
+		->addMiddleware(new DemoMiddleware);
+	});
+});
+
+$router = new Router($routes);
+
+try
+{
+	$response = $router->handle(ServerRequestFactory::fromGlobals());
+}
+catch (MethodNotAllowedException $e)
+{
+	$response = (new ResponseFactory)->createResponse(405)
+	->withHeader('allow', implode(',', $e->getAllowedMethods()));
+
+	$response->getBody()->write($response->getReasonPhrase());
+}
+catch (RouteNotFoundException $e)
+{
+	$response = (new ResponseFactory)->createResponse(404);
+
+	$response->getBody()->write($response->getReasonPhrase());
+}
+
+$headers = $response->getHeaders();
+
+foreach ($headers as $name => $values)
+{
+	foreach ($values as $value)
+	{
+		header(sprintf('%s: %s', $name, $value), false);
+	}
+}
+
+header(sprintf('HTTP/%s %d %s',
+	$response->getProtocolVersion(),
+	$response->getStatusCode(),
+	$response->getReasonPhrase()
+), true);
+
+echo $response->getBody();
+```
 
 #### Adding a route to the collection
 
