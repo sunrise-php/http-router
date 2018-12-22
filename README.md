@@ -11,7 +11,7 @@
 
 ## Benchmark (1k iterations with 1k routes)
 
-https://github.com/sunrise-php/http-router-benchmark
+> [Check for yourself](https://github.com/sunrise-php/http-router-benchmark)
 
 ```
 +---------------------+------+---------------+-------+
