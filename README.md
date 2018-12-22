@@ -9,7 +9,9 @@
 [![Total Downloads](https://poser.pugx.org/sunrise/http-router/downloads?format=flat)](https://packagist.org/packages/sunrise/http-router)
 [![License](https://poser.pugx.org/sunrise/http-router/license?format=flat)](https://packagist.org/packages/sunrise/http-router)
 
-## Benchmarks (1k iterations with 1k routes)
+## Benchmark (1k iterations with 1k routes)
+
+https://github.com/sunrise-php/http-router-benchmark
 
 ```
 +---------------------+------+---------------+-------+
@@ -24,7 +26,7 @@
 
 ## Installation (via composer)
 
-```
+```bash
 composer require sunrise/http-router
 ```
 
@@ -287,17 +289,9 @@ https://github.com/middlewares
 php vendor/bin/phpunit
 ```
 
-## Benchmarks run
+## Benchmark run
 
-Before running the benchmarks, install other packages:
-
-`aura/router`, `nikic/fast-route`, `zendframework/zend-router`, `zendframework/zend-psr7bridge`
-
-After run benchmarks:
-
-```bash
-php vendor/bin/phpbench run --report='generator: "table", cols: ["subject", "its", "mean", "diff"], sort: {mean: "asc"}'
-```
+https://github.com/sunrise-php/http-router-benchmark
 
 ## Api documentation
 
