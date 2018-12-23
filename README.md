@@ -9,6 +9,10 @@
 [![Total Downloads](https://poser.pugx.org/sunrise/http-router/downloads?format=flat)](https://packagist.org/packages/sunrise/http-router)
 [![License](https://poser.pugx.org/sunrise/http-router/license?format=flat)](https://packagist.org/packages/sunrise/http-router)
 
+## Awards
+
+[![SymfonyInsight](https://insight.symfony.com/projects/62934e27-3e71-439c-9569-4aa57cdb3f36/big.svg)](https://insight.symfony.com/projects/62934e27-3e71-439c-9569-4aa57cdb3f36)
+
 ## Benchmark (1k iterations with 1k routes)
 
 > [Check for yourself](https://github.com/sunrise-php/http-router-benchmark)
