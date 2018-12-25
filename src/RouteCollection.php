@@ -152,6 +152,9 @@ class RouteCollection implements RouteCollectionInterface
 		$methods[] = RequestMethodInterface::METHOD_PATCH;
 		$methods[] = RequestMethodInterface::METHOD_DELETE;
 		$methods[] = RequestMethodInterface::METHOD_PURGE;
+		$methods[] = RequestMethodInterface::METHOD_OPTIONS;
+		$methods[] = RequestMethodInterface::METHOD_TRACE;
+		$methods[] = RequestMethodInterface::METHOD_CONNECT;
 
 		return $this->route($id, $path, $methods);
 	}
