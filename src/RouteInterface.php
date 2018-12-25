@@ -88,18 +88,18 @@ interface RouteInterface
 	public function getPatterns() : array;
 
 	/**
-	 * Gets the route middleware stack
-	 *
-	 * @return MiddlewareInterface[]
-	 */
-	public function getMiddlewareStack() : array;
-
-	/**
 	 * Gets the route attributes
 	 *
 	 * @return array
 	 */
 	public function getAttributes() : array;
+
+	/**
+	 * Gets the route middleware stack
+	 *
+	 * @return MiddlewareInterface[]
+	 */
+	public function getMiddlewareStack() : array;
 
 	/**
 	 * Returns the route clone with the given attributes
