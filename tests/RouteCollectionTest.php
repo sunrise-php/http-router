@@ -225,6 +225,9 @@ class RouteCollectionTest extends TestCase
 			RequestMethodInterface::METHOD_PATCH,
 			RequestMethodInterface::METHOD_DELETE,
 			RequestMethodInterface::METHOD_PURGE,
+			RequestMethodInterface::METHOD_OPTIONS,
+			RequestMethodInterface::METHOD_TRACE,
+			RequestMethodInterface::METHOD_CONNECT,
 		];
 
 		$collection = new RouteCollection();
