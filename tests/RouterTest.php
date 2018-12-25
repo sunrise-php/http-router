@@ -75,14 +75,14 @@ class RouterTest extends TestCase
 	public function testMatchSeveralRoutes()
 	{
 		$routes = new RouteCollection();
-		$foo = $routes->get('foo', '/foo');
-		$bar = $routes->get('bar', '/bar');
-		$baz = $routes->get('baz', '/baz');
-		$qux = $routes->get('qux', '/qux');
-		$router = new Router($routes);
+		$routes->get('foo', '/foo');
+		$routes->get('bar', '/bar');
+		$routes->get('baz', '/baz');
 
-		$route = $this->discoverRoute($routes, 'GET', '/qux');
-		$this->assertEquals($qux, $route);
+		$expected = $routes->get('qux', '/qux');
+		$actual = $this->discoverRoute($routes, 'GET', '/qux');
+
+		$this->assertEquals($expected, $actual);
 	}
 
 	public function testMatchHttpMethods()
