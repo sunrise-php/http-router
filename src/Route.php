@@ -65,7 +65,11 @@ class Route implements RouteInterface
 	protected $middlewareStack = [];
 
 	/**
-	 * {@inheritDoc}
+	 * Constructor of the class
+	 *
+	 * @param string $id
+	 * @param string $path
+	 * @param string[] $methods
 	 */
 	public function __construct(string $id, string $path, array $methods)
 	{

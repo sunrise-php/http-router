@@ -41,7 +41,9 @@ class Router implements RouterInterface
 	protected $middlewareStack = [];
 
 	/**
-	 * {@inheritDoc}
+	 * Constructor of the class
+	 *
+	 * @param RouteCollectionInterface $routes
 	 */
 	public function __construct(RouteCollectionInterface $routes)
 	{

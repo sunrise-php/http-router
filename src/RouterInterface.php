@@ -25,13 +25,6 @@ interface RouterInterface extends RequestHandlerInterface
 {
 
 	/**
-	 * Constructor of the class
-	 *
-	 * @param RouteCollectionInterface $routes
-	 */
-	public function __construct(RouteCollectionInterface $routes);
-
-	/**
 	 * Adds the given middleware to the router middleware stack
 	 *
 	 * @param MiddlewareInterface $middleware

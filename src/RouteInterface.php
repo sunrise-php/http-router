@@ -23,15 +23,6 @@ interface RouteInterface
 {
 
 	/**
-	 * Constructor of the class
-	 *
-	 * @param string $id
-	 * @param string $path
-	 * @param string[] $methods
-	 */
-	public function __construct(string $id, string $path, array $methods);
-
-	/**
 	 * Adds the given prefix to the route path
 	 *
 	 * @param string $prefix
