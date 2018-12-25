@@ -51,18 +51,18 @@ class Route implements RouteInterface
 	protected $patterns = [];
 
 	/**
-	 * The route middleware stack
-	 *
-	 * @var MiddlewareInterface[]
-	 */
-	protected $middlewareStack = [];
-
-	/**
 	 * The route attributes
 	 *
 	 * @var array
 	 */
 	protected $attributes = [];
+
+	/**
+	 * The route middleware stack
+	 *
+	 * @var MiddlewareInterface[]
+	 */
+	protected $middlewareStack = [];
 
 	/**
 	 * {@inheritDoc}
@@ -144,17 +144,17 @@ class Route implements RouteInterface
 	/**
 	 * {@inheritDoc}
 	 */
-	public function getMiddlewareStack() : array
+	public function getAttributes() : array
 	{
-		return $this->middlewareStack;
+		return $this->attributes;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public function getAttributes() : array
+	public function getMiddlewareStack() : array
 	{
-		return $this->attributes;
+		return $this->middlewareStack;
 	}
 
 	/**
@@ -164,7 +164,7 @@ class Route implements RouteInterface
 	{
 		$clone = clone $this;
 
-		$clone->attributes = $attributes;
+		$clone->attributes = \array_merge($clone->attributes, $attributes);
 
 		return $clone;
 	}

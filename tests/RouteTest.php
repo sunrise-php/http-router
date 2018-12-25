@@ -167,6 +167,23 @@ class RouteTest extends TestCase
 		$this->assertEquals([], $route->getAttributes());
 	}
 
+	public function testSetAttributesPreservingPreviousValues()
+	{
+		$foo = ['foo' => 'bar'];
+		$bar = ['bar' => 'baz'];
+		$baz = ['baz' => 'qux'];
+
+		$route = new Route('home', '/', []);
+		$clone1 = $route->withAttributes($foo);
+		$clone2 = $clone1->withAttributes($bar);
+		$clone3 = $clone2->withAttributes($baz);
+
+		$this->assertEquals([], $route->getAttributes());
+		$this->assertEquals($foo, $clone1->getAttributes());
+		$this->assertEquals($foo + $bar, $clone2->getAttributes());
+		$this->assertEquals($foo + $bar + $baz, $clone3->getAttributes());
+	}
+
 	public function testLowercasedMethod()
 	{
 		$route = new Route('home', '/', ['foo', 'bar']);
