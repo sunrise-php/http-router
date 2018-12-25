@@ -58,18 +58,18 @@ use Sunrise\Http\ServerRequest\ServerRequestFactory;
 
 class DemoMiddleware implements MiddlewareInterface
 {
-	public function process(
-		ServerRequestInterface $request,
-		RequestHandlerInterface $handler) : ResponseInterface
-	{
-		$response = $handler->handle($request);
+    public function process(
+        ServerRequestInterface $request,
+        RequestHandlerInterface $handler) : ResponseInterface
+    {
+        $response = $handler->handle($request);
 
-		$response->getBody()->write(sprintf('Requested page "%s" with attributes "%s"',
-			$request->getUri(), var_export($request->getAttributes(), true)
-		));
+        $response->getBody()->write(sprintf('URI: "%s"; Attributes: "%s"',
+            $request->getUri(), print_r($request->getAttributes(), true)
+        ));
 
-		return $response;
-	}
+        return $response;
+    }
 }
 
 $routes = new RouteCollection();
@@ -79,62 +79,62 @@ $routes->get('home', '/')
 
 $routes->group('/api', function($routes)
 {
-	$routes->group('/v1', function($routes)
-	{
-		$routes->post('resource.create', '/resource')
-		->addMiddleware(new DemoMiddleware);
+    $routes->group('/v1', function($routes)
+    {
+        $routes->post('resource.create', '/resource')
+        ->addMiddleware(new DemoMiddleware);
 
-		$routes->patch('resource.update', '/resource/{id}')
-		->addPattern('id', '\d+')
-		->addMiddleware(new DemoMiddleware);
+        $routes->patch('resource.update', '/resource/{id}')
+        ->addPattern('id', '\d+')
+        ->addMiddleware(new DemoMiddleware);
 
-		$routes->delete('resource.delete', '/resource/{id}')
-		->addPattern('id', '\d+')
-		->addMiddleware(new DemoMiddleware);
+        $routes->delete('resource.delete', '/resource/{id}')
+        ->addPattern('id', '\d+')
+        ->addMiddleware(new DemoMiddleware);
 
-		$routes->get('resource.read', '/resource/{id}')
-		->addPattern('id', '\d+')
-		->addMiddleware(new DemoMiddleware);
+        $routes->get('resource.read', '/resource/{id}')
+        ->addPattern('id', '\d+')
+        ->addMiddleware(new DemoMiddleware);
 
-		$routes->get('resource.all', '/resource')
-		->addMiddleware(new DemoMiddleware);
-	});
+        $routes->get('resource.all', '/resource')
+        ->addMiddleware(new DemoMiddleware);
+    });
 });
 
 $router = new Router($routes);
 
 try
 {
-	$response = $router->handle(ServerRequestFactory::fromGlobals());
+    $response = $router->handle(ServerRequestFactory::fromGlobals());
 }
 catch (MethodNotAllowedException $e)
 {
-	$response = (new ResponseFactory)->createResponse(405)
-	->withHeader('allow', implode(',', $e->getAllowedMethods()));
+    $response = (new ResponseFactory)->createResponse(405)
+    ->withHeader('allow', implode(',', $e->getAllowedMethods()));
 
-	$response->getBody()->write($response->getReasonPhrase());
+    $response->getBody()->write($response->getReasonPhrase());
 }
 catch (RouteNotFoundException $e)
 {
-	$response = (new ResponseFactory)->createResponse(404);
+    $response = (new ResponseFactory)->createResponse(404);
 
-	$response->getBody()->write($response->getReasonPhrase());
+    $response->getBody()->write($response->getReasonPhrase());
 }
 
 $headers = $response->getHeaders();
 
 foreach ($headers as $name => $values)
 {
-	foreach ($values as $value)
-	{
-		header(sprintf('%s: %s', $name, $value), false);
-	}
+    foreach ($values as $value)
+    {
+        header(sprintf('%s: %s', $name, $value), false);
+    }
 }
 
 header(sprintf('HTTP/%s %d %s',
-	$response->getProtocolVersion(),
-	$response->getStatusCode(),
-	$response->getReasonPhrase()
+    $response->getProtocolVersion(),
+    $response->getStatusCode(),
+    $response->getReasonPhrase()
 ), true);
 
 echo $response->getBody();
@@ -142,79 +142,52 @@ echo $response->getBody();
 
 #### Adding a route to the collection
 
-###### HTTP HEAD
-
 ```php
-$route = $routes->head('route.id', '/route/path');
-```
-
-###### HTTP GET
-
-```php
-$route = $routes->get('route.id', '/route/path');
-```
-
-###### HTTP POST
-
-```php
-$route = $routes->post('route.id', '/route/path');
-```
-
-###### HTTP PUT
-
-```php
-$route = $routes->put('route.id', '/route/path');
-```
-
-###### HTTP PATCH
-
-```php
-$route = $routes->patch('route.id', '/route/path');
-```
-
-###### HTTP DELETE
-
-```php
-$route = $routes->delete('route.id', '/route/path');
-```
-
-###### HTTP PURGE
-
-```php
-$route = $routes->purge('route.id', '/route/path');
-```
-
-###### HTTP SAFE (HEAD, GET)
-
-```php
-$route = $routes->safe('route.id', '/route/path');
-```
-
-###### HTTP ANY (HEAD, GET, POST, PUT, PATCH, DELETE, PURGE)
-
-```php
-$route = $routes->any('route.id', '/route/path');
-```
-
-###### Specify methods manually
-
-```php
+// Adds a new route to the collection
 $route = $routes->route('route.id', '/route/path', ['HEAD', 'GET']);
+
+// Adds a new route to the collection that will respond to HEAD requests
+$route = $routes->head('route.id', '/route/path');
+
+// Adds a new route to the collection that will respond to GET requests
+$route = $routes->get('route.id', '/route/path');
+
+// Adds a new route to the collection that will respond to POST requests
+$route = $routes->post('route.id', '/route/path');
+
+// Adds a new route to the collection that will respond to PUT requests
+$route = $routes->put('route.id', '/route/path');
+
+// Adds a new route to the collection that will respond to PATCH requests
+$route = $routes->patch('route.id', '/route/path');
+
+// Adds a new route to the collection that will respond to DELETE requests
+$route = $routes->delete('route.id', '/route/path');
+
+// Adds a new route to the collection that will respond to PURGE requests
+$route = $routes->purge('route.id', '/route/path');
+
+// Adds a new route to the collection that will respond to safe requests
+$route = $routes->safe('route.id', '/route/path');
+
+// Adds a new route to the collection that will respond to any requests
+$route = $routes->any('route.id', '/route/path');
 ```
 
 #### Route grouping
 
 ```php
-// Add a route to the collection with the path: /foo/bar/baz/qux
+// Add a route to the collection with the path:
+// /foo/bar/baz/qux
 $routes->group('/foo', function($routes)
 {
-	$routes->group('/bar', function($routes)
-	{
-		$routes->group('/baz', function($routes)
-		{
-			$route = $routes->get('qux', '/qux');
-		});
-	});
+    $routes->group('/bar', function($routes)
+    {
+        $routes->group('/baz', function($routes)
+        {
+            $route = $routes->get('qux', '/qux');
+        });
+    });
 });
 ```
 
