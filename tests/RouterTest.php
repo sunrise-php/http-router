@@ -10,6 +10,8 @@ use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 use Sunrise\Http\Router\Exception\MethodNotAllowedException;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
 use Sunrise\Http\Router\RouteCollection;
+use Sunrise\Http\Router\RouteCollectionInterface;
+use Sunrise\Http\Router\RouteInterface;
 use Sunrise\Http\Router\Router;
 use Sunrise\Http\Router\RouterInterface;
 use Sunrise\Http\ServerRequest\ServerRequestFactory;
@@ -19,6 +21,8 @@ use Sunrise\Http\Router\Tests\Middleware\FooMiddlewareTest;
 use Sunrise\Http\Router\Tests\Middleware\BarMiddlewareTest;
 use Sunrise\Http\Router\Tests\Middleware\BazMiddlewareTest;
 use Sunrise\Http\Router\Tests\Middleware\QuxMiddlewareTest;
+use Sunrise\Http\Router\Tests\Middleware\SetRequestAttributesWithoutRouteIdToResponseHeaderMiddlewareTest;
+use Sunrise\Http\Router\Tests\Middleware\SetRouteIdFromRequestAttributesToResponseHeaderMiddlewareTest;
 
 class RouterTest extends TestCase
 {
@@ -68,121 +72,210 @@ class RouterTest extends TestCase
 		], $router->getMiddlewareStack());
 	}
 
-	public function testMatch()
+	public function testMatchSeveralRoutes()
 	{
-		$request = (new ServerRequestFactory)
-		->createServerRequest('GET', '/');
-
 		$routes = new RouteCollection();
-		$routes->get('foo', '/foo');
-		$routes->get('bar', '/bar');
-		$routes->get('baz', '/baz');
+		$foo = $routes->get('foo', '/foo');
+		$bar = $routes->get('bar', '/bar');
+		$baz = $routes->get('baz', '/baz');
+		$qux = $routes->get('qux', '/qux');
 		$router = new Router($routes);
 
-		$expected = $routes->get('home', '/');
-		$actual = $router->match($request);
-
-		$this->assertEquals($expected->getId(), $actual->getId());
+		$route = $this->discoverRoute($routes, 'GET', '/qux');
+		$this->assertEquals($qux, $route);
 	}
 
-	public function testMatchSimple404()
+	public function testMatchHttpMethods()
+	{
+		$routes = new RouteCollection();
+
+		$foo = $routes->head('foo', '/foo');
+		$bar = $routes->get('bar', '/bar');
+		$baz = $routes->post('baz', '/baz');
+
+		$route = $this->discoverRoute($routes, 'HEAD', '/foo');
+		$this->assertEquals($foo, $route);
+
+		$route = $this->discoverRoute($routes, 'GET', '/foo');
+		$this->assertNull($route);
+
+		$route = $this->discoverRoute($routes, 'POST', '/foo');
+		$this->assertNull($route);
+
+		$route = $this->discoverRoute($routes, 'GET', '/bar');
+		$this->assertEquals($bar, $route);
+
+		$route = $this->discoverRoute($routes, 'HEAD', '/bar');
+		$this->assertNull($route);
+
+		$route = $this->discoverRoute($routes, 'POST', '/bar');
+		$this->assertNull($route);
+
+		$route = $this->discoverRoute($routes, 'POST', '/baz');
+		$this->assertEquals($baz, $route);
+
+		$route = $this->discoverRoute($routes, 'HEAD', '/baz');
+		$this->assertNull($route);
+
+		$route = $this->discoverRoute($routes, 'GET', '/baz');
+		$this->assertNull($route);
+	}
+
+	public function testMatchAttributes()
+	{
+		$routes = new RouteCollection();
+		$routes->get('test', '/{foo}/{bar}/{baz}');
+
+		$route = $this->discoverRoute($routes, 'GET', '/first/second/third');
+		$this->assertEquals($route->getAttributes(), [
+			'foo' => 'first',
+			'bar' => 'second',
+			'baz' => 'third',
+		]);
+
+		$route = $this->discoverRoute($routes, 'GET', '/');
+		$this->assertNull($route);
+
+		$route = $this->discoverRoute($routes, 'GET', '/first');
+		$this->assertNull($route);
+
+		$route = $this->discoverRoute($routes, 'GET', '/first/second');
+		$this->assertNull($route);
+
+		$route = $this->discoverRoute($routes, 'GET', '/first/second/third/fourth');
+		$this->assertNull($route);
+	}
+
+	public function testMatchOptionalAttributes()
+	{
+		$routes = new RouteCollection();
+		$routes->get('test', '/{foo}(/{bar}/{baz})/{qux}');
+
+		$route = $this->discoverRoute($routes, 'GET', '/first/second');
+		$this->assertEquals($route->getAttributes(), [
+			'foo' => 'first',
+			'qux' => 'second',
+		]);
+
+		$route = $this->discoverRoute($routes, 'GET', '/first/second/third/fourth');
+		$this->assertEquals($route->getAttributes(), [
+			'foo' => 'first',
+			'bar' => 'second',
+			'baz' => 'third',
+			'qux' => 'fourth',
+		]);
+
+		$route = $this->discoverRoute($routes, 'GET', '/first');
+		$this->assertNull($route);
+
+		$route = $this->discoverRoute($routes, 'GET', '/first/second/third/fourth/fifth');
+		$this->assertNull($route);
+	}
+
+	public function testMatchNestedOptionalAttributes()
+	{
+		$routes = new RouteCollection();
+		$routes->get('test', '/{foo}(/{bar}(/{baz})/{qux})/{quux}');
+
+		$route = $this->discoverRoute($routes, 'GET', '/first/second');
+		$this->assertEquals($route->getAttributes(), [
+			'foo' => 'first',
+			'quux' => 'second',
+		]);
+
+		$route = $this->discoverRoute($routes, 'GET', '/first/second/third/fourth');
+		$this->assertEquals($route->getAttributes(), [
+			'foo' => 'first',
+			'bar' => 'second',
+			'qux' => 'third',
+			'quux' => 'fourth',
+		]);
+
+		$route = $this->discoverRoute($routes, 'GET', '/first/second/third/fourth/fifth');
+		$this->assertEquals($route->getAttributes(), [
+			'foo' => 'first',
+			'bar' => 'second',
+			'baz' => 'third',
+			'qux' => 'fourth',
+			'quux' => 'fifth',
+		]);
+
+		$route = $this->discoverRoute($routes, 'GET', '/first');
+		$this->assertNull($route);
+
+		$route = $this->discoverRoute($routes, 'GET', '/first/second/third');
+		$this->assertNull($route);
+	}
+
+	public function testMatchPatterns()
+	{
+		$routes = new RouteCollection();
+
+		$routes->get('test', '/{foo}/{bar}(/{baz})')
+			->addPattern('foo', '[0-9]+')
+			->addPattern('bar', '[a-z]+')
+			->addPattern('baz', '.*?');
+
+		$route = $this->discoverRoute($routes, 'GET', '/1990/Surgut/Tyumen');
+		$this->assertEquals($route->getAttributes(), [
+			'foo' => '1990',
+			'bar' => 'Surgut',
+			'baz' => 'Tyumen',
+		]);
+
+		$route = $this->discoverRoute($routes, 'GET', '/1990/Surgut/Tyumen/Moscow');
+		$this->assertEquals($route->getAttributes(), [
+			'foo' => '1990',
+			'bar' => 'Surgut',
+			'baz' => 'Tyumen/Moscow',
+		]);
+
+		$route = $this->discoverRoute($routes, 'GET', '/Oops/Surgut/Tyumen/Moscow');
+		$this->assertNull($route);
+
+		$route = $this->discoverRoute($routes, 'GET', '/1990/2018/Moscow');
+		$this->assertNull($route);
+	}
+
+	public function testMatchRouteNotFoundException()
 	{
 		$request = (new ServerRequestFactory)
-		->createServerRequest('GET', '/');
+		->createServerRequest('GET', '/oops');
 
 		$routes = new RouteCollection();
-		$routes->get('foo', '/foo');
-		$routes->get('bar', '/bar');
-		$routes->get('baz', '/baz');
+		$routes->get('test', '/');
 		$router = new Router($routes);
 
 		$this->expectException(RouteNotFoundException::class);
-
 		$router->match($request);
 	}
 
-	public function testMatchSimple405()
+	public function testMatchMethodNotAllowedException()
 	{
 		$request = (new ServerRequestFactory)
-		->createServerRequest('GET', '/foo');
+		->createServerRequest('POST', '/');
 
 		$routes = new RouteCollection();
-		$routes->post('foo', '/foo');
-		$routes->patch('foo', '/foo');
-		$routes->delete('foo', '/foo');
+		$routes->route('test', '/', ['HEAD', 'GET', 'OPTIONS']);
 		$router = new Router($routes);
 
 		$this->expectException(MethodNotAllowedException::class);
 
-		try
-		{
+		try {
 			$router->match($request);
-		}
-		catch (MethodNotAllowedException $e)
-		{
-			$this->assertEquals(['POST', 'PATCH', 'DELETE'], $e->getAllowedMethods());
-
+		} catch (MethodNotAllowedException $e) {
+			$this->assertEquals(['HEAD', 'GET', 'OPTIONS'], $e->getAllowedMethods());
 			throw $e;
 		}
-	}
-
-	public function testMatchAdvanced()
-	{
-		$routes = new RouteCollection();
-
-		$static    = $routes->get('static', '/foo');
-		$dynamic   = $routes->get('dynamic', '/bar/{p}');
-		$digit     = $routes->get('digit', '/baz/{p}')->addPattern('p', '\d+');
-		$word      = $routes->get('word', '/qux/{p}')->addPattern('p', '\w+');
-		$ephemeral = $routes->get('ephemeral', '/quux(/{p1}(/{p2}))');
-		$asterisk  = $routes->get('asterisk', '{p}')->addPattern('p', '.*?');
-
-		$router = new Router($routes);
-
-		$route = $router->match((new ServerRequestFactory)->createServerRequest('GET', '/quux'));
-		$this->assertEquals($ephemeral->getId(), $route->getId());
-
-		$route = $router->match((new ServerRequestFactory)->createServerRequest('GET', '/quux/v1'));
-		$this->assertEquals($ephemeral->getId(), $route->getId());
-		$this->assertArraySubset(['p1' => 'v1'], $route->getAttributes());
-
-		$route = $router->match((new ServerRequestFactory)->createServerRequest('GET', '/quux/v1/v2'));
-		$this->assertEquals($ephemeral->getId(), $route->getId());
-		$this->assertArraySubset(['p1' => 'v1', 'p2' => 'v2'], $route->getAttributes());
-
-		$route = $router->match((new ServerRequestFactory)->createServerRequest('GET', '/qux/qwerty'));
-		$this->assertEquals($word->getId(), $route->getId());
-		$this->assertArraySubset(['p' => 'qwerty'], $route->getAttributes());
-
-		$route = $router->match((new ServerRequestFactory)->createServerRequest('GET', '/baz/123'));
-		$this->assertEquals($digit->getId(), $route->getId());
-		$this->assertArraySubset(['p' => '123'], $route->getAttributes());
-
-		$route = $router->match((new ServerRequestFactory)->createServerRequest('GET', '/bar/qwerty'));
-		$this->assertEquals($dynamic->getId(), $route->getId());
-		$this->assertArraySubset(['p' => 'qwerty'], $route->getAttributes());
-
-		$route = $router->match((new ServerRequestFactory)->createServerRequest('GET', '/bar/123'));
-		$this->assertEquals($dynamic->getId(), $route->getId());
-		$this->assertArraySubset(['p' => '123'], $route->getAttributes());
-
-		$route = $router->match((new ServerRequestFactory)->createServerRequest('GET', '/foo'));
-		$this->assertEquals($static->getId(), $route->getId());
-
-		$route = $router->match((new ServerRequestFactory)->createServerRequest('GET', ''));
-		$this->assertEquals($asterisk->getId(), $route->getId());
-		$this->assertArraySubset(['p' => ''], $route->getAttributes());
-
-		$route = $router->match((new ServerRequestFactory)->createServerRequest('GET', '/123/qwerty'));
-		$this->assertEquals($asterisk->getId(), $route->getId());
-		$this->assertArraySubset(['p' => '/123/qwerty'], $route->getAttributes());
 	}
 
 	public function testHandle()
 	{
 		$routes = new RouteCollection();
 
-		$routes->get('home', '/')
+		$routes->get('test', '/{foo}/{bar}/{baz}')
+		->addMiddleware(new SetRequestAttributesWithoutRouteIdToResponseHeaderMiddlewareTest())
+		->addMiddleware(new SetRouteIdFromRequestAttributesToResponseHeaderMiddlewareTest())
 		->addMiddleware(new BazMiddlewareTest())
 		->addMiddleware(new QuxMiddlewareTest());
 
@@ -191,9 +284,13 @@ class RouterTest extends TestCase
 		$router->addMiddleware(new BarMiddlewareTest());
 
 		$request = (new ServerRequestFactory)
-		->createServerRequest('GET', '/');
+		->createServerRequest('GET', '/first/second/third');
 
 		$response = $router->handle($request);
+
+		$this->assertEquals(['test'], $response->getHeader('x-route-id'));
+
+		$this->assertEquals(['first, second, third'], $response->getHeader('x-request-attributes'));
 
 		$this->assertEquals([
 			'qux',
@@ -216,5 +313,19 @@ class RouterTest extends TestCase
 		$this->assertInstanceOf(HttpExceptionInterface::class, $methodNotAllowedException);
 		$this->assertInstanceOf(\RuntimeException::class, $methodNotAllowedException);
 		$this->assertEquals(['HEAD', 'GET'], $methodNotAllowedException->getAllowedMethods());
+	}
+
+	private function discoverRoute(RouteCollectionInterface $routes, string $method, string $uri) : ?RouteInterface
+	{
+		$router = new Router($routes);
+
+		$request = (new ServerRequestFactory)
+		->createServerRequest($method, $uri);
+
+		try {
+			return $router->match($request);
+		} catch (HttpExceptionInterface $error) {
+			return null;
+		}
 	}
 }
