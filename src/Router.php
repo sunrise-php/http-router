@@ -77,12 +77,18 @@ class Router implements RouterInterface
 		{
 			$regex = route_regex($route->getPath(), $route->getPatterns());
 
-			if (\preg_match($regex, $request->getUri()->getPath(), $attributes))
+			if (\preg_match($regex, $request->getUri()->getPath(), $matches))
 			{
 				$allowed = \array_merge($allowed, $route->getMethods());
 
 				if (\in_array($request->getMethod(), $route->getMethods()))
 				{
+					$attributes = \array_filter($matches, function($value, $name)
+					{
+						return ! ('' === $value || \is_int($name));
+
+					}, \ARRAY_FILTER_USE_BOTH);
+
 					return $route->withAttributes($attributes);
 				}
 			}
