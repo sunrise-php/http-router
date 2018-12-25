@@ -55,15 +55,6 @@ class RouteTest extends TestCase
 		$this->assertEquals($foo, $route->getPatterns());
 	}
 
-	public function testGetMiddlewareStack()
-	{
-		$foo = [];
-
-		$route = new Route('home', '/', []);
-
-		$this->assertEquals($foo, $route->getMiddlewareStack());
-	}
-
 	public function testGetAttributes()
 	{
 		$foo = [];
@@ -71,6 +62,15 @@ class RouteTest extends TestCase
 		$route = new Route('home', '/', []);
 
 		$this->assertEquals($foo, $route->getAttributes());
+	}
+
+	public function testGetMiddlewareStack()
+	{
+		$foo = [];
+
+		$route = new Route('home', '/', []);
+
+		$this->assertEquals($foo, $route->getMiddlewareStack());
 	}
 
 	public function testAddPrefix()
