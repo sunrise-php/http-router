@@ -25,6 +25,24 @@ interface RouterInterface extends RequestHandlerInterface
 {
 
 	/**
+	 * Adds the given route to the router map
+	 *
+	 * @param RouteInterface $route
+	 *
+	 * @return RouterInterface
+	 */
+	public function addRoute(RouteInterface $route) : RouterInterface;
+
+	/**
+	 * Adds the given routes to the router map
+	 *
+	 * @param RouteCollectionInterface $collection
+	 *
+	 * @return RouterInterface
+	 */
+	public function addRoutes(RouteCollectionInterface $collection) : RouterInterface;
+
+	/**
 	 * Adds the given middleware to the router middleware stack
 	 *
 	 * @param MiddlewareInterface $middleware
@@ -32,6 +50,13 @@ interface RouterInterface extends RequestHandlerInterface
 	 * @return RouterInterface
 	 */
 	public function addMiddleware(MiddlewareInterface $middleware) : RouterInterface;
+
+	/**
+	 * Gets the router map
+	 *
+	 * @return RouteInterface[]
+	 */
+	public function getRoutes() : array;
 
 	/**
 	 * Gets the router middleware stack

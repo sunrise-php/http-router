@@ -29,9 +29,9 @@ class Router implements RouterInterface
 	/**
 	 * The router map
 	 *
-	 * @var RouteCollectionInterface
+	 * @var RouteInterface[]
 	 */
-	protected $routes;
+	protected $routes = [];
 
 	/**
 	 * The router middleware stack
@@ -41,13 +41,26 @@ class Router implements RouterInterface
 	protected $middlewareStack = [];
 
 	/**
-	 * Constructor of the class
-	 *
-	 * @param RouteCollectionInterface $routes
+	 * {@inheritDoc}
 	 */
-	public function __construct(RouteCollectionInterface $routes)
+	public function addRoute(RouteInterface $route) : RouterInterface
 	{
-		$this->routes = $routes;
+		$this->routes[] = $route;
+
+		return $this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function addRoutes(RouteCollectionInterface $collection) : RouterInterface
+	{
+		foreach ($collection->getRoutes() as $route)
+		{
+			$this->addRoute($route);
+		}
+
+		return $this;
 	}
 
 	/**
@@ -58,6 +71,14 @@ class Router implements RouterInterface
 		$this->middlewareStack[] = $middleware;
 
 		return $this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function getRoutes() : array
+	{
+		return $this->routes;
 	}
 
 	/**
@@ -75,7 +96,7 @@ class Router implements RouterInterface
 	{
 		$allowed = [];
 
-		foreach ($this->routes->getRoutes() as $route)
+		foreach ($this->getRoutes() as $route)
 		{
 			$regex = route_regex($route->getPath(), $route->getPatterns());
 
@@ -113,7 +134,7 @@ class Router implements RouterInterface
 
 		$requestHandler = new RequestHandler();
 
-		foreach ($this->middlewareStack as $middleware)
+		foreach ($this->getMiddlewareStack() as $middleware)
 		{
 			$requestHandler->add($middleware);
 		}

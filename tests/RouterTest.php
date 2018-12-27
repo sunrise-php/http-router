@@ -9,6 +9,7 @@ use Sunrise\Http\Message\ResponseFactory;
 use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 use Sunrise\Http\Router\Exception\MethodNotAllowedException;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
+use Sunrise\Http\Router\Route;
 use Sunrise\Http\Router\RouteCollection;
 use Sunrise\Http\Router\RouteCollectionInterface;
 use Sunrise\Http\Router\RouteInterface;
@@ -28,30 +29,89 @@ class RouterTest extends TestCase
 {
 	public function testConstructor()
 	{
-		$routes = new RouteCollection();
-		$router = new Router($routes);
+		$router = new Router();
 
 		$this->assertInstanceOf(RouterInterface::class, $router);
 		$this->assertInstanceOf(RequestHandlerInterface::class, $router);
 	}
 
+	public function testGetRoutes()
+	{
+		$router = new Router();
+
+		$this->assertEquals([], $router->getRoutes());
+	}
+
 	public function testGetMiddlewareStack()
 	{
-		$routes = new RouteCollection();
-		$router = new Router($routes);
+		$router = new Router();
 
 		$this->assertEquals([], $router->getMiddlewareStack());
+	}
+
+	public function testAddRoute()
+	{
+		$foo = new Route('foo', '/foo', []);
+		$router = new Router();
+
+		$this->assertInstanceOf(RouterInterface::class, $router->addRoute($foo));
+		$this->assertEquals([$foo], $router->getRoutes());
+	}
+
+	public function testAddSeveralRoutes()
+	{
+		$foo = new Route('foo', '/foo', []);
+		$bar = new Route('bar', '/bar', []);
+
+		$router = new Router();
+		$router->addRoute($foo);
+		$router->addRoute($bar);
+
+		$this->assertEquals([
+			$foo,
+			$bar,
+		], $router->getRoutes());
+	}
+
+	public function testAddRoutesFromRouteCollection()
+	{
+		$router = new Router();
+		$routes = new RouteCollection();
+
+		$foo = $routes->get('foo', '/foo');
+
+		$this->assertInstanceOf(RouterInterface::class, $router->addRoutes($routes));
+		$this->assertEquals([$foo], $router->getRoutes());
+	}
+
+	public function testAddRoutesFromSeveralRouteCollections()
+	{
+		$router = new Router();
+
+		$routes = new RouteCollection();
+		$foo = $routes->get('foo', '/foo');
+		$bar = $routes->get('bar', '/bar');
+		$router->addRoutes($routes);
+
+		$routes = new RouteCollection();
+		$baz = $routes->get('baz', '/baz');
+		$qux = $routes->get('qux', '/qux');
+		$router->addRoutes($routes);
+
+		$this->assertEquals([
+			$foo,
+			$bar,
+			$baz,
+			$qux,
+		], $router->getRoutes());
 	}
 
 	public function testAddMiddleware()
 	{
 		$foo = new FooMiddlewareTest();
-
-		$routes = new RouteCollection();
-		$router = new Router($routes);
+		$router = new Router();
 
 		$this->assertInstanceOf(RouterInterface::class, $router->addMiddleware($foo));
-
 		$this->assertEquals([$foo], $router->getMiddlewareStack());
 	}
 
@@ -60,9 +120,7 @@ class RouterTest extends TestCase
 		$foo = new FooMiddlewareTest();
 		$bar = new BarMiddlewareTest();
 
-		$routes = new RouteCollection();
-		$router = new Router($routes);
-
+		$router = new Router();
 		$router->addMiddleware($foo);
 		$router->addMiddleware($bar);
 
@@ -72,7 +130,7 @@ class RouterTest extends TestCase
 		], $router->getMiddlewareStack());
 	}
 
-	public function testMatchSeveralRoutes()
+	public function testMatchWithSeveralRoutes()
 	{
 		$routes = new RouteCollection();
 		$routes->get('foo', '/foo');
@@ -85,7 +143,7 @@ class RouterTest extends TestCase
 		$this->assertEquals($expected, $actual);
 	}
 
-	public function testMatchHttpMethods()
+	public function testMatchWithSeveralHttpMethods()
 	{
 		$routes = new RouteCollection();
 
@@ -244,7 +302,9 @@ class RouterTest extends TestCase
 
 		$routes = new RouteCollection();
 		$routes->get('test', '/');
-		$router = new Router($routes);
+
+		$router = new Router();
+		$router->addRoutes($routes);
 
 		$this->expectException(RouteNotFoundException::class);
 		$router->match($request);
@@ -257,7 +317,9 @@ class RouterTest extends TestCase
 
 		$routes = new RouteCollection();
 		$routes->route('test', '/', ['HEAD', 'GET', 'OPTIONS']);
-		$router = new Router($routes);
+
+		$router = new Router();
+		$router->addRoutes($routes);
 
 		$this->expectException(MethodNotAllowedException::class);
 
@@ -279,7 +341,8 @@ class RouterTest extends TestCase
 		->addMiddleware(new BazMiddlewareTest())
 		->addMiddleware(new QuxMiddlewareTest());
 
-		$router = new Router($routes);
+		$router = new Router();
+		$router->addRoutes($routes);
 		$router->addMiddleware(new FooMiddlewareTest());
 		$router->addMiddleware(new BarMiddlewareTest());
 
@@ -317,7 +380,8 @@ class RouterTest extends TestCase
 
 	private function discoverRoute(RouteCollectionInterface $routes, string $method, string $uri) : ?RouteInterface
 	{
-		$router = new Router($routes);
+		$router = new Router();
+		$router->addRoutes($routes);
 
 		$request = (new ServerRequestFactory)
 		->createServerRequest($method, $uri);

@@ -73,6 +73,30 @@ class RouteTest extends TestCase
 		$this->assertEquals($foo, $route->getMiddlewareStack());
 	}
 
+	public function testSetId()
+	{
+		$foo = 'foo';
+		$bar = 'bar';
+
+		$route = new Route($foo, '/', []);
+
+		$this->assertInstanceOf(RouteInterface::class, $route->setId($bar));
+
+		$this->assertEquals($bar, $route->getId());
+	}
+
+	public function testSetPath()
+	{
+		$foo = '/foo';
+		$bar = '/bar';
+
+		$route = new Route('test', $foo, []);
+
+		$this->assertInstanceOf(RouteInterface::class, $route->setPath($bar));
+
+		$this->assertEquals($bar, $route->getPath());
+	}
+
 	public function testAddPrefix()
 	{
 		$foo = '/foo';
@@ -97,6 +121,64 @@ class RouteTest extends TestCase
 		$route->addPrefix($baz);
 
 		$this->assertEquals($baz.$bar.$foo, $route->getPath());
+	}
+
+	public function testAddSuffix()
+	{
+		$foo = '/foo';
+		$bar = '/bar';
+
+		$route = new Route('home', $foo, []);
+
+		$this->assertInstanceOf(RouteInterface::class, $route->addSuffix($bar));
+
+		$this->assertEquals($foo.$bar, $route->getPath());
+	}
+
+	public function testAddSeveralSuffixes()
+	{
+		$foo = '/foo';
+		$bar = '/bar';
+		$baz = '/baz';
+
+		$route = new Route('home', $foo, []);
+
+		$route->addSuffix($bar);
+		$route->addSuffix($baz);
+
+		$this->assertEquals($foo.$bar.$baz, $route->getPath());
+	}
+
+	public function testAddMethod()
+	{
+		$foo = 'HEAD';
+		$bar = 'GET';
+
+		$route = new Route('home', '/', [$foo]);
+
+		$this->assertInstanceOf(RouteInterface::class, $route->addMethod($bar));
+
+		$this->assertEquals([$foo, $bar], $route->getMethods());
+	}
+
+	public function testAddSeveralMethods()
+	{
+		$foo = 'HEAD';
+		$bar = 'GET';
+		$baz = 'POST';
+		$qux = 'PATCH';
+
+		$route = new Route('home', '/', [$foo, $bar]);
+
+		$route->addMethod($baz);
+		$route->addMethod($qux);
+
+		$this->assertEquals([
+			$foo,
+			$bar,
+			$baz,
+			$qux,
+		], $route->getMethods());
 	}
 
 	public function testAddPattern()
@@ -188,6 +270,14 @@ class RouteTest extends TestCase
 	{
 		$route = new Route('home', '/', ['foo', 'bar']);
 
-		$this->assertEquals(['FOO', 'BAR'], $route->getMethods());
+		$route->addMethod('baz');
+		$route->addMethod('qux');
+
+		$this->assertEquals([
+			'FOO',
+			'BAR',
+			'BAZ',
+			'QUX',
+		], $route->getMethods());
 	}
 }

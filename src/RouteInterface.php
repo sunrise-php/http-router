@@ -23,6 +23,24 @@ interface RouteInterface
 {
 
 	/**
+	 * Sets the given ID to the route
+	 *
+	 * @param string $id
+	 *
+	 * @return RouteInterface
+	 */
+	public function setId(string $id) : RouteInterface;
+
+	/**
+	 * Sets the given path to the route
+	 *
+	 * @param string $path
+	 *
+	 * @return RouteInterface
+	 */
+	public function setPath(string $path) : RouteInterface;
+
+	/**
 	 * Adds the given prefix to the route path
 	 *
 	 * @param string $prefix
@@ -30,6 +48,24 @@ interface RouteInterface
 	 * @return RouteInterface
 	 */
 	public function addPrefix(string $prefix) : RouteInterface;
+
+	/**
+	 * Adds the given suffix to the route path
+	 *
+	 * @param string $suffix
+	 *
+	 * @return RouteInterface
+	 */
+	public function addSuffix(string $suffix) : RouteInterface;
+
+	/**
+	 * Adds the given method to the route
+	 *
+	 * @param string $method
+	 *
+	 * @return RouteInterface
+	 */
+	public function addMethod(string $method) : RouteInterface;
 
 	/**
 	 * Adds the given pattern to the route
@@ -54,6 +90,8 @@ interface RouteInterface
 	 * Gets the route ID
 	 *
 	 * @return string
+	 *
+	 * @throws \RuntimeException If the route ID is missing
 	 */
 	public function getId() : string;
 
@@ -61,6 +99,8 @@ interface RouteInterface
 	 * Gets the route path
 	 *
 	 * @return string
+	 *
+	 * @throws \RuntimeException If the route path is missing
 	 */
 	public function getPath() : string;
 

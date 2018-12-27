@@ -73,14 +73,34 @@ class Route implements RouteInterface
 	 */
 	public function __construct(string $id, string $path, array $methods)
 	{
-		$this->id = $id;
+		$this->setId($id);
 
-		$this->path = $path;
+		$this->setPath($path);
 
 		foreach ($methods as $method)
 		{
-			$this->methods[] = \strtoupper($method);
+			$this->addMethod($method);
 		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function setId(string $id) : RouteInterface
+	{
+		$this->id = $id;
+
+		return $this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function setPath(string $path) : RouteInterface
+	{
+		$this->path = $path;
+
+		return $this;
 	}
 
 	/**
@@ -89,6 +109,26 @@ class Route implements RouteInterface
 	public function addPrefix(string $prefix) : RouteInterface
 	{
 		$this->path = $prefix . $this->path;
+
+		return $this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function addSuffix(string $suffix) : RouteInterface
+	{
+		$this->path .= $suffix;
+
+		return $this;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function addMethod(string $method) : RouteInterface
+	{
+		$this->methods[] = \strtoupper($method);
 
 		return $this;
 	}
