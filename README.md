@@ -1,4 +1,4 @@
-# Very fast HTTP router for PHP 7.1+ based on PSR-7 and PSR-15
+# Fast HTTP router for PHP 7.1+ based on PSR-7 and PSR-15
 
 [![Gitter](https://badges.gitter.im/sunrise-php/support.png)](https://gitter.im/sunrise-php/support)
 [![Build Status](https://api.travis-ci.com/sunrise-php/http-router.svg?branch=master)](https://travis-ci.com/sunrise-php/http-router)
@@ -21,10 +21,10 @@
 +---------------------+------+---------------+-------+
 | subject             | its  | mean          | diff  |
 +---------------------+------+---------------+-------+
-| benchSunriseMatch   | 1000 | 23,047.975μs  | 1.00x |
-| benchFastRouteMatch | 1000 | 24,175.528μs  | 1.05x |
-| benchAuraMatch      | 1000 | 78,496.834μs  | 3.41x |
-| benchZendMatch      | 1000 | 104,996.797μs | 4.56x |
+| Sunrise             | 1000 | 23,047.975μs  | 1.00x |
+| FastRoute           | 1000 | 24,175.528μs  | 1.05x |
+| Aura                | 1000 | 78,496.834μs  | 3.41x |
+| Zend                | 1000 | 104,996.797μs | 4.56x |
 +---------------------+------+---------------+-------+
 ```
 
@@ -101,7 +101,8 @@ $routes->group('/api', function($routes)
     });
 });
 
-$router = new Router($routes);
+$router = new Router();
+$router->addRoutes($routes);
 
 try
 {
