@@ -36,6 +36,10 @@ composer require sunrise/http-router
 
 ## How to use?
 
+#### Annotations
+
+> This package has annotation support, all the details are [here](https://github.com/sunrise-php/http-router-annotations-support).
+
 #### QuickStart
 
 > The example uses other sunrise packages, but you can use for example `zend/diactoros`, or any other.
