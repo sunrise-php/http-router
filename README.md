@@ -1,4 +1,4 @@
-## Very fast HTTP router with annotations support for PHP 7.1+ based on PSR-7 and PSR-15
+## Fast HTTP router with annotations support for PHP 7.1+ based on PSR-7 and PSR-15
 
 [![Gitter](https://badges.gitter.im/sunrise-php/support.png)](https://gitter.im/sunrise-php/support)
 [![Build Status](https://api.travis-ci.com/sunrise-php/http-router.svg?branch=master)](https://travis-ci.com/sunrise-php/http-router)
