@@ -1,4 +1,4 @@
-# Fast HTTP router for PHP 7.1+ based on PSR-7 and PSR-15
+# Very fast HTTP router with annotations support for PHP 7.1+ based on PSR-7 and PSR-15
 
 [![Gitter](https://badges.gitter.im/sunrise-php/support.png)](https://gitter.im/sunrise-php/support)
 [![Build Status](https://api.travis-ci.com/sunrise-php/http-router.svg?branch=master)](https://travis-ci.com/sunrise-php/http-router)
@@ -147,43 +147,70 @@ echo $response->getBody();
 
 #### Adding a route to the collection
 
+###### Adds a new route to the collection
+
 ```php
-// Adds a new route to the collection
 $route = $routes->route('route.id', '/route/path', ['HEAD', 'GET']);
+```
 
-// Adds a new route to the collection that will respond to HEAD requests
+###### Adds a new route to the collection that will respond to HEAD requests
+
+```php
 $route = $routes->head('route.id', '/route/path');
+```
 
-// Adds a new route to the collection that will respond to GET requests
+###### Adds a new route to the collection that will respond to GET requests
+
+```php
 $route = $routes->get('route.id', '/route/path');
+```
 
-// Adds a new route to the collection that will respond to POST requests
+###### Adds a new route to the collection that will respond to POST requests
+
+```php
 $route = $routes->post('route.id', '/route/path');
+```
 
-// Adds a new route to the collection that will respond to PUT requests
+###### Adds a new route to the collection that will respond to PUT requests
+
+```php
 $route = $routes->put('route.id', '/route/path');
+```
 
-// Adds a new route to the collection that will respond to PATCH requests
+###### Adds a new route to the collection that will respond to PATCH requests
+
+```php
 $route = $routes->patch('route.id', '/route/path');
+```
 
-// Adds a new route to the collection that will respond to DELETE requests
+###### Adds a new route to the collection that will respond to DELETE requests
+
+```php
 $route = $routes->delete('route.id', '/route/path');
+```
 
-// Adds a new route to the collection that will respond to PURGE requests
+###### Adds a new route to the collection that will respond to PURGE requests
+
+```php
 $route = $routes->purge('route.id', '/route/path');
+```
 
-// Adds a new route to the collection that will respond to safe requests
+###### Adds a new route to the collection that will respond to safe requests
+
+```php
 $route = $routes->safe('route.id', '/route/path');
+```
 
-// Adds a new route to the collection that will respond to any requests
+###### Adds a new route to the collection that will respond to any requests
+
+```php
 $route = $routes->any('route.id', '/route/path');
 ```
 
 #### Route grouping
 
 ```php
-// Add a route to the collection with the path:
-// /foo/bar/baz/qux
+// Add a route to the collection with the path: /foo/bar/baz/qux
 $routes->group('/foo', function($routes)
 {
     $routes->group('/bar', function($routes)
