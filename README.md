@@ -36,6 +36,8 @@ composer require sunrise/http-router
 
 ## How to use?
 
+Study [sunrise/awesome-skeleton](https://github.com/sunrise-php/awesome-skeleton) to understand how this can be used.
+
 #### Annotations
 
 > This package has annotation support, all the details are [here](https://github.com/sunrise-php/http-router-annotations-support).
