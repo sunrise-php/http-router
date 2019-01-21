@@ -369,10 +369,12 @@ class RouterTest extends TestCase
 		$routeNotFoundException = new RouteNotFoundException($request);
 		$this->assertInstanceOf(HttpExceptionInterface::class, $routeNotFoundException);
 		$this->assertInstanceOf(\RuntimeException::class, $routeNotFoundException);
+		$this->assertEquals($request, $routeNotFoundException->getRequest());
 
 		$methodNotAllowedException = new MethodNotAllowedException($request, ['HEAD', 'GET']);
 		$this->assertInstanceOf(HttpExceptionInterface::class, $methodNotAllowedException);
 		$this->assertInstanceOf(\RuntimeException::class, $methodNotAllowedException);
+		$this->assertEquals($request, $methodNotAllowedException->getRequest());
 		$this->assertEquals(['HEAD', 'GET'], $methodNotAllowedException->getAllowedMethods());
 	}
 
