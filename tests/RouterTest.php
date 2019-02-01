@@ -305,6 +305,7 @@ class RouterTest extends TestCase
 		$router->addRoutes($routes);
 
 		$this->expectException(RouteNotFoundException::class);
+		$this->expectExceptionMessage('Unable to find a route for the request');
 		$router->match($request);
 	}
 
@@ -320,6 +321,7 @@ class RouterTest extends TestCase
 		$router->addRoutes($routes);
 
 		$this->expectException(MethodNotAllowedException::class);
+		$this->expectExceptionMessage('The requested resource is not available for the HTTP method');
 
 		try {
 			$router->match($request);
