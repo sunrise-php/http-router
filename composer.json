@@ -1,6 +1,6 @@
 {
     "name": "sunrise/http-router",
-    "description": "Sunrise HTTP Router",
+    "description": "Sunrise HTTP router with annotations support for PHP 7.1+ based on PSR-7 and PSR-15",
     "keywords": ["fenric", "sunrise", "http-router", "psr-7", "psr-15"],
     "homepage": "https://github.com/sunrise-php/http-router",
     "license": "MIT",
