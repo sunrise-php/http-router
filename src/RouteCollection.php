@@ -64,7 +64,7 @@ class RouteCollection implements RouteCollectionInterface
 	 */
 	public function head(string $id, string $path) : RouteInterface
 	{
-		$methods[] = RequestMethodInterface::METHOD_HEAD;
+		$methods = [RequestMethodInterface::METHOD_HEAD];
 
 		return $this->route($id, $path, $methods);
 	}
@@ -74,7 +74,7 @@ class RouteCollection implements RouteCollectionInterface
 	 */
 	public function get(string $id, string $path) : RouteInterface
 	{
-		$methods[] = RequestMethodInterface::METHOD_GET;
+		$methods = [RequestMethodInterface::METHOD_GET];
 
 		return $this->route($id, $path, $methods);
 	}
@@ -84,7 +84,7 @@ class RouteCollection implements RouteCollectionInterface
 	 */
 	public function post(string $id, string $path) : RouteInterface
 	{
-		$methods[] = RequestMethodInterface::METHOD_POST;
+		$methods = [RequestMethodInterface::METHOD_POST];
 
 		return $this->route($id, $path, $methods);
 	}
@@ -94,7 +94,7 @@ class RouteCollection implements RouteCollectionInterface
 	 */
 	public function put(string $id, string $path) : RouteInterface
 	{
-		$methods[] = RequestMethodInterface::METHOD_PUT;
+		$methods = [RequestMethodInterface::METHOD_PUT];
 
 		return $this->route($id, $path, $methods);
 	}
@@ -104,7 +104,7 @@ class RouteCollection implements RouteCollectionInterface
 	 */
 	public function patch(string $id, string $path) : RouteInterface
 	{
-		$methods[] = RequestMethodInterface::METHOD_PATCH;
+		$methods = [RequestMethodInterface::METHOD_PATCH];
 
 		return $this->route($id, $path, $methods);
 	}
@@ -114,7 +114,7 @@ class RouteCollection implements RouteCollectionInterface
 	 */
 	public function delete(string $id, string $path) : RouteInterface
 	{
-		$methods[] = RequestMethodInterface::METHOD_DELETE;
+		$methods = [RequestMethodInterface::METHOD_DELETE];
 
 		return $this->route($id, $path, $methods);
 	}
@@ -124,7 +124,7 @@ class RouteCollection implements RouteCollectionInterface
 	 */
 	public function purge(string $id, string $path) : RouteInterface
 	{
-		$methods[] = RequestMethodInterface::METHOD_PURGE;
+		$methods = [RequestMethodInterface::METHOD_PURGE];
 
 		return $this->route($id, $path, $methods);
 	}
@@ -134,8 +134,10 @@ class RouteCollection implements RouteCollectionInterface
 	 */
 	public function safe(string $id, string $path) : RouteInterface
 	{
-		$methods[] = RequestMethodInterface::METHOD_HEAD;
-		$methods[] = RequestMethodInterface::METHOD_GET;
+		$methods = [
+			RequestMethodInterface::METHOD_HEAD,
+			RequestMethodInterface::METHOD_GET,
+		];
 
 		return $this->route($id, $path, $methods);
 	}
@@ -145,16 +147,18 @@ class RouteCollection implements RouteCollectionInterface
 	 */
 	public function any(string $id, string $path) : RouteInterface
 	{
-		$methods[] = RequestMethodInterface::METHOD_HEAD;
-		$methods[] = RequestMethodInterface::METHOD_GET;
-		$methods[] = RequestMethodInterface::METHOD_POST;
-		$methods[] = RequestMethodInterface::METHOD_PUT;
-		$methods[] = RequestMethodInterface::METHOD_PATCH;
-		$methods[] = RequestMethodInterface::METHOD_DELETE;
-		$methods[] = RequestMethodInterface::METHOD_PURGE;
-		$methods[] = RequestMethodInterface::METHOD_OPTIONS;
-		$methods[] = RequestMethodInterface::METHOD_TRACE;
-		$methods[] = RequestMethodInterface::METHOD_CONNECT;
+		$methods = [
+			RequestMethodInterface::METHOD_HEAD,
+			RequestMethodInterface::METHOD_GET,
+			RequestMethodInterface::METHOD_POST,
+			RequestMethodInterface::METHOD_PUT,
+			RequestMethodInterface::METHOD_PATCH,
+			RequestMethodInterface::METHOD_DELETE,
+			RequestMethodInterface::METHOD_PURGE,
+			RequestMethodInterface::METHOD_OPTIONS,
+			RequestMethodInterface::METHOD_TRACE,
+			RequestMethodInterface::METHOD_CONNECT,
+		];
 
 		return $this->route($id, $path, $methods);
 	}
