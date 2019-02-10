@@ -313,3 +313,22 @@ https://phpdoc.fenric.ru/
 * https://www.php-fig.org/psr/psr-7/
 * https://www.php-fig.org/psr/psr-15/
 * https://github.com/middlewares
+
+## Team
+
+<table>
+    <tbody>
+        <tr>
+            <td>
+                <img src="https://avatars2.githubusercontent.com/u/9021747?s=72&v=4">
+                <br>
+                <a href="https://github.com/peter279k">@peter279k</a>
+            </td>
+            <td>
+                <img src="https://avatars1.githubusercontent.com/u/2872934?s=72&v=4">
+                <br>
+                <a href="https://github.com/fenric">@fenric</a>
+            </td>
+        </tr>
+    </tbody>
+</table>
