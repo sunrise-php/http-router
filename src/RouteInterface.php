@@ -140,4 +140,11 @@ interface RouteInterface
 	 * @return RouteInterface
 	 */
 	public function withAttributes(array $attributes) : RouteInterface;
+
+	/**
+	 * Builds the route regular expression
+	 *
+	 * @return string
+	 */
+	public function buildRegex() : string;
 }

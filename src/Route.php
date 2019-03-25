@@ -212,4 +212,12 @@ class Route implements RouteInterface
 
 		return $clone;
 	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function buildRegex() : string
+	{
+		return route_regex($this->path, $this->patterns);
+	}
 }

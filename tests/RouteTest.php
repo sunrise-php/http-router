@@ -280,4 +280,21 @@ class RouteTest extends TestCase
 			'QUX',
 		], $route->getMethods());
 	}
+
+	public function testBuildRegex()
+	{
+		$foo = new Route('foo', '/', []);
+		$this->assertEquals('#^/$#ui', $foo->buildRegex());
+
+		$bar = new Route('bar', '/{foo}', []);
+		$this->assertEquals('#^/(?<foo>[^/]+)$#ui', $bar->buildRegex());
+
+		$baz = new Route('baz', '/{foo}(/{bar})', []);
+		$this->assertEquals('#^/(?<foo>[^/]+)(?:/(?<bar>[^/]+))?$#ui', $baz->buildRegex());
+
+		$qux = new Route('qux', '/{foo}(/{bar})', []);
+		$qux->addPattern('foo', '\d+');
+		$qux->addPattern('bar', '\w+');
+		$this->assertEquals('#^/(?<foo>\d+)(?:/(?<bar>\w+))?$#ui', $qux->buildRegex());
+	}
 }

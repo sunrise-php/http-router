@@ -98,7 +98,7 @@ class Router implements RouterInterface
 
 		foreach ($this->getRoutes() as $route)
 		{
-			$regex = route_regex($route->getPath(), $route->getPatterns());
+			$regex = $route->buildRegex();
 
 			if (\preg_match($regex, $request->getUri()->getPath(), $matches))
 			{
