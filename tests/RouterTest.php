@@ -378,6 +378,7 @@ class RouterTest extends TestCase
 		$this->assertInstanceOf(\RuntimeException::class, $methodNotAllowedException);
 		$this->assertEquals($request, $methodNotAllowedException->getRequest());
 		$this->assertEquals(['HEAD', 'GET'], $methodNotAllowedException->getAllowedMethods());
+		$this->assertEquals('HEAD,GET', $methodNotAllowedException->getAllowedMethodsAsString());
 	}
 
 	private function discoverRoute(RouteCollectionInterface $routes, string $method, string $uri) : ?RouteInterface

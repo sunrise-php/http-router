@@ -14,7 +14,8 @@ namespace Sunrise\Http\Router\Exception;
 /**
  * Import classes
  */
-use RuntimeException, Throwable;
+use RuntimeException;
+use Throwable;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
@@ -48,7 +49,6 @@ class MethodNotAllowedException extends RuntimeException implements HttpExceptio
 	public function __construct(ServerRequestInterface $request, array $allowedMethods, int $code = 0, Throwable $previous = null)
 	{
 		$this->request = $request;
-
 		$this->allowedMethods = $allowedMethods;
 
 		parent::__construct('The requested resource is not available for the HTTP method', $code, $previous);
@@ -70,5 +70,15 @@ class MethodNotAllowedException extends RuntimeException implements HttpExceptio
 	public function getAllowedMethods() : array
 	{
 		return $this->allowedMethods;
+	}
+
+	/**
+	 * Gets allowed HTTP methods as a string
+	 *
+	 * @return string
+	 */
+	public function getAllowedMethodsAsString() : string
+	{
+		return \implode(',', $this->allowedMethods);
 	}
 }
