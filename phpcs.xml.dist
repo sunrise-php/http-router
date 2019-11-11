@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<ruleset name="Sunrise Coding Standard">
+    <rule ref="./vendor/sunrise/coding-standard/ruleset.xml"/>
+
+    <file>benchmarks</file>
+    <file>functions</file>
+    <file>src</file>
+    <file>tests</file>
+</ruleset>

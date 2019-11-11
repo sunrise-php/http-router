@@ -1,281 +1,351 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Tests;
 
-use Fig\Http\Message\RequestMethodInterface;
+/**
+ * Import classes
+ */
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\Route;
 use Sunrise\Http\Router\RouteInterface;
 use Sunrise\Http\Router\RouteCollection;
 use Sunrise\Http\Router\RouteCollectionInterface;
 
+/**
+ * Import functions
+ */
+use function end;
+
+/**
+ * RouteCollectionTest
+ */
 class RouteCollectionTest extends TestCase
 {
-	public function testConstructor()
-	{
-		$collection = new RouteCollection();
 
-		$this->assertInstanceOf(RouteCollectionInterface::class, $collection);
-	}
+    /**
+     * @return void
+     */
+    public function testConstructor() : void
+    {
+        $collection = new RouteCollection();
 
-	public function testGetRoutes()
-	{
-		$collection = new RouteCollection();
+        $this->assertInstanceOf(RouteCollectionInterface::class, $collection);
+    }
 
-		$this->assertEquals([], $collection->getRoutes());
-	}
+    /**
+     * @return void
+     */
+    public function testGetDefaultPrefix() : void
+    {
+        $collection = new RouteCollection();
 
-	public function testAddRoute()
-	{
-		$foo = new Route('foo', '/foo', []);
+        $this->assertNull($collection->getPrefix());
+    }
 
-		$collection = new RouteCollection();
+    /**
+     * @return void
+     */
+    public function testGetDefaultMiddlewares() : void
+    {
+        $collection = new RouteCollection();
 
-		$this->assertInstanceOf(RouteCollectionInterface::class, $collection->addRoute($foo));
+        $this->assertSame([], $collection->getMiddlewares());
+    }
 
-		$this->assertEquals([$foo], $collection->getRoutes());
-	}
+    /**
+     * @return void
+     */
+    public function testGetDefaultRoutes() : void
+    {
+        $collection = new RouteCollection();
 
-	public function testAddSeveralRoutes()
-	{
-		$foo = new Route('foo', '/foo', []);
-		$bar = new Route('bar', '/bar', []);
+        $this->assertSame([], $collection->getRoutes());
+    }
 
-		$collection = new RouteCollection();
+    /**
+     * @return void
+     */
+    public function testSetPrefix() : void
+    {
+        $collection = new RouteCollection();
 
-		$collection->addRoute($foo);
-		$collection->addRoute($bar);
+        $this->assertSame($collection, $collection->setPrefix('/foo'));
+        $this->assertSame('/foo', $collection->getPrefix());
 
-		$this->assertEquals([
-			$foo,
-			$bar,
-		], $collection->getRoutes());
-	}
+        // override prefix...
+        $collection->setPrefix('/bar');
+        $this->assertSame('/bar', $collection->getPrefix());
 
-	public function testCreateRoute()
-	{
-		$routeId = 'foo';
-		$routePath = '/foo';
-		$routeMethods = ['HEAD', 'GET'];
+        // https://github.com/sunrise-php/http-router/issues/26
+        $collection->setPrefix('/baz/');
+        $this->assertSame('/baz', $collection->getPrefix());
+    }
 
-		$collection = new RouteCollection();
-		$route = $collection->route($routeId, $routePath, $routeMethods);
+    /**
+     * @return void
+     */
+    public function testAddMiddlewares() : void
+    {
+        $middlewares = [
+            new Fixture\BlankMiddleware(),
+            new Fixture\BlankMiddleware(),
+        ];
 
-		$this->assertInstanceOf(RouteInterface::class, $route);
-		$this->assertEquals($routeId, $route->getId());
-		$this->assertEquals($routePath, $route->getPath());
-		$this->assertEquals($routeMethods, $route->getMethods());
-		$this->assertEquals([$route], $collection->getRoutes());
-	}
+        $collection = new RouteCollection();
 
-	public function testCreateRouteForHttpMethodHead()
-	{
-		$routeId = 'foo';
-		$routePath = '/foo';
-		$routeMethods = [
-			RequestMethodInterface::METHOD_HEAD,
-		];
+        $this->assertSame($collection, $collection->addMiddlewares(...$middlewares));
+        $this->assertSame($middlewares, $collection->getMiddlewares());
 
-		$collection = new RouteCollection();
-		$route = $collection->head($routeId, $routePath);
+        // extending...
+        $middlewares[] = new Fixture\BlankMiddleware();
+        $collection->addMiddlewares(end($middlewares));
+        $this->assertSame($middlewares, $collection->getMiddlewares());
+    }
 
-		$this->assertInstanceOf(RouteInterface::class, $route);
-		$this->assertEquals($routeId, $route->getId());
-		$this->assertEquals($routePath, $route->getPath());
-		$this->assertEquals($routeMethods, $route->getMethods());
-		$this->assertEquals([$route], $collection->getRoutes());
-	}
+    /**
+     * @return void
+     */
+    public function testAddRoutes() : void
+    {
+        $routes = [
+            new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
+        ];
 
-	public function testCreateRouteForHttpMethodGet()
-	{
-		$routeId = 'foo';
-		$routePath = '/foo';
-		$routeMethods = [
-			RequestMethodInterface::METHOD_GET,
-		];
+        $collection = new RouteCollection();
 
-		$collection = new RouteCollection();
-		$route = $collection->get($routeId, $routePath);
+        $this->assertSame($collection, $collection->addRoutes(...$routes));
+        $this->assertSame($routes, $collection->getRoutes());
 
-		$this->assertInstanceOf(RouteInterface::class, $route);
-		$this->assertEquals($routeId, $route->getId());
-		$this->assertEquals($routePath, $route->getPath());
-		$this->assertEquals($routeMethods, $route->getMethods());
-		$this->assertEquals([$route], $collection->getRoutes());
-	}
+        // extending...
+        $routes[] = new Fixture\TestRoute();
+        $collection->addRoutes(end($routes));
+        $this->assertSame($routes, $collection->getRoutes());
+    }
 
-	public function testCreateRouteForHttpMethodPost()
-	{
-		$routeId = 'foo';
-		$routePath = '/foo';
-		$routeMethods = [
-			RequestMethodInterface::METHOD_POST,
-		];
+    /**
+     * @return void
+     */
+    public function testMakeRoute() : void
+    {
+        $routeName = Fixture\TestRoute::getTestRouteName();
+        $routePath = Fixture\TestRoute::getTestRoutePath();
+        $routeMethods = Fixture\TestRoute::getTestRouteMethods();
+        $routeRequestHandler = Fixture\TestRoute::getTestRouteRequestHandler();
 
-		$collection = new RouteCollection();
-		$route = $collection->post($routeId, $routePath);
+        $collection = new RouteCollection();
 
-		$this->assertInstanceOf(RouteInterface::class, $route);
-		$this->assertEquals($routeId, $route->getId());
-		$this->assertEquals($routePath, $route->getPath());
-		$this->assertEquals($routeMethods, $route->getMethods());
-		$this->assertEquals([$route], $collection->getRoutes());
-	}
+        $route = $collection->route(
+            $routeName,
+            $routePath,
+            $routeMethods,
+            $routeRequestHandler
+        );
 
-	public function testCreateRouteForHttpMethodPut()
-	{
-		$routeId = 'foo';
-		$routePath = '/foo';
-		$routeMethods = [
-			RequestMethodInterface::METHOD_PUT,
-		];
+        $this->assertInstanceOf(RouteInterface::class, $route);
+        $this->assertSame($routeName, $route->getName());
+        $this->assertSame($routePath, $route->getPath());
+        $this->assertSame($routeMethods, $route->getMethods());
+        $this->assertSame($routeRequestHandler, $route->getRequestHandler());
+        $this->assertSame([], $route->getMiddlewares());
+        $this->assertSame([], $route->getAttributes());
+        $this->assertSame([$route], $collection->getRoutes());
+    }
 
-		$collection = new RouteCollection();
-		$route = $collection->put($routeId, $routePath);
+    /**
+     * @return void
+     */
+    public function testMakeRouteWithOptionalParams() : void
+    {
+        $routeName = Fixture\TestRoute::getTestRouteName();
+        $routePath = Fixture\TestRoute::getTestRoutePath();
+        $routeMethods = Fixture\TestRoute::getTestRouteMethods();
+        $routeRequestHandler = Fixture\TestRoute::getTestRouteRequestHandler();
+        $routeMiddlewares = Fixture\TestRoute::getTestRouteMiddlewares();
+        $routeAttributes = Fixture\TestRoute::getTestRouteAttributes();
 
-		$this->assertInstanceOf(RouteInterface::class, $route);
-		$this->assertEquals($routeId, $route->getId());
-		$this->assertEquals($routePath, $route->getPath());
-		$this->assertEquals($routeMethods, $route->getMethods());
-		$this->assertEquals([$route], $collection->getRoutes());
-	}
+        $collection = new RouteCollection();
 
-	public function testCreateRouteForHttpMethodPatch()
-	{
-		$routeId = 'foo';
-		$routePath = '/foo';
-		$routeMethods = [
-			RequestMethodInterface::METHOD_PATCH,
-		];
+        $route = $collection->route(
+            $routeName,
+            $routePath,
+            $routeMethods,
+            $routeRequestHandler,
+            $routeMiddlewares,
+            $routeAttributes
+        );
 
-		$collection = new RouteCollection();
-		$route = $collection->patch($routeId, $routePath);
+        $this->assertInstanceOf(RouteInterface::class, $route);
+        $this->assertSame($routeName, $route->getName());
+        $this->assertSame($routePath, $route->getPath());
+        $this->assertSame($routeMethods, $route->getMethods());
+        $this->assertSame($routeRequestHandler, $route->getRequestHandler());
+        $this->assertSame($routeMiddlewares, $route->getMiddlewares());
+        $this->assertSame($routeAttributes, $route->getAttributes());
+        $this->assertSame([$route], $collection->getRoutes());
+    }
 
-		$this->assertInstanceOf(RouteInterface::class, $route);
-		$this->assertEquals($routeId, $route->getId());
-		$this->assertEquals($routePath, $route->getPath());
-		$this->assertEquals($routeMethods, $route->getMethods());
-		$this->assertEquals([$route], $collection->getRoutes());
-	}
+    /**
+     * @return void
+     */
+    public function testMakeRouteWithTransferringPrefix() : void
+    {
+        $collection = new RouteCollection();
+        $collection->setPrefix('/api');
 
-	public function testCreateRouteForHttpMethodDelete()
-	{
-		$routeId = 'foo';
-		$routePath = '/foo';
-		$routeMethods = [
-			RequestMethodInterface::METHOD_DELETE,
-		];
+        $route = $collection->route('foo', '/foo', ['GET'], new Fixture\BlankRequestHandler());
+        $this->assertSame('/api/foo', $route->getPath());
+    }
 
-		$collection = new RouteCollection();
-		$route = $collection->delete($routeId, $routePath);
+    /**
+     * @return void
+     */
+    public function testMakeRouteWithTransferringMiddlewares() : void
+    {
+        $middlewares = [new Fixture\BlankMiddleware()];
 
-		$this->assertInstanceOf(RouteInterface::class, $route);
-		$this->assertEquals($routeId, $route->getId());
-		$this->assertEquals($routePath, $route->getPath());
-		$this->assertEquals($routeMethods, $route->getMethods());
-		$this->assertEquals([$route], $collection->getRoutes());
-	}
+        $collection = new RouteCollection();
+        $collection->addMiddlewares(...$middlewares);
 
-	public function testCreateRouteForHttpMethodPurge()
-	{
-		$routeId = 'foo';
-		$routePath = '/foo';
-		$routeMethods = [
-			RequestMethodInterface::METHOD_PURGE,
-		];
+        $route = $collection->route('foo', '/foo', ['GET'], new Fixture\BlankRequestHandler());
+        $this->assertSame($middlewares, $route->getMiddlewares());
 
-		$collection = new RouteCollection();
-		$route = $collection->purge($routeId, $routePath);
+        // merging...
+        $middlewares[] = new Fixture\BlankMiddleware();
+        $route = $collection->route('foo', '/foo', ['GET'], new Fixture\BlankRequestHandler(), [end($middlewares)]);
+        $this->assertSame($middlewares, $route->getMiddlewares());
+    }
 
-		$this->assertInstanceOf(RouteInterface::class, $route);
-		$this->assertEquals($routeId, $route->getId());
-		$this->assertEquals($routePath, $route->getPath());
-		$this->assertEquals($routeMethods, $route->getMethods());
-		$this->assertEquals([$route], $collection->getRoutes());
-	}
+    /**
+     * @return void
+     *
+     * @dataProvider makeVerbableRoutesDataProvider
+     */
+    public function testMakeVerbableRoutes(string $calledMethod, string $expectedHttpMethod) : void
+    {
+        $routeName = Fixture\TestRoute::getTestRouteName();
+        $routePath = Fixture\TestRoute::getTestRoutePath();
+        $routeRequestHandler = Fixture\TestRoute::getTestRouteRequestHandler();
 
-	public function testCreateRouteForHttpMethodSafe()
-	{
-		$routeId = 'foo';
-		$routePath = '/foo';
-		$routeMethods = [
-			RequestMethodInterface::METHOD_HEAD,
-			RequestMethodInterface::METHOD_GET,
-		];
+        $collection = new RouteCollection();
 
-		$collection = new RouteCollection();
-		$route = $collection->safe($routeId, $routePath);
+        $route = $collection->{$calledMethod}(
+            $routeName,
+            $routePath,
+            $routeRequestHandler
+        );
 
-		$this->assertInstanceOf(RouteInterface::class, $route);
-		$this->assertEquals($routeId, $route->getId());
-		$this->assertEquals($routePath, $route->getPath());
-		$this->assertEquals($routeMethods, $route->getMethods());
-		$this->assertEquals([$route], $collection->getRoutes());
-	}
+        $this->assertInstanceOf(RouteInterface::class, $route);
+        $this->assertSame($routeName, $route->getName());
+        $this->assertSame($routePath, $route->getPath());
+        $this->assertSame([$expectedHttpMethod], $route->getMethods());
+        $this->assertSame($routeRequestHandler, $route->getRequestHandler());
+        $this->assertSame([], $route->getMiddlewares());
+        $this->assertSame([], $route->getAttributes());
+        $this->assertSame([$route], $collection->getRoutes());
+    }
 
-	public function testCreateRouteForHttpMethodAny()
-	{
-		$routeId = 'foo';
-		$routePath = '/foo';
-		$routeMethods = [
-			RequestMethodInterface::METHOD_HEAD,
-			RequestMethodInterface::METHOD_GET,
-			RequestMethodInterface::METHOD_POST,
-			RequestMethodInterface::METHOD_PUT,
-			RequestMethodInterface::METHOD_PATCH,
-			RequestMethodInterface::METHOD_DELETE,
-			RequestMethodInterface::METHOD_PURGE,
-			RequestMethodInterface::METHOD_OPTIONS,
-			RequestMethodInterface::METHOD_TRACE,
-			RequestMethodInterface::METHOD_CONNECT,
-		];
+    /**
+     * @return void
+     *
+     * @dataProvider makeVerbableRoutesDataProvider
+     */
+    public function testMakeVerbableRoutesWithOptionalParams(string $calledMethod, string $expectedHttpMethod) : void
+    {
+        $routeName = Fixture\TestRoute::getTestRouteName();
+        $routePath = Fixture\TestRoute::getTestRoutePath();
+        $routeRequestHandler = Fixture\TestRoute::getTestRouteRequestHandler();
+        $routeMiddlewares = Fixture\TestRoute::getTestRouteMiddlewares();
+        $routeAttributes = Fixture\TestRoute::getTestRouteAttributes();
 
-		$collection = new RouteCollection();
-		$route = $collection->any($routeId, $routePath);
+        $collection = new RouteCollection();
 
-		$this->assertInstanceOf(RouteInterface::class, $route);
-		$this->assertEquals($routeId, $route->getId());
-		$this->assertEquals($routePath, $route->getPath());
-		$this->assertEquals($routeMethods, $route->getMethods());
-		$this->assertEquals([$route], $collection->getRoutes());
-	}
+        $route = $collection->{$calledMethod}(
+            $routeName,
+            $routePath,
+            $routeRequestHandler,
+            $routeMiddlewares,
+            $routeAttributes
+        );
 
-	public function testGroup()
-	{
-		$foo = new Route('foo', '/foo', []);
-		$bar = new Route('bar', '/foo', []);
-		$baz = new Route('baz', '/foo', []);
-		$qux = new Route('qux', '/foo', []);
+        $this->assertInstanceOf(RouteInterface::class, $route);
+        $this->assertSame($routeName, $route->getName());
+        $this->assertSame($routePath, $route->getPath());
+        $this->assertSame([$expectedHttpMethod], $route->getMethods());
+        $this->assertSame($routeRequestHandler, $route->getRequestHandler());
+        $this->assertSame($routeMiddlewares, $route->getMiddlewares());
+        $this->assertSame($routeAttributes, $route->getAttributes());
+        $this->assertSame([$route], $collection->getRoutes());
+    }
 
-		$collection = new RouteCollection();
+    /**
+     * @return void
+     *
+     * @dataProvider makeVerbableRoutesDataProvider
+     */
+    public function testMakeVerbableRoutesWithTransferringPrefix(string $calledMethod) : void
+    {
+        $collection = new RouteCollection();
+        $collection->setPrefix('/api');
 
-		$collection->group('/bar', function(RouteCollectionInterface $collection) use($foo, $bar, $baz)
-		{
-			$collection->addRoute($bar);
+        $route = $collection->{$calledMethod}('foo', '/foo', new Fixture\BlankRequestHandler());
+        $this->assertSame('/api/foo', $route->getPath());
+    }
 
-			$collection->group('/baz', function(RouteCollectionInterface $collection) use($foo, $baz)
-			{
-				$collection->group('/qux', function(RouteCollectionInterface $collection) use($foo)
-				{
-					$collection->addRoute($foo);
-				});
+    /**
+     * @return void
+     *
+     * @dataProvider makeVerbableRoutesDataProvider
+     */
+    public function testMakeVerbableRoutesWithTransferringMiddlewares(string $calledMethod) : void
+    {
+        $middlewares = [new Fixture\BlankMiddleware()];
 
-				$collection->addRoute($baz);
-			});
-		});
+        $collection = new RouteCollection();
+        $collection->addMiddlewares(...$middlewares);
 
-		$collection->addRoute($qux);
+        $route = $collection->{$calledMethod}('foo', '/foo', new Fixture\BlankRequestHandler());
+        $this->assertSame($middlewares, $route->getMiddlewares());
 
-		$this->assertEquals([
-			$bar,
-			$foo,
-			$baz,
-			$qux,
-		], $collection->getRoutes());
+        // merging...
+        $middlewares[] = new Fixture\BlankMiddleware();
+        $route = $collection->{$calledMethod}('foo', '/foo', new Fixture\BlankRequestHandler(), [end($middlewares)]);
+        $this->assertSame($middlewares, $route->getMiddlewares());
+    }
 
-		$this->assertEquals('/bar/baz/qux/foo', $foo->getPath());
-		$this->assertEquals('/bar/foo', $bar->getPath());
-		$this->assertEquals('/bar/baz/foo', $baz->getPath());
-		$this->assertEquals('/foo', $qux->getPath());
-	}
+    /**
+     * @return array
+     */
+    public function makeVerbableRoutesDataProvider() : array
+    {
+        return [
+            [
+                'head',
+                'HEAD',
+            ],
+            [
+                'get',
+                'GET',
+            ],
+            [
+                'post',
+                'POST',
+            ],
+            [
+                'put',
+                'PUT',
+            ],
+            [
+                'patch',
+                'PATCH',
+            ],
+            [
+                'delete',
+                'DELETE',
+            ],
+            [
+                'purge',
+                'PURGE',
+            ],
+        ];
+    }
 }

@@ -1,37 +1,57 @@
 {
     "name": "sunrise/http-router",
-    "description": "Sunrise HTTP router with annotations support for PHP 7.1+ based on PSR-7 and PSR-15",
-    "keywords": ["fenric", "sunrise", "http-router", "psr-7", "psr-15"],
     "homepage": "https://github.com/sunrise-php/http-router",
+    "description": "Sunrise // PSR-7 router for PHP 7.1+ based on PSR-7 and PSR-15",
     "license": "MIT",
-    "authors": [{
-        "name": "Anatoly Fenric",
-        "email": "anatoly@fenric.ru",
-        "homepage": "https://anatoly.fenric.ru/"
-    }],
+    "keywords": [
+        "fenric",
+        "sunrise",
+        "http",
+        "router",
+        "psr-7",
+        "psr-15"
+    ],
+    "authors": [
+        {
+            "name": "Anatoly Fenric",
+            "email": "anatoly@fenric.ru",
+            "homepage": "https://anatoly.fenric.ru/"
+        }
+    ],
     "require": {
         "php": "^7.1",
-        "fig/http-message-util": "^1.1",
         "psr/http-message": "^1.0",
         "psr/http-server-handler": "^1.0",
-        "psr/http-server-middleware": "^1.0",
-        "sunrise/http-message": "^1.0"
+        "psr/http-server-middleware": "^1.0"
     },
     "require-dev": {
+        "phpbench/phpbench": "0.16.10",
         "phpunit/phpunit": "7.5.11",
+        "sunrise/coding-standard": "1.0.0",
+        "sunrise/http-message": "^1.0",
         "sunrise/http-server-request": "1.0.11"
     },
     "autoload": {
+        "files": [
+            "functions/path_match.php",
+            "functions/path_regex.php"
+        ],
         "psr-4": {
             "Sunrise\\Http\\Router\\": "src/"
-        },
-        "files": [
-            "functions/route_regex.php"
-        ]
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Sunrise\\Http\\Router\\Tests\\": "tests/"
+        }
     },
     "scripts": {
         "test": [
-            "phpunit --colors=always --coverage-text"
+            "phpunit --colors=always --coverage-text",
+            "phpcs"
+        ],
+        "bench": [
+            "phpbench run --report='generator: \"table\", cols: [\"groups\", \"subject\", \"mean\", \"diff\"], sort: {mean: \"asc\"}'"
         ]
     }
 }

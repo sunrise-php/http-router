@@ -16,69 +16,42 @@ namespace Sunrise\Http\Router\Exception;
  */
 use RuntimeException;
 use Throwable;
-use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * MethodNotAllowedException
  */
-class MethodNotAllowedException extends RuntimeException implements HttpExceptionInterface
+class MethodNotAllowedException extends RuntimeException implements ExceptionInterface
 {
 
-	/**
-	 * Server Request instance
-	 *
-	 * @var ServerRequestInterface
-	 */
-	protected $request;
+    /**
+     * Allowed HTTP methods
+     *
+     * @var string[]
+     */
+    private $allowedMethods;
 
-	/**
-	 * Allowed HTTP methods
-	 *
-	 * @var string[]
-	 */
-	protected $allowedMethods;
+    /**
+     * Constructor of the class
+     *
+     * @param string[]  $allowedMethods
+     * @param string    $message
+     * @param int       $code
+     * @param Throwable $previous
+     */
+    public function __construct(array $allowedMethods, string $message = '', int $code = 0, Throwable $previous = null)
+    {
+        $this->allowedMethods = $allowedMethods;
 
-	/**
-	 * Constructor of the class
-	 *
-	 * @param ServerRequestInterface $request
-	 * @param string[] $allowedMethods
-	 * @param int $code
-	 * @param null|Throwable $previous
-	 */
-	public function __construct(ServerRequestInterface $request, array $allowedMethods, int $code = 0, Throwable $previous = null)
-	{
-		$this->request = $request;
-		$this->allowedMethods = $allowedMethods;
+        parent::__construct($message, $code, $previous);
+    }
 
-		parent::__construct('The requested resource is not available for the HTTP method', $code, $previous);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function getRequest() : ServerRequestInterface
-	{
-		return $this->request;
-	}
-
-	/**
-	 * Gets allowed HTTP methods
-	 *
-	 * @return string[]
-	 */
-	public function getAllowedMethods() : array
-	{
-		return $this->allowedMethods;
-	}
-
-	/**
-	 * Gets allowed HTTP methods as a string
-	 *
-	 * @return string
-	 */
-	public function getAllowedMethodsAsString() : string
-	{
-		return \implode(',', $this->allowedMethods);
-	}
+    /**
+     * Gets allowed HTTP methods
+     *
+     * @return string[]
+     */
+    public function getAllowedMethods() : array
+    {
+        return $this->allowedMethods;
+    }
 }

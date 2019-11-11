@@ -14,41 +14,11 @@ namespace Sunrise\Http\Router\Exception;
 /**
  * Import classes
  */
-use RuntimeException, Throwable;
-use Psr\Http\Message\ServerRequestInterface;
+use RuntimeException;
 
 /**
  * RouteNotFoundException
  */
-class RouteNotFoundException extends RuntimeException implements HttpExceptionInterface
+class RouteNotFoundException extends RuntimeException implements ExceptionInterface
 {
-
-	/**
-	 * Server Request instance
-	 *
-	 * @var ServerRequestInterface
-	 */
-	protected $request;
-
-	/**
-	 * Constructor of the class
-	 *
-	 * @param ServerRequestInterface $request
-	 * @param int $code
-	 * @param null|Throwable $previous
-	 */
-	public function __construct(ServerRequestInterface $request, int $code = 0, Throwable $previous = null)
-	{
-		$this->request = $request;
-
-		parent::__construct('Unable to find a route for the request', $code, $previous);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public function getRequest() : ServerRequestInterface
-	{
-		return $this->request;
-	}
 }
