@@ -199,4 +199,28 @@ class AnnotationRouteLoaderTest extends TestCase
         $root = __DIR__ . '/../Fixture/Annotation/AnnotationRouteInvalid';
         (new AnnotationRouteLoader)->discover($root . '/AnnotationRouteMiddlewaresContainNotMiddleware');
     }
+
+    /**
+     * @return void
+     */
+    public function testAnnotationRouteAttributesNotArray() : void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('@Route.attributes must be an array.');
+
+        $root = __DIR__ . '/../Fixture/Annotation/AnnotationRouteInvalid';
+        (new AnnotationRouteLoader)->discover($root . '/AnnotationRouteAttributesNotArray');
+    }
+
+    /**
+     * @return void
+     */
+    public function testAnnotationRoutePriorityNotInteger() : void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('@Route.priority must be an integer.');
+
+        $root = __DIR__ . '/../Fixture/Annotation/AnnotationRouteInvalid';
+        (new AnnotationRouteLoader)->discover($root . '/AnnotationRoutePriorityNotInteger');
+    }
 }
