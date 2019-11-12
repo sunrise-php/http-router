@@ -1,13 +1,14 @@
 {
     "name": "sunrise/http-router",
     "homepage": "https://github.com/sunrise-php/http-router",
-    "description": "Sunrise // PSR-7 router for PHP 7.1+ based on PSR-7 and PSR-15",
+    "description": "Sunrise // PSR-7 router with annotations support for PHP 7.1+ based on PSR-7 and PSR-15",
     "license": "MIT",
     "keywords": [
         "fenric",
         "sunrise",
         "http",
         "router",
+        "annotations",
         "psr-7",
         "psr-15"
     ],
@@ -22,7 +23,8 @@
         "php": "^7.1",
         "psr/http-message": "^1.0",
         "psr/http-server-handler": "^1.0",
-        "psr/http-server-middleware": "^1.0"
+        "psr/http-server-middleware": "^1.0",
+        "doctrine/annotations": "^1.6"
     },
     "require-dev": {
         "phpbench/phpbench": "0.16.10",
