@@ -15,8 +15,13 @@ namespace Sunrise\Http\Router;
  * Import functions
  */
 use function addcslashes;
-use function preg_replace_callback;
 use function str_replace;
+use function preg_match_all;
+
+/**
+ * Import constants
+ */
+use const PREG_SET_ORDER;
 
 /**
  * Converts the given path to Regular Expression
@@ -29,19 +34,18 @@ use function str_replace;
  */
 function path_regex(string $path) : string
 {
-    $patterns = [];
-    $preregex = preg_replace_callback('/{([0-9A-Za-z_]+)<([^<>]+)>}/', function ($matches) use (&$patterns) {
-        $patterns[$matches[1]] = $matches[2];
-        return '{' . $matches[1] . '}';
-    }, $path);
+    preg_match_all('/{([0-9A-Za-z_]+)(?:<([^<#>]+)>)?}/', $path, $matches, PREG_SET_ORDER);
 
-    $preregex = addcslashes($preregex, '\^$.[]|?*+-#');
-    $preregex = str_replace(['(', ')'], ['(?:', ')?'], $preregex);
+    foreach ($matches as $match) {
+        $path = str_replace($match[0], '{'.$match[1].'}', $path);
+    }
 
-    $preregex = preg_replace_callback('/{([0-9A-Za-z_]+)}/', function ($matches) use ($patterns) {
-        $pattern = $patterns[$matches[1]] ?? '[^/]+';
-        return '(?<' . $matches[1] . '>' . $pattern . ')';
-    }, $preregex);
+    $path = addcslashes($path, '#$*+-.?[\]^|');
+    $path = str_replace(['(', ')'], ['(?:', ')?'], $path);
 
-    return '#^' . $preregex . '$#uD';
+    foreach ($matches as $match) {
+        $path = str_replace('{'.$match[1].'}', '(?<'.$match[1].'>'.($match[2] ?? '[^/]+').')', $path);
+    }
+
+    return '#^'.$path.'$#uD';
 }
