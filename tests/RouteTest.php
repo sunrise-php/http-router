@@ -8,6 +8,7 @@ namespace Sunrise\Http\Router\Tests;
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Route;
 use Sunrise\Http\Router\RouteInterface;
+use InvalidArgumentException;
 
 /**
  * RouteTest
@@ -162,15 +163,91 @@ class RouteTest extends TestCase
     /**
      * @return void
      */
-    public function testWithAttributes() : void
+    public function testWithAddedAttributes() : void
     {
         $route = new Fixture\TestRoute();
         $extraAttributes = Fixture\TestRoute::getTestRouteAttributes();
         $expectedAttributes = $route->getAttributes() + $extraAttributes;
-        $routeClone = $route->withAttributes($extraAttributes);
+        $routeClone = $route->withAddedAttributes($extraAttributes);
 
         $this->assertInstanceOf(RouteInterface::class, $routeClone);
         $this->assertNotSame($route, $routeClone);
         $this->assertSame($expectedAttributes, $routeClone->getAttributes());
+    }
+
+    /**
+     * @return void
+     */
+    public function testBuildPath() : void
+    {
+        $route = new Fixture\TestRoute();
+
+        $route->setPath('/foo/{bar}');
+        $this->assertSame('/foo/bar', $route->buildPath(['bar' => 'bar']));
+
+        $route->setPath('/foo/{bar<\w+>}');
+        $this->assertSame('/foo/bar', $route->buildPath(['bar' => 'bar'], true));
+
+        $route->setPath('/foo/{bar<\d+>}');
+        $this->assertSame('/foo/100', $route->buildPath(['bar' => 100], true));
+
+        $route = $route->withAddedAttributes(['bar' => 'bar']);
+        $this->assertSame('/foo/100', $route->buildPath(['bar' => 100], true));
+
+        $route = $route->withAddedAttributes(['bar' => 100]);
+        $this->assertSame('/foo/100', $route->buildPath([], true));
+    }
+
+    /**
+     * @return void
+     */
+    public function testBuildPathWithMissingAttribute() : void
+    {
+        $route = new Fixture\TestRoute();
+        $route->setPath('/foo/{bar}/{baz}/quux');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('[' . $route->getPath() . '] missing attribute "baz".');
+
+        $route->buildPath([
+            'bar' => 'bar',
+        ]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testBuildPathWithInvalidAttributeValue() : void
+    {
+        $route = new Fixture\TestRoute();
+        $route->setPath('/foo/{bar<\w+>}/{baz<\d+>}/quux');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('[' . $route->getPath() . '] "baz" must match "\d+".');
+
+        $route->buildPath([
+            'bar' => 'bar',
+            'baz' => 'baz',
+        ], true);
+    }
+
+    /**
+      * @return void
+      */
+    public function testBuildRegex() : void
+    {
+        $route = new Fixture\TestRoute();
+
+        $route->setPath('/');
+        $this->assertSame('#^/$#uD', $route->buildRegex());
+
+        $route->setPath('/{foo}');
+        $this->assertSame('#^/(?<foo>[^/]+)$#uD', $route->buildRegex());
+
+        $route->setPath('/{foo}(/{bar})');
+        $this->assertSame('#^/(?<foo>[^/]+)(?:/(?<bar>[^/]+))?$#uD', $route->buildRegex());
+
+        $route->setPath('/{foo}(/{bar})/{baz<\w+>}');
+        $this->assertSame('#^/(?<foo>[^/]+)(?:/(?<bar>[^/]+))?/(?<baz>\w+)$#uD', $route->buildRegex());
     }
 }

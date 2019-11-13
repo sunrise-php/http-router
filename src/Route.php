@@ -211,7 +211,7 @@ class Route implements RouteInterface
     /**
      * {@inheritDoc}
      */
-    public function withAttributes(array $attributes) : RouteInterface
+    public function withAddedAttributes(array $attributes) : RouteInterface
     {
         $clone = clone $this;
 
@@ -229,6 +229,14 @@ class Route implements RouteInterface
     {
         $attributes += $this->attributes;
 
-        return path_uri($this->path, $attributes, $strict);
+        return path_build($this->path, $attributes, $strict);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function buildRegex() : string
+    {
+        return path_regex($this->path);
     }
 }

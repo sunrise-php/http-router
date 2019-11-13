@@ -92,7 +92,7 @@ class Router extends RouteCollection implements MiddlewareInterface, RequestHand
         $target = $request->getUri()->getPath();
         foreach ($routes[$method] as $route) {
             if (path_match($route->getPath(), $target, $attributes)) {
-                return $route->withAttributes($attributes);
+                return $route->withAddedAttributes($attributes);
             }
         }
 
