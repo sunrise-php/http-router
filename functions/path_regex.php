@@ -30,7 +30,7 @@ use function str_replace;
 function path_regex(string $path) : string
 {
     $patterns = [];
-    $preregex = preg_replace_callback('/{(\w+)<([^<>]+)>}/', function ($matches) use (&$patterns) {
+    $preregex = preg_replace_callback('/{([0-9A-Za-z_]+)<([^<>]+)>}/', function ($matches) use (&$patterns) {
         $patterns[$matches[1]] = $matches[2];
         return '{' . $matches[1] . '}';
     }, $path);
@@ -38,7 +38,7 @@ function path_regex(string $path) : string
     $preregex = addcslashes($preregex, '\^$.[]|?*+-#');
     $preregex = str_replace(['(', ')'], ['(?:', ')?'], $preregex);
 
-    $preregex = preg_replace_callback('/{(\w+)}/', function ($matches) use ($patterns) {
+    $preregex = preg_replace_callback('/{([0-9A-Za-z_]+)}/', function ($matches) use ($patterns) {
         $pattern = $patterns[$matches[1]] ?? '[^/]+';
         return '(?<' . $matches[1] . '>' . $pattern . ')';
     }, $preregex);

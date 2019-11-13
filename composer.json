@@ -36,7 +36,8 @@
     "autoload": {
         "files": [
             "functions/path_match.php",
-            "functions/path_regex.php"
+            "functions/path_regex.php",
+            "functions/path_uri.php"
         ],
         "psr-4": {
             "Sunrise\\Http\\Router\\": "src/"

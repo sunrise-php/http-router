@@ -221,4 +221,14 @@ class Route implements RouteInterface
 
         return $clone;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function buildPath(array $attributes = [], bool $strict = false) : string
+    {
+        $attributes += $this->attributes;
+
+        return path_uri($this->path, $attributes, $strict);
+    }
 }

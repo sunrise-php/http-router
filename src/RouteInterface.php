@@ -129,4 +129,14 @@ interface RouteInterface
      * @return RouteInterface
      */
     public function withAttributes(array $attributes) : RouteInterface;
+
+    /**
+     * Builds the route path for the given attributes
+     *
+     * @param array $attributes
+     * @param bool $strict
+     *
+     * @return string
+     */
+    public function buildPath(array $attributes, bool $strict) : string;
 }
