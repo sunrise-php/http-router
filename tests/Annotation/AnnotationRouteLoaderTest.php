@@ -15,6 +15,7 @@ use InvalidArgumentException;
  */
 use function class_alias;
 use function class_exists;
+use function get_class;
 
 /**
  * AnnotationRouteLoaderTest
@@ -222,5 +223,97 @@ class AnnotationRouteLoaderTest extends TestCase
 
         $root = __DIR__ . '/../Fixture/Annotation/AnnotationRouteInvalid';
         (new AnnotationRouteLoader)->discover($root . '/AnnotationRoutePriorityNotInteger');
+    }
+
+    /**
+     * @return void
+     *
+     * @todo This test needs to be improved...
+     */
+    public function testBuildRoutes() : void
+    {
+        $loader = new AnnotationRouteLoader();
+        $loader->discover(__DIR__ . '/../Fixture/Annotation/AnnotationRouteValid');
+
+        $routesMap = [];
+        $builtRoutes = $loader->buildRoutes();
+
+        foreach ($builtRoutes as $i => $route) {
+            $routesMap[$i]['name'] = $route->getName();
+            $routesMap[$i]['path'] = $route->getPath();
+            $routesMap[$i]['methods'] = $route->getMethods();
+            $routesMap[$i]['requestHandler'] = get_class($route->getRequestHandler());
+            $routesMap[$i]['middlewares'] = [];
+            $routesMap[$i]['attributes'] = $route->getAttributes();
+
+            foreach ($route->getMiddlewares() as $middleware) {
+                $routesMap[$i]['middlewares'][] = get_class($middleware);
+            }
+        }
+
+        $expectedMap = [
+            [
+                'name' => 'quuuux',
+                'path' => '/quuuux',
+                'methods' => ['PATCH', 'DELETE'],
+                'requestHandler' => 'Sunrise\Http\Router\Tests\Fixture\Annotation' .
+                                    '\AnnotationRouteValid\Subdirectory\QuuuuxRequestHandler',
+                'middlewares' => [
+                    'Sunrise\Http\Router\Tests\Fixture\BlankMiddleware',
+                    'Sunrise\Http\Router\Tests\Fixture\BlankMiddleware',
+                ],
+                'attributes' => [
+                    'foo' => 'bar',
+                    'source' => 'quuuux',
+                ],
+            ],
+            [
+                'name' => 'quuux',
+                'path' => '/quuux',
+                'methods' => ['PUT', 'PATCH'],
+                'requestHandler' => 'Sunrise\Http\Router\Tests\Fixture\Annotation' .
+                                    '\AnnotationRouteValid\Subdirectory\QuuuxRequestHandler',
+                'middlewares' => [
+                    'Sunrise\Http\Router\Tests\Fixture\BlankMiddleware',
+                    'Sunrise\Http\Router\Tests\Fixture\BlankMiddleware',
+                ],
+                'attributes' => [
+                    'foo' => 'bar',
+                    'source' => 'quuux',
+                ],
+            ],
+            [
+                'name' => 'quux',
+                'path' => '/quux',
+                'methods' => ['POST', 'PUT'],
+                'requestHandler' => 'Sunrise\Http\Router\Tests\Fixture\Annotation' .
+                                    '\AnnotationRouteValid\QuuxRequestHandler',
+                'middlewares' => [
+                    'Sunrise\Http\Router\Tests\Fixture\BlankMiddleware',
+                    'Sunrise\Http\Router\Tests\Fixture\BlankMiddleware',
+                ],
+                'attributes' => [
+                    'foo' => 'bar',
+                    'source' => 'quux',
+                ],
+            ],
+            [
+                'name' => 'qux',
+                'path' => '/qux',
+                'methods' => ['GET', 'POST'],
+                'requestHandler' => 'Sunrise\Http\Router\Tests\Fixture\Annotation' .
+                                    '\AnnotationRouteValid\QuxRequestHandler',
+                'middlewares' => [
+                    'Sunrise\Http\Router\Tests\Fixture\BlankMiddleware',
+                    'Sunrise\Http\Router\Tests\Fixture\BlankMiddleware',
+                ],
+                'attributes' => [
+                    'foo' => 'bar',
+                    'source' => 'qux',
+                ],
+            ],
+        ];
+
+        $this->assertSame($expectedMap, $routesMap);
     }
 }
