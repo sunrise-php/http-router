@@ -11,7 +11,7 @@
 
 namespace Sunrise\Http\Router;
 
-use function preg_match_all, addcslashes, str_replace, empty;
+use function preg_match_all, addcslashes, str_replace;
 use const PREG_SET_ORDER;
 
 /**
