@@ -34,7 +34,7 @@ function path_match(string $path, string $subject, &$attributes = []) : bool
 
     $attributes = [];
     foreach ($matches as $key => $value) {
-        if (! (is_int($key) || '' === $value)) {
+        if (!is_int($key) && '' !== $value) {
             $attributes[$key] = $value;
         }
     }

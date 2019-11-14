@@ -48,7 +48,7 @@ function path_build(string $path, array $attributes = [], bool $strict = false) 
         $attributes[$match[1]] = (string) $attributes[$match[1]];
 
         if ($strict && isset($match[2])) {
-            if (!preg_match('#'.$match[2].'#u', $attributes[$match[1]])) {
+            if (!preg_match('#' . $match[2] . '#u', $attributes[$match[1]])) {
                 throw new InvalidArgumentException(
                     sprintf('[%s] "%s" must match "%s".', $path, $match[1], $match[2])
                 );

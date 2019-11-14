@@ -72,7 +72,7 @@ class QueueableRequestHandler implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request) : ResponseInterface
     {
-        if (! $this->queue->isEmpty()) {
+        if (!$this->queue->isEmpty()) {
             return $this->queue->dequeue()->process($request, $this);
         }
 

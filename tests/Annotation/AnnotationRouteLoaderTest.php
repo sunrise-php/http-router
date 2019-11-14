@@ -28,7 +28,7 @@ class AnnotationRouteLoaderTest extends TestCase
      */
     public static function setUpBeforeClass() : void
     {
-        if (! class_exists('Route')) {
+        if (!class_exists('Route')) {
             class_alias(AnnotationRoute::class, 'Route');
         }
     }

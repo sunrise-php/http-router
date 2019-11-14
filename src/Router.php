@@ -83,7 +83,7 @@ class Router extends RouteCollection implements MiddlewareInterface, RequestHand
         }
 
         $method = $request->getMethod();
-        if (! isset($routes[$method])) {
+        if (!isset($routes[$method])) {
             throw new MethodNotAllowedException(
                 array_keys($routes)
             );

@@ -37,15 +37,18 @@ function path_regex(string $path) : string
     preg_match_all('/{([0-9A-Za-z_]+)(?:<([^<#>]+)>)?}/', $path, $matches, PREG_SET_ORDER);
 
     foreach ($matches as $match) {
-        $path = str_replace($match[0], '{'.$match[1].'}', $path);
+        $path = str_replace($match[0], '{' . $match[1] . '}', $path);
     }
 
     $path = addcslashes($path, '#$*+-.?[\]^|');
     $path = str_replace(['(', ')'], ['(?:', ')?'], $path);
 
     foreach ($matches as $match) {
-        $path = str_replace('{'.$match[1].'}', '(?<'.$match[1].'>'.($match[2] ?? '[^/]+').')', $path);
+        $pattern = $match[2] ?? '[^/]+';
+        $subpattern = '(?<' . $match[1] . '>' . $pattern . ')';
+
+        $path = str_replace('{' . $match[1] . '}', $subpattern, $path);
     }
 
-    return '#^'.$path.'$#uD';
+    return '#^' . $path . '$#uD';
 }
