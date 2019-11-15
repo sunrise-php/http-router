@@ -47,6 +47,8 @@ interface RouteCollectionInterface
     /**
      * Sets the given prefix to the collection
      *
+     * This method MUST set the given prefix to the collection AS IS.
+     *
      * @param string $prefix
      *
      * @return RouteCollectionInterface
@@ -55,6 +57,8 @@ interface RouteCollectionInterface
 
     /**
      * Adds the given middleware(s) to the collection
+     *
+     * This method MUST add the given middlewares to the collection AS IS.
      *
      * @param MiddlewareInterface ...$middlewares
      *
@@ -65,6 +69,8 @@ interface RouteCollectionInterface
     /**
      * Adds the given route(s) to the collection
      *
+     * This method MUST add the given routes to the collection AS IS.
+     *
      * @param RouteInterface ...$routes
      *
      * @return RouteCollectionInterface
@@ -73,6 +79,8 @@ interface RouteCollectionInterface
 
     /**
      * Makes a new route from the given parameters
+     *
+     * This method MUST make a route using the collection prefix and middlewares.
      *
      * @param string $name
      * @param string $path
@@ -224,4 +232,14 @@ interface RouteCollectionInterface
         array $middlewares,
         array $attributes
     ) : RouteInterface;
+
+    /**
+     * Route grouping logic
+     *
+     * @param string $prefix
+     * @param callable $callback
+     *
+     * @return void
+     */
+    public function group(string $prefix, callable $callback) : void;
 }

@@ -284,4 +284,17 @@ class RouteCollection implements RouteCollectionInterface
             $attributes
         );
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function group(string $prefix, callable $callback) : void
+    {
+        $children = new self;
+        $children->setPrefix($this->prefix . $prefix);
+
+        $callback($children);
+
+        $this->addRoutes(...$children->getRoutes());
+    }
 }

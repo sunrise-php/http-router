@@ -348,4 +348,75 @@ class RouteCollectionTest extends TestCase
             ],
         ];
     }
+
+    /**
+     * @return void
+     */
+    public function testGroup() : void
+    {
+        $collection = new RouteCollection();
+
+        $collection->get('qux', '/qux', new Fixture\BlankRequestHandler());
+
+        $collection->group('/', function ($group) {
+            $group->get('foo', '/foo', new Fixture\BlankRequestHandler());
+
+            $group->group('/api', function ($group) {
+                $group->group('/v1', function ($group) {
+                    $group->group('/section', function ($group) {
+                        $group->get('api.section.all', '/list', new Fixture\BlankRequestHandler());
+                        $group->get('api.section.read', '/read/{id}', new Fixture\BlankRequestHandler());
+                    });
+
+                    $group->group('/entity', function ($group) {
+                        $group->get('api.entity.all', '/list', new Fixture\BlankRequestHandler());
+                        $group->get('api.entity.read', '/read/{id}', new Fixture\BlankRequestHandler());
+                    });
+                });
+            });
+
+            $group->get('bar', '/bar', new Fixture\BlankRequestHandler());
+
+            $group->group('/admin', function ($group) {
+                $group->group('/catalog', function ($group) {
+                    $group->group('/section', function ($group) {
+                        $group->get('admin.section.all', '/list', new Fixture\BlankRequestHandler());
+                        $group->get('admin.section.read', '/read/{id}', new Fixture\BlankRequestHandler());
+                    });
+
+                    $group->group('/entity', function ($group) {
+                        $group->get('admin.entity.all', '/list', new Fixture\BlankRequestHandler());
+                        $group->get('admin.entity.read', '/read/{id}', new Fixture\BlankRequestHandler());
+                    });
+                });
+            });
+
+            $group->get('baz', '/baz', new Fixture\BlankRequestHandler());
+        });
+
+        $collection->get('quux', '/quux', new Fixture\BlankRequestHandler());
+
+        $builtPaths = [];
+        foreach ($collection->getRoutes() as $route) {
+            $builtPaths[] = $route->getPath();
+        }
+
+        $expectedPaths = [
+            '/qux',
+            '/foo',
+            '/api/v1/section/list',
+            '/api/v1/section/read/{id}',
+            '/api/v1/entity/list',
+            '/api/v1/entity/read/{id}',
+            '/bar',
+            '/admin/catalog/section/list',
+            '/admin/catalog/section/read/{id}',
+            '/admin/catalog/entity/list',
+            '/admin/catalog/entity/read/{id}',
+            '/baz',
+            '/quux',
+        ];
+
+        $this->assertSame($expectedPaths, $builtPaths);
+    }
 }
