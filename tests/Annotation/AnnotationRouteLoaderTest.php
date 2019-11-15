@@ -171,7 +171,7 @@ class AnnotationRouteLoaderTest extends TestCase
     public function testAnnotationRouteMiddlewaresNotStringable() : void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('@Route.middlewares must contain only middlewares.');
+        $this->expectExceptionMessage('@Route.middlewares must contain only strings.');
 
         $root = __DIR__ . '/../Fixture/Annotation/AnnotationRouteInvalid';
         (new AnnotationRouteLoader)->discover($root . '/AnnotationRouteMiddlewaresNotStringable');
@@ -183,7 +183,7 @@ class AnnotationRouteLoaderTest extends TestCase
     public function testAnnotationRouteMiddlewaresContainNonexistenceClass() : void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('@Route.middlewares must contain only middlewares.');
+        $this->expectExceptionMessage('@Route.middlewares contains nonexistent class.');
 
         $root = __DIR__ . '/../Fixture/Annotation/AnnotationRouteInvalid';
         (new AnnotationRouteLoader)->discover($root . '/AnnotationRouteMiddlewaresContainNonexistenceClass');
@@ -195,7 +195,7 @@ class AnnotationRouteLoaderTest extends TestCase
     public function testAnnotationRouteMiddlewaresContainNotMiddleware() : void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('@Route.middlewares must contain only middlewares.');
+        $this->expectExceptionMessage('@Route.middlewares contains non middleware class.');
 
         $root = __DIR__ . '/../Fixture/Annotation/AnnotationRouteInvalid';
         (new AnnotationRouteLoader)->discover($root . '/AnnotationRouteMiddlewaresContainNotMiddleware');

@@ -56,70 +56,127 @@ final class Route
     /**
      * @var array
      */
-    public $middlewares = [];
+    public $middlewares;
 
     /**
      * @var array
      */
-    public $attributes = [];
+    public $attributes;
 
     /**
      * @var int
      */
-    public $priority = 0;
+    public $priority;
 
     /**
      * @param array $params
-     *
-     * @throws InvalidArgumentException
      */
     public function __construct(array $params)
     {
-        if (empty($params['name']) || !is_string($params['name'])) {
-            throw new InvalidArgumentException('@Route.name must be not an empty string.');
-        }
-        if (empty($params['path']) || !is_string($params['path'])) {
-            throw new InvalidArgumentException('@Route.path must be not an empty string.');
-        }
-        if (empty($params['methods']) || !is_array($params['methods'])) {
-            throw new InvalidArgumentException('@Route.methods must be not an empty array.');
-        }
-        if (isset($params['middlewares']) && !is_array($params['middlewares'])) {
-            throw new InvalidArgumentException('@Route.middlewares must be an array.');
-        }
-        if (isset($params['attributes']) && !is_array($params['attributes'])) {
-            throw new InvalidArgumentException('@Route.attributes must be an array.');
-        }
-        if (isset($params['priority']) && !is_int($params['priority'])) {
-            throw new InvalidArgumentException('@Route.priority must be an integer.');
-        }
-
-        foreach ($params['methods'] as $v) {
-            if (!is_string($v)) {
-                throw new InvalidArgumentException('@Route.methods must contain only strings.');
-            }
-        }
-
-        if (isset($params['middlewares'])) {
-            foreach ($params['middlewares'] as $v) {
-                if (!is_string($v) || !class_exists($v) || !is_subclass_of($v, MiddlewareInterface::class)) {
-                    throw new InvalidArgumentException('@Route.middlewares must contain only middlewares.');
-                }
-            }
-        }
+        $this->assertValidName($params);
+        $this->assertValidPath($params);
+        $this->assertValidMethods($params);
+        $this->assertValidMiddlewares($params);
+        $this->assertValidAttributes($params);
+        $this->assertValidPriority($params);
 
         $this->name = $params['name'];
         $this->path = $params['path'];
         $this->methods = $params['methods'];
+        $this->middlewares = $params['middlewares'] ?? [];
+        $this->attributes = $params['attributes'] ?? [];
+        $this->priority = $params['priority'] ?? 0;
+    }
 
-        if (isset($params['middlewares'])) {
-            $this->middlewares = $params['middlewares'];
+    /**
+     * @param array $params
+     * @return void
+     * @throws InvalidArgumentException
+     */
+    private function assertValidName(array $params) : void
+    {
+        if (empty($params['name']) || !is_string($params['name'])) {
+            throw new InvalidArgumentException('@Route.name must be not an empty string.');
         }
-        if (isset($params['attributes'])) {
-            $this->attributes = $params['attributes'];
+    }
+
+    /**
+     * @param array $params
+     * @return void
+     * @throws InvalidArgumentException
+     */
+    private function assertValidPath(array $params) : void
+    {
+        if (empty($params['path']) || !is_string($params['path'])) {
+            throw new InvalidArgumentException('@Route.path must be not an empty string.');
         }
-        if (isset($params['priority'])) {
-            $this->priority = $params['priority'];
+    }
+
+    /**
+     * @param array $params
+     * @return void
+     * @throws InvalidArgumentException
+     */
+    private function assertValidMethods(array $params) : void
+    {
+        if (empty($params['methods']) || !is_array($params['methods'])) {
+            throw new InvalidArgumentException('@Route.methods must be not an empty array.');
+        }
+
+        foreach ($params['methods'] as $method) {
+            if (!is_string($method)) {
+                throw new InvalidArgumentException('@Route.methods must contain only strings.');
+            }
+        }
+    }
+
+    /**
+     * @param array $params
+     * @return void
+     * @throws InvalidArgumentException
+     */
+    private function assertValidMiddlewares(array $params) : void
+    {
+        if (!isset($params['middlewares'])) {
+            return;
+        } elseif (!is_array($params['middlewares'])) {
+            throw new InvalidArgumentException('@Route.middlewares must be an array.');
+        }
+
+        foreach ($params['middlewares'] as $middleware) {
+            if (!is_string($middleware)) {
+                throw new InvalidArgumentException('@Route.middlewares must contain only strings.');
+            } elseif (!class_exists($middleware)) {
+                throw new InvalidArgumentException('@Route.middlewares contains nonexistent class.');
+            } elseif (!is_subclass_of($middleware, MiddlewareInterface::class)) {
+                throw new InvalidArgumentException('@Route.middlewares contains non middleware class.');
+            }
+        }
+    }
+
+    /**
+     * @param array $params
+     * @return void
+     * @throws InvalidArgumentException
+     */
+    private function assertValidAttributes(array $params) : void
+    {
+        if (!isset($params['attributes'])) {
+            return;
+        } elseif (!is_array($params['attributes'])) {
+            throw new InvalidArgumentException('@Route.attributes must be an array.');
+        }
+    }
+
+    /**
+     * @param array $params
+     * @return void
+     * @throws InvalidArgumentException
+     */
+    private function assertValidPriority(array $params) : void
+    {
+        if (isset($params['priority']) && !is_int($params['priority'])) {
+            throw new InvalidArgumentException('@Route.priority must be an integer.');
         }
     }
 }
