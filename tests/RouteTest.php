@@ -232,8 +232,8 @@ class RouteTest extends TestCase
     }
 
     /**
-      * @return void
-      */
+     * @return void
+     */
     public function testBuildRegex() : void
     {
         $route = new Fixture\TestRoute();

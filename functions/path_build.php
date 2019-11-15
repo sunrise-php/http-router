@@ -36,9 +36,9 @@ use function sprintf;
  */
 function path_build(string $path, array $attributes = [], bool $strict = false) : string
 {
-    $regex = '/{([0-9A-Za-z_]+)(?:<([^<#>]+)>)?}/';
+    $parsingRule = '/{([0-9A-Za-z_]+)(?:<([^<#>]+)>)?}/';
 
-    return preg_replace_callback($regex, function ($match) use ($path, $attributes, $strict) {
+    return preg_replace_callback($parsingRule, function ($match) use ($path, $attributes, $strict) {
         if (!isset($attributes[$match[1]])) {
             throw new InvalidArgumentException(
                 sprintf('[%s] missing attribute "%s".', $path, $match[1])

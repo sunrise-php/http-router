@@ -34,7 +34,8 @@ use const PREG_SET_ORDER;
  */
 function path_regex(string $path) : string
 {
-    preg_match_all('/{([0-9A-Za-z_]+)(?:<([^<#>]+)>)?}/', $path, $matches, PREG_SET_ORDER);
+    $parsingRule = '/{([0-9A-Za-z_]+)(?:<([^<#>]+)>)?}/';
+    preg_match_all($parsingRule, $path, $matches, PREG_SET_ORDER);
 
     foreach ($matches as $match) {
         $path = str_replace($match[0], '{' . $match[1] . '}', $path);
