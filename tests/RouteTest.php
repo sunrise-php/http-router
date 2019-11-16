@@ -207,7 +207,7 @@ class RouteTest extends TestCase
         $route->setPath('/foo/{bar}/{baz}/quux');
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('[' . $route->getPath() . '] missing attribute "baz".');
+        $this->expectExceptionMessage('[/foo/bar/{baz}/quux] missing attribute "baz".');
 
         $route->buildPath([
             'bar' => 'bar',
@@ -223,7 +223,7 @@ class RouteTest extends TestCase
         $route->setPath('/foo/{bar<\w+>}/{baz<\d+>}/quux');
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('[' . $route->getPath() . '] "baz" must match "\d+".');
+        $this->expectExceptionMessage('[/foo/bar/{baz<\d+>}/quux] "baz" must match "\d+".');
 
         $route->buildPath([
             'bar' => 'bar',

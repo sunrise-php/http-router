@@ -20,11 +20,12 @@ use InvalidArgumentException;
  * Import functions
  */
 use function preg_match;
-use function preg_replace_callback;
 use function sprintf;
 
 /**
- * Builds the given path with the given attributes
+ * Builds the given path using the given attributes
+ *
+ * If strict mode is enabled, each attribute value will be validated.
  *
  * @param string $path
  * @param array $attributes
@@ -36,25 +37,33 @@ use function sprintf;
  */
 function path_build(string $path, array $attributes = [], bool $strict = false) : string
 {
-    $parsingRule = '/{([0-9A-Za-z_]+)(?:<([^<#>]+)>)?}/';
+    $matches = path_parse($path);
 
-    return preg_replace_callback($parsingRule, function ($match) use ($path, $attributes, $strict) {
-        if (!isset($attributes[$match[1]])) {
-            throw new InvalidArgumentException(
-                sprintf('[%s] missing attribute "%s".', $path, $match[1])
-            );
+    foreach ($matches as $match) {
+        if (!isset($attributes[$match['name']])) {
+            if (!$match['isOptional']) {
+                throw new InvalidArgumentException(
+                    sprintf('[%s] missing attribute "%s".', $path, $match['name'])
+                );
+            }
+
+            $path = str_replace($match['withParentheses'], '', $path);
         }
 
-        $attributes[$match[1]] = (string) $attributes[$match[1]];
+        $attributes[$match['name']] = (string) $attributes[$match['name']];
 
-        if ($strict && isset($match[2])) {
-            if (!preg_match('#' . $match[2] . '#u', $attributes[$match[1]])) {
+        if ($strict && isset($match['pattern'])) {
+            if (!preg_match('#' . $match['pattern'] . '#u', $attributes[$match['name']])) {
                 throw new InvalidArgumentException(
-                    sprintf('[%s] "%s" must match "%s".', $path, $match[1], $match[2])
+                    sprintf('[%s] "%s" must match "%s".', $path, $match['name'], $match['pattern'])
                 );
             }
         }
 
-        return $attributes[$match[1]];
-    }, $path);
+        $path = str_replace($match['raw'], $attributes[$match['name']], $path);
+    }
+
+    $path = str_replace(['(', ')'], '', $path);
+
+    return $path;
 }
