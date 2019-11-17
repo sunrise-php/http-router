@@ -314,32 +314,48 @@ class RouteCollectionTest extends TestCase
 
     /**
      * @return void
+     */
+    public function testGroupWithMiddlewareInheritance() : void
+    {
+        $this->assertTrue(false);
+    }
+
+    /**
+     * @return void
      *
      * @todo This test needs to be improved...
      */
     public function testGroup() : void
     {
         $collection = new RouteCollection();
-
+        $collection->addMiddlewares(new Fixture\NamedBlankMiddleware('main'));
         $collection->get('qux', '/qux', new Fixture\BlankRequestHandler());
 
         $collection->group('/', function ($group) {
+            $group->addMiddlewares(new Fixture\NamedBlankMiddleware('deep1'));
             $group->get('foo', '/foo', new Fixture\BlankRequestHandler());
 
             $group->group('/api', function ($group) {
+                $group->addMiddlewares(new Fixture\NamedBlankMiddleware('deep2'));
+
                 $group->group('/v1', function ($group) {
+                    $group->addMiddlewares(new Fixture\NamedBlankMiddleware('deep3'));
+
                     $group->group('/section', function ($group) {
+                        $group->addMiddlewares(new Fixture\NamedBlankMiddleware('deep4'));
                         $group->get('api.section.all', '/list', new Fixture\BlankRequestHandler());
                         $group->get('api.section.read', '/read/{id}', new Fixture\BlankRequestHandler());
                     });
 
                     $group->group('/entity', function ($group) {
+                        $group->addMiddlewares(new Fixture\NamedBlankMiddleware('deep4'));
                         $group->get('api.entity.all', '/list', new Fixture\BlankRequestHandler());
                         $group->get('api.entity.read', '/read/{id}', new Fixture\BlankRequestHandler());
                     });
                 });
             });
 
+            $group->addMiddlewares(new Fixture\NamedBlankMiddleware('deep4'));
             $group->get('bar', '/bar', new Fixture\BlankRequestHandler());
 
             $group->group('/admin', function ($group) {
