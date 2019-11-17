@@ -258,12 +258,6 @@ function path_parse(string $path) : array
         );
     }
 
-    if ($cursorInPattern) {
-        throw new InvalidArgumentException(
-            sprintf('[%s] the route path contains non-closed pattern.', $path)
-        );
-    }
-
     $cache[$path] = $attributes;
 
     return $attributes;

@@ -36,7 +36,8 @@ function path_regex(string $path) : string
     $path = str_replace(['(', ')'], ['(?:', ')?'], $path);
 
     foreach ($matches as $match) {
-        $subpattern = '(?<' . $match['name'] . '>' . ($match['pattern'] ?? '[^/]+') . ')';
+        $pattern = $match['pattern'] ?? '[^/]+';
+        $subpattern = '(?<' . $match['name'] . '>' . $pattern . ')';
 
         $path = str_replace('{' . $match['name'] . '}', $subpattern, $path);
     }

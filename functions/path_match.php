@@ -27,12 +27,13 @@ use function preg_match;
  */
 function path_match(string $path, string $subject, &$attributes = null) : bool
 {
+    $attributes = [];
+
     $regex = path_regex($path);
     if (!preg_match($regex, $subject, $matches)) {
         return false;
     }
 
-    $attributes = [];
     foreach ($matches as $key => $value) {
         if (!is_int($key) && '' !== $value) {
             $attributes[$key] = $value;

@@ -38,6 +38,7 @@ use function sprintf;
  */
 function path_build(string $path, array $attributes = [], bool $strict = false) : string
 {
+    $result = $path;
     $matches = path_parse($path);
 
     foreach ($matches as $match) {
@@ -51,7 +52,7 @@ function path_build(string $path, array $attributes = [], bool $strict = false) 
                 );
             }
 
-            $path = str_replace($match['withParentheses'], '', $path);
+            $result = str_replace($match['withParentheses'], '', $result);
 
             continue;
         }
@@ -71,10 +72,10 @@ function path_build(string $path, array $attributes = [], bool $strict = false) 
             }
         }
 
-        $path = str_replace($match['raw'], $replacement, $path);
+        $result = str_replace($match['raw'], $replacement, $result);
     }
 
-    $path = str_replace(['(', ')'], '', $path);
+    $result = str_replace(['(', ')'], '', $result);
 
-    return $path;
+    return $result;
 }
