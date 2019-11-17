@@ -313,44 +313,9 @@ class RouteCollectionTest extends TestCase
     }
 
     /**
-     * @return array
-     */
-    public function makeVerbableRoutesDataProvider() : array
-    {
-        return [
-            [
-                'head',
-                'HEAD',
-            ],
-            [
-                'get',
-                'GET',
-            ],
-            [
-                'post',
-                'POST',
-            ],
-            [
-                'put',
-                'PUT',
-            ],
-            [
-                'patch',
-                'PATCH',
-            ],
-            [
-                'delete',
-                'DELETE',
-            ],
-            [
-                'purge',
-                'PURGE',
-            ],
-        ];
-    }
-
-    /**
      * @return void
+     *
+     * @todo This test needs to be improved...
      */
     public function testGroup() : void
     {
@@ -418,5 +383,42 @@ class RouteCollectionTest extends TestCase
         ];
 
         $this->assertSame($expectedPaths, $builtPaths);
+    }
+
+    /**
+     * @return array
+     */
+    public function makeVerbableRoutesDataProvider() : array
+    {
+        return [
+            [
+                'head',
+                'HEAD',
+            ],
+            [
+                'get',
+                'GET',
+            ],
+            [
+                'post',
+                'POST',
+            ],
+            [
+                'put',
+                'PUT',
+            ],
+            [
+                'patch',
+                'PATCH',
+            ],
+            [
+                'delete',
+                'DELETE',
+            ],
+            [
+                'purge',
+                'PURGE',
+            ],
+        ];
     }
 }

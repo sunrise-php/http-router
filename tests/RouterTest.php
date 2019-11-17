@@ -324,6 +324,8 @@ class RouterTest extends TestCase
 
     /**
      * @return void
+     *
+     * @todo This test needs to be improved...
      */
     public function testMatchPatterns() : void
     {

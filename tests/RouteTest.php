@@ -185,6 +185,9 @@ class RouteTest extends TestCase
         $route->setPath('/foo/{bar}');
         $this->assertSame('/foo/bar', $route->buildPath(['bar' => 'bar']));
 
+        $route->setPath('/foo(/bar/{baz}/qux)/quux');
+        $this->assertSame('/foo/quux', $route->buildPath());
+
         $route->setPath('/foo/{bar<\w+>}');
         $this->assertSame('/foo/bar', $route->buildPath(['bar' => 'bar'], true));
 
