@@ -21,10 +21,8 @@ use function str_replace;
  * Converts the given path to Regular Expression
  *
  * @param string $path
- * @return string
  *
- * @link https://www.php.net/manual/en/regexp.reference.meta.php
- * @link https://www.php.net/manual/en/regexp.reference.subpatterns.php
+ * @return string
  */
 function path_regex(string $path) : string
 {
@@ -35,11 +33,10 @@ function path_regex(string $path) : string
     }
 
     $path = addcslashes($path, '#$*+-.?[\]^|');
-
     $path = str_replace(['(', ')'], ['(?:', ')?'], $path);
 
     foreach ($matches as $match) {
-        $subpattern = '(?<' . $match['name'] . '>' . ($match['pattern'] ?: '[^/]+') . ')';
+        $subpattern = '(?<' . $match['name'] . '>' . ($match['pattern'] ?? '[^/]+') . ')';
 
         $path = str_replace('{' . $match['name'] . '}', $subpattern, $path);
     }

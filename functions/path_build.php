@@ -19,6 +19,7 @@ use InvalidArgumentException;
 /**
  * Import functions
  */
+use function addcslashes;
 use function preg_match;
 use function sprintf;
 
@@ -40,27 +41,37 @@ function path_build(string $path, array $attributes = [], bool $strict = false) 
     $matches = path_parse($path);
 
     foreach ($matches as $match) {
+        // handle not required attributes...
         if (!isset($attributes[$match['name']])) {
             if (!$match['isOptional']) {
+                $errmsg = '[%s] build error: no value given for the attribute "%s".';
+
                 throw new InvalidArgumentException(
-                    sprintf('[%s] missing attribute "%s".', $path, $match['name'])
+                    sprintf($errmsg, $path, $match['name'])
                 );
             }
 
             $path = str_replace($match['withParentheses'], '', $path);
+
+            continue;
         }
 
-        $attributes[$match['name']] = (string) $attributes[$match['name']];
+        $replacement = (string) $attributes[$match['name']];
 
+        // validate the given attributes values...
         if ($strict && isset($match['pattern'])) {
-            if (!preg_match('#' . $match['pattern'] . '#u', $attributes[$match['name']])) {
+            $pattern = addcslashes($match['pattern'], '#');
+
+            if (!preg_match('#^' . $pattern . '$#u', $replacement)) {
+                $errmsg = '[%s] build error: the given value for the attribute "%s" does not match its pattern.';
+
                 throw new InvalidArgumentException(
-                    sprintf('[%s] "%s" must match "%s".', $path, $match['name'], $match['pattern'])
+                    sprintf($errmsg, $path, $match['name'])
                 );
             }
         }
 
-        $path = str_replace($match['raw'], $attributes[$match['name']], $path);
+        $path = str_replace($match['raw'], $replacement, $path);
     }
 
     $path = str_replace(['(', ')'], '', $path);
