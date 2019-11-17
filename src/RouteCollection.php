@@ -292,6 +292,7 @@ class RouteCollection implements RouteCollectionInterface
     {
         $children = new self;
         $children->setPrefix($this->prefix . $prefix);
+        $children->addMiddlewares(...$this->middlewares);
 
         $callback($children);
 
