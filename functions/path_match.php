@@ -25,7 +25,7 @@ use function preg_match;
  *
  * @return bool
  */
-function path_match(string $path, string $subject, &$attributes = []) : bool
+function path_match(string $path, string $subject, &$attributes = null) : bool
 {
     $regex = path_regex($path);
     if (!preg_match($regex, $subject, $matches)) {
