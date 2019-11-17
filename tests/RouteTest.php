@@ -11,6 +11,12 @@ use Sunrise\Http\Router\RouteInterface;
 use InvalidArgumentException;
 
 /**
+ * Import functions
+ */
+use function Sunrise\Http\Router\path_build;
+use function Sunrise\Http\Router\path_regex;
+
+/**
  * RouteTest
  */
 class RouteTest extends TestCase
@@ -181,63 +187,9 @@ class RouteTest extends TestCase
     public function testBuildPath() : void
     {
         $route = new Fixture\TestRoute();
-
-        $route->setPath('/foo/{bar}');
-        $this->assertSame('/foo/bar', $route->buildPath(['bar' => 'bar']));
-
         $route->setPath('/foo(/bar/{baz}/qux)/quux');
-        $this->assertSame('/foo/quux', $route->buildPath());
 
-        $route->setPath('/foo/{bar<\w+>}');
-        $this->assertSame('/foo/bar', $route->buildPath(['bar' => 'bar'], true));
-
-        $route->setPath('/foo/{bar<\d+>}');
-        $this->assertSame('/foo/100', $route->buildPath(['bar' => 100], true));
-
-        $route = $route->withAddedAttributes(['bar' => 'bar']);
-        $this->assertSame('/foo/100', $route->buildPath(['bar' => 100], true));
-
-        $route = $route->withAddedAttributes(['bar' => 100]);
-        $this->assertSame('/foo/100', $route->buildPath([], true));
-    }
-
-    /**
-     * @return void
-     */
-    public function testBuildPathWithMissingAttribute() : void
-    {
-        $route = new Fixture\TestRoute();
-        $route->setPath('/foo/{bar}/{baz}/quux');
-
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(
-            '[/foo/bar/{baz}/quux] build error: ' .
-            'no value given for the attribute "baz".'
-        );
-
-        $route->buildPath([
-            'bar' => 'bar',
-        ]);
-    }
-
-    /**
-     * @return void
-     */
-    public function testBuildPathWithInvalidAttributeValue() : void
-    {
-        $route = new Fixture\TestRoute();
-        $route->setPath('/foo/{bar<\w+>}/{baz<\d+>}/quux');
-
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(
-            '[/foo/bar/{baz<\d+>}/quux] build error: ' .
-            'the given value for the attribute "baz" does not match its pattern.'
-        );
-
-        $route->buildPath([
-            'bar' => 'bar',
-            'baz' => 'baz',
-        ], true);
+        $this->assertSame(path_build($route->getPath()), $route->buildPath());
     }
 
     /**
@@ -246,17 +198,8 @@ class RouteTest extends TestCase
     public function testBuildRegex() : void
     {
         $route = new Fixture\TestRoute();
+        $route->setPath('/foo(/bar/{baz<\w+>}/qux)/quux');
 
-        $route->setPath('/');
-        $this->assertSame('#^/$#uD', $route->buildRegex());
-
-        $route->setPath('/{foo}');
-        $this->assertSame('#^/(?<foo>[^/]+)$#uD', $route->buildRegex());
-
-        $route->setPath('/{foo}(/{bar})');
-        $this->assertSame('#^/(?<foo>[^/]+)(?:/(?<bar>[^/]+))?$#uD', $route->buildRegex());
-
-        $route->setPath('/{foo}(/{bar})/{baz<\w+>}');
-        $this->assertSame('#^/(?<foo>[^/]+)(?:/(?<bar>[^/]+))?/(?<baz>\w+)$#uD', $route->buildRegex());
+        $this->assertSame(path_regex($route->getPath()), $route->buildRegex());
     }
 }

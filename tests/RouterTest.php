@@ -8,12 +8,9 @@ namespace Sunrise\Http\Router\Tests;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Exception\ExceptionInterface;
 use Sunrise\Http\Router\Exception\MethodNotAllowedException;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
 use Sunrise\Http\Router\RouteCollection;
-use Sunrise\Http\Router\RouteCollectionInterface;
-use Sunrise\Http\Router\RouteInterface;
 use Sunrise\Http\Router\Router;
 use Sunrise\Http\ServerRequest\ServerRequestFactory;
 
@@ -112,7 +109,7 @@ class RouterTest extends TestCase
         $router->addRoutes(...$routes);
 
         $request = (new ServerRequestFactory)
-            ->createServerRequest('GET', '/');
+            ->createServerRequest('GET', $routes[0]->getPath());
 
         $this->expectException(MethodNotAllowedException::class);
 
@@ -320,55 +317,5 @@ class RouterTest extends TestCase
         );
 
         $this->assertTrue($fallback->isRunned());
-    }
-
-    /**
-     * @return void
-     *
-     * @todo This test needs to be improved...
-     */
-    public function testMatchPatterns() : void
-    {
-        $router = new Router();
-        $router->get('test', '/{foo<[0-9]+>}/{bar<[a-zA-Z]+>}(/{baz<.*?>})', new Fixture\BlankRequestHandler());
-
-        $route = $this->discoverRoute($router, 'GET', '/1990/Surgut/Tyumen');
-        $this->assertEquals($route->getAttributes(), [
-            'foo' => '1990',
-            'bar' => 'Surgut',
-            'baz' => 'Tyumen',
-        ]);
-
-        $route = $this->discoverRoute($router, 'GET', '/1990/Surgut/Tyumen/Moscow');
-        $this->assertEquals($route->getAttributes(), [
-            'foo' => '1990',
-            'bar' => 'Surgut',
-            'baz' => 'Tyumen/Moscow',
-        ]);
-
-        $route = $this->discoverRoute($router, 'GET', '/Oops/Surgut/Tyumen/Moscow');
-        $this->assertNull($route);
-
-        $route = $this->discoverRoute($router, 'GET', '/1990/2018/Moscow');
-        $this->assertNull($route);
-    }
-
-    /**
-     * @param Router $router
-     * @param string $method
-     * @param string $uri
-     *
-     * @return null|RouteInterface
-     */
-    private function discoverRoute(Router $router, string $method, string $uri) : ?RouteInterface
-    {
-        $request = (new ServerRequestFactory)
-        ->createServerRequest($method, $uri);
-
-        try {
-            return $router->match($request);
-        } catch (ExceptionInterface $e) {
-            return null;
-        }
     }
 }
