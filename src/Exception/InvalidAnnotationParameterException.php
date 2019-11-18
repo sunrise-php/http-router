@@ -17,8 +17,8 @@ namespace Sunrise\Http\Router\Exception;
 use RuntimeException;
 
 /**
- * BuildPathInvalidValueException
+ * InvalidAnnotationParameterException
  */
-class BuildPathInvalidValueException extends RuntimeException implements ExceptionInterface
+class InvalidAnnotationParameterException extends RuntimeException implements ExceptionInterface
 {
 }

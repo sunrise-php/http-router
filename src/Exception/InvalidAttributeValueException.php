@@ -17,8 +17,8 @@ namespace Sunrise\Http\Router\Exception;
 use RuntimeException;
 
 /**
- * BuildPathSkippedRequiredValueException
+ * InvalidAttributeValueException
  */
-class BuildPathSkippedRequiredValueException extends RuntimeException implements ExceptionInterface
+class InvalidAttributeValueException extends RuntimeException implements ExceptionInterface
 {
 }

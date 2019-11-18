@@ -6,8 +6,8 @@ namespace Sunrise\Http\Router\Tests;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\Exception\BuildPathInvalidValueException;
-use Sunrise\Http\Router\Exception\BuildPathSkippedRequiredValueException;
+use Sunrise\Http\Router\Exception\InvalidAttributeValueException;
+use Sunrise\Http\Router\Exception\MissingAttributeValueException;
 
 /**
  * Import functions
@@ -41,7 +41,7 @@ class PathBuildTest extends TestCase
     {
         $path = '/foo/{bar}/{baz}';
 
-        $this->expectException(BuildPathSkippedRequiredValueException::class);
+        $this->expectException(MissingAttributeValueException::class);
         $this->expectExceptionMessage(
             '[' . $path . '] build error: no value given for the attribute "baz".'
         );
@@ -58,7 +58,7 @@ class PathBuildTest extends TestCase
     {
         $path = '/foo/{bar}/{baz<[a-z]+>}';
 
-        $this->expectException(BuildPathInvalidValueException::class);
+        $this->expectException(InvalidAttributeValueException::class);
         $this->expectExceptionMessage(
             '[' . $path . '] build error: the given value for the attribute "baz" does not match its pattern.'
         );

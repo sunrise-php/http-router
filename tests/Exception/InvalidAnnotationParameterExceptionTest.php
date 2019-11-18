@@ -7,13 +7,13 @@ namespace Sunrise\Http\Router\Tests\Exception;
  */
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Exception\ExceptionInterface;
-use Sunrise\Http\Router\Exception\BuildPathSkippedRequiredValueException;
+use Sunrise\Http\Router\Exception\InvalidAnnotationParameterException;
 use RuntimeException;
 
 /**
- * BuildPathSkippedRequiredValueExceptionTest
+ * InvalidAnnotationParameterExceptionTest
  */
-class BuildPathSkippedRequiredValueExceptionTest extends TestCase
+class InvalidAnnotationParameterExceptionTest extends TestCase
 {
 
     /**
@@ -21,9 +21,9 @@ class BuildPathSkippedRequiredValueExceptionTest extends TestCase
      */
     public function testConstructor() : void
     {
-        $exception = new BuildPathSkippedRequiredValueException();
+        $exception = new InvalidAnnotationParameterException();
 
-        $this->assertInstanceOf(RuntimeException::class, $exception);
         $this->assertInstanceOf(ExceptionInterface::class, $exception);
+        $this->assertInstanceOf(RuntimeException::class, $exception);
     }
 }

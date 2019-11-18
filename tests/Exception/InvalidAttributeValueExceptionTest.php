@@ -7,13 +7,13 @@ namespace Sunrise\Http\Router\Tests\Exception;
  */
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Exception\ExceptionInterface;
-use Sunrise\Http\Router\Exception\BuildPathInvalidValueException;
+use Sunrise\Http\Router\Exception\InvalidAttributeValueException;
 use RuntimeException;
 
 /**
- * BuildPathInvalidValueExceptionTest
+ * InvalidAttributeValueExceptionTest
  */
-class BuildPathInvalidValueExceptionTest extends TestCase
+class InvalidAttributeValueExceptionTest extends TestCase
 {
 
     /**
@@ -21,9 +21,9 @@ class BuildPathInvalidValueExceptionTest extends TestCase
      */
     public function testConstructor() : void
     {
-        $exception = new BuildPathInvalidValueException();
+        $exception = new InvalidAttributeValueException();
 
-        $this->assertInstanceOf(RuntimeException::class, $exception);
         $this->assertInstanceOf(ExceptionInterface::class, $exception);
+        $this->assertInstanceOf(RuntimeException::class, $exception);
     }
 }

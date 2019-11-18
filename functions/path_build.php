@@ -14,8 +14,8 @@ namespace Sunrise\Http\Router;
 /**
  * Import classes
  */
-use Sunrise\Http\Router\Exception\BuildPathInvalidValueException;
-use Sunrise\Http\Router\Exception\BuildPathSkippedRequiredValueException;
+use Sunrise\Http\Router\Exception\InvalidAttributeValueException;
+use Sunrise\Http\Router\Exception\MissingAttributeValueException;
 
 /**
  * Import functions
@@ -35,8 +35,8 @@ use function str_replace;
  *
  * @return string
  *
- * @throws BuildPathInvalidValueException
- * @throws BuildPathSkippedRequiredValueException
+ * @throws InvalidAttributeValueException
+ * @throws MissingAttributeValueException
  */
 function path_build(string $path, array $attributes = [], bool $strict = false) : string
 {
@@ -49,7 +49,7 @@ function path_build(string $path, array $attributes = [], bool $strict = false) 
             if (!$match['isOptional']) {
                 $errmsg = '[%s] build error: no value given for the attribute "%s".';
 
-                throw new BuildPathSkippedRequiredValueException(
+                throw new MissingAttributeValueException(
                     sprintf($errmsg, $path, $match['name'])
                 );
             }
@@ -66,7 +66,7 @@ function path_build(string $path, array $attributes = [], bool $strict = false) 
             if (!preg_match('#^' . $match['pattern'] . '$#u', $replacement)) {
                 $errmsg = '[%s] build error: the given value for the attribute "%s" does not match its pattern.';
 
-                throw new BuildPathInvalidValueException(
+                throw new InvalidAttributeValueException(
                     sprintf($errmsg, $path, $match['name'])
                 );
             }

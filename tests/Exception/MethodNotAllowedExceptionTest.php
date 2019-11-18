@@ -23,8 +23,8 @@ class MethodNotAllowedExceptionTest extends TestCase
     {
         $exception = new MethodNotAllowedException([]);
 
-        $this->assertInstanceOf(RuntimeException::class, $exception);
         $this->assertInstanceOf(ExceptionInterface::class, $exception);
+        $this->assertInstanceOf(RuntimeException::class, $exception);
     }
 
     /**

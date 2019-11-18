@@ -8,10 +8,10 @@ namespace Sunrise\Http\Router\Tests\Loader;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Sunrise\Http\Router\Annotation\Route as AnnotationRoute;
+use Sunrise\Http\Router\Exception\InvalidAnnotationParameterException;
 use Sunrise\Http\Router\Loader\AnnotationDirectoryLoader;
 use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\Tests\Fixture;
-use InvalidArgumentException;
 
 /**
  * Import functions
@@ -66,7 +66,7 @@ class AnnotationDirectoryLoaderTest extends TestCase
      */
     public function testAnnotationRouteNameMissing() : void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidAnnotationParameterException::class);
         $this->expectExceptionMessage('@Route.name must be not an empty string.');
 
         $destination = __DIR__ . '/../Fixture/Annotation/AnnotationRouteInvalid';
@@ -78,7 +78,7 @@ class AnnotationDirectoryLoaderTest extends TestCase
      */
     public function testAnnotationRouteNameEmpty() : void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidAnnotationParameterException::class);
         $this->expectExceptionMessage('@Route.name must be not an empty string.');
 
         $destination = __DIR__ . '/../Fixture/Annotation/AnnotationRouteInvalid';
@@ -90,7 +90,7 @@ class AnnotationDirectoryLoaderTest extends TestCase
      */
     public function testAnnotationRouteNameNotString() : void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidAnnotationParameterException::class);
         $this->expectExceptionMessage('@Route.name must be not an empty string.');
 
         $destination = __DIR__ . '/../Fixture/Annotation/AnnotationRouteInvalid';
@@ -102,7 +102,7 @@ class AnnotationDirectoryLoaderTest extends TestCase
      */
     public function testAnnotationRoutePathMissing() : void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidAnnotationParameterException::class);
         $this->expectExceptionMessage('@Route.path must be not an empty string.');
 
         $destination = __DIR__ . '/../Fixture/Annotation/AnnotationRouteInvalid';
@@ -114,7 +114,7 @@ class AnnotationDirectoryLoaderTest extends TestCase
      */
     public function testAnnotationRoutePathEmpty() : void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidAnnotationParameterException::class);
         $this->expectExceptionMessage('@Route.path must be not an empty string.');
 
         $destination = __DIR__ . '/../Fixture/Annotation/AnnotationRouteInvalid';
@@ -126,7 +126,7 @@ class AnnotationDirectoryLoaderTest extends TestCase
      */
     public function testAnnotationRoutePathNotString() : void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidAnnotationParameterException::class);
         $this->expectExceptionMessage('@Route.path must be not an empty string.');
 
         $destination = __DIR__ . '/../Fixture/Annotation/AnnotationRouteInvalid';
@@ -138,7 +138,7 @@ class AnnotationDirectoryLoaderTest extends TestCase
      */
     public function testAnnotationRouteMethodsMissing() : void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidAnnotationParameterException::class);
         $this->expectExceptionMessage('@Route.methods must be not an empty array.');
 
         $destination = __DIR__ . '/../Fixture/Annotation/AnnotationRouteInvalid';
@@ -150,7 +150,7 @@ class AnnotationDirectoryLoaderTest extends TestCase
      */
     public function testAnnotationRouteMethodsEmpty() : void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidAnnotationParameterException::class);
         $this->expectExceptionMessage('@Route.methods must be not an empty array.');
 
         $destination = __DIR__ . '/../Fixture/Annotation/AnnotationRouteInvalid';
@@ -162,7 +162,7 @@ class AnnotationDirectoryLoaderTest extends TestCase
      */
     public function testAnnotationRouteMethodsNotArray() : void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidAnnotationParameterException::class);
         $this->expectExceptionMessage('@Route.methods must be not an empty array.');
 
         $destination = __DIR__ . '/../Fixture/Annotation/AnnotationRouteInvalid';
@@ -174,7 +174,7 @@ class AnnotationDirectoryLoaderTest extends TestCase
      */
     public function testAnnotationRouteMethodsNotStringable() : void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidAnnotationParameterException::class);
         $this->expectExceptionMessage('@Route.methods must contain only strings.');
 
         $destination = __DIR__ . '/../Fixture/Annotation/AnnotationRouteInvalid';
@@ -186,7 +186,7 @@ class AnnotationDirectoryLoaderTest extends TestCase
      */
     public function testAnnotationRouteMiddlewaresNotArray() : void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidAnnotationParameterException::class);
         $this->expectExceptionMessage('@Route.middlewares must be an array.');
 
         $destination = __DIR__ . '/../Fixture/Annotation/AnnotationRouteInvalid';
@@ -198,7 +198,7 @@ class AnnotationDirectoryLoaderTest extends TestCase
      */
     public function testAnnotationRouteMiddlewaresNotStringable() : void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidAnnotationParameterException::class);
         $this->expectExceptionMessage('@Route.middlewares must contain only strings.');
 
         $destination = __DIR__ . '/../Fixture/Annotation/AnnotationRouteInvalid';
@@ -210,7 +210,7 @@ class AnnotationDirectoryLoaderTest extends TestCase
      */
     public function testAnnotationRouteMiddlewaresContainNonexistenceClass() : void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidAnnotationParameterException::class);
         $this->expectExceptionMessage('@Route.middlewares contains nonexistent class.');
 
         $destination = __DIR__ . '/../Fixture/Annotation/AnnotationRouteInvalid';
@@ -222,7 +222,7 @@ class AnnotationDirectoryLoaderTest extends TestCase
      */
     public function testAnnotationRouteMiddlewaresContainNotMiddleware() : void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidAnnotationParameterException::class);
         $this->expectExceptionMessage('@Route.middlewares contains non middleware class.');
 
         $destination = __DIR__ . '/../Fixture/Annotation/AnnotationRouteInvalid';
@@ -234,7 +234,7 @@ class AnnotationDirectoryLoaderTest extends TestCase
      */
     public function testAnnotationRouteAttributesNotArray() : void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidAnnotationParameterException::class);
         $this->expectExceptionMessage('@Route.attributes must be an array.');
 
         $destination = __DIR__ . '/../Fixture/Annotation/AnnotationRouteInvalid';
@@ -246,7 +246,7 @@ class AnnotationDirectoryLoaderTest extends TestCase
      */
     public function testAnnotationRoutePriorityNotInteger() : void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidAnnotationParameterException::class);
         $this->expectExceptionMessage('@Route.priority must be an integer.');
 
         $destination = __DIR__ . '/../Fixture/Annotation/AnnotationRouteInvalid';

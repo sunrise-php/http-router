@@ -15,7 +15,7 @@ namespace Sunrise\Http\Router\Annotation;
  * Import classes
  */
 use Psr\Http\Server\MiddlewareInterface;
-use InvalidArgumentException;
+use Sunrise\Http\Router\Exception\InvalidAnnotationParameterException;
 
 /**
  * Import functions
@@ -97,36 +97,36 @@ final class Route
     /**
      * @param array $params
      * @return void
-     * @throws InvalidArgumentException
+     * @throws InvalidAnnotationParameterException
      */
     private function assertValidName(array $params) : void
     {
         if (empty($params['name']) || !is_string($params['name'])) {
-            throw new InvalidArgumentException('@Route.name must be not an empty string.');
+            throw new InvalidAnnotationParameterException('@Route.name must be not an empty string.');
         }
     }
 
     /**
      * @param array $params
      * @return void
-     * @throws InvalidArgumentException
+     * @throws InvalidAnnotationParameterException
      */
     private function assertValidPath(array $params) : void
     {
         if (empty($params['path']) || !is_string($params['path'])) {
-            throw new InvalidArgumentException('@Route.path must be not an empty string.');
+            throw new InvalidAnnotationParameterException('@Route.path must be not an empty string.');
         }
     }
 
     /**
      * @param array $params
      * @return void
-     * @throws InvalidArgumentException
+     * @throws InvalidAnnotationParameterException
      */
     private function assertValidMethods(array $params) : void
     {
         if (empty($params['methods']) || !is_array($params['methods'])) {
-            throw new InvalidArgumentException('@Route.methods must be not an empty array.');
+            throw new InvalidAnnotationParameterException('@Route.methods must be not an empty array.');
         }
 
         foreach ($params['methods'] as $method) {
@@ -137,12 +137,12 @@ final class Route
     /**
      * @param array $params
      * @return void
-     * @throws InvalidArgumentException
+     * @throws InvalidAnnotationParameterException
      */
     private function assertValidMiddlewares(array $params) : void
     {
         if (!is_array($params['middlewares'])) {
-            throw new InvalidArgumentException('@Route.middlewares must be an array.');
+            throw new InvalidAnnotationParameterException('@Route.middlewares must be an array.');
         }
 
         foreach ($params['middlewares'] as $middleware) {
@@ -153,56 +153,56 @@ final class Route
     /**
      * @param array $params
      * @return void
-     * @throws InvalidArgumentException
+     * @throws InvalidAnnotationParameterException
      */
     private function assertValidAttributes(array $params) : void
     {
         if (!is_array($params['attributes'])) {
-            throw new InvalidArgumentException('@Route.attributes must be an array.');
+            throw new InvalidAnnotationParameterException('@Route.attributes must be an array.');
         }
     }
 
     /**
      * @param array $params
      * @return void
-     * @throws InvalidArgumentException
+     * @throws InvalidAnnotationParameterException
      */
     private function assertValidPriority(array $params) : void
     {
         if (!is_int($params['priority'])) {
-            throw new InvalidArgumentException('@Route.priority must be an integer.');
+            throw new InvalidAnnotationParameterException('@Route.priority must be an integer.');
         }
     }
 
     /**
      * @param mixed $method
      * @return void
-     * @throws InvalidArgumentException
+     * @throws InvalidAnnotationParameterException
      */
     private function assertValidMethod($method) : void
     {
         if (!is_string($method)) {
-            throw new InvalidArgumentException('@Route.methods must contain only strings.');
+            throw new InvalidAnnotationParameterException('@Route.methods must contain only strings.');
         }
     }
 
     /**
      * @param mixed $middleware
      * @return void
-     * @throws InvalidArgumentException
+     * @throws InvalidAnnotationParameterException
      */
     private function assertValidMiddleware($middleware) : void
     {
         if (!is_string($middleware)) {
-            throw new InvalidArgumentException('@Route.middlewares must contain only strings.');
+            throw new InvalidAnnotationParameterException('@Route.middlewares must contain only strings.');
         }
 
         if (!class_exists($middleware)) {
-            throw new InvalidArgumentException('@Route.middlewares contains nonexistent class.');
+            throw new InvalidAnnotationParameterException('@Route.middlewares contains nonexistent class.');
         }
 
         if (!is_subclass_of($middleware, MiddlewareInterface::class)) {
-            throw new InvalidArgumentException('@Route.middlewares contains non middleware class.');
+            throw new InvalidAnnotationParameterException('@Route.middlewares contains non middleware class.');
         }
     }
 }

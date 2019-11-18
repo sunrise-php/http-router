@@ -7,13 +7,13 @@ namespace Sunrise\Http\Router\Tests\Exception;
  */
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Exception\ExceptionInterface;
-use Sunrise\Http\Router\Exception\RouteNotFoundException;
+use Sunrise\Http\Router\Exception\MissingAttributeValueException;
 use RuntimeException;
 
 /**
- * RouteNotFoundExceptionTest
+ * MissingAttributeValueExceptionTest
  */
-class RouteNotFoundExceptionTest extends TestCase
+class MissingAttributeValueExceptionTest extends TestCase
 {
 
     /**
@@ -21,7 +21,7 @@ class RouteNotFoundExceptionTest extends TestCase
      */
     public function testConstructor() : void
     {
-        $exception = new RouteNotFoundException();
+        $exception = new MissingAttributeValueException();
 
         $this->assertInstanceOf(ExceptionInterface::class, $exception);
         $this->assertInstanceOf(RuntimeException::class, $exception);

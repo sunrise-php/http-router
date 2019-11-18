@@ -23,7 +23,7 @@ class InvalidPathExceptionTest extends TestCase
     {
         $exception = new InvalidPathException();
 
-        $this->assertInstanceOf(RuntimeException::class, $exception);
         $this->assertInstanceOf(ExceptionInterface::class, $exception);
+        $this->assertInstanceOf(RuntimeException::class, $exception);
     }
 }
