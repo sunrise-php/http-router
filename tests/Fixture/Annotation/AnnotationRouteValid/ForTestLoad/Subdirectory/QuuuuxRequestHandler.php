@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Tests\Fixture\Annotation\AnnotationRouteValid;
+namespace Sunrise\Http\Router\Tests\Fixture\Annotation\AnnotationRouteValid\ForTestLoad\Subdirectory;
 
 /**
  * Import classes
@@ -9,20 +9,20 @@ use Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler;
 
 /**
  * @Route(
- *   name="qux",
- *   path="/qux",
- *   methods={"GET", "POST"},
+ *   name="quuuux",
+ *   path="/quuuux",
+ *   methods={"PATCH", "DELETE"},
  *   middlewares={
  *     "Sunrise\Http\Router\Tests\Fixture\BlankMiddleware",
  *     "Sunrise\Http\Router\Tests\Fixture\BlankMiddleware"
  *   },
  *   attributes={
  *     "foo": "bar",
- *     "source": "qux"
+ *     "source": "quuuux"
  *   },
- *   priority=100
+ *   priority=400
  * )
  */
-class QuxRequestHandler extends BlankRequestHandler
+class QuuuuxRequestHandler extends BlankRequestHandler
 {
 }
