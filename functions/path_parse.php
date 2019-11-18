@@ -252,6 +252,12 @@ function path_parse(string $path) : array
         }
 
         if ($cursorInPattern) {
+            if ('#' === $char) {
+                throw new InvalidPathException(
+                    sprintf('[%s:%d] unallowed character "#" in an attribute pattern.', $path, $cursorPosition)
+                );
+            }
+
             $attributes[$attributeIndex]['pattern'] .= $char;
         }
     }

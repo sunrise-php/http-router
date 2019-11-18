@@ -20,9 +20,9 @@ use Sunrise\Http\Router\Exception\BuildPathSkippedRequiredValueException;
 /**
  * Import functions
  */
-use function addcslashes;
 use function preg_match;
 use function sprintf;
+use function str_replace;
 
 /**
  * Builds the given path using the given attributes
@@ -63,9 +63,7 @@ function path_build(string $path, array $attributes = [], bool $strict = false) 
 
         // validate the given attributes values...
         if ($strict && isset($match['pattern'])) {
-            $pattern = addcslashes($match['pattern'], '#');
-
-            if (!preg_match('#^' . $pattern . '$#u', $replacement)) {
+            if (!preg_match('#^' . $match['pattern'] . '$#u', $replacement)) {
                 $errmsg = '[%s] build error: the given value for the attribute "%s" does not match its pattern.';
 
                 throw new BuildPathInvalidValueException(

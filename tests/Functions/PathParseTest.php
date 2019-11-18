@@ -210,6 +210,19 @@ class PathParseTest extends TestCase
     /**
      * @return void
      */
+    public function testNumberSignInPattern() : void
+    {
+        $path = '/test/{foo<#>}';
+
+        $this->expectException(InvalidPathException::class);
+        $this->expectExceptionMessage('[' . $path . ':11] unallowed character "#" in an attribute pattern.');
+
+        path_parse($path);
+    }
+
+    /**
+     * @return void
+     */
     public function testNonClosedParentheses() : void
     {
         $path = '/test(';
