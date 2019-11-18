@@ -14,7 +14,7 @@ namespace Sunrise\Http\Router;
 /**
  * Import classes
  */
-use InvalidArgumentException;
+use Sunrise\Http\Router\Exception\InvalidPathException;
 
 /**
  * Import functions
@@ -59,7 +59,7 @@ const CHARACTER_TABLE_FOR_SUBPATTERN_NAME = [
  *
  * @return array
  *
- * @throws InvalidArgumentException If the given path syntax isn't valid.
+ * @throws InvalidPathException If the given path syntax isn't valid.
  */
 function path_parse(string $path) : array
 {
@@ -102,7 +102,7 @@ function path_parse(string $path) : array
 
         if ('(' === $char && !$cursorInAttribute) {
             if ($cursorInParentheses) {
-                throw new InvalidArgumentException(
+                throw new InvalidPathException(
                     sprintf('[%s:%d] parentheses inside parentheses are not allowed.', $path, $cursorPosition)
                 );
             }
@@ -114,13 +114,13 @@ function path_parse(string $path) : array
 
         if ('{' === $char && !$cursorInPattern) {
             if ($cursorInAttribute) {
-                throw new InvalidArgumentException(
+                throw new InvalidPathException(
                     sprintf('[%s:%d] braces inside attributes are not allowed.', $path, $cursorPosition)
                 );
             }
 
             if ($parenthesesBusy) {
-                throw new InvalidArgumentException(
+                throw new InvalidPathException(
                     sprintf('[%s:%d] multiple attributes inside parentheses are not allowed.', $path, $cursorPosition)
                 );
             }
@@ -143,7 +143,7 @@ function path_parse(string $path) : array
 
         if ('<' === $char && $cursorInAttribute) {
             if ($cursorInPattern) {
-                throw new InvalidArgumentException(
+                throw new InvalidPathException(
                     sprintf('[%s:%d] the char "<" inside patterns is not allowed.', $path, $cursorPosition)
                 );
             }
@@ -158,13 +158,13 @@ function path_parse(string $path) : array
 
         if ('>' === $char && $cursorInAttribute) {
             if (!$cursorInPattern) {
-                throw new InvalidArgumentException(
+                throw new InvalidPathException(
                     sprintf('[%s:%d] at position %2$d an extra char ">" was found.', $path, $cursorPosition)
                 );
             }
 
             if (null === $attributes[$attributeIndex]['pattern']) {
-                throw new InvalidArgumentException(
+                throw new InvalidPathException(
                     sprintf('[%s:%d] an attribute pattern is empty.', $path, $cursorPosition)
                 );
             }
@@ -178,13 +178,13 @@ function path_parse(string $path) : array
 
         if ('}' === $char && !$cursorInPattern) {
             if (!$cursorInAttribute) {
-                throw new InvalidArgumentException(
+                throw new InvalidPathException(
                     sprintf('[%s:%d] at position %2$d an extra closing brace was found.', $path, $cursorPosition)
                 );
             }
 
             if (null === $attributes[$attributeIndex]['name']) {
-                throw new InvalidArgumentException(
+                throw new InvalidPathException(
                     sprintf('[%s:%d] an attribute name is empty.', $path, $cursorPosition)
                 );
             }
@@ -200,7 +200,7 @@ function path_parse(string $path) : array
 
         if (')' === $char && !$cursorInAttribute) {
             if (!$cursorInParentheses) {
-                throw new InvalidArgumentException(
+                throw new InvalidPathException(
                     sprintf('[%s:%d] at position %2$d an extra closing parenthesis was found.', $path, $cursorPosition)
                 );
             }
@@ -234,7 +234,7 @@ function path_parse(string $path) : array
         if ($cursorInAttributeName) {
             if (null === $attributes[$attributeIndex]['name']) {
                 if (!isset(CHARACTER_TABLE_FOR_FIRST_CHARACTER_OF_SUBPATTERN_NAME[$char])) {
-                    throw new InvalidArgumentException(
+                    throw new InvalidPathException(
                         sprintf('[%s:%d] an attribute name must begin with "A-Za-z_".', $path, $cursorPosition)
                     );
                 }
@@ -242,7 +242,7 @@ function path_parse(string $path) : array
 
             if (null !== $attributes[$attributeIndex]['name']) {
                 if (!isset(CHARACTER_TABLE_FOR_SUBPATTERN_NAME[$char])) {
-                    throw new InvalidArgumentException(
+                    throw new InvalidPathException(
                         sprintf('[%s:%d] an attribute name must contain only "0-9A-Za-z_".', $path, $cursorPosition)
                     );
                 }
@@ -257,13 +257,13 @@ function path_parse(string $path) : array
     }
 
     if ($cursorInParentheses) {
-        throw new InvalidArgumentException(
+        throw new InvalidPathException(
             sprintf('[%s] the route path contains non-closed parentheses.', $path)
         );
     }
 
     if ($cursorInAttribute) {
-        throw new InvalidArgumentException(
+        throw new InvalidPathException(
             sprintf('[%s] the route path contains non-closed attribute.', $path)
         );
     }

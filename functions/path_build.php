@@ -14,7 +14,8 @@ namespace Sunrise\Http\Router;
 /**
  * Import classes
  */
-use InvalidArgumentException;
+use Sunrise\Http\Router\Exception\BuildPathInvalidValueException;
+use Sunrise\Http\Router\Exception\BuildPathSkippedRequiredValueException;
 
 /**
  * Import functions
@@ -34,7 +35,8 @@ use function sprintf;
  *
  * @return string
  *
- * @throws InvalidArgumentException
+ * @throws BuildPathInvalidValueException
+ * @throws BuildPathSkippedRequiredValueException
  */
 function path_build(string $path, array $attributes = [], bool $strict = false) : string
 {
@@ -47,7 +49,7 @@ function path_build(string $path, array $attributes = [], bool $strict = false) 
             if (!$match['isOptional']) {
                 $errmsg = '[%s] build error: no value given for the attribute "%s".';
 
-                throw new InvalidArgumentException(
+                throw new BuildPathSkippedRequiredValueException(
                     sprintf($errmsg, $path, $match['name'])
                 );
             }
@@ -66,7 +68,7 @@ function path_build(string $path, array $attributes = [], bool $strict = false) 
             if (!preg_match('#^' . $pattern . '$#u', $replacement)) {
                 $errmsg = '[%s] build error: the given value for the attribute "%s" does not match its pattern.';
 
-                throw new InvalidArgumentException(
+                throw new BuildPathInvalidValueException(
                     sprintf($errmsg, $path, $match['name'])
                 );
             }

@@ -6,7 +6,7 @@ namespace Sunrise\Http\Router\Tests;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
-use InvalidArgumentException;
+use Sunrise\Http\Router\Exception\InvalidPathException;
 
 /**
  * Import functions
@@ -67,7 +67,7 @@ class PathParseTest extends TestCase
     {
         $path = '/test(/{foo}(/{bar}))';
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidPathException::class);
         $this->expectExceptionMessage('[' . $path . ':12] parentheses inside parentheses are not allowed.');
 
         path_parse($path);
@@ -80,7 +80,7 @@ class PathParseTest extends TestCase
     {
         $path = '/test/{foo{bar}}';
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidPathException::class);
         $this->expectExceptionMessage('[' . $path . ':10] braces inside attributes are not allowed.');
 
         path_parse($path);
@@ -93,7 +93,7 @@ class PathParseTest extends TestCase
     {
         $path = '/test(/{foo}/{bar})';
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidPathException::class);
         $this->expectExceptionMessage('[' . $path . ':13] multiple attributes inside parentheses are not allowed.');
 
         path_parse($path);
@@ -106,7 +106,7 @@ class PathParseTest extends TestCase
     {
         $path = '/test/{foo<(?<digit>\d+)-\w+>}';
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidPathException::class);
         $this->expectExceptionMessage('[' . $path . ':13] the char "<" inside patterns is not allowed.');
 
         path_parse($path);
@@ -119,7 +119,7 @@ class PathParseTest extends TestCase
     {
         $path = '/test/{foo<[^>]+>}';
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidPathException::class);
         $this->expectExceptionMessage('[' . $path . ':16] at position 16 an extra char ">" was found.');
 
         path_parse($path);
@@ -132,7 +132,7 @@ class PathParseTest extends TestCase
     {
         $path = '/test/{foo<>}';
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidPathException::class);
         $this->expectExceptionMessage('[' . $path . ':11] an attribute pattern is empty.');
 
         path_parse($path);
@@ -145,7 +145,7 @@ class PathParseTest extends TestCase
     {
         $path = '/test/{foo}/bar}';
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidPathException::class);
         $this->expectExceptionMessage('[' . $path . ':15] at position 15 an extra closing brace was found.');
 
         path_parse($path);
@@ -158,7 +158,7 @@ class PathParseTest extends TestCase
     {
         $path = '/test/{}';
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidPathException::class);
         $this->expectExceptionMessage('[' . $path . ':7] an attribute name is empty.');
 
         path_parse($path);
@@ -171,7 +171,7 @@ class PathParseTest extends TestCase
     {
         $path = '/test(/{foo})/bar)';
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidPathException::class);
         $this->expectExceptionMessage('[' . $path . ':17] at position 17 an extra closing parenthesis was found.');
 
         path_parse($path);
@@ -186,7 +186,7 @@ class PathParseTest extends TestCase
     {
         $path = '/test/{' . $char . '}';
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidPathException::class);
         $this->expectExceptionMessage('[' . $path . ':7] an attribute name must begin with "A-Za-z_".');
 
         path_parse($path);
@@ -201,7 +201,7 @@ class PathParseTest extends TestCase
     {
         $path = '/test/{_' . $char . '}';
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidPathException::class);
         $this->expectExceptionMessage('[' . $path . ':8] an attribute name must contain only "0-9A-Za-z_".');
 
         path_parse($path);
@@ -214,7 +214,7 @@ class PathParseTest extends TestCase
     {
         $path = '/test(';
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidPathException::class);
         $this->expectExceptionMessage('[' . $path . '] the route path contains non-closed parentheses.');
 
         path_parse($path);
@@ -227,7 +227,7 @@ class PathParseTest extends TestCase
     {
         $path = '/test{';
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(InvalidPathException::class);
         $this->expectExceptionMessage('[' . $path . '] the route path contains non-closed attribute.');
 
         path_parse($path);
