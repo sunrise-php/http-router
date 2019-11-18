@@ -34,7 +34,7 @@ final class Route
 {
 
     /**
-     * @var object
+     * @var mixed
      */
     public $source;
 
