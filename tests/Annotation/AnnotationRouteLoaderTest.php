@@ -8,6 +8,7 @@ namespace Sunrise\Http\Router\Tests\Annotation;
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Annotation\Route as AnnotationRoute;
 use Sunrise\Http\Router\Annotation\AnnotationRouteLoader;
+use Sunrise\Http\Router\Tests\Fixture;
 use InvalidArgumentException;
 
 /**
@@ -15,7 +16,6 @@ use InvalidArgumentException;
  */
 use function class_alias;
 use function class_exists;
-use function get_class;
 
 /**
  * AnnotationRouteLoaderTest
@@ -227,31 +227,13 @@ class AnnotationRouteLoaderTest extends TestCase
 
     /**
      * @return void
-     *
-     * @todo This test needs to be improved...
      */
     public function testBuildRoutes() : void
     {
         $loader = new AnnotationRouteLoader();
         $loader->discover(__DIR__ . '/../Fixture/Annotation/AnnotationRouteValid');
 
-        $routesMap = [];
-        $builtRoutes = $loader->buildRoutes();
-
-        foreach ($builtRoutes as $i => $route) {
-            $routesMap[$i]['name'] = $route->getName();
-            $routesMap[$i]['path'] = $route->getPath();
-            $routesMap[$i]['methods'] = $route->getMethods();
-            $routesMap[$i]['requestHandler'] = get_class($route->getRequestHandler());
-            $routesMap[$i]['middlewares'] = [];
-            $routesMap[$i]['attributes'] = $route->getAttributes();
-
-            foreach ($route->getMiddlewares() as $middleware) {
-                $routesMap[$i]['middlewares'][] = get_class($middleware);
-            }
-        }
-
-        $expectedMap = [
+        $this->assertSame([
             [
                 'name' => 'quuuux',
                 'path' => '/quuuux',
@@ -312,8 +294,6 @@ class AnnotationRouteLoaderTest extends TestCase
                     'source' => 'qux',
                 ],
             ],
-        ];
-
-        $this->assertSame($expectedMap, $routesMap);
+        ], Fixture\Helper::routesToArray($loader->buildRoutes()));
     }
 }

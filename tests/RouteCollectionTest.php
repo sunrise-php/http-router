@@ -315,90 +315,69 @@ class RouteCollectionTest extends TestCase
     /**
      * @return void
      */
-    public function testGroupWithMiddlewareInheritance() : void
-    {
-        $this->assertTrue(false);
-    }
-
-    /**
-     * @return void
-     *
-     * @todo This test needs to be improved...
-     */
     public function testGroup() : void
     {
         $collection = new RouteCollection();
         $collection->addMiddlewares(new Fixture\NamedBlankMiddleware('main'));
-        $collection->get('qux', '/qux', new Fixture\BlankRequestHandler());
 
         $collection->group('/', function ($group) {
-            $group->addMiddlewares(new Fixture\NamedBlankMiddleware('deep1'));
-            $group->get('foo', '/foo', new Fixture\BlankRequestHandler());
+            $group->addMiddlewares(new Fixture\NamedBlankMiddleware('group'));
 
             $group->group('/api', function ($group) {
-                $group->addMiddlewares(new Fixture\NamedBlankMiddleware('deep2'));
+                $group->addMiddlewares(new Fixture\NamedBlankMiddleware('api'));
 
                 $group->group('/v1', function ($group) {
-                    $group->addMiddlewares(new Fixture\NamedBlankMiddleware('deep3'));
+                    $group->addMiddlewares(new Fixture\NamedBlankMiddleware('v1'));
+                    $group->get('ping.pong', '/ping', new Fixture\BlankRequestHandler());
+                });
 
-                    $group->group('/section', function ($group) {
-                        $group->addMiddlewares(new Fixture\NamedBlankMiddleware('deep4'));
-                        $group->get('api.section.all', '/list', new Fixture\BlankRequestHandler());
-                        $group->get('api.section.read', '/read/{id}', new Fixture\BlankRequestHandler());
-                    });
-
-                    $group->group('/entity', function ($group) {
-                        $group->addMiddlewares(new Fixture\NamedBlankMiddleware('deep4'));
-                        $group->get('api.entity.all', '/list', new Fixture\BlankRequestHandler());
-                        $group->get('api.entity.read', '/read/{id}', new Fixture\BlankRequestHandler());
-                    });
+                $group->group('/v2', function ($group) {
+                    $group->addMiddlewares(new Fixture\NamedBlankMiddleware('v2'));
+                    $group->get('ping.pong', '/ping', new Fixture\BlankRequestHandler());
                 });
             });
-
-            $group->addMiddlewares(new Fixture\NamedBlankMiddleware('deep4'));
-            $group->get('bar', '/bar', new Fixture\BlankRequestHandler());
-
-            $group->group('/admin', function ($group) {
-                $group->group('/catalog', function ($group) {
-                    $group->group('/section', function ($group) {
-                        $group->get('admin.section.all', '/list', new Fixture\BlankRequestHandler());
-                        $group->get('admin.section.read', '/read/{id}', new Fixture\BlankRequestHandler());
-                    });
-
-                    $group->group('/entity', function ($group) {
-                        $group->get('admin.entity.all', '/list', new Fixture\BlankRequestHandler());
-                        $group->get('admin.entity.read', '/read/{id}', new Fixture\BlankRequestHandler());
-                    });
-                });
-            });
-
-            $group->get('baz', '/baz', new Fixture\BlankRequestHandler());
         });
 
-        $collection->get('quux', '/quux', new Fixture\BlankRequestHandler());
+        $collection->get('home', '/', new Fixture\BlankRequestHandler());
 
-        $builtPaths = [];
-        foreach ($collection->getRoutes() as $route) {
-            $builtPaths[] = $route->getPath();
-        }
-
-        $expectedPaths = [
-            '/qux',
-            '/foo',
-            '/api/v1/section/list',
-            '/api/v1/section/read/{id}',
-            '/api/v1/entity/list',
-            '/api/v1/entity/read/{id}',
-            '/bar',
-            '/admin/catalog/section/list',
-            '/admin/catalog/section/read/{id}',
-            '/admin/catalog/entity/list',
-            '/admin/catalog/entity/read/{id}',
-            '/baz',
-            '/quux',
-        ];
-
-        $this->assertSame($expectedPaths, $builtPaths);
+        $this->assertSame([
+            [
+                'name' => 'ping.pong',
+                'path' => '/api/v1/ping',
+                'methods' => ['GET'],
+                'requestHandler' => 'Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler',
+                'middlewares' => [
+                    'Sunrise\Http\Router\Tests\Fixture\NamedBlankMiddleware:main',
+                    'Sunrise\Http\Router\Tests\Fixture\NamedBlankMiddleware:group',
+                    'Sunrise\Http\Router\Tests\Fixture\NamedBlankMiddleware:api',
+                    'Sunrise\Http\Router\Tests\Fixture\NamedBlankMiddleware:v1',
+                ],
+                'attributes' => [],
+            ],
+            [
+                'name' => 'ping.pong',
+                'path' => '/api/v2/ping',
+                'methods' => ['GET'],
+                'requestHandler' => 'Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler',
+                'middlewares' => [
+                    'Sunrise\Http\Router\Tests\Fixture\NamedBlankMiddleware:main',
+                    'Sunrise\Http\Router\Tests\Fixture\NamedBlankMiddleware:group',
+                    'Sunrise\Http\Router\Tests\Fixture\NamedBlankMiddleware:api',
+                    'Sunrise\Http\Router\Tests\Fixture\NamedBlankMiddleware:v2',
+                ],
+                'attributes' => [],
+            ],
+            [
+                'name' => 'home',
+                'path' => '/',
+                'methods' => ['GET'],
+                'requestHandler' => 'Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler',
+                'middlewares' => [
+                    'Sunrise\Http\Router\Tests\Fixture\NamedBlankMiddleware:main',
+                ],
+                'attributes' => [],
+            ],
+        ], Fixture\Helper::routesToArray($collection->getRoutes()));
     }
 
     /**
