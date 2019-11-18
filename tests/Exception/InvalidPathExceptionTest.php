@@ -8,7 +8,7 @@ namespace Sunrise\Http\Router\Tests\Exception;
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Exception\ExceptionInterface;
 use Sunrise\Http\Router\Exception\InvalidPathException;
-use InvalidArgumentException;
+use RuntimeException;
 
 /**
  * InvalidPathExceptionTest
@@ -23,7 +23,7 @@ class InvalidPathExceptionTest extends TestCase
     {
         $exception = new InvalidPathException();
 
-        $this->assertInstanceOf(InvalidArgumentException::class, $exception);
+        $this->assertInstanceOf(RuntimeException::class, $exception);
         $this->assertInstanceOf(ExceptionInterface::class, $exception);
     }
 }
