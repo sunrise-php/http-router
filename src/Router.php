@@ -70,8 +70,6 @@ class Router extends RouteCollection implements MiddlewareInterface, RequestHand
      *
      * @throws MethodNotAllowedException
      * @throws RouteNotFoundException
-     *
-     * @todo Matching by strategy for detecting verbs...
      */
     public function match(ServerRequestInterface $request) : RouteInterface
     {
