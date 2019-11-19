@@ -14,6 +14,7 @@ namespace Sunrise\Http\Router;
 /**
  * Import classes
  */
+use Fig\Http\Message\RequestMethodInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
@@ -113,8 +114,6 @@ class RouteCollection implements RouteCollectionInterface
 
     /**
      * {@inheritDoc}
-     *
-     * @todo Maybe create a route factory?
      */
     public function route(
         string $name,
@@ -158,7 +157,7 @@ class RouteCollection implements RouteCollectionInterface
         return $this->route(
             $name,
             $path,
-            ['HEAD'],
+            [RequestMethodInterface::METHOD_HEAD],
             $requestHandler,
             $middlewares,
             $attributes
@@ -178,7 +177,7 @@ class RouteCollection implements RouteCollectionInterface
         return $this->route(
             $name,
             $path,
-            ['GET'],
+            [RequestMethodInterface::METHOD_GET],
             $requestHandler,
             $middlewares,
             $attributes
@@ -198,7 +197,7 @@ class RouteCollection implements RouteCollectionInterface
         return $this->route(
             $name,
             $path,
-            ['POST'],
+            [RequestMethodInterface::METHOD_POST],
             $requestHandler,
             $middlewares,
             $attributes
@@ -218,7 +217,7 @@ class RouteCollection implements RouteCollectionInterface
         return $this->route(
             $name,
             $path,
-            ['PUT'],
+            [RequestMethodInterface::METHOD_PUT],
             $requestHandler,
             $middlewares,
             $attributes
@@ -238,7 +237,7 @@ class RouteCollection implements RouteCollectionInterface
         return $this->route(
             $name,
             $path,
-            ['PATCH'],
+            [RequestMethodInterface::METHOD_PATCH],
             $requestHandler,
             $middlewares,
             $attributes
@@ -258,7 +257,7 @@ class RouteCollection implements RouteCollectionInterface
         return $this->route(
             $name,
             $path,
-            ['DELETE'],
+            [RequestMethodInterface::METHOD_DELETE],
             $requestHandler,
             $middlewares,
             $attributes
@@ -278,7 +277,7 @@ class RouteCollection implements RouteCollectionInterface
         return $this->route(
             $name,
             $path,
-            ['PURGE'],
+            [RequestMethodInterface::METHOD_PURGE],
             $requestHandler,
             $middlewares,
             $attributes
