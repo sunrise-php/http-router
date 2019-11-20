@@ -42,23 +42,20 @@ class Router extends RouteCollection implements MiddlewareInterface, RequestHand
     public const ATTR_NAME_FOR_ROUTING_ERROR = '@routing-error';
 
     /**
-     * Gets a route for the given name
+     * Generates a URI for the given named route
      *
      * @param string $name
+     * @param array $attributes
      *
-     * @return RouteInterface
-     *
-     * @throws RouteNotFoundException
+     * @return string
      */
-    public function getRoute(string $name) : RouteInterface
+    public function generateUri(string $name, array $attributes = []) : string
     {
-        foreach ($this->getRoutes() as $route) {
-            if ($name === $route->getName()) {
-                return $route;
-            }
-        }
+        $route = $this->getRoute($name);
 
-        throw new RouteNotFoundException();
+        $attributes += $route->getAttributes();
+
+        return path_build($route->getPath(), $attributes, false);
     }
 
     /**
