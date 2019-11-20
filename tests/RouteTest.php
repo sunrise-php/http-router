@@ -180,26 +180,4 @@ class RouteTest extends TestCase
         $this->assertNotSame($route, $routeClone);
         $this->assertSame($expectedAttributes, $routeClone->getAttributes());
     }
-
-    /**
-     * @return void
-     */
-    public function testBuildPath() : void
-    {
-        $route = new Fixture\TestRoute();
-        $route->setPath('/foo(/bar/{baz}/qux)/quux');
-
-        $this->assertSame(path_build($route->getPath()), $route->buildPath());
-    }
-
-    /**
-     * @return void
-     */
-    public function testBuildRegex() : void
-    {
-        $route = new Fixture\TestRoute();
-        $route->setPath('/foo(/bar/{baz<\w+>}/qux)/quux');
-
-        $this->assertSame(path_regex($route->getPath()), $route->buildRegex());
-    }
 }

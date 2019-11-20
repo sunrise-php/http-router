@@ -40,36 +40,6 @@ class RouterTest extends TestCase
     /**
      * @return void
      */
-    public function testGetRoute() : void
-    {
-        $routes = [
-            new Fixture\TestRoute(),
-            new Fixture\TestRoute(),
-            new Fixture\TestRoute(),
-        ];
-
-        $router = new Router();
-        $router->addRoutes(...$routes);
-
-        $this->assertSame($routes[0], $router->getRoute($routes[0]->getName()));
-        $this->assertSame($routes[1], $router->getRoute($routes[1]->getName()));
-        $this->assertSame($routes[2], $router->getRoute($routes[2]->getName()));
-    }
-
-    /**
-     * @return void
-     */
-    public function testGetUndefinedRoute() : void
-    {
-        $router = new Router();
-
-        $this->expectException(RouteNotFoundException::class);
-        $router->getRoute('foo');
-    }
-
-    /**
-     * @return void
-     */
     public function testMatch() : void
     {
         $routes = [
