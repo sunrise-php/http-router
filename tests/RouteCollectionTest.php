@@ -211,7 +211,7 @@ class RouteCollectionTest extends TestCase
 
         // merging...
         $middlewares[] = new Fixture\BlankMiddleware();
-        $route = $collection->route('foo', '/foo', ['GET'], new Fixture\BlankRequestHandler(), [end($middlewares)]);
+        $route = $collection->route('bar', '/bar', ['GET'], new Fixture\BlankRequestHandler(), [end($middlewares)]);
         $this->assertSame($middlewares, $route->getMiddlewares());
     }
 
@@ -308,7 +308,7 @@ class RouteCollectionTest extends TestCase
 
         // merging...
         $middlewares[] = new Fixture\BlankMiddleware();
-        $route = $collection->{$calledMethod}('foo', '/foo', new Fixture\BlankRequestHandler(), [end($middlewares)]);
+        $route = $collection->{$calledMethod}('bar', '/bar', new Fixture\BlankRequestHandler(), [end($middlewares)]);
         $this->assertSame($middlewares, $route->getMiddlewares());
     }
 
@@ -328,12 +328,12 @@ class RouteCollectionTest extends TestCase
 
                 $group->group('/v1', function ($group) {
                     $group->addMiddlewares(new Fixture\NamedBlankMiddleware('v1'));
-                    $group->get('ping.pong', '/ping', new Fixture\BlankRequestHandler());
+                    $group->get('ping.pong.v1', '/ping', new Fixture\BlankRequestHandler());
                 });
 
                 $group->group('/v2', function ($group) {
                     $group->addMiddlewares(new Fixture\NamedBlankMiddleware('v2'));
-                    $group->get('ping.pong', '/ping', new Fixture\BlankRequestHandler());
+                    $group->get('ping.pong.v2', '/ping', new Fixture\BlankRequestHandler());
                 });
             });
         });
@@ -342,7 +342,7 @@ class RouteCollectionTest extends TestCase
 
         $this->assertSame([
             [
-                'name' => 'ping.pong',
+                'name' => 'ping.pong.v1',
                 'path' => '/api/v1/ping',
                 'methods' => ['GET'],
                 'requestHandler' => 'Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler',
@@ -355,7 +355,7 @@ class RouteCollectionTest extends TestCase
                 'attributes' => [],
             ],
             [
-                'name' => 'ping.pong',
+                'name' => 'ping.pong.v2',
                 'path' => '/api/v2/ping',
                 'methods' => ['GET'],
                 'requestHandler' => 'Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler',

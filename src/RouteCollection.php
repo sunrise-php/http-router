@@ -17,11 +17,14 @@ namespace Sunrise\Http\Router;
 use Fig\Http\Message\RequestMethodInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Router\Exception\RouteAlreadyExistsException;
+use Sunrise\Http\Router\Exception\RouteNotFoundException;
 
 /**
  * Import functions
  */
 use function array_merge;
+use function array_values;
 use function rtrim;
 
 /**
@@ -72,7 +75,19 @@ class RouteCollection implements RouteCollectionInterface
      */
     public function getRoutes() : array
     {
-        return $this->routes;
+        return array_values($this->routes);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getRoute(string $name) : RouteInterface
+    {
+        if (isset($this->routes[$name])) {
+            return $this->routes[$name];
+        }
+
+        throw new RouteNotFoundException();
     }
 
     /**
@@ -106,7 +121,13 @@ class RouteCollection implements RouteCollectionInterface
     public function addRoutes(RouteInterface ...$routes) : RouteCollectionInterface
     {
         foreach ($routes as $route) {
-            $this->routes[] = $route;
+            $name = $route->getName();
+
+            if (isset($this->routes[$name])) {
+                throw new RouteAlreadyExistsException();
+            }
+
+            $this->routes[$name] = $route;
         }
 
         return $this;
