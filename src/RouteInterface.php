@@ -129,21 +129,4 @@ interface RouteInterface
      * @return RouteInterface
      */
     public function withAddedAttributes(array $attributes) : RouteInterface;
-
-    /**
-     * Builds the route path
-     *
-     * @param array $attributes
-     * @param bool $strict
-     *
-     * @return string
-     */
-    public function buildPath(array $attributes, bool $strict) : string;
-
-    /**
-     * Builds the route regex
-     *
-     * @return string
-     */
-    public function buildRegex() : string;
 }
