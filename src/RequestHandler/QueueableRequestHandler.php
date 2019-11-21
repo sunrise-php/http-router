@@ -56,15 +56,13 @@ class QueueableRequestHandler implements RequestHandlerInterface
      *
      * @param MiddlewareInterface ...$middlewares
      *
-     * @return RequestHandlerInterface
+     * @return void
      */
-    public function add(MiddlewareInterface ...$middlewares) : RequestHandlerInterface
+    public function add(MiddlewareInterface ...$middlewares) : void
     {
         foreach ($middlewares as $middleware) {
             $this->queue->enqueue($middleware);
         }
-
-        return $this;
     }
 
     /**
