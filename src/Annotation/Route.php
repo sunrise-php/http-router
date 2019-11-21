@@ -14,7 +14,6 @@ namespace Sunrise\Http\Router\Annotation;
 /**
  * Import classes
  */
-use Psr\Http\Server\MiddlewareInterface;
 use Sunrise\Http\Router\Exception\InvalidAnnotationParameterException;
 
 /**
@@ -96,7 +95,9 @@ final class Route
 
     /**
      * @param array $params
+     *
      * @return void
+     *
      * @throws InvalidAnnotationParameterException
      */
     private function assertValidName(array $params) : void
@@ -108,7 +109,9 @@ final class Route
 
     /**
      * @param array $params
+     *
      * @return void
+     *
      * @throws InvalidAnnotationParameterException
      */
     private function assertValidPath(array $params) : void
@@ -120,7 +123,9 @@ final class Route
 
     /**
      * @param array $params
+     *
      * @return void
+     *
      * @throws InvalidAnnotationParameterException
      */
     private function assertValidMethods(array $params) : void
@@ -136,7 +141,9 @@ final class Route
 
     /**
      * @param array $params
+     *
      * @return void
+     *
      * @throws InvalidAnnotationParameterException
      */
     private function assertValidMiddlewares(array $params) : void
@@ -152,7 +159,9 @@ final class Route
 
     /**
      * @param array $params
+     *
      * @return void
+     *
      * @throws InvalidAnnotationParameterException
      */
     private function assertValidAttributes(array $params) : void
@@ -164,7 +173,9 @@ final class Route
 
     /**
      * @param array $params
+     *
      * @return void
+     *
      * @throws InvalidAnnotationParameterException
      */
     private function assertValidPriority(array $params) : void
@@ -176,7 +187,9 @@ final class Route
 
     /**
      * @param mixed $method
+     *
      * @return void
+     *
      * @throws InvalidAnnotationParameterException
      */
     private function assertValidMethod($method) : void
@@ -188,7 +201,9 @@ final class Route
 
     /**
      * @param mixed $middleware
+     *
      * @return void
+     *
      * @throws InvalidAnnotationParameterException
      */
     private function assertValidMiddleware($middleware) : void
@@ -201,7 +216,7 @@ final class Route
             throw new InvalidAnnotationParameterException('@Route.middlewares contains nonexistent class.');
         }
 
-        if (!is_subclass_of($middleware, MiddlewareInterface::class)) {
+        if (!is_subclass_of($middleware, 'Psr\Http\Server\MiddlewareInterface')) {
             throw new InvalidAnnotationParameterException('@Route.middlewares contains non middleware class.');
         }
     }
