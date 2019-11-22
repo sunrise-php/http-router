@@ -20,6 +20,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 /**
  * Import functions
  */
+use function rtrim;
 use function strtoupper;
 
 /**
@@ -204,6 +205,67 @@ class Route implements RouteInterface
     public function setAttributes(array $attributes) : RouteInterface
     {
         $this->attributes = $attributes;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function addPrefix(string $prefix) : RouteInterface
+    {
+        // https://github.com/sunrise-php/http-router/issues/26
+        $prefix = rtrim($prefix, '/');
+
+        $this->path = $prefix . $this->path;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function addSuffix(string $suffix) : RouteInterface
+    {
+        $this->path .= $suffix;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function addMethod(string ...$methods) : RouteInterface
+    {
+        foreach ($methods as $method) {
+            $this->methods[] = strtoupper($method);
+        }
+
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function addMiddleware(MiddlewareInterface ...$middlewares) : RouteInterface
+    {
+        foreach ($middlewares as $middleware) {
+            $this->middlewares[] = $middleware;
+        }
+
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function unshiftMiddleware(MiddlewareInterface ...$middlewares) : RouteInterface
+    {
+        foreach ($this->middlewares as $middleware) {
+            $middlewares[] = $middleware;
+        }
+
+        $this->middlewares = $middlewares;
 
         return $this;
     }
