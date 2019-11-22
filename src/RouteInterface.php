@@ -156,15 +156,6 @@ interface RouteInterface
     public function addMiddleware(MiddlewareInterface ...$middlewares) : RouteInterface;
 
     /**
-     * Adds the given middleware(s) to the route
-     *
-     * @param MiddlewareInterface ...$middlewares
-     *
-     * @return RouteInterface
-     */
-    public function unshiftMiddleware(MiddlewareInterface ...$middlewares) : RouteInterface;
-
-    /**
      * Returns the route clone with the given attributes
      *
      * This method MUST NOT change the state of the object.

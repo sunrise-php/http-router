@@ -259,20 +259,6 @@ class Route implements RouteInterface
     /**
      * {@inheritDoc}
      */
-    public function unshiftMiddleware(MiddlewareInterface ...$middlewares) : RouteInterface
-    {
-        foreach ($this->middlewares as $middleware) {
-            $middlewares[] = $middleware;
-        }
-
-        $this->middlewares = $middlewares;
-
-        return $this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public function withAddedAttributes(array $attributes) : RouteInterface
     {
         $clone = clone $this;
