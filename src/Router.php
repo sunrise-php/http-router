@@ -46,16 +46,17 @@ class Router extends RouteCollection implements MiddlewareInterface, RequestHand
      *
      * @param string $name
      * @param array $attributes
+     * @param bool $strict
      *
      * @return string
      */
-    public function generateUri(string $name, array $attributes = []) : string
+    public function generateUri(string $name, array $attributes = [], bool $strict = false) : string
     {
         $route = $this->getRoute($name);
 
         $attributes += $route->getAttributes();
 
-        return path_build($route->getPath(), $attributes, false);
+        return path_build($route->getPath(), $attributes, $strict);
     }
 
     /**
