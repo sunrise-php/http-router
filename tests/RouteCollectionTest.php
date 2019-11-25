@@ -33,6 +33,22 @@ class RouteCollectionTest extends TestCase
     /**
      * @return void
      */
+    public function testConstructorWithRoutes() : void
+    {
+        $routes = [
+            new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
+        ];
+
+        $collection = new RouteCollection(...$routes);
+
+        $this->assertSame($routes, $collection->all());
+    }
+
+    /**
+     * @return void
+     */
     public function testAdd() : void
     {
         $routes = [
