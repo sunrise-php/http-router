@@ -10,7 +10,9 @@ use Psr\Container\ContainerInterface;
 use Sunrise\Http\Router\Annotation\Route as AnnotationRoute;
 use Sunrise\Http\Router\Exception\InvalidAnnotationParameterException;
 use Sunrise\Http\Router\Exception\InvalidAnnotationSourceException;
+use Sunrise\Http\Router\Exception\InvalidLoadResourceException;
 use Sunrise\Http\Router\Loader\AnnotationDirectoryLoader;
+use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\Tests\Fixture;
 
 /**
@@ -36,6 +38,16 @@ class AnnotationDirectoryLoaderTest extends TestCase
     /**
      * @return void
      */
+    public function testConstructor() : void
+    {
+        $loader = new AnnotationDirectoryLoader();
+
+        $this->assertInstanceOf(LoaderInterface::class, $loader);
+    }
+
+    /**
+     * @return void
+     */
     public function testContainer() : void
     {
         $loader = new AnnotationDirectoryLoader();
@@ -52,10 +64,21 @@ class AnnotationDirectoryLoaderTest extends TestCase
     /**
      * @return void
      */
-    public function testLoad() : void
+    public function testAttachInvalidResource() : void
     {
         $loader = new AnnotationDirectoryLoader();
 
+        $this->expectException(InvalidLoadResourceException::class);
+        $this->expectExceptionMessage('The "undefined" resource not found.');
+
+        $loader->attach('undefined');
+    }
+
+    /**
+     * @return void
+     */
+    public function testLoad() : void
+    {
         $container = $this->createMock(ContainerInterface::class);
 
         // create the ContainerInterface::has() method...
@@ -68,9 +91,10 @@ class AnnotationDirectoryLoaderTest extends TestCase
             return new Fixture\NamedBlankMiddleware('containerize');
         }));
 
+        $loader = new AnnotationDirectoryLoader();
         $loader->setContainer($container);
-
-        $routes = $loader->load(__DIR__ . '/../Fixture/Annotation/Route/Valid');
+        $loader->attach(__DIR__ . '/../Fixture/Annotation/Route/Valid');
+        $routes = $loader->load();
 
         // test for the routes priority...
         $this->assertSame([
@@ -142,7 +166,7 @@ class AnnotationDirectoryLoaderTest extends TestCase
     }
 
     /**
-     * @param string $destination
+     * @param string $resource
      * @param string $expectedException
      * @param string $expectedExceptionMessage
      *
@@ -151,14 +175,17 @@ class AnnotationDirectoryLoaderTest extends TestCase
      * @dataProvider invalidAnnotatedClassesProvider
      */
     public function testLoadInvalidAnnotatedClasses(
-        string $destination,
+        string $resource,
         string $expectedException,
         string $expectedExceptionMessage
     ) : void {
+        $loader = new AnnotationDirectoryLoader();
+        $loader->attach($resource);
+
         $this->expectException($expectedException);
         $this->expectExceptionMessage($expectedExceptionMessage);
 
-        (new AnnotationDirectoryLoader)->load($destination);
+        $loader->load();
     }
 
     /**
