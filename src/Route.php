@@ -14,8 +14,11 @@ namespace Sunrise\Http\Router;
 /**
  * Import classes
  */
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
 
 /**
  * Import functions
@@ -28,6 +31,13 @@ use function strtoupper;
  */
 class Route implements RouteInterface
 {
+
+    /**
+     * Server Request attribute name for the route name
+     *
+     * @var string
+     */
+    public const ATTR_NAME_FOR_ROUTE_NAME = '@route-name';
 
     /**
      * The route name
@@ -268,5 +278,22 @@ class Route implements RouteInterface
         }
 
         return $clone;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function handle(ServerRequestInterface $request) : ResponseInterface
+    {
+        $request = $request->withAttribute(self::ATTR_NAME_FOR_ROUTE_NAME, $this->name);
+
+        foreach ($this->attributes as $key => $value) {
+            $request = $request->withAttribute($key, $value);
+        }
+
+        $handler = new QueueableRequestHandler($this->requestHandler);
+        $handler->add(...$this->middlewares);
+
+        return $handler->handle($request);
     }
 }
