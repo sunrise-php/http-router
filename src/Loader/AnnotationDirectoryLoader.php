@@ -121,6 +121,7 @@ class AnnotationDirectoryLoader implements LoaderInterface
         $routes = [];
         foreach ($this->resources as $resource) {
             $annotations = $this->findAnnotations($resource);
+
             foreach ($annotations as $annotation) {
                 $routes[] = $this->routeFactory->createRoute(
                     $annotation->name,
