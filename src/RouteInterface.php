@@ -20,7 +20,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 /**
  * RouteInterface
  */
-interface RouteInterface
+interface RouteInterface extends RequestHandlerInterface
 {
 
     /**
