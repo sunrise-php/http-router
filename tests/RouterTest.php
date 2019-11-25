@@ -12,6 +12,7 @@ use Sunrise\Http\Router\Exception\MethodNotAllowedException;
 use Sunrise\Http\Router\Exception\MiddlewareAlreadyExistsException;
 use Sunrise\Http\Router\Exception\RouteAlreadyExistsException;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
+use Sunrise\Http\Router\RouteCollectionGroupActionInterface;
 use Sunrise\Http\Router\Router;
 use Sunrise\Http\ServerRequest\ServerRequestFactory;
 
@@ -488,5 +489,87 @@ class RouterTest extends TestCase
         );
 
         $this->assertTrue($fallback->isRunned());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGroup() : void
+    {
+        $router = new Router();
+
+        $this->assertInstanceOf(
+            RouteCollectionGroupActionInterface::class,
+            $router->group(function ($group) {
+                $group->get('api.ping', '/ping', new Fixture\BlankRequestHandler());
+
+                $this->assertInstanceOf(
+                    RouteCollectionGroupActionInterface::class,
+                    $group->group(function ($group) {
+
+                        $this->assertInstanceOf(
+                            RouteCollectionGroupActionInterface::class,
+                            $group->group(function ($group) {
+                                $group->post('api.section.create', '/create', new Fixture\BlankRequestHandler());
+                                $group->patch('api.section.update', '/update/{id}', new Fixture\BlankRequestHandler());
+                            })->addPrefix('/section')
+                        );
+
+                        $this->assertInstanceOf(
+                            RouteCollectionGroupActionInterface::class,
+                            $group->group(function ($group) {
+                                $group->post('api.product.create', '/create', new Fixture\BlankRequestHandler());
+                                $group->patch('api.product.update', '/update/{id}', new Fixture\BlankRequestHandler());
+                            })->addPrefix('/product')
+                        );
+                    })->addPrefix('/v1')
+                );
+            })->addPrefix('/api')
+        );
+
+        $this->assertContains([
+            'name' => 'api.ping',
+            'path' => '/api/ping',
+            'methods' => [Router::METHOD_GET],
+            'requestHandler' => 'Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler',
+            'middlewares' => [],
+            'attributes' => [],
+        ], Fixture\Helper::routesToArray($router->getRoutes()));
+
+        $this->assertContains([
+            'name' => 'api.section.create',
+            'path' => '/api/v1/section/create',
+            'methods' => [Router::METHOD_POST],
+            'requestHandler' => 'Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler',
+            'middlewares' => [],
+            'attributes' => [],
+        ], Fixture\Helper::routesToArray($router->getRoutes()));
+
+        $this->assertContains([
+            'name' => 'api.section.update',
+            'path' => '/api/v1/section/update/{id}',
+            'methods' => [Router::METHOD_PATCH],
+            'requestHandler' => 'Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler',
+            'middlewares' => [],
+            'attributes' => [],
+        ], Fixture\Helper::routesToArray($router->getRoutes()));
+
+        $this->assertContains([
+            'name' => 'api.product.create',
+            'path' => '/api/v1/product/create',
+            'methods' => [Router::METHOD_POST],
+            'requestHandler' => 'Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler',
+            'middlewares' => [],
+            'attributes' => [],
+        ], Fixture\Helper::routesToArray($router->getRoutes()));
+
+        $this->assertContains([
+            'name' => 'api.product.update',
+            'path' => '/api/v1/product/update/{id}',
+            'methods' => [Router::METHOD_PATCH],
+            'requestHandler' => 'Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler',
+            'middlewares' => [],
+            'attributes' => [],
+        ], Fixture\Helper::routesToArray($router->getRoutes()));
     }
 }
