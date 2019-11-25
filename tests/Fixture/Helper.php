@@ -14,11 +14,10 @@ class Helper
 {
 
     /**
-     * @param array $routes
-     *
+     * @param iterable $routes
      * @return array
      */
-    public static function routesToArray(array $routes) : array
+    public static function routesToArray(iterable $routes) : array
     {
         $result = [];
 
@@ -42,6 +41,21 @@ class Helper
             }
 
             $result[] = $item;
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param iterable $routes
+     * @return array
+     */
+    public static function routesToNames(iterable $routes) : array
+    {
+        $result = [];
+
+        foreach ($routes as $route) {
+            $result[] = $route->getName();
         }
 
         return $result;

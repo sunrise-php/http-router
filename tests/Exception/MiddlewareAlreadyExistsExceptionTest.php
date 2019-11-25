@@ -7,13 +7,13 @@ namespace Sunrise\Http\Router\Tests\Exception;
  */
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Exception\ExceptionInterface;
-use Sunrise\Http\Router\Exception\MethodNotAllowedException;
+use Sunrise\Http\Router\Exception\MiddlewareAlreadyExistsException;
 use RuntimeException;
 
 /**
- * MethodNotAllowedExceptionTest
+ * MiddlewareAlreadyExistsExceptionTest
  */
-class MethodNotAllowedExceptionTest extends TestCase
+class MiddlewareAlreadyExistsExceptionTest extends TestCase
 {
 
     /**
@@ -21,19 +21,9 @@ class MethodNotAllowedExceptionTest extends TestCase
      */
     public function testConstructor() : void
     {
-        $exception = new MethodNotAllowedException([]);
+        $exception = new MiddlewareAlreadyExistsException();
 
         $this->assertInstanceOf(ExceptionInterface::class, $exception);
         $this->assertInstanceOf(RuntimeException::class, $exception);
-    }
-
-    /**
-     * @return void
-     */
-    public function testAllowedMethods() : void
-    {
-        $exception = new MethodNotAllowedException(['foo']);
-
-        $this->assertSame(['foo'], $exception->getAllowedMethods());
     }
 }
