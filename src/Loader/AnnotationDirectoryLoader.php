@@ -17,7 +17,11 @@ namespace Sunrise\Http\Router\Loader;
 use Doctrine\Common\Annotations\SimpleAnnotationReader;
 use Psr\Container\ContainerInterface;
 use Sunrise\Http\Router\Annotation\Route as AnnotationRoute;
-use Sunrise\Http\Router\Route as BaseRoute;
+use Sunrise\Http\Router\RouteCollection;
+use Sunrise\Http\Router\RouteCollectionInterface;
+use Sunrise\Http\Router\RouteFactory;
+use Sunrise\Http\Router\RouteInterface;
+use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionClass;
@@ -43,6 +47,11 @@ class AnnotationDirectoryLoader implements LoaderInterface
     private $annotationReader;
 
     /**
+     * @var RouteFactory
+     */
+    private $routeFactory;
+
+    /**
      * @var null|ContainerInterface
      */
     private $container;
@@ -54,6 +63,8 @@ class AnnotationDirectoryLoader implements LoaderInterface
     {
         $this->annotationReader = new SimpleAnnotationReader();
         $this->annotationReader->addNamespace('Sunrise\Http\Router\Annotation');
+
+        $this->routeFactory = new RouteFactory();
     }
 
     /**
@@ -81,13 +92,13 @@ class AnnotationDirectoryLoader implements LoaderInterface
     /**
      * {@inheritDoc}
      */
-    public function load($destination) : array
+    public function load($location) : RouteCollectionInterface
     {
-        $annotations = $this->findAnnotations($destination);
+        $annotations = $this->findAnnotations($location);
 
         $routes = [];
         foreach ($annotations as $annotation) {
-            $routes[] = new BaseRoute(
+            $routes[] = $this->routeFactory->createRoute(
                 $annotation->name,
                 $annotation->path,
                 $annotation->methods,
@@ -97,19 +108,19 @@ class AnnotationDirectoryLoader implements LoaderInterface
             );
         }
 
-        return $routes;
+        return new RouteCollection(...$routes);
     }
 
     /**
-     * Finds annotations in the given destination
+     * Finds annotations in the given location
      *
-     * @param string $destination
+     * @param string $location
      *
-     * @return object[]
+     * @return AnnotationRoute[]
      */
-    private function findAnnotations(string $destination) : array
+    private function findAnnotations(string $location) : array
     {
-        $classes = $this->findClasses($destination);
+        $classes = $this->findClasses($location);
 
         $annotations = [];
         foreach ($classes as $class) {
@@ -119,6 +130,8 @@ class AnnotationDirectoryLoader implements LoaderInterface
             );
 
             if ($annotation) {
+                AnnotationRoute::assertValidSource($class);
+
                 $annotation->source = $class;
                 $annotations[] = $annotation;
             }
@@ -132,34 +145,36 @@ class AnnotationDirectoryLoader implements LoaderInterface
     }
 
     /**
-     * Finds classes in the given destination
+     * Finds classes in the given location
      *
-     * @param string $destination
+     * @param string $location
      *
      * @return string[]
      */
-    private function findClasses(string $destination) : array
+    private function findClasses(string $location) : array
     {
-        $files = $this->findFiles($destination);
+        $files = $this->findFiles($location);
         $declared = get_declared_classes();
 
         foreach ($files as $file) {
-            require_once $file->getRealPath();
+            require_once $file;
         }
 
         return array_diff(get_declared_classes(), $declared);
     }
 
     /**
-     * Finds files in the given destination
+     * Finds files in the given location
      *
-     * @param string $destination
+     * @param string $location
      *
      * @return string[]
      */
-    private function findFiles(string $destination) : array
+    private function findFiles(string $location) : array
     {
-        $directory = new RecursiveDirectoryIterator($destination);
+        $flags = FilesystemIterator::CURRENT_AS_PATHNAME;
+
+        $directory = new RecursiveDirectoryIterator($location, $flags);
         $iterator = new RecursiveIteratorIterator($directory);
         $files = new RegexIterator($iterator, '/\.php$/');
 

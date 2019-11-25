@@ -14,8 +14,7 @@ namespace Sunrise\Http\Router\Loader;
 /**
  * Import classes
  */
-use Sunrise\Http\Router\RouteInterface;
-use RuntimeException;
+use Sunrise\Http\Router\RouteCollectionInterface;
 
 /**
  * LoaderInterface
@@ -28,9 +27,9 @@ interface LoaderInterface
      *
      * @param mixed $resource
      *
-     * @return RouteInterface[]
+     * @return RouteCollectionInterface
      *
-     * @throws RuntimeException If any error occurred.
+     * @throws \RuntimeException If any error occurred.
      */
-    public function load($resource) : array;
+    public function load($resource) : RouteCollectionInterface;
 }
