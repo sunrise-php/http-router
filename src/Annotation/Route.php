@@ -14,7 +14,10 @@ namespace Sunrise\Http\Router\Annotation;
 /**
  * Import classes
  */
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Exception\InvalidAnnotationParameterException;
+use Sunrise\Http\Router\Exception\InvalidAnnotationSourceException;
 
 /**
  * Import functions
@@ -33,7 +36,7 @@ final class Route
 {
 
     /**
-     * @var mixed
+     * @var string
      */
     public $source;
 
@@ -78,12 +81,12 @@ final class Route
             'priority' => 0,
         ];
 
-        $this->assertValidName($params);
-        $this->assertValidPath($params);
-        $this->assertValidMethods($params);
-        $this->assertValidMiddlewares($params);
-        $this->assertValidAttributes($params);
-        $this->assertValidPriority($params);
+        $this->assertParamsContainValidName($params);
+        $this->assertParamsContainValidPath($params);
+        $this->assertParamsContainValidMethods($params);
+        $this->assertParamsContainValidMiddlewares($params);
+        $this->assertParamsContainValidAttributes($params);
+        $this->assertParamsContainValidPriority($params);
 
         $this->name = $params['name'];
         $this->path = $params['path'];
@@ -94,13 +97,25 @@ final class Route
     }
 
     /**
-     * @param array $params
-     *
+     * @param string $source
      * @return void
-     *
+     * @throws InvalidAnnotationSourceException
+     */
+    public static function assertValidSource(string $source) : void
+    {
+        if (!is_subclass_of($source, RequestHandlerInterface::class)) {
+            throw new InvalidAnnotationSourceException(
+                sprintf('@Route annotation source %s is not a request handler.', $source)
+            );
+        }
+    }
+
+    /**
+     * @param array $params
+     * @return void
      * @throws InvalidAnnotationParameterException
      */
-    private function assertValidName(array $params) : void
+    private function assertParamsContainValidName(array $params) : void
     {
         if (empty($params['name']) || !is_string($params['name'])) {
             throw new InvalidAnnotationParameterException('@Route.name must be not an empty string.');
@@ -109,12 +124,10 @@ final class Route
 
     /**
      * @param array $params
-     *
      * @return void
-     *
      * @throws InvalidAnnotationParameterException
      */
-    private function assertValidPath(array $params) : void
+    private function assertParamsContainValidPath(array $params) : void
     {
         if (empty($params['path']) || !is_string($params['path'])) {
             throw new InvalidAnnotationParameterException('@Route.path must be not an empty string.');
@@ -123,12 +136,10 @@ final class Route
 
     /**
      * @param array $params
-     *
      * @return void
-     *
      * @throws InvalidAnnotationParameterException
      */
-    private function assertValidMethods(array $params) : void
+    private function assertParamsContainValidMethods(array $params) : void
     {
         if (empty($params['methods']) || !is_array($params['methods'])) {
             throw new InvalidAnnotationParameterException('@Route.methods must be not an empty array.');
@@ -141,12 +152,10 @@ final class Route
 
     /**
      * @param array $params
-     *
      * @return void
-     *
      * @throws InvalidAnnotationParameterException
      */
-    private function assertValidMiddlewares(array $params) : void
+    private function assertParamsContainValidMiddlewares(array $params) : void
     {
         if (!is_array($params['middlewares'])) {
             throw new InvalidAnnotationParameterException('@Route.middlewares must be an array.');
@@ -159,12 +168,10 @@ final class Route
 
     /**
      * @param array $params
-     *
      * @return void
-     *
      * @throws InvalidAnnotationParameterException
      */
-    private function assertValidAttributes(array $params) : void
+    private function assertParamsContainValidAttributes(array $params) : void
     {
         if (!is_array($params['attributes'])) {
             throw new InvalidAnnotationParameterException('@Route.attributes must be an array.');
@@ -173,12 +180,10 @@ final class Route
 
     /**
      * @param array $params
-     *
      * @return void
-     *
      * @throws InvalidAnnotationParameterException
      */
-    private function assertValidPriority(array $params) : void
+    private function assertParamsContainValidPriority(array $params) : void
     {
         if (!is_int($params['priority'])) {
             throw new InvalidAnnotationParameterException('@Route.priority must be an integer.');
@@ -187,9 +192,7 @@ final class Route
 
     /**
      * @param mixed $method
-     *
      * @return void
-     *
      * @throws InvalidAnnotationParameterException
      */
     private function assertValidMethod($method) : void
@@ -201,9 +204,7 @@ final class Route
 
     /**
      * @param mixed $middleware
-     *
      * @return void
-     *
      * @throws InvalidAnnotationParameterException
      */
     private function assertValidMiddleware($middleware) : void
@@ -216,7 +217,7 @@ final class Route
             throw new InvalidAnnotationParameterException('@Route.middlewares contains nonexistent class.');
         }
 
-        if (!is_subclass_of($middleware, 'Psr\Http\Server\MiddlewareInterface')) {
+        if (!is_subclass_of($middleware, MiddlewareInterface::class)) {
             throw new InvalidAnnotationParameterException('@Route.middlewares contains non middleware class.');
         }
     }
