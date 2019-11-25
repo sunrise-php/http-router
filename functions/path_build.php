@@ -47,6 +47,13 @@ function path_build(string $path, array $attributes = [], bool $strict = false) 
      */
     static $buildedPaths = [];
     
+    // normalize attribute values
+    if ($attributes) {
+        $attributes = array_map('rawurlencode', $attributes);
+        // decode slashes back, see Apache docs about AllowEncodedSlashes and AcceptPathInfo
+        $attributes = str_replace(['%2F', '%5C'], ['/', '\\'], $attributes);
+    }
+    
     // find cached result
     $result = array_search([$path, $attributes], $buildedPaths);
     if ($result) {
@@ -55,13 +62,6 @@ function path_build(string $path, array $attributes = [], bool $strict = false) 
     
     $result = $path;
     $matches = path_parse($path);
-    
-    // normalize attribute values
-    if ($attributes) {
-        $attributes = array_map('rawurlencode', $attributes);
-        // decode slashes back, see Apache docs about AllowEncodedSlashes and AcceptPathInfo
-        $attributes = str_replace(['%2F', '%5C'], ['/', '\\'], $attributes);
-    }
 
     foreach ($matches as $match) {
         // handle not required attributes...
