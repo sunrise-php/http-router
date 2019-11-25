@@ -26,6 +26,7 @@ use Sunrise\Http\Router\Exception\MiddlewareAlreadyExistsException;
 use Sunrise\Http\Router\Exception\MissingAttributeValueException;
 use Sunrise\Http\Router\Exception\RouteAlreadyExistsException;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
+use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
 
 /**
@@ -273,5 +274,19 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
         $this->addRoute(...$collector->getCollection()->all());
 
         return new RouteCollectionGroupAction($collector->getCollection());
+    }
+
+    /**
+     * Loads routes through the given loaders
+     *
+     * @param LoaderInterface ...$loaders
+     *
+     * @return void
+     */
+    public function load(LoaderInterface ...$loaders) : void
+    {
+        foreach ($loaders as $loader) {
+            $this->addRoute(...$loader->load()->all());
+        }
     }
 }

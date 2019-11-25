@@ -12,6 +12,8 @@ use Sunrise\Http\Router\Exception\MethodNotAllowedException;
 use Sunrise\Http\Router\Exception\MiddlewareAlreadyExistsException;
 use Sunrise\Http\Router\Exception\RouteAlreadyExistsException;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
+use Sunrise\Http\Router\Loader\LoaderInterface;
+use Sunrise\Http\Router\RouteCollection;
 use Sunrise\Http\Router\RouteCollectionGroupActionInterface;
 use Sunrise\Http\Router\Router;
 use Sunrise\Http\ServerRequest\ServerRequestFactory;
@@ -571,5 +573,65 @@ class RouterTest extends TestCase
             'middlewares' => [],
             'attributes' => [],
         ], Fixture\Helper::routesToArray($router->getRoutes()));
+    }
+
+    /**
+     * @return void
+     */
+    public function testLoad() : void
+    {
+        $router = new Router();
+
+        $expectedRoutes = [
+            new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
+        ];
+
+        $loader = $this->createMock(LoaderInterface::class);
+
+        $loader->method('load')->willReturn(
+            new RouteCollection(...$expectedRoutes)
+        );
+
+        $router->load($loader);
+
+        $this->assertSame($expectedRoutes, $router->getRoutes());
+    }
+
+    /**
+     * @return void
+     */
+    public function testMultipleLoad() : void
+    {
+        $router = new Router();
+
+        $expectedRoutes = [
+            new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
+        ];
+
+        $loaders = [
+            $this->createMock(LoaderInterface::class),
+            $this->createMock(LoaderInterface::class),
+            $this->createMock(LoaderInterface::class),
+        ];
+
+        $loaders[0]->method('load')->willReturn(
+            new RouteCollection($expectedRoutes[0])
+        );
+
+        $loaders[1]->method('load')->willReturn(
+            new RouteCollection($expectedRoutes[1])
+        );
+
+        $loaders[2]->method('load')->willReturn(
+            new RouteCollection($expectedRoutes[2])
+        );
+
+        $router->load(...$loaders);
+
+        $this->assertSame($expectedRoutes, $router->getRoutes());
     }
 }
