@@ -49,7 +49,7 @@ class RouteCollectionGroupAction implements RouteCollectionGroupActionInterface
      */
     public function addPrefix(string $prefix) : RouteCollectionGroupActionInterface
     {
-        foreach ($this->collection as $route) {
+        foreach ($this->collection->all() as $route) {
             $route->addPrefix($prefix);
         }
 
@@ -61,7 +61,7 @@ class RouteCollectionGroupAction implements RouteCollectionGroupActionInterface
      */
     public function addSuffix(string $suffix) : RouteCollectionGroupActionInterface
     {
-        foreach ($this->collection as $route) {
+        foreach ($this->collection->all() as $route) {
             $route->addSuffix($suffix);
         }
 
@@ -73,7 +73,7 @@ class RouteCollectionGroupAction implements RouteCollectionGroupActionInterface
      */
     public function addMethod(string ...$methods) : RouteCollectionGroupActionInterface
     {
-        foreach ($this->collection as $route) {
+        foreach ($this->collection->all() as $route) {
             $route->addMethod(...$methods);
         }
 
@@ -85,7 +85,7 @@ class RouteCollectionGroupAction implements RouteCollectionGroupActionInterface
      */
     public function addMiddleware(MiddlewareInterface ...$middlewares) : RouteCollectionGroupActionInterface
     {
-        foreach ($this->collection as $route) {
+        foreach ($this->collection->all() as $route) {
             $route->addMiddleware(...$middlewares);
         }
 
@@ -97,7 +97,7 @@ class RouteCollectionGroupAction implements RouteCollectionGroupActionInterface
      */
     public function unshiftMiddleware(MiddlewareInterface ...$middlewares) : RouteCollectionGroupActionInterface
     {
-        foreach ($this->collection as $route) {
+        foreach ($this->collection->all() as $route) {
             $route->setMiddlewares(...array_merge(
                 $middlewares,
                 $route->getMiddlewares()
