@@ -20,9 +20,11 @@ use Sunrise\Http\Router\Exception\MissingAttributeValueException;
 /**
  * Import functions
  */
-use function preg_match;
-use function sprintf;
+use function array_search;
+use function array_map;
 use function str_replace;
+use function strtr;
+use function preg_match;
 
 /**
  * Builds the given path using the given attributes
@@ -40,18 +42,35 @@ use function str_replace;
  */
 function path_build(string $path, array $attributes = [], bool $strict = false) : string
 {
+    /**
+     * @var array[] result cache as pairs: $result(builded path) => [$path, $attributes]
+     */
+    static $buildedPaths = [];
+    
+    // find cached result
+    $result = array_search([$path, $attributes], $buildedPaths);
+    if ($result) {
+        return $result;
+    }
+    
     $result = $path;
     $matches = path_parse($path);
+    
+    // normalize attribute values
+    if ($attributes) {
+        $attributes = array_map('rawurlencode', $attributes);
+        // decode slashes back, see Apache docs about AllowEncodedSlashes and AcceptPathInfo
+        $attributes = str_replace(['%2F', '%5C'], ['/', '\\'], $attributes);
+    }
 
     foreach ($matches as $match) {
         // handle not required attributes...
         if (!isset($attributes[$match['name']])) {
             if (!$match['isOptional']) {
-                $errmsg = '[%s] build error: no value given for the attribute "%s".';
-
-                throw new MissingAttributeValueException(
-                    sprintf($errmsg, $path, $match['name'])
-                );
+                throw new MissingAttributeValueException(strtr(
+                    '[:path] build error: no value given for the attribute ":attr".',
+                    [':path' => $path, ':attr' => $match['name']]
+                ));
             }
 
             $result = str_replace($match['withParentheses'], '', $result);
@@ -64,11 +83,10 @@ function path_build(string $path, array $attributes = [], bool $strict = false) 
         // validate the given attributes values...
         if ($strict && isset($match['pattern'])) {
             if (!preg_match('#^' . $match['pattern'] . '$#u', $replacement)) {
-                $errmsg = '[%s] build error: the given value for the attribute "%s" does not match its pattern.';
-
-                throw new InvalidAttributeValueException(
-                    sprintf($errmsg, $path, $match['name'])
-                );
+                throw new InvalidAttributeValueException(strtr(
+                    '[:path] build error: the given value for the attribute ":attr" does not match its pattern.',
+                    [':path' => $path, ':attr' => $match['name']]
+                ));
             }
         }
 
@@ -76,6 +94,9 @@ function path_build(string $path, array $attributes = [], bool $strict = false) 
     }
 
     $result = str_replace(['(', ')'], '', $result);
+    
+    // cache result
+    $buildedPaths[$result] = [$path, $attributes];
 
     return $result;
 }
