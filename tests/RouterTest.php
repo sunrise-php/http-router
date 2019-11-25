@@ -117,7 +117,7 @@ class RouterTest extends TestCase
         $expectedMethods = array_merge(
             $routes[0]->getMethods(),
             $routes[1]->getMethods(),
-            $routes[2]->getMethods(),
+            $routes[2]->getMethods()
         );
 
         $router = new Router();
