@@ -14,24 +14,32 @@ namespace Sunrise\Http\Router;
 /**
  * Import classes
  */
+use Fig\Http\Message\RequestMethodInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Exception\ExceptionInterface;
+use Sunrise\Http\Router\Exception\InvalidAttributeValueException;
 use Sunrise\Http\Router\Exception\MethodNotAllowedException;
+use Sunrise\Http\Router\Exception\MiddlewareAlreadyExistsException;
+use Sunrise\Http\Router\Exception\MissingAttributeValueException;
+use Sunrise\Http\Router\Exception\RouteAlreadyExistsException;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
-use Sunrise\Http\Router\RequestHandler\RoutableRequestHandler;
+use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
 
 /**
  * Import functions
  */
 use function array_keys;
+use function array_values;
+use function spl_object_hash;
+use function sprintf;
 
 /**
  * Router
  */
-class Router extends RouteCollection implements MiddlewareInterface, RequestHandlerInterface
+class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMethodInterface
 {
 
     /**
@@ -42,6 +50,125 @@ class Router extends RouteCollection implements MiddlewareInterface, RequestHand
     public const ATTR_NAME_FOR_ROUTING_ERROR = '@routing-error';
 
     /**
+     * The router routes
+     *
+     * @var RouteInterface[]
+     */
+    private $routes = [];
+
+    /**
+     * The router middlewares
+     *
+     * @var MiddlewareInterface[]
+     */
+    private $middlewares = [];
+
+    /**
+     * Gets the router routes
+     *
+     * @return RouteInterface[]
+     */
+    public function getRoutes() : array
+    {
+        return array_values($this->routes);
+    }
+
+    /**
+     * Gets the router middlewares
+     *
+     * @return MiddlewareInterface[]
+     */
+    public function getMiddlewares() : array
+    {
+        return array_values($this->middlewares);
+    }
+
+    /**
+     * Adds the given route(s) to the router
+     *
+     * @param RouteInterface ...$routes
+     *
+     * @return void
+     *
+     * @throws RouteAlreadyExistsException
+     */
+    public function addRoute(RouteInterface ...$routes) : void
+    {
+        foreach ($routes as $route) {
+            $name = $route->getName();
+
+            if (isset($this->routes[$name])) {
+                throw new RouteAlreadyExistsException(
+                    sprintf('A route with the name "%s" already exists.', $name)
+                );
+            }
+
+            $this->routes[$name] = $route;
+        }
+    }
+
+    /**
+     * Adds the given middleware(s) to the router
+     *
+     * @param MiddlewareInterface ...$middlewares
+     *
+     * @return void
+     *
+     * @throws MiddlewareAlreadyExistsException
+     */
+    public function addMiddleware(MiddlewareInterface ...$middlewares) : void
+    {
+        foreach ($middlewares as $middleware) {
+            $hash = spl_object_hash($middleware);
+
+            if (isset($this->middlewares[$hash])) {
+                throw new MiddlewareAlreadyExistsException(
+                    sprintf('A middleware with the hash "%s" already exists.', $hash)
+                );
+            }
+
+            $this->middlewares[$hash] = $middleware;
+        }
+    }
+
+    /**
+     * Gets allowed HTTP methods
+     *
+     * @return string[]
+     */
+    public function getAllowedMethods() : array
+    {
+        $methods = [];
+        foreach ($this->routes as $route) {
+            foreach ($route->getMethods() as $method) {
+                $methods[$method] = true;
+            }
+        }
+
+        return array_keys($methods);
+    }
+
+    /**
+     * Gets a route for the given name
+     *
+     * @param string $name
+     *
+     * @return RouteInterface
+     *
+     * @throws RouteNotFoundException
+     */
+    public function getRoute(string $name) : RouteInterface
+    {
+        if (!isset($this->routes[$name])) {
+            throw new RouteNotFoundException(
+                sprintf('No route found with the name "%s".', $name)
+            );
+        }
+
+        return $this->routes[$name];
+    }
+
+    /**
      * Generates a URI for the given named route
      *
      * @param string $name
@@ -49,6 +176,11 @@ class Router extends RouteCollection implements MiddlewareInterface, RequestHand
      * @param bool $strict
      *
      * @return string
+     *
+     * @throws RouteNotFoundException
+     *
+     * @throws InvalidAttributeValueException May be thrown from `path_build`.
+     * @throws MissingAttributeValueException May be thrown from `path_build`.
      */
     public function generateUri(string $name, array $attributes = [], bool $strict = false) : string
     {
@@ -72,7 +204,7 @@ class Router extends RouteCollection implements MiddlewareInterface, RequestHand
     public function match(ServerRequestInterface $request) : RouteInterface
     {
         $routes = [];
-        foreach ($this->getRoutes() as $route) {
+        foreach ($this->routes as $route) {
             foreach ($route->getMethods() as $method) {
                 $routes[$method][] = $route;
             }
@@ -81,7 +213,8 @@ class Router extends RouteCollection implements MiddlewareInterface, RequestHand
         $method = $request->getMethod();
         if (!isset($routes[$method])) {
             throw new MethodNotAllowedException(
-                array_keys($routes)
+                $this->getAllowedMethods(),
+                sprintf('No route found for the method "%s".', $method)
             );
         }
 
@@ -92,7 +225,9 @@ class Router extends RouteCollection implements MiddlewareInterface, RequestHand
             }
         }
 
-        throw new RouteNotFoundException();
+        throw new RouteNotFoundException(
+            sprintf('No route found for the URI "%s".', $target)
+        );
     }
 
     /**
@@ -102,9 +237,10 @@ class Router extends RouteCollection implements MiddlewareInterface, RequestHand
     {
         $route = $this->match($request);
 
-        $requestHandler = new RoutableRequestHandler($route);
+        $handler = new QueueableRequestHandler($route);
+        $handler->add(...$this->getMiddlewares());
 
-        return $requestHandler->handle($request);
+        return $handler->handle($request);
     }
 
     /**
@@ -119,5 +255,23 @@ class Router extends RouteCollection implements MiddlewareInterface, RequestHand
                 $request->withAttribute(self::ATTR_NAME_FOR_ROUTING_ERROR, $e)
             );
         }
+    }
+
+    /**
+     * Route grouping logic
+     *
+     * @param callable $callback
+     *
+     * @return RouteCollectionCommand
+     */
+    public function group(callable $callback) : RouteCollectionCommand
+    {
+        $collector = new RouteCollector();
+
+        $callback($collector);
+
+        $this->addRoute(...$collector->getCollection()->all());
+
+        return new RouteCollectionCommand($collector->getCollection());
     }
 }
