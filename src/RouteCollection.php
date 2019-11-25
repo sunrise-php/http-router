@@ -34,7 +34,17 @@ class RouteCollection implements RouteCollectionInterface
      *
      * @var RouteInterface[]
      */
-    private $routes = [];
+    private $routes;
+
+    /**
+     * Constructor of the class
+     *
+     * @param RouteInterface ...$routes
+     */
+    public function __construct(RouteInterface ...$routes)
+    {
+        $this->routes = $routes;
+    }
 
     /**
      * {@inheritDoc}
