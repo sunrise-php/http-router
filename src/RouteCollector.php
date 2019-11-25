@@ -24,7 +24,7 @@ class RouteCollector
 {
 
     /**
-     * Route collection
+     * Route collection for collecting
      *
      * @var RouteCollectionInterface
      */
@@ -41,12 +41,14 @@ class RouteCollector
      * Constructor of the class
      *
      * @param null|RouteCollectionInterface $collection
+     * @param null|RouteFactoryInterface $factory
      */
-    public function __construct(RouteCollectionInterface $collection = null)
-    {
+    public function __construct(
+        RouteCollectionInterface $collection = null,
+        RouteFactoryInterface $factory = null
+    ) {
         $this->collection = $collection ?? new RouteCollection();
-
-        $this->factory = new RouteFactory();
+        $this->factory = $factory ?? new RouteFactory();
     }
 
     /**
@@ -294,9 +296,9 @@ class RouteCollector
      *
      * @param callable $callback
      *
-     * @return RouteCollectionCommand
+     * @return RouteCollectionGroupActionInterface
      */
-    public function group(callable $callback) : RouteCollectionCommand
+    public function group(callable $callback) : RouteCollectionGroupActionInterface
     {
         $collector = new self;
 
@@ -304,6 +306,6 @@ class RouteCollector
 
         $this->collection->add(...$collector->collection->all());
 
-        return new RouteCollectionCommand($collector->collection);
+        return new RouteCollectionGroupAction($collector->collection);
     }
 }

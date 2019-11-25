@@ -40,7 +40,7 @@ interface RouteFactoryInterface
         string $path,
         array $methods,
         RequestHandlerInterface $requestHandler,
-        array $middlewares = [],
-        array $attributes = []
+        array $middlewares,
+        array $attributes
     ) : RouteInterface;
 }

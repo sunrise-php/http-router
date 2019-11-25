@@ -22,13 +22,13 @@ use Psr\Http\Server\MiddlewareInterface;
 use function array_merge;
 
 /**
- * RouteCollectionCommand
+ * RouteCollectionGroupAction
  */
-class RouteCollectionCommand
+class RouteCollectionGroupAction implements RouteCollectionGroupActionInterface
 {
 
     /**
-     * Route collection
+     * Route collection for group activities
      *
      * @var RouteCollectionInterface
      */
@@ -45,13 +45,9 @@ class RouteCollectionCommand
     }
 
     /**
-     * Adds the given prefix to all routes in the collection
-     *
-     * @param string $prefix
-     *
-     * @return self
+     * {@inheritDoc}
      */
-    public function addPrefix(string $prefix) : self
+    public function addPrefix(string $prefix) : RouteCollectionGroupActionInterface
     {
         foreach ($this->collection as $route) {
             $route->addPrefix($prefix);
@@ -61,13 +57,9 @@ class RouteCollectionCommand
     }
 
     /**
-     * Adds the given suffix to all routes in the collection
-     *
-     * @param string $suffix
-     *
-     * @return self
+     * {@inheritDoc}
      */
-    public function addSuffix(string $suffix) : self
+    public function addSuffix(string $suffix) : RouteCollectionGroupActionInterface
     {
         foreach ($this->collection as $route) {
             $route->addSuffix($suffix);
@@ -77,13 +69,9 @@ class RouteCollectionCommand
     }
 
     /**
-     * Adds the given method(s) to all routes in the collection
-     *
-     * @param string ...$methods
-     *
-     * @return self
+     * {@inheritDoc}
      */
-    public function addMethod(string ...$methods) : self
+    public function addMethod(string ...$methods) : RouteCollectionGroupActionInterface
     {
         foreach ($this->collection as $route) {
             $route->addMethod(...$methods);
@@ -93,13 +81,9 @@ class RouteCollectionCommand
     }
 
     /**
-     * Adds the given middleware(s) to all routes in the collection
-     *
-     * @param MiddlewareInterface ...$middlewares
-     *
-     * @return self
+     * {@inheritDoc}
      */
-    public function addMiddleware(MiddlewareInterface ...$middlewares) : self
+    public function addMiddleware(MiddlewareInterface ...$middlewares) : RouteCollectionGroupActionInterface
     {
         foreach ($this->collection as $route) {
             $route->addMiddleware(...$middlewares);
@@ -109,13 +93,9 @@ class RouteCollectionCommand
     }
 
     /**
-     * Adds the given middleware(s) to the beginning of all routes in the collection
-     *
-     * @param MiddlewareInterface ...$middlewares
-     *
-     * @return self
+     * {@inheritDoc}
      */
-    public function unshiftMiddleware(MiddlewareInterface ...$middlewares) : self
+    public function unshiftMiddleware(MiddlewareInterface ...$middlewares) : RouteCollectionGroupActionInterface
     {
         foreach ($this->collection as $route) {
             $route->setMiddlewares(...array_merge(

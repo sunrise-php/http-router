@@ -42,14 +42,14 @@ class AnnotationDirectoryLoader implements LoaderInterface
 {
 
     /**
-     * @var SimpleAnnotationReader
-     */
-    private $annotationReader;
-
-    /**
      * @var RouteFactoryInterface
      */
     private $routeFactory;
+
+    /**
+     * @var SimpleAnnotationReader
+     */
+    private $annotationReader;
 
     /**
      * @var null|ContainerInterface
@@ -58,13 +58,15 @@ class AnnotationDirectoryLoader implements LoaderInterface
 
     /**
      * Constructor of the class
+     *
+     * @param null|RouteFactoryInterface $routeFactory
      */
-    public function __construct()
+    public function __construct(RouteFactoryInterface $routeFactory = null)
     {
+        $this->routeFactory = $routeFactory ?? new RouteFactory();
+
         $this->annotationReader = new SimpleAnnotationReader();
         $this->annotationReader->addNamespace('Sunrise\Http\Router\Annotation');
-
-        $this->routeFactory = new RouteFactory();
     }
 
     /**

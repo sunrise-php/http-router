@@ -262,9 +262,9 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *
      * @param callable $callback
      *
-     * @return RouteCollectionCommand
+     * @return RouteCollectionGroupActionInterface
      */
-    public function group(callable $callback) : RouteCollectionCommand
+    public function group(callable $callback) : RouteCollectionGroupActionInterface
     {
         $collector = new RouteCollector();
 
@@ -272,6 +272,6 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
 
         $this->addRoute(...$collector->getCollection()->all());
 
-        return new RouteCollectionCommand($collector->getCollection());
+        return new RouteCollectionGroupAction($collector->getCollection());
     }
 }
