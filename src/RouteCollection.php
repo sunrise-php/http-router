@@ -14,8 +14,6 @@ namespace Sunrise\Http\Router;
 /**
  * Import classes
  */
-use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 use ArrayIterator;
 
 /**
