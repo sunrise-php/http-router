@@ -14,16 +14,26 @@ namespace Sunrise\Http\Router;
 /**
  * Import classes
  */
+use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
- * RouteFactory
+ * RouteFactoryInterface
  */
-class RouteFactory implements RouteFactoryInterface
+interface RouteFactoryInterface
 {
 
     /**
-     * {@inheritDoc}
+     * Creates a new route from the given parameters
+     *
+     * @param string $name
+     * @param string $path
+     * @param string[] $methods
+     * @param RequestHandlerInterface $requestHandler
+     * @param MiddlewareInterface[] $middlewares
+     * @param array $attributes
+     *
+     * @return RouteInterface
      */
     public function createRoute(
         string $name,
@@ -32,14 +42,5 @@ class RouteFactory implements RouteFactoryInterface
         RequestHandlerInterface $requestHandler,
         array $middlewares = [],
         array $attributes = []
-    ) : RouteInterface {
-        return new Route(
-            $name,
-            $path,
-            $methods,
-            $requestHandler,
-            $middlewares,
-            $attributes
-        );
-    }
+    ) : RouteInterface;
 }

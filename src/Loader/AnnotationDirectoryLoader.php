@@ -20,6 +20,7 @@ use Sunrise\Http\Router\Annotation\Route as AnnotationRoute;
 use Sunrise\Http\Router\RouteCollection;
 use Sunrise\Http\Router\RouteCollectionInterface;
 use Sunrise\Http\Router\RouteFactory;
+use Sunrise\Http\Router\RouteFactoryInterface;
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -46,7 +47,7 @@ class AnnotationDirectoryLoader implements LoaderInterface
     private $annotationReader;
 
     /**
-     * @var RouteFactory
+     * @var RouteFactoryInterface
      */
     private $routeFactory;
 

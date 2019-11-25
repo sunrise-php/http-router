@@ -33,7 +33,7 @@ class RouteCollector
     /**
      * Route factory
      *
-     * @var RouteFactory
+     * @var RouteFactoryInterface
      */
     private $factory;
 

@@ -7,6 +7,7 @@ namespace Sunrise\Http\Router\Tests;
  */
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\RouteFactory;
+use Sunrise\Http\Router\RouteFactoryInterface;
 use Sunrise\Http\Router\RouteInterface;
 
 /**
@@ -14,6 +15,16 @@ use Sunrise\Http\Router\RouteInterface;
  */
 class RouteFactoryTest extends TestCase
 {
+
+    /**
+     * @return void
+     */
+    public function testConstructor() : void
+    {
+        $factory = new RouteFactory();
+
+        $this->assertInstanceOf(RouteFactoryInterface::class, $factory);
+    }
 
     /**
      * @return void
