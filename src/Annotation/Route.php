@@ -38,11 +38,6 @@ final class Route
     /**
      * @var string
      */
-    public $source;
-
-    /**
-     * @var string
-     */
     public $name;
 
     /**

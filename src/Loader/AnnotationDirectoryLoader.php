@@ -36,7 +36,7 @@ use function get_declared_classes;
 use function is_dir;
 use function iterator_to_array;
 use function sprintf;
-use function usort;
+use function uasort;
 
 /**
  * AnnotationDirectoryLoader
@@ -118,20 +118,21 @@ class AnnotationDirectoryLoader implements LoaderInterface
      */
     public function load() : RouteCollectionInterface
     {
-        $routes = [];
+        $annotations = [];
         foreach ($this->resources as $resource) {
-            $annotations = $this->findAnnotations($resource);
+            $annotations += $this->findAnnotations($resource);
+        }
 
-            foreach ($annotations as $annotation) {
-                $routes[] = $this->routeFactory->createRoute(
-                    $annotation->name,
-                    $annotation->path,
-                    $annotation->methods,
-                    $this->initClass($annotation->source),
-                    $this->initClasses(...$annotation->middlewares),
-                    $annotation->attributes
-                );
-            }
+        $routes = [];
+        foreach ($annotations as $class => $annotation) {
+            $routes[] = $this->routeFactory->createRoute(
+                $annotation->name,
+                $annotation->path,
+                $annotation->methods,
+                $this->initClass($class),
+                $this->initClasses(...$annotation->middlewares),
+                $annotation->attributes
+            );
         }
 
         return new RouteCollection(...$routes);
@@ -158,12 +159,11 @@ class AnnotationDirectoryLoader implements LoaderInterface
             if ($annotation) {
                 AnnotationRoute::assertValidSource($class);
 
-                $annotation->source = $class;
-                $annotations[] = $annotation;
+                $annotations[$class] = $annotation;
             }
         }
 
-        usort($annotations, function ($a, $b) {
+        uasort($annotations, function ($a, $b) {
             return $b->priority <=> $a->priority;
         });
 
