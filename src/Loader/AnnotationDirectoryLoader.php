@@ -158,7 +158,6 @@ class AnnotationDirectoryLoader implements LoaderInterface
 
             if ($annotation) {
                 AnnotationRoute::assertValidSource($class);
-
                 $annotations[$class] = $annotation;
             }
         }
