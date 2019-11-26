@@ -7,6 +7,7 @@ namespace Sunrise\Http\Router\Tests\Loader;
  */
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
+use Psr\SimpleCache\CacheInterface;
 use Sunrise\Http\Router\Annotation\Route as AnnotationRoute;
 use Sunrise\Http\Router\Exception\InvalidAnnotationParameterException;
 use Sunrise\Http\Router\Exception\InvalidAnnotationSourceException;
@@ -32,7 +33,9 @@ class AnnotationDirectoryLoaderTest extends TestCase
      */
     public static function setUpBeforeClass() : void
     {
-        class_exists('Route') || class_alias(AnnotationRoute::class, 'Route');
+        if (!class_exists('Route')) {
+            class_alias(AnnotationRoute::class, 'Route');
+        }
     }
 
     /**
@@ -64,6 +67,22 @@ class AnnotationDirectoryLoaderTest extends TestCase
     /**
      * @return void
      */
+    public function testCache() : void
+    {
+        $loader = new AnnotationDirectoryLoader();
+
+        $this->assertNull($loader->getCache());
+
+        $cache = $this->createMock(CacheInterface::class);
+
+        $loader->setCache($cache);
+
+        $this->assertSame($cache, $loader->getCache());
+    }
+
+    /**
+     * @return void
+     */
     public function testAttachInvalidResource() : void
     {
         $loader = new AnnotationDirectoryLoader();
@@ -81,19 +100,21 @@ class AnnotationDirectoryLoaderTest extends TestCase
     {
         $container = $this->createMock(ContainerInterface::class);
 
-        // create the ContainerInterface::has() method...
-        $container->expects($this->any())->method('has')->will($this->returnCallback(function ($class) {
-            return Fixture\BlankMiddleware::class === $class;
-        }));
+        $container->expects($this->exactly(12))
+            ->method('has')
+            ->will($this->returnCallback(function ($class) {
+                return Fixture\BlankMiddleware::class === $class;
+            }));
 
-        // create the ContainerInterface::get() method...
-        $container->expects($this->any())->method('get')->will($this->returnCallback(function ($class) {
-            return new Fixture\NamedBlankMiddleware('containerize');
-        }));
+        $container->expects($this->exactly(8))
+            ->method('get')
+            ->will($this->returnCallback(function ($class) {
+                return new Fixture\NamedBlankMiddleware('containerize');
+            }));
 
         $loader = new AnnotationDirectoryLoader();
-        $loader->setContainer($container);
         $loader->attach(__DIR__ . '/../Fixture/Annotation/Route/Valid');
+        $loader->setContainer($container);
         $routes = $loader->load();
 
         // test for the routes priority...
@@ -163,6 +184,44 @@ class AnnotationDirectoryLoaderTest extends TestCase
                 'bar' => 'baz',
             ],
         ], Fixture\Helper::routesToArray($routes));
+    }
+
+    /**
+     * @return void
+     */
+    public function testLoadWithCache() : void
+    {
+        $cache = $this->createMock(CacheInterface::class);
+
+        $cache->expects($this->exactly(2))
+            ->method('has')
+            ->will($this->returnCallback(function () {
+                static $counter = 0;
+                $counter++;
+
+                return $counter > 1;
+            }));
+
+        $cache->expects($this->exactly(1))
+            ->method('set')
+            ->willReturn(null);
+
+        $cache->expects($this->exactly(2))
+            ->method('get')
+            ->willReturn([
+                Fixture\BlankRequestHandler::class => new AnnotationRoute([
+                    'name' => 'foo',
+                    'path' => '/foo',
+                    'methods' => ['GET'],
+                ]),
+            ]);
+
+        $loader = new AnnotationDirectoryLoader();
+        $loader->attach(__DIR__ . '/../Fixture/Annotation/Route/Empty');
+        $loader->setCache($cache);
+        $loader->load();
+
+        $this->assertCount(1, $loader->load());
     }
 
     /**

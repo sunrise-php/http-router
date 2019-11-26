@@ -16,6 +16,7 @@ namespace Sunrise\Http\Router\Loader;
  */
 use Doctrine\Common\Annotations\SimpleAnnotationReader;
 use Psr\Container\ContainerInterface;
+use Psr\SimpleCache\CacheInterface;
 use Sunrise\Http\Router\Annotation\Route as AnnotationRoute;
 use Sunrise\Http\Router\Exception\InvalidLoadResourceException;
 use Sunrise\Http\Router\RouteCollectionFactory;
@@ -34,6 +35,7 @@ use RegexIterator;
  */
 use function array_diff;
 use function get_declared_classes;
+use function hash;
 use function is_dir;
 use function iterator_to_array;
 use function sprintf;
@@ -71,6 +73,11 @@ class AnnotationDirectoryLoader implements LoaderInterface
     private $container;
 
     /**
+     * @var null|CacheInterface
+     */
+    private $cache;
+
+    /**
      * Constructor of the class
      *
      * @param null|RouteCollectionFactoryInterface $collectionFactory
@@ -98,6 +105,16 @@ class AnnotationDirectoryLoader implements LoaderInterface
     }
 
     /**
+     * Gets the loader cache
+     *
+     * @return null|CacheInterface
+     */
+    public function getCache() : ?CacheInterface
+    {
+        return $this->cache;
+    }
+
+    /**
      * Sets the given container to the loader
      *
      * @param ContainerInterface $container
@@ -107,6 +124,18 @@ class AnnotationDirectoryLoader implements LoaderInterface
     public function setContainer(ContainerInterface $container) : void
     {
         $this->container = $container;
+    }
+
+    /**
+     * Sets the given cache to the loader
+     *
+     * @param CacheInterface $cache
+     *
+     * @return void
+     */
+    public function setCache(CacheInterface $cache) : void
+    {
+        $this->cache = $cache;
     }
 
     /**
@@ -130,7 +159,7 @@ class AnnotationDirectoryLoader implements LoaderInterface
     {
         $annotations = [];
         foreach ($this->resources as $resource) {
-            $annotations += $this->findAnnotations($resource);
+            $annotations += $this->fetchAnnotations($resource);
         }
 
         $routes = [];
@@ -146,6 +175,32 @@ class AnnotationDirectoryLoader implements LoaderInterface
         }
 
         return $this->collectionFactory->createCollection(...$routes);
+    }
+
+    /**
+     * Fetches annotations for the given resource
+     *
+     * @param string $resource
+     *
+     * @return AnnotationRoute[]
+     *
+     * @throws \Psr\SimpleCache\CacheException
+     */
+    private function fetchAnnotations(string $resource) : array
+    {
+        if (!$this->cache) {
+            return $this->findAnnotations($resource);
+        }
+
+        // some cache stores may have character restrictions for a key...
+        $key = hash('md5', $resource);
+
+        if (!$this->cache->has($key)) {
+            $value = $this->findAnnotations($resource);
+            $this->cache->set($key, $value);
+        }
+
+        return $this->cache->get($key);
     }
 
     /**
