@@ -18,7 +18,8 @@ use Doctrine\Common\Annotations\SimpleAnnotationReader;
 use Psr\Container\ContainerInterface;
 use Sunrise\Http\Router\Annotation\Route as AnnotationRoute;
 use Sunrise\Http\Router\Exception\InvalidLoadResourceException;
-use Sunrise\Http\Router\RouteCollection;
+use Sunrise\Http\Router\RouteCollectionFactory;
+use Sunrise\Http\Router\RouteCollectionFactoryInterface;
 use Sunrise\Http\Router\RouteCollectionInterface;
 use Sunrise\Http\Router\RouteFactory;
 use Sunrise\Http\Router\RouteFactoryInterface;
@@ -50,6 +51,11 @@ class AnnotationDirectoryLoader implements LoaderInterface
     private $resources = [];
 
     /**
+     * @var RouteCollectionFactoryInterface
+     */
+    private $collectionFactory;
+
+    /**
      * @var RouteFactoryInterface
      */
     private $routeFactory;
@@ -67,10 +73,14 @@ class AnnotationDirectoryLoader implements LoaderInterface
     /**
      * Constructor of the class
      *
+     * @param null|RouteCollectionFactoryInterface $collectionFactory
      * @param null|RouteFactoryInterface $routeFactory
      */
-    public function __construct(RouteFactoryInterface $routeFactory = null)
-    {
+    public function __construct(
+        RouteCollectionFactoryInterface $collectionFactory = null,
+        RouteFactoryInterface $routeFactory = null
+    ) {
+        $this->collectionFactory = $collectionFactory ?? new RouteCollectionFactory();
         $this->routeFactory = $routeFactory ?? new RouteFactory();
 
         $this->annotationReader = new SimpleAnnotationReader();
@@ -135,7 +145,7 @@ class AnnotationDirectoryLoader implements LoaderInterface
             );
         }
 
-        return new RouteCollection(...$routes);
+        return $this->collectionFactory->createCollection(...$routes);
     }
 
     /**

@@ -15,8 +15,12 @@ namespace Sunrise\Http\Router\Loader;
  * Import classes
  */
 use Sunrise\Http\Router\Exception\InvalidLoadResourceException;
+use Sunrise\Http\Router\RouteCollectionFactory;
+use Sunrise\Http\Router\RouteCollectionFactoryInterface;
 use Sunrise\Http\Router\RouteCollectionInterface;
 use Sunrise\Http\Router\RouteCollector;
+use Sunrise\Http\Router\RouteFactory;
+use Sunrise\Http\Router\RouteFactoryInterface;
 
 /**
  * Import functions
@@ -34,6 +38,28 @@ class CollectableFileLoader implements LoaderInterface
      * @var string[]
      */
     private $resources = [];
+
+    /**
+     * @var RouteCollectionFactoryInterface
+     */
+    private $collectionFactory;
+
+    /**
+     * @var RouteFactoryInterface
+     */
+    private $routeFactory;
+
+    /**
+     * @param null|RouteCollectionFactoryInterface $collectionFactory
+     * @param null|RouteFactoryInterface $routeFactory
+     */
+    public function __construct(
+        RouteCollectionFactoryInterface $collectionFactory = null,
+        RouteFactoryInterface $routeFactory = null
+    ) {
+        $this->collectionFactory = $collectionFactory ?? new RouteCollectionFactory();
+        $this->routeFactory = $routeFactory ?? new RouteFactory();
+    }
 
     /**
      * {@inheritDoc}
@@ -54,7 +80,10 @@ class CollectableFileLoader implements LoaderInterface
      */
     public function load() : RouteCollectionInterface
     {
-        $collect = new RouteCollector();
+        $collect = new RouteCollector(
+            $this->collectionFactory,
+            $this->routeFactory
+        );
 
         foreach ($this->resources as $resource) {
             (function () use ($resource) {

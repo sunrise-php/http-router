@@ -24,31 +24,40 @@ class RouteCollector
 {
 
     /**
-     * Route collection for collecting
+     * The collector a route collection factory
+     *
+     * @var RouteCollectionFactoryInterface
+     */
+    private $collectionFactory;
+
+    /**
+     * The collector a route factory
+     *
+     * @var RouteFactoryInterface
+     */
+    private $routeFactory;
+
+    /**
+     * The collector a route collection
      *
      * @var RouteCollectionInterface
      */
     private $collection;
 
     /**
-     * Route factory
-     *
-     * @var RouteFactoryInterface
-     */
-    private $factory;
-
-    /**
      * Constructor of the class
      *
-     * @param null|RouteCollectionInterface $collection
-     * @param null|RouteFactoryInterface $factory
+     * @param null|RouteCollectionFactoryInterface $collectionFactory
+     * @param null|RouteFactoryInterface $routeFactory
      */
     public function __construct(
-        RouteCollectionInterface $collection = null,
-        RouteFactoryInterface $factory = null
+        RouteCollectionFactoryInterface $collectionFactory = null,
+        RouteFactoryInterface $routeFactory = null
     ) {
-        $this->collection = $collection ?? new RouteCollection();
-        $this->factory = $factory ?? new RouteFactory();
+        $this->collectionFactory = $collectionFactory ?? new RouteCollectionFactory();
+        $this->routeFactory = $routeFactory ?? new RouteFactory();
+
+        $this->collection = $this->collectionFactory->createCollection();
     }
 
     /**
@@ -81,7 +90,7 @@ class RouteCollector
         array $middlewares = [],
         array $attributes = []
     ) : RouteInterface {
-        $route = $this->factory->createRoute(
+        $route = $this->routeFactory->createRoute(
             $name,
             $path,
             $methods,
@@ -300,7 +309,10 @@ class RouteCollector
      */
     public function group(callable $callback) : RouteCollectionGroupActionInterface
     {
-        $collector = new self;
+        $collector = new self(
+            $this->collectionFactory,
+            $this->routeFactory
+        );
 
         $callback($collector);
 
