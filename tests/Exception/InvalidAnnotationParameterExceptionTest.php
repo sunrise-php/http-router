@@ -6,9 +6,8 @@ namespace Sunrise\Http\Router\Tests\Exception;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\Exception\ExceptionInterface;
+use Sunrise\Http\Router\Exception\AbstractException;
 use Sunrise\Http\Router\Exception\InvalidAnnotationParameterException;
-use RuntimeException;
 
 /**
  * InvalidAnnotationParameterExceptionTest
@@ -23,7 +22,30 @@ class InvalidAnnotationParameterExceptionTest extends TestCase
     {
         $exception = new InvalidAnnotationParameterException();
 
-        $this->assertInstanceOf(ExceptionInterface::class, $exception);
-        $this->assertInstanceOf(RuntimeException::class, $exception);
+        $this->assertInstanceOf(AbstractException::class, $exception);
+    }
+
+    /**
+     * @return void
+     */
+    public function testMessage() : void
+    {
+        $message = 'blah';
+
+        $exception = new InvalidAnnotationParameterException($message);
+
+        $this->assertSame($message, $exception->getMessage());
+    }
+
+    /**
+     * @return void
+     */
+    public function testContext() : void
+    {
+        $context = ['foo' => 'bar'];
+
+        $exception = new InvalidAnnotationParameterException('blah', $context);
+
+        $this->assertSame($context, $exception->getContext());
     }
 }

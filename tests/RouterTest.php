@@ -87,7 +87,13 @@ class RouterTest extends TestCase
         $this->expectException(RouteAlreadyExistsException::class);
         $this->expectExceptionMessage('A route with the name "' . $route->getName() . '" already exists.');
 
-        $router->addRoute($route);
+        try {
+            $router->addRoute($route);
+        } catch (RouteAlreadyExistsException $e) {
+            $this->assertSame($route, $e->fromContext('route'));
+
+            throw $e;
+        }
     }
 
     /**
@@ -103,7 +109,13 @@ class RouterTest extends TestCase
         $this->expectException(MiddlewareAlreadyExistsException::class);
         $this->expectExceptionMessage('A middleware with the hash "' . $middleware->getHash() . '" already exists.');
 
-        $router->addMiddleware($middleware);
+        try {
+            $router->addMiddleware($middleware);
+        } catch (MiddlewareAlreadyExistsException $e) {
+            $this->assertSame($middleware, $e->fromContext('middleware'));
+
+            throw $e;
+        }
     }
 
     /**
@@ -164,9 +176,15 @@ class RouterTest extends TestCase
         $router->addRoute(...$routes);
 
         $this->expectException(RouteNotFoundException::class);
-        $this->expectExceptionMessage('No route found with the name "foo".');
+        $this->expectExceptionMessage('No route found for the name "foo".');
 
-        $router->getRoute('foo');
+        try {
+            $router->getRoute('foo');
+        } catch (RouteNotFoundException $e) {
+            $this->assertSame('foo', $e->fromContext('name'));
+
+            throw $e;
+        }
     }
 
     /**
@@ -228,7 +246,7 @@ class RouterTest extends TestCase
             ->createServerRequest('GET', $routes[0]->getPath());
 
         $this->expectException(MethodNotAllowedException::class);
-        $this->expectExceptionMessage('No route found for the method "GET".');
+        $this->expectExceptionMessage('The method "GET" is not allowed.');
 
         try {
             $router->match($request);
@@ -239,6 +257,8 @@ class RouterTest extends TestCase
                 $routes[2]->getMethods()
             );
 
+            $this->assertSame('GET', $e->fromContext('method'));
+            $this->assertSame($allowedMethods, $e->fromContext('allowed'));
             $this->assertSame($allowedMethods, $e->getAllowedMethods());
 
             throw $e;
@@ -265,7 +285,13 @@ class RouterTest extends TestCase
         $this->expectException(RouteNotFoundException::class);
         $this->expectExceptionMessage('No route found for the URI "/".');
 
-        $router->match($request);
+        try {
+            $router->match($request);
+        } catch (RouteNotFoundException $e) {
+            $this->assertSame('/', $e->fromContext('uri'));
+
+            throw $e;
+        }
     }
 
     /**
@@ -367,7 +393,7 @@ class RouterTest extends TestCase
             ->createServerRequest('GET', '/');
 
         $this->expectException(MethodNotAllowedException::class);
-        $this->expectExceptionMessage('No route found for the method "GET".');
+        $this->expectExceptionMessage('The method "GET" is not allowed.');
 
         try {
             $router->handle($request);
@@ -378,6 +404,8 @@ class RouterTest extends TestCase
                 $routes[2]->getMethods()
             );
 
+            $this->assertSame('GET', $e->fromContext('method'));
+            $this->assertSame($allowedMethods, $e->fromContext('allowed'));
             $this->assertSame($allowedMethods, $e->getAllowedMethods());
 
             throw $e;
@@ -404,7 +432,13 @@ class RouterTest extends TestCase
         $this->expectException(RouteNotFoundException::class);
         $this->expectExceptionMessage('No route found for the URI "/".');
 
-        $router->handle($request);
+        try {
+            $router->handle($request);
+        } catch (RouteNotFoundException $e) {
+            $this->assertSame('/', $e->fromContext('uri'));
+
+            throw $e;
+        }
     }
 
     /**

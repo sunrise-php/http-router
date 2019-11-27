@@ -12,13 +12,8 @@
 namespace Sunrise\Http\Router\Exception;
 
 /**
- * Import classes
- */
-use RuntimeException;
-
-/**
  * InvalidPathException
  */
-class InvalidPathException extends RuntimeException implements ExceptionInterface
+class InvalidPathException extends AbstractException
 {
 }

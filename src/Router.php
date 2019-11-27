@@ -20,12 +20,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Exception\ExceptionInterface;
-use Sunrise\Http\Router\Exception\InvalidAttributeValueException;
-use Sunrise\Http\Router\Exception\MethodNotAllowedException;
-use Sunrise\Http\Router\Exception\MiddlewareAlreadyExistsException;
-use Sunrise\Http\Router\Exception\MissingAttributeValueException;
-use Sunrise\Http\Router\Exception\RouteAlreadyExistsException;
-use Sunrise\Http\Router\Exception\RouteNotFoundException;
 use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
 
@@ -35,7 +29,6 @@ use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
 use function array_keys;
 use function array_values;
 use function spl_object_hash;
-use function sprintf;
 
 /**
  * Router
@@ -91,7 +84,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *
      * @return void
      *
-     * @throws RouteAlreadyExistsException
+     * @throws Exception\RouteAlreadyExistsException
      */
     public function addRoute(RouteInterface ...$routes) : void
     {
@@ -99,9 +92,9 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
             $name = $route->getName();
 
             if (isset($this->routes[$name])) {
-                throw new RouteAlreadyExistsException(
-                    sprintf('A route with the name "%s" already exists.', $name)
-                );
+                throw (new ExceptionFactory)->routeAlreadyExists($name, [
+                    'route' => $route,
+                ]);
             }
 
             $this->routes[$name] = $route;
@@ -115,7 +108,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *
      * @return void
      *
-     * @throws MiddlewareAlreadyExistsException
+     * @throws Exception\MiddlewareAlreadyExistsException
      */
     public function addMiddleware(MiddlewareInterface ...$middlewares) : void
     {
@@ -123,9 +116,9 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
             $hash = spl_object_hash($middleware);
 
             if (isset($this->middlewares[$hash])) {
-                throw new MiddlewareAlreadyExistsException(
-                    sprintf('A middleware with the hash "%s" already exists.', $hash)
-                );
+                throw (new ExceptionFactory)->middlewareAlreadyExists($hash, [
+                    'middleware' => $middleware,
+                ]);
             }
 
             $this->middlewares[$hash] = $middleware;
@@ -156,14 +149,12 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *
      * @return RouteInterface
      *
-     * @throws RouteNotFoundException
+     * @throws Exception\RouteNotFoundException
      */
     public function getRoute(string $name) : RouteInterface
     {
         if (!isset($this->routes[$name])) {
-            throw new RouteNotFoundException(
-                sprintf('No route found with the name "%s".', $name)
-            );
+            throw (new ExceptionFactory)->routeNotFoundByName($name);
         }
 
         return $this->routes[$name];
@@ -178,10 +169,10 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *
      * @return string
      *
-     * @throws RouteNotFoundException
+     * @throws Exception\RouteNotFoundException
      *
-     * @throws InvalidAttributeValueException May be thrown from `path_build`.
-     * @throws MissingAttributeValueException May be thrown from `path_build`.
+     * @throws Exception\InvalidAttributeValueException May be thrown from `path_build`.
+     * @throws Exception\MissingAttributeValueException May be thrown from `path_build`.
      */
     public function generateUri(string $name, array $attributes = [], bool $strict = false) : string
     {
@@ -199,8 +190,8 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *
      * @return RouteInterface
      *
-     * @throws MethodNotAllowedException
-     * @throws RouteNotFoundException
+     * @throws Exception\MethodNotAllowedException
+     * @throws Exception\RouteNotFoundException
      */
     public function match(ServerRequestInterface $request) : RouteInterface
     {
@@ -211,24 +202,23 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
             }
         }
 
-        $method = $request->getMethod();
-        if (!isset($routes[$method])) {
-            throw new MethodNotAllowedException(
-                $this->getAllowedMethods(),
-                sprintf('No route found for the method "%s".', $method)
-            );
+        $requestedMethod = $request->getMethod();
+        if (!isset($routes[$requestedMethod])) {
+            throw (new ExceptionFactory)->methodNotAllowed($requestedMethod, $this->getAllowedMethods(), [
+                'request' => $request,
+            ]);
         }
 
-        $target = $request->getUri()->getPath();
-        foreach ($routes[$method] as $route) {
-            if (path_match($route->getPath(), $target, $attributes)) {
+        $requestedUri = $request->getUri()->getPath();
+        foreach ($routes[$requestedMethod] as $route) {
+            if (path_match($route->getPath(), $requestedUri, $attributes)) {
                 return $route->withAddedAttributes($attributes);
             }
         }
 
-        throw new RouteNotFoundException(
-            sprintf('No route found for the URI "%s".', $target)
-        );
+        throw (new ExceptionFactory)->routeNotFoundByUri($requestedUri, [
+            'request' => $request,
+        ]);
     }
 
     /**

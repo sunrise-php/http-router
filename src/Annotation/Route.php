@@ -141,7 +141,9 @@ final class Route
         }
 
         foreach ($params['methods'] as $method) {
-            $this->assertValidMethod($method);
+            if (!is_string($method)) {
+                throw new InvalidAnnotationParameterException('@Route.methods must contain only strings.');
+            }
         }
     }
 
@@ -157,7 +159,17 @@ final class Route
         }
 
         foreach ($params['middlewares'] as $middleware) {
-            $this->assertValidMiddleware($middleware);
+            if (!is_string($middleware)) {
+                throw new InvalidAnnotationParameterException('@Route.middlewares must contain only strings.');
+            }
+
+            if (!class_exists($middleware)) {
+                throw new InvalidAnnotationParameterException('@Route.middlewares contains nonexistent class.');
+            }
+
+            if (!is_subclass_of($middleware, MiddlewareInterface::class)) {
+                throw new InvalidAnnotationParameterException('@Route.middlewares contains non middleware class.');
+            }
         }
     }
 
@@ -182,38 +194,6 @@ final class Route
     {
         if (!is_int($params['priority'])) {
             throw new InvalidAnnotationParameterException('@Route.priority must be an integer.');
-        }
-    }
-
-    /**
-     * @param mixed $method
-     * @return void
-     * @throws InvalidAnnotationParameterException
-     */
-    private function assertValidMethod($method) : void
-    {
-        if (!is_string($method)) {
-            throw new InvalidAnnotationParameterException('@Route.methods must contain only strings.');
-        }
-    }
-
-    /**
-     * @param mixed $middleware
-     * @return void
-     * @throws InvalidAnnotationParameterException
-     */
-    private function assertValidMiddleware($middleware) : void
-    {
-        if (!is_string($middleware)) {
-            throw new InvalidAnnotationParameterException('@Route.middlewares must contain only strings.');
-        }
-
-        if (!class_exists($middleware)) {
-            throw new InvalidAnnotationParameterException('@Route.middlewares contains nonexistent class.');
-        }
-
-        if (!is_subclass_of($middleware, MiddlewareInterface::class)) {
-            throw new InvalidAnnotationParameterException('@Route.middlewares contains non middleware class.');
         }
     }
 }

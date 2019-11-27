@@ -12,13 +12,8 @@
 namespace Sunrise\Http\Router\Exception;
 
 /**
- * Import classes
- */
-use RuntimeException;
-
-/**
  * MissingAttributeValueException
  */
-class MissingAttributeValueException extends RuntimeException implements ExceptionInterface
+class MissingAttributeValueException extends AbstractException
 {
 }

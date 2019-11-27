@@ -12,13 +12,8 @@
 namespace Sunrise\Http\Router\Exception;
 
 /**
- * Import classes
- */
-use RuntimeException;
-
-/**
  * RouteAlreadyExistsException
  */
-class RouteAlreadyExistsException extends RuntimeException implements ExceptionInterface
+class RouteAlreadyExistsException extends AbstractException
 {
 }

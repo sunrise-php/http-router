@@ -12,13 +12,8 @@
 namespace Sunrise\Http\Router\Exception;
 
 /**
- * Import classes
- */
-use RuntimeException;
-
-/**
  * InvalidAnnotationSourceException
  */
-class InvalidAnnotationSourceException extends RuntimeException implements ExceptionInterface
+class InvalidAnnotationSourceException extends AbstractException
 {
 }

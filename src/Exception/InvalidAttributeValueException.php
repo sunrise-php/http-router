@@ -12,13 +12,8 @@
 namespace Sunrise\Http\Router\Exception;
 
 /**
- * Import classes
- */
-use RuntimeException;
-
-/**
  * InvalidAttributeValueException
  */
-class InvalidAttributeValueException extends RuntimeException implements ExceptionInterface
+class InvalidAttributeValueException extends AbstractException
 {
 }

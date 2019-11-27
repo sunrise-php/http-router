@@ -12,13 +12,8 @@
 namespace Sunrise\Http\Router\Exception;
 
 /**
- * Import classes
- */
-use RuntimeException;
-
-/**
  * InvalidLoadResourceException
  */
-class InvalidLoadResourceException extends RuntimeException implements ExceptionInterface
+class InvalidLoadResourceException extends AbstractException
 {
 }

@@ -12,13 +12,8 @@
 namespace Sunrise\Http\Router\Exception;
 
 /**
- * Import classes
- */
-use RuntimeException;
-
-/**
  * MiddlewareAlreadyExistsException
  */
-class MiddlewareAlreadyExistsException extends RuntimeException implements ExceptionInterface
+class MiddlewareAlreadyExistsException extends AbstractException
 {
 }

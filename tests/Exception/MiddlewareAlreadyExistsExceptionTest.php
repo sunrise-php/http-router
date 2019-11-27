@@ -6,9 +6,8 @@ namespace Sunrise\Http\Router\Tests\Exception;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\Exception\ExceptionInterface;
+use Sunrise\Http\Router\Exception\AbstractException;
 use Sunrise\Http\Router\Exception\MiddlewareAlreadyExistsException;
-use RuntimeException;
 
 /**
  * MiddlewareAlreadyExistsExceptionTest
@@ -23,7 +22,30 @@ class MiddlewareAlreadyExistsExceptionTest extends TestCase
     {
         $exception = new MiddlewareAlreadyExistsException();
 
-        $this->assertInstanceOf(ExceptionInterface::class, $exception);
-        $this->assertInstanceOf(RuntimeException::class, $exception);
+        $this->assertInstanceOf(AbstractException::class, $exception);
+    }
+
+    /**
+     * @return void
+     */
+    public function testMessage() : void
+    {
+        $message = 'blah';
+
+        $exception = new MiddlewareAlreadyExistsException($message);
+
+        $this->assertSame($message, $exception->getMessage());
+    }
+
+    /**
+     * @return void
+     */
+    public function testContext() : void
+    {
+        $context = ['foo' => 'bar'];
+
+        $exception = new MiddlewareAlreadyExistsException('blah', $context);
+
+        $this->assertSame($context, $exception->getContext());
     }
 }
