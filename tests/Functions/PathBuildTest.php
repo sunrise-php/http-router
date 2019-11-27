@@ -46,9 +46,16 @@ class PathBuildTest extends TestCase
             '[' . $path . '] build error: no value given for the attribute "baz".'
         );
 
-        path_build($path, [
-            'bar' => 'bar',
-        ]);
+        try {
+            path_build($path, [
+                'bar' => 'bar',
+            ]);
+        } catch (MissingAttributeValueException $e) {
+            $this->assertSame(['path', 'match'], array_keys($e->getContext()));
+            $this->assertSame($path, $e->fromContext('path'));
+
+            throw $e;
+        }
     }
 
     /**
@@ -63,9 +70,17 @@ class PathBuildTest extends TestCase
             '[' . $path . '] build error: the given value for the attribute "baz" does not match its pattern.'
         );
 
-        path_build($path, [
-            'bar' => 'bar',
-            'baz' => '42',
-        ], true);
+        try {
+            path_build($path, [
+                'bar' => 'bar',
+                'baz' => '42',
+            ], true);
+        } catch (InvalidAttributeValueException $e) {
+            $this->assertSame(['path', 'value', 'match'], array_keys($e->getContext()));
+            $this->assertSame($path, $e->fromContext('path'));
+            $this->assertSame('42', $e->fromContext('value'));
+
+            throw $e;
+        }
     }
 }

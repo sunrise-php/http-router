@@ -49,9 +49,10 @@ function path_build(string $path, array $attributes = [], bool $strict = false) 
             if (!$match['isOptional']) {
                 $errmsg = '[%s] build error: no value given for the attribute "%s".';
 
-                throw new MissingAttributeValueException(
-                    sprintf($errmsg, $path, $match['name'])
-                );
+                throw new MissingAttributeValueException(sprintf($errmsg, $path, $match['name']), [
+                    'path' => $path,
+                    'match' => $match,
+                ]);
             }
 
             $result = str_replace($match['withParentheses'], '', $result);
@@ -66,9 +67,11 @@ function path_build(string $path, array $attributes = [], bool $strict = false) 
             if (!preg_match('#^' . $match['pattern'] . '$#u', $replacement)) {
                 $errmsg = '[%s] build error: the given value for the attribute "%s" does not match its pattern.';
 
-                throw new InvalidAttributeValueException(
-                    sprintf($errmsg, $path, $match['name'])
-                );
+                throw new InvalidAttributeValueException(sprintf($errmsg, $path, $match['name']), [
+                    'path' => $path,
+                    'value' => $replacement,
+                    'match' => $match,
+                ]);
             }
         }
 
