@@ -88,7 +88,7 @@ class AnnotationDirectoryLoaderTest extends TestCase
         $loader = new AnnotationDirectoryLoader();
 
         $this->expectException(InvalidLoadResourceException::class);
-        $this->expectExceptionMessage('The resource "undefined" not found.');
+        $this->expectExceptionMessage('The resource "undefined" is not found.');
 
         $loader->attach('undefined');
     }

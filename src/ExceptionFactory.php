@@ -43,13 +43,13 @@ class ExceptionFactory
     {
         $context['resource'] = $resource;
 
-        $message = sprintf('The resource "%s" not found.', $resource);
+        $message = sprintf('The resource "%s" is not found.', $resource);
 
         return new InvalidLoadResourceException($message, $context);
     }
 
     /**
-     * Used if the given method isn't allowed
+     * Used when the given method isn't allowed
      *
      * It is recommended to add a request instance to the context.
      *

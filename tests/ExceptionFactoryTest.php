@@ -33,7 +33,7 @@ class ExceptionFactoryTest extends TestCase
             'resource' => 'foo',
         ];
 
-        $expectedMessage = 'The resource "foo" not found.';
+        $expectedMessage = 'The resource "foo" is not found.';
 
         $this->assertInstanceOf(InvalidLoadResourceException::class, $exception);
         $this->assertSame($expectedContext, $exception->getContext());

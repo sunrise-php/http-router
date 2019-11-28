@@ -34,7 +34,7 @@ class CollectableFileLoaderTest extends TestCase
         $loader = new CollectableFileLoader();
 
         $this->expectException(InvalidLoadResourceException::class);
-        $this->expectExceptionMessage('The resource "undefined" not found.');
+        $this->expectExceptionMessage('The resource "undefined" is not found.');
 
         $loader->attach('undefined');
     }
