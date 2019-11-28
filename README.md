@@ -1,4 +1,4 @@
-### HTTP router with annotations support for PHP 7.1+ based on PSR-7 and PSR-15
+## HTTP router with annotations support for PHP 7.1+ based on PSR-7 and PSR-15
 
 [![Build Status](https://scrutinizer-ci.com/g/sunrise-php/http-router/badges/build.png?b=master)](https://scrutinizer-ci.com/g/sunrise-php/http-router/build-status/master)
 [![Code Coverage](https://scrutinizer-ci.com/g/sunrise-php/http-router/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/sunrise-php/http-router/?branch=master)
@@ -9,15 +9,15 @@
 
 ---
 
-### Installation
+## Installation via composer
 
 ```bash
 composer require 'sunrise/http-router:^2.0'
 ```
 
-### Quick start
+## Examples of using
 
-#### Loading routes from configs
+#### Strategy loading routes from configs
 
 ```php
 use Sunrise\Http\Router\Loader\CollectableFileLoader;
@@ -31,10 +31,14 @@ $loader->attach('routes/public.php');
 $router = new Router();
 $router->load($loader);
 
+// if the router is used as a request handler
 $response = $router->handle($request);
+
+// if the router is used as middleware
+$response = $router->process($request, $handler);
 ```
 
-#### Loading routes from annotations
+#### Strategy loading routes from annotations
 
 ```php
 use Doctrine\Common\Annotations\AnnotationRegistry;
@@ -49,19 +53,28 @@ $loader->attach('src/Http/RequestHandler');
 $router = new Router();
 $router->load($loader);
 
+// if the router is used as a request handler
 $response = $router->handle($request);
+
+// if the router is used as middleware
+$response = $router->process($request, $handler);
 ```
 
 #### Without loading strategy
 
 ```php
 use App\Http\RequestHandler\HomeRequestHandler;
-use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Sunrise\Http\Router\Router;
 
 $router = new Router();
 
-$router->get('home', '/', new HomeRequestHandler());
+$router->group(function ($group) {
+    $group->get('home', '/', new HomeRequestHandler());
+});
 
+// if the router is used as a request handler
 $response = $router->handle($request);
+
+// if the router is used as middleware
+$response = $router->process($request, $handler);
 ```
