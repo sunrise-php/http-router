@@ -48,6 +48,6 @@ class CollectableFileLoaderTest extends TestCase
 
         $loader->attach(__DIR__ . '/../Fixture/collectable-routes.php');
 
-        $this->assertCount(1, $loader->load());
+        $this->assertCount(1, $loader->load()->all());
     }
 }

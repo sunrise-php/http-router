@@ -12,15 +12,9 @@
 namespace Sunrise\Http\Router;
 
 /**
- * Import classes
- */
-use IteratorAggregate;
-use Countable;
-
-/**
  * RouteCollectionInterface
  */
-interface RouteCollectionInterface extends IteratorAggregate, Countable
+interface RouteCollectionInterface
 {
 
     /**

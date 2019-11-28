@@ -12,16 +12,6 @@
 namespace Sunrise\Http\Router;
 
 /**
- * Import classes
- */
-use ArrayIterator;
-
-/**
- * Import functions
- */
-use function count;
-
-/**
  * RouteCollection
  */
 class RouteCollection implements RouteCollectionInterface
@@ -60,25 +50,5 @@ class RouteCollection implements RouteCollectionInterface
     public function all() : array
     {
         return $this->routes;
-    }
-
-    /**
-     * Gets the number of routes in the collection
-     *
-     * @return int
-     */
-    public function count()
-    {
-        return count($this->routes);
-    }
-
-    /**
-     * Gets an external iterator
-     *
-     * @return ArrayIterator
-     */
-    public function getIterator()
-    {
-        return new ArrayIterator($this->routes);
     }
 }

@@ -115,7 +115,7 @@ class AnnotationDirectoryLoaderTest extends TestCase
         $loader = new AnnotationDirectoryLoader();
         $loader->attach(__DIR__ . '/../Fixture/Annotation/Route/Valid');
         $loader->setContainer($container);
-        $routes = $loader->load();
+        $routes = $loader->load()->all();
 
         // test for the routes priority...
         $this->assertSame([
@@ -221,7 +221,7 @@ class AnnotationDirectoryLoaderTest extends TestCase
         $loader->setCache($cache);
         $loader->load();
 
-        $this->assertCount(1, $loader->load());
+        $this->assertCount(1, $loader->load()->all());
     }
 
     /**

@@ -711,6 +711,8 @@ class RouteCollectorTest extends TestCase
 
         $collector->get('about-us', '/about-us', new Fixture\BlankRequestHandler());
 
+        $routes = $collector->getCollection()->all();
+
         $this->assertContains([
             'name' => 'home',
             'path' => '/',
@@ -718,7 +720,7 @@ class RouteCollectorTest extends TestCase
             'requestHandler' => 'Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler',
             'middlewares' => [],
             'attributes' => [],
-        ], Fixture\Helper::routesToArray($collector->getCollection()));
+        ], Fixture\Helper::routesToArray($routes));
 
         $this->assertContains([
             'name' => 'api.ping',
@@ -727,7 +729,7 @@ class RouteCollectorTest extends TestCase
             'requestHandler' => 'Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler',
             'middlewares' => [],
             'attributes' => [],
-        ], Fixture\Helper::routesToArray($collector->getCollection()));
+        ], Fixture\Helper::routesToArray($routes));
 
         $this->assertContains([
             'name' => 'api.section.create',
@@ -736,7 +738,7 @@ class RouteCollectorTest extends TestCase
             'requestHandler' => 'Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler',
             'middlewares' => [],
             'attributes' => [],
-        ], Fixture\Helper::routesToArray($collector->getCollection()));
+        ], Fixture\Helper::routesToArray($routes));
 
         $this->assertContains([
             'name' => 'api.section.update',
@@ -745,7 +747,7 @@ class RouteCollectorTest extends TestCase
             'requestHandler' => 'Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler',
             'middlewares' => [],
             'attributes' => [],
-        ], Fixture\Helper::routesToArray($collector->getCollection()));
+        ], Fixture\Helper::routesToArray($routes));
 
         $this->assertContains([
             'name' => 'api.product.create',
@@ -754,7 +756,7 @@ class RouteCollectorTest extends TestCase
             'requestHandler' => 'Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler',
             'middlewares' => [],
             'attributes' => [],
-        ], Fixture\Helper::routesToArray($collector->getCollection()));
+        ], Fixture\Helper::routesToArray($routes));
 
         $this->assertContains([
             'name' => 'api.product.update',
@@ -763,7 +765,7 @@ class RouteCollectorTest extends TestCase
             'requestHandler' => 'Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler',
             'middlewares' => [],
             'attributes' => [],
-        ], Fixture\Helper::routesToArray($collector->getCollection()));
+        ], Fixture\Helper::routesToArray($routes));
 
         $this->assertContains([
             'name' => 'about-us',
@@ -772,6 +774,6 @@ class RouteCollectorTest extends TestCase
             'requestHandler' => 'Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler',
             'middlewares' => [],
             'attributes' => [],
-        ], Fixture\Helper::routesToArray($collector->getCollection()));
+        ], Fixture\Helper::routesToArray($routes));
     }
 }
