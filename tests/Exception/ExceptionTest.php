@@ -6,14 +6,14 @@ namespace Sunrise\Http\Router\Tests\Exception;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
+use Sunrise\Http\Router\Exception\Exception;
 use Sunrise\Http\Router\Exception\ExceptionInterface;
-use Sunrise\Http\Router\Exception\AbstractException;
 use RuntimeException;
 
 /**
- * AbstractExceptionTest
+ * ExceptionTest
  */
-class AbstractExceptionTest extends TestCase
+class ExceptionTest extends TestCase
 {
 
     /**
@@ -21,8 +21,7 @@ class AbstractExceptionTest extends TestCase
      */
     public function testConstructor() : void
     {
-        $exception = new class extends AbstractException {
-        };
+        $exception = new Exception();
 
         $this->assertInstanceOf(ExceptionInterface::class, $exception);
         $this->assertInstanceOf(RuntimeException::class, $exception);
@@ -38,8 +37,7 @@ class AbstractExceptionTest extends TestCase
             'bar' => 'baz',
         ];
 
-        $exception = new class('blah', $context) extends AbstractException {
-        };
+        $exception = new Exception('blah', $context);
 
         $this->assertSame($context, $exception->getContext());
     }
@@ -54,8 +52,7 @@ class AbstractExceptionTest extends TestCase
             'bar' => 'baz',
         ];
 
-        $exception = new class('blah', $context) extends AbstractException {
-        };
+        $exception = new Exception('blah', $context);
 
         $this->assertSame($context['foo'], $exception->fromContext('foo'));
         $this->assertSame($context['bar'], $exception->fromContext('bar'));

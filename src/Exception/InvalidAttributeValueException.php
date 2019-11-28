@@ -14,6 +14,6 @@ namespace Sunrise\Http\Router\Exception;
 /**
  * InvalidAttributeValueException
  */
-class InvalidAttributeValueException extends AbstractException
+class InvalidAttributeValueException extends Exception
 {
 }

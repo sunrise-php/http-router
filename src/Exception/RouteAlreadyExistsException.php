@@ -14,6 +14,6 @@ namespace Sunrise\Http\Router\Exception;
 /**
  * RouteAlreadyExistsException
  */
-class RouteAlreadyExistsException extends AbstractException
+class RouteAlreadyExistsException extends Exception
 {
 }

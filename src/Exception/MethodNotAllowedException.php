@@ -14,7 +14,7 @@ namespace Sunrise\Http\Router\Exception;
 /**
  * MethodNotAllowedException
  */
-class MethodNotAllowedException extends AbstractException
+class MethodNotAllowedException extends Exception
 {
 
     /**

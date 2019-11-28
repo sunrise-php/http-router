@@ -6,7 +6,7 @@ namespace Sunrise\Http\Router\Tests\Exception;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\Exception\AbstractException;
+use Sunrise\Http\Router\Exception\Exception;
 use Sunrise\Http\Router\Exception\MissingAttributeValueException;
 
 /**
@@ -22,7 +22,7 @@ class MissingAttributeValueExceptionTest extends TestCase
     {
         $exception = new MissingAttributeValueException();
 
-        $this->assertInstanceOf(AbstractException::class, $exception);
+        $this->assertInstanceOf(Exception::class, $exception);
     }
 
     /**

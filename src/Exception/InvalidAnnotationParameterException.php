@@ -14,6 +14,6 @@ namespace Sunrise\Http\Router\Exception;
 /**
  * InvalidAnnotationParameterException
  */
-class InvalidAnnotationParameterException extends AbstractException
+class InvalidAnnotationParameterException extends Exception
 {
 }

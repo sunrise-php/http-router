@@ -18,9 +18,9 @@ use RuntimeException;
 use Throwable;
 
 /**
- * AbstractException
+ * Exception
  */
-abstract class AbstractException extends RuntimeException implements ExceptionInterface
+class Exception extends RuntimeException implements ExceptionInterface
 {
 
     /**
@@ -46,27 +46,17 @@ abstract class AbstractException extends RuntimeException implements ExceptionIn
     }
 
     /**
-     * Gets the exception context
-     *
-     * @return array
+     * {@inheritDoc}
      */
-    public function getContext() : array
+    final public function getContext() : array
     {
         return $this->context;
     }
 
     /**
-     * Gets data from the exception context for the given key
-     *
-     * The default value will be returned if is no data
-     * in the exception context for the given key.
-     *
-     * @param string $key
-     * @param mixed $default
-     *
-     * @return mixed
+     * {@inheritDoc}
      */
-    public function fromContext(string $key, $default = null)
+    final public function fromContext($key, $default = null)
     {
         return $this->context[$key] ?? $default;
     }

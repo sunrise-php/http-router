@@ -14,6 +14,6 @@ namespace Sunrise\Http\Router\Exception;
 /**
  * MiddlewareAlreadyExistsException
  */
-class MiddlewareAlreadyExistsException extends AbstractException
+class MiddlewareAlreadyExistsException extends Exception
 {
 }

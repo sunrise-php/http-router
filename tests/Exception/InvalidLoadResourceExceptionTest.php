@@ -6,7 +6,7 @@ namespace Sunrise\Http\Router\Tests\Exception;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\Exception\AbstractException;
+use Sunrise\Http\Router\Exception\Exception;
 use Sunrise\Http\Router\Exception\InvalidLoadResourceException;
 
 /**
@@ -22,7 +22,7 @@ class InvalidLoadResourceExceptionTest extends TestCase
     {
         $exception = new InvalidLoadResourceException();
 
-        $this->assertInstanceOf(AbstractException::class, $exception);
+        $this->assertInstanceOf(Exception::class, $exception);
     }
 
     /**

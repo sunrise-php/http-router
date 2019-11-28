@@ -14,6 +14,6 @@ namespace Sunrise\Http\Router\Exception;
 /**
  * InvalidPathException
  */
-class InvalidPathException extends AbstractException
+class InvalidPathException extends Exception
 {
 }
