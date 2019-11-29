@@ -28,6 +28,8 @@ use function strtoupper;
 
 /**
  * Route
+ *
+ * Use the factory to create this class.
  */
 class Route implements RouteInterface
 {

@@ -13,6 +13,8 @@ namespace Sunrise\Http\Router;
 
 /**
  * RouteCollection
+ *
+ * Use the factory to create this class.
  */
 class RouteCollection implements RouteCollectionInterface
 {
