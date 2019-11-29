@@ -310,7 +310,7 @@ class RouteTest extends TestCase
     public function testConstructorMiddlewaresParamContainNonexistentClass() : void
     {
         $this->expectException(InvalidAnnotationParameterException::class);
-        $this->expectExceptionMessage('@Route.middlewares contains nonexistent class.');
+        $this->expectExceptionMessage('@Route.middlewares contains a nonexistent or non-middleware class.');
 
         new Route([
             'name' => 'foo',
@@ -326,7 +326,7 @@ class RouteTest extends TestCase
     public function testConstructorMiddlewaresParamContainNonMiddlewareClass() : void
     {
         $this->expectException(InvalidAnnotationParameterException::class);
-        $this->expectExceptionMessage('@Route.middlewares contains non middleware class.');
+        $this->expectExceptionMessage('@Route.middlewares contains a nonexistent or non-middleware class.');
 
         new Route([
             'name' => 'foo',

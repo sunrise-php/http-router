@@ -316,12 +316,12 @@ class AnnotationDirectoryLoaderTest extends TestCase
             [
                 __DIR__ . '/../Fixture/Annotation/Route/Invalid/MiddlewaresNotExistable',
                 InvalidAnnotationParameterException::class,
-                '@Route.middlewares contains nonexistent class.',
+                '@Route.middlewares contains a nonexistent or non-middleware class.',
             ],
             [
                 __DIR__ . '/../Fixture/Annotation/Route/Invalid/MiddlewaresNotMiddlewarable',
                 InvalidAnnotationParameterException::class,
-                '@Route.middlewares contains non middleware class.',
+                '@Route.middlewares contains a nonexistent or non-middleware class.',
             ],
             [
                 __DIR__ . '/../Fixture/Annotation/Route/Invalid/AttributesNotArray',
