@@ -22,7 +22,6 @@ use Sunrise\Http\Router\Exception\InvalidAnnotationSourceException;
 /**
  * Import functions
  */
-use function class_exists;
 use function is_array;
 use function is_int;
 use function is_string;
