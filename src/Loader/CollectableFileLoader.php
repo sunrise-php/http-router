@@ -49,6 +49,8 @@ class CollectableFileLoader implements LoaderInterface
     private $routeFactory;
 
     /**
+     * Constructor of the class
+     *
      * @param null|RouteCollectionFactoryInterface $collectionFactory
      * @param null|RouteFactoryInterface $routeFactory
      */
