@@ -66,7 +66,7 @@ class CollectableFileLoader implements LoaderInterface
     public function attach($resource) : void
     {
         if (!is_file($resource)) {
-            throw (new ExceptionFactory)->invalidLoadResourceForFile($resource);
+            throw (new ExceptionFactory)->invalidLoaderFileResource($resource);
         }
 
         $this->resources[] = $resource;

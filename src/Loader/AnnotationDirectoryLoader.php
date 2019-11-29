@@ -143,7 +143,7 @@ class AnnotationDirectoryLoader implements LoaderInterface
     public function attach($resource) : void
     {
         if (!is_dir($resource)) {
-            throw (new ExceptionFactory)->invalidLoadResourceForFile($resource);
+            throw (new ExceptionFactory)->invalidLoaderFileResource($resource);
         }
 
         $this->resources[] = $resource;

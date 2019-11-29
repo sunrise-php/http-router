@@ -14,7 +14,7 @@ namespace Sunrise\Http\Router\Loader;
 /**
  * Import classes
  */
-use Sunrise\Http\Router\Exception\InvalidLoadResourceException;
+use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
 use Sunrise\Http\Router\RouteCollectionInterface;
 
 /**
@@ -30,7 +30,7 @@ interface LoaderInterface
      *
      * @return void
      *
-     * @throws InvalidLoadResourceException
+     * @throws InvalidLoaderResourceException
      */
     public function attach($resource) : void;
 

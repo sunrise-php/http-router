@@ -12,8 +12,8 @@
 namespace Sunrise\Http\Router\Exception;
 
 /**
- * InvalidLoadResourceException
+ * InvalidLoaderResourceException
  */
-class InvalidLoadResourceException extends Exception
+class InvalidLoaderResourceException extends Exception
 {
 }

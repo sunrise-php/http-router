@@ -11,7 +11,7 @@ use Psr\SimpleCache\CacheInterface;
 use Sunrise\Http\Router\Annotation\Route as AnnotationRoute;
 use Sunrise\Http\Router\Exception\InvalidAnnotationParameterException;
 use Sunrise\Http\Router\Exception\InvalidAnnotationSourceException;
-use Sunrise\Http\Router\Exception\InvalidLoadResourceException;
+use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
 use Sunrise\Http\Router\Loader\AnnotationDirectoryLoader;
 use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\Tests\Fixture;
@@ -87,7 +87,7 @@ class AnnotationDirectoryLoaderTest extends TestCase
     {
         $loader = new AnnotationDirectoryLoader();
 
-        $this->expectException(InvalidLoadResourceException::class);
+        $this->expectException(InvalidLoaderResourceException::class);
         $this->expectExceptionMessage('The resource "undefined" is not found.');
 
         $loader->attach('undefined');

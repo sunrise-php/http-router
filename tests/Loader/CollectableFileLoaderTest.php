@@ -6,7 +6,7 @@ namespace Sunrise\Http\Router\Tests\Loader;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\Exception\InvalidLoadResourceException;
+use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
 use Sunrise\Http\Router\Loader\CollectableFileLoader;
 use Sunrise\Http\Router\Loader\LoaderInterface;
 
@@ -33,7 +33,7 @@ class CollectableFileLoaderTest extends TestCase
     {
         $loader = new CollectableFileLoader();
 
-        $this->expectException(InvalidLoadResourceException::class);
+        $this->expectException(InvalidLoaderResourceException::class);
         $this->expectExceptionMessage('The resource "undefined" is not found.');
 
         $loader->attach('undefined');

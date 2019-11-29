@@ -14,7 +14,7 @@ namespace Sunrise\Http\Router;
 /**
  * Import classes
  */
-use Sunrise\Http\Router\Exception\InvalidLoadResourceException;
+use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
 use Sunrise\Http\Router\Exception\MethodNotAllowedException;
 use Sunrise\Http\Router\Exception\MiddlewareAlreadyExistsException;
 use Sunrise\Http\Router\Exception\RouteAlreadyExistsException;
@@ -37,15 +37,15 @@ class ExceptionFactory
      * @param mixed $resource
      * @param array $context
      *
-     * @return InvalidLoadResourceException
+     * @return InvalidLoaderResourceException
      */
-    public function invalidLoadResourceForFile($resource, array $context = []) : InvalidLoadResourceException
+    public function invalidLoaderFileResource($resource, array $context = []) : InvalidLoaderResourceException
     {
         $context['resource'] = $resource;
 
         $message = sprintf('The resource "%s" is not found.', $resource);
 
-        return new InvalidLoadResourceException($message, $context);
+        return new InvalidLoaderResourceException($message, $context);
     }
 
     /**

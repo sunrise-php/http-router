@@ -7,12 +7,12 @@ namespace Sunrise\Http\Router\Tests\Exception;
  */
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Exception\Exception;
-use Sunrise\Http\Router\Exception\InvalidLoadResourceException;
+use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
 
 /**
- * InvalidLoadResourceExceptionTest
+ * InvalidLoaderResourceExceptionTest
  */
-class InvalidLoadResourceExceptionTest extends TestCase
+class InvalidLoaderResourceExceptionTest extends TestCase
 {
 
     /**
@@ -20,7 +20,7 @@ class InvalidLoadResourceExceptionTest extends TestCase
      */
     public function testConstructor() : void
     {
-        $exception = new InvalidLoadResourceException();
+        $exception = new InvalidLoaderResourceException();
 
         $this->assertInstanceOf(Exception::class, $exception);
     }
@@ -32,7 +32,7 @@ class InvalidLoadResourceExceptionTest extends TestCase
     {
         $message = 'blah';
 
-        $exception = new InvalidLoadResourceException($message);
+        $exception = new InvalidLoaderResourceException($message);
 
         $this->assertSame($message, $exception->getMessage());
     }
@@ -44,7 +44,7 @@ class InvalidLoadResourceExceptionTest extends TestCase
     {
         $context = ['foo' => 'bar'];
 
-        $exception = new InvalidLoadResourceException('blah', $context);
+        $exception = new InvalidLoaderResourceException('blah', $context);
 
         $this->assertSame($context, $exception->getContext());
     }

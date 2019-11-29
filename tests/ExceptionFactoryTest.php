@@ -7,7 +7,7 @@ namespace Sunrise\Http\Router\Tests;
  */
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\ExceptionFactory;
-use Sunrise\Http\Router\Exception\InvalidLoadResourceException;
+use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
 use Sunrise\Http\Router\Exception\MethodNotAllowedException;
 use Sunrise\Http\Router\Exception\MiddlewareAlreadyExistsException;
 use Sunrise\Http\Router\Exception\RouteAlreadyExistsException;
@@ -22,9 +22,9 @@ class ExceptionFactoryTest extends TestCase
     /**
      * @return void
      */
-    public function testInvalidLoadResourceForFile() : void
+    public function testInvalidLoaderFileResource() : void
     {
-        $exception = (new ExceptionFactory)->invalidLoadResourceForFile('foo', [
+        $exception = (new ExceptionFactory)->invalidLoaderFileResource('foo', [
             'foo' => 'bar',
         ]);
 
@@ -35,7 +35,7 @@ class ExceptionFactoryTest extends TestCase
 
         $expectedMessage = 'The resource "foo" is not found.';
 
-        $this->assertInstanceOf(InvalidLoadResourceException::class, $exception);
+        $this->assertInstanceOf(InvalidLoaderResourceException::class, $exception);
         $this->assertSame($expectedContext, $exception->getContext());
         $this->assertSame($expectedMessage, $exception->getMessage());
     }
