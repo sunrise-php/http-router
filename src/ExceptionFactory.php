@@ -41,9 +41,9 @@ class ExceptionFactory
      */
     public function invalidLoaderFileResource($resource, array $context = []) : InvalidLoaderResourceException
     {
-        $context['resource'] = $resource;
-
         $message = sprintf('The resource "%s" is not found.', $resource);
+
+        $context['resource'] = $resource;
 
         return new InvalidLoaderResourceException($message, $context);
     }
@@ -61,10 +61,10 @@ class ExceptionFactory
      */
     public function methodNotAllowed(string $method, array $allowed, array $context = []) : MethodNotAllowedException
     {
+        $message = sprintf('The method "%s" is not allowed.', $method);
+
         $context['method'] = $method;
         $context['allowed'] = $allowed;
-
-        $message = sprintf('The method "%s" is not allowed.', $method);
 
         return new MethodNotAllowedException($message, $context);
     }
@@ -81,9 +81,9 @@ class ExceptionFactory
      */
     public function middlewareAlreadyExists(string $hash, array $context = []) : MiddlewareAlreadyExistsException
     {
-        $context['hash'] = $hash;
-
         $message = sprintf('A middleware with the hash "%s" already exists.', $hash);
+
+        $context['hash'] = $hash;
 
         return new MiddlewareAlreadyExistsException($message, $context);
     }
@@ -100,9 +100,9 @@ class ExceptionFactory
      */
     public function routeAlreadyExists(string $name, array $context = []) : RouteAlreadyExistsException
     {
-        $context['name'] = $name;
-
         $message = sprintf('A route with the name "%s" already exists.', $name);
+
+        $context['name'] = $name;
 
         return new RouteAlreadyExistsException($message, $context);
     }
@@ -117,9 +117,9 @@ class ExceptionFactory
      */
     public function routeNotFoundByName(string $name, array $context = []) : RouteNotFoundException
     {
-        $context['name'] = $name;
-
         $message = sprintf('No route found for the name "%s".', $name);
+
+        $context['name'] = $name;
 
         return new RouteNotFoundException($message, $context);
     }
@@ -136,9 +136,9 @@ class ExceptionFactory
      */
     public function routeNotFoundByUri(string $uri, array $context = []) : RouteNotFoundException
     {
-        $context['uri'] = $uri;
-
         $message = sprintf('No route found for the URI "%s".', $uri);
+
+        $context['uri'] = $uri;
 
         return new RouteNotFoundException($message, $context);
     }
