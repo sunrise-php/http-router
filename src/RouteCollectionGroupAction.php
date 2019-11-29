@@ -28,7 +28,7 @@ class RouteCollectionGroupAction implements RouteCollectionGroupActionInterface
 {
 
     /**
-     * Route collection for group activities
+     * A route collection for group activities
      *
      * @var RouteCollectionInterface
      */
