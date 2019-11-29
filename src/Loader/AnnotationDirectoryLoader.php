@@ -181,7 +181,7 @@ class AnnotationDirectoryLoader implements LoaderInterface
      *
      * @return AnnotationRoute[]
      *
-     * @throws \Psr\SimpleCache\CacheException
+     * @throws \Psr\SimpleCache\CacheException Depends on implementation PSR-16.
      */
     private function fetchAnnotations(string $resource) : array
     {
