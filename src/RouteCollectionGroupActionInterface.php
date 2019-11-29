@@ -23,7 +23,7 @@ interface RouteCollectionGroupActionInterface
 {
 
     /**
-     * Adds the given prefix to all routes in the instance collection
+     * Adds the given path prefix to all routes in the instance collection
      *
      * @param string $prefix
      *
@@ -32,7 +32,7 @@ interface RouteCollectionGroupActionInterface
     public function addPrefix(string $prefix) : RouteCollectionGroupActionInterface;
 
     /**
-     * Adds the given suffix to all routes in the instance collection
+     * Adds the given path suffix to all routes in the instance collection
      *
      * @param string $suffix
      *
