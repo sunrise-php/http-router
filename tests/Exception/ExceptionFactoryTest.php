@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Tests;
+namespace Sunrise\Http\Router\Tests\Exception;
 
 /**
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\ExceptionFactory;
+use Sunrise\Http\Router\Exception\ExceptionFactory;
 use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
 use Sunrise\Http\Router\Exception\MethodNotAllowedException;
 use Sunrise\Http\Router\Exception\MiddlewareAlreadyExistsException;

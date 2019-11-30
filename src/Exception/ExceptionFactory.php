@@ -9,16 +9,7 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
-namespace Sunrise\Http\Router;
-
-/**
- * Import classes
- */
-use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
-use Sunrise\Http\Router\Exception\MethodNotAllowedException;
-use Sunrise\Http\Router\Exception\MiddlewareAlreadyExistsException;
-use Sunrise\Http\Router\Exception\RouteAlreadyExistsException;
-use Sunrise\Http\Router\Exception\RouteNotFoundException;
+namespace Sunrise\Http\Router\Exception;
 
 /**
  * Import functions

@@ -14,7 +14,7 @@ namespace Sunrise\Http\Router\Loader;
 /**
  * Import classes
  */
-use Sunrise\Http\Router\ExceptionFactory;
+use Sunrise\Http\Router\Exception\ExceptionFactory;
 use Sunrise\Http\Router\RouteCollectionFactory;
 use Sunrise\Http\Router\RouteCollectionFactoryInterface;
 use Sunrise\Http\Router\RouteCollectionInterface;
