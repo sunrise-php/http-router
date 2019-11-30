@@ -14,7 +14,6 @@ use Sunrise\Http\Router\Exception\RouteAlreadyExistsException;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
 use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\RouteCollection;
-use Sunrise\Http\Router\RouteCollectionGroupActionInterface;
 use Sunrise\Http\Router\Router;
 use Sunrise\Http\ServerRequest\ServerRequestFactory;
 
@@ -84,8 +83,8 @@ class RouterTest extends TestCase
         $router = new Router();
         $router->addRoute($route);
 
+        // the given exception message should be tested through exceptions factory...
         $this->expectException(RouteAlreadyExistsException::class);
-        $this->expectExceptionMessage('A route with the name "' . $route->getName() . '" already exists.');
 
         try {
             $router->addRoute($route);
@@ -106,8 +105,8 @@ class RouterTest extends TestCase
         $router = new Router();
         $router->addMiddleware($middleware);
 
+        // the given exception message should be tested through exceptions factory...
         $this->expectException(MiddlewareAlreadyExistsException::class);
-        $this->expectExceptionMessage('A middleware with the hash "' . $middleware->getHash() . '" already exists.');
 
         try {
             $router->addMiddleware($middleware);
@@ -175,8 +174,8 @@ class RouterTest extends TestCase
         $router = new Router();
         $router->addRoute(...$routes);
 
+        // the given exception message should be tested through exceptions factory...
         $this->expectException(RouteNotFoundException::class);
-        $this->expectExceptionMessage('No route found for the name "foo".');
 
         try {
             $router->getRoute('foo');
@@ -245,8 +244,8 @@ class RouterTest extends TestCase
         $request = (new ServerRequestFactory)
             ->createServerRequest('GET', $routes[0]->getPath());
 
+        // the given exception message should be tested through exceptions factory...
         $this->expectException(MethodNotAllowedException::class);
-        $this->expectExceptionMessage('The method "GET" is not allowed.');
 
         try {
             $router->match($request);
@@ -282,8 +281,8 @@ class RouterTest extends TestCase
         $request = (new ServerRequestFactory)
             ->createServerRequest($routes[0]->getMethods()[0], '/');
 
+        // the given exception message should be tested through exceptions factory...
         $this->expectException(RouteNotFoundException::class);
-        $this->expectExceptionMessage('No route found for the URI "/".');
 
         try {
             $router->match($request);
@@ -392,8 +391,8 @@ class RouterTest extends TestCase
         $request = (new ServerRequestFactory)
             ->createServerRequest('GET', '/');
 
+        // the given exception message should be tested through exceptions factory...
         $this->expectException(MethodNotAllowedException::class);
-        $this->expectExceptionMessage('The method "GET" is not allowed.');
 
         try {
             $router->handle($request);
@@ -429,8 +428,8 @@ class RouterTest extends TestCase
         $request = (new ServerRequestFactory)
             ->createServerRequest($routes[0]->getMethods()[0], '/');
 
+        // the given exception message should be tested through exceptions factory...
         $this->expectException(RouteNotFoundException::class);
-        $this->expectExceptionMessage('No route found for the URI "/".');
 
         try {
             $router->handle($request);
@@ -525,88 +524,6 @@ class RouterTest extends TestCase
         );
 
         $this->assertTrue($fallback->isRunned());
-    }
-
-    /**
-     * @return void
-     */
-    public function testGroup() : void
-    {
-        $router = new Router();
-
-        $this->assertInstanceOf(
-            RouteCollectionGroupActionInterface::class,
-            $router->group(function ($group) {
-                $group->get('api.ping', '/ping', new Fixture\BlankRequestHandler());
-
-                $this->assertInstanceOf(
-                    RouteCollectionGroupActionInterface::class,
-                    $group->group(function ($group) {
-
-                        $this->assertInstanceOf(
-                            RouteCollectionGroupActionInterface::class,
-                            $group->group(function ($group) {
-                                $group->post('api.section.create', '/create', new Fixture\BlankRequestHandler());
-                                $group->patch('api.section.update', '/update/{id}', new Fixture\BlankRequestHandler());
-                            })->addPrefix('/section')
-                        );
-
-                        $this->assertInstanceOf(
-                            RouteCollectionGroupActionInterface::class,
-                            $group->group(function ($group) {
-                                $group->post('api.product.create', '/create', new Fixture\BlankRequestHandler());
-                                $group->patch('api.product.update', '/update/{id}', new Fixture\BlankRequestHandler());
-                            })->addPrefix('/product')
-                        );
-                    })->addPrefix('/v1')
-                );
-            })->addPrefix('/api')
-        );
-
-        $this->assertContains([
-            'name' => 'api.ping',
-            'path' => '/api/ping',
-            'methods' => [Router::METHOD_GET],
-            'requestHandler' => 'Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler',
-            'middlewares' => [],
-            'attributes' => [],
-        ], Fixture\Helper::routesToArray($router->getRoutes()));
-
-        $this->assertContains([
-            'name' => 'api.section.create',
-            'path' => '/api/v1/section/create',
-            'methods' => [Router::METHOD_POST],
-            'requestHandler' => 'Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler',
-            'middlewares' => [],
-            'attributes' => [],
-        ], Fixture\Helper::routesToArray($router->getRoutes()));
-
-        $this->assertContains([
-            'name' => 'api.section.update',
-            'path' => '/api/v1/section/update/{id}',
-            'methods' => [Router::METHOD_PATCH],
-            'requestHandler' => 'Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler',
-            'middlewares' => [],
-            'attributes' => [],
-        ], Fixture\Helper::routesToArray($router->getRoutes()));
-
-        $this->assertContains([
-            'name' => 'api.product.create',
-            'path' => '/api/v1/product/create',
-            'methods' => [Router::METHOD_POST],
-            'requestHandler' => 'Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler',
-            'middlewares' => [],
-            'attributes' => [],
-        ], Fixture\Helper::routesToArray($router->getRoutes()));
-
-        $this->assertContains([
-            'name' => 'api.product.update',
-            'path' => '/api/v1/product/update/{id}',
-            'methods' => [Router::METHOD_PATCH],
-            'requestHandler' => 'Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler',
-            'middlewares' => [],
-            'attributes' => [],
-        ], Fixture\Helper::routesToArray($router->getRoutes()));
     }
 
     /**

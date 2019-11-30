@@ -64,13 +64,14 @@ $response = $router->process($request, $handler);
 
 ```php
 use App\Http\RequestHandler\HomeRequestHandler;
+use Sunrise\Http\Router\RouteCollector;
 use Sunrise\Http\Router\Router;
 
-$router = new Router();
+$collector = new RouteCollector();
+$collector->get('home', '/', new HomeRequestHandler());
 
-$router->group(function ($group) {
-    $group->get('home', '/', new HomeRequestHandler());
-});
+$router = new Router();
+$router->addRoute(...$collector->getCollection()->all());
 
 // if the router is used as a request handler
 $response = $router->handle($request);

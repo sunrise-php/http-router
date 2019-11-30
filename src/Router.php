@@ -249,24 +249,6 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     }
 
     /**
-     * Route grouping logic
-     *
-     * @param callable $callback
-     *
-     * @return RouteCollectionGroupActionInterface
-     */
-    public function group(callable $callback) : RouteCollectionGroupActionInterface
-    {
-        $collector = new RouteCollector();
-
-        $callback($collector);
-
-        $this->addRoute(...$collector->getCollection()->all());
-
-        return new RouteCollectionGroupAction($collector->getCollection());
-    }
-
-    /**
      * Loads routes through the given loaders
      *
      * @param LoaderInterface ...$loaders
