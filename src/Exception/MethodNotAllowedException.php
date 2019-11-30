@@ -18,7 +18,7 @@ class MethodNotAllowedException extends Exception
 {
 
     /**
-     * Gets allowed HTTP methods
+     * Gets allowed methods
      *
      * @return string[]
      */

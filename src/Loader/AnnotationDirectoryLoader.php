@@ -189,12 +189,13 @@ class AnnotationDirectoryLoader implements LoaderInterface
             return $this->findAnnotations($resource);
         }
 
-        // some cache stores may have
-        // character restrictions for a key...
+        // some cache stores may have character restrictions for a key...
         $key = hash('md5', $resource);
 
         if (!$this->cache->has($key)) {
             $value = $this->findAnnotations($resource);
+
+            // TTL should be set at the storage...
             $this->cache->set($key, $value);
         }
 
