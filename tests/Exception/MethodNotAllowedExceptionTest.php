@@ -62,4 +62,16 @@ class MethodNotAllowedExceptionTest extends TestCase
 
         $this->assertSame($expected, $exception->getAllowedMethods());
     }
+
+    /**
+     * @return void
+     */
+    public function testAllowedMethodsWithEmptyContext() : void
+    {
+        $expected = [];
+
+        $exception = new MethodNotAllowedException('blah');
+
+        $this->assertSame($expected, $exception->getAllowedMethods());
+    }
 }

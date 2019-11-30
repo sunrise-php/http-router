@@ -680,34 +680,24 @@ class RouteCollectorTest extends TestCase
         $collector = new RouteCollector();
         $collector->get('home', '/', new Fixture\BlankRequestHandler());
 
-        $this->assertInstanceOf(
-            RouteCollectionGroupActionInterface::class,
-            $collector->group(function ($group) {
-                $group->get('api.ping', '/ping', new Fixture\BlankRequestHandler());
+        $collector->group(function ($group) {
+            $group->get('api.ping', '/ping', new Fixture\BlankRequestHandler());
 
-                $this->assertInstanceOf(
-                    RouteCollectionGroupActionInterface::class,
-                    $group->group(function ($group) {
+            $group->group(function ($group) {
+                $group->group(function ($group) {
+                    $group->post('api.section.create', '/create', new Fixture\BlankRequestHandler());
+                    $group->patch('api.section.update', '/update/{id}', new Fixture\BlankRequestHandler());
+                })->addPrefix('/section');
 
-                        $this->assertInstanceOf(
-                            RouteCollectionGroupActionInterface::class,
-                            $group->group(function ($group) {
-                                $group->post('api.section.create', '/create', new Fixture\BlankRequestHandler());
-                                $group->patch('api.section.update', '/update/{id}', new Fixture\BlankRequestHandler());
-                            })->addPrefix('/section')
-                        );
-
-                        $this->assertInstanceOf(
-                            RouteCollectionGroupActionInterface::class,
-                            $group->group(function ($group) {
-                                $group->post('api.product.create', '/create', new Fixture\BlankRequestHandler());
-                                $group->patch('api.product.update', '/update/{id}', new Fixture\BlankRequestHandler());
-                            })->addPrefix('/product')
-                        );
-                    })->addPrefix('/v1')
-                );
-            })->addPrefix('/api')
-        );
+                $group->group(function ($group) {
+                    $group->post('api.product.create', '/create', new Fixture\BlankRequestHandler());
+                    $group->patch('api.product.update', '/update/{id}', new Fixture\BlankRequestHandler());
+                })
+                ->addPrefix('/product');
+            })
+            ->addPrefix('/v1');
+        })
+        ->addPrefix('/api');
 
         $collector->get('about-us', '/about-us', new Fixture\BlankRequestHandler());
 
