@@ -203,23 +203,19 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
             }
         }
 
-        $requestedMethod = $request->getMethod();
-        if (!isset($routes[$requestedMethod])) {
-            throw (new ExceptionFactory)->methodNotAllowed($requestedMethod, $this->getAllowedMethods(), [
-                'request' => $request,
-            ]);
+        $requestMethod = $request->getMethod();
+        if (!isset($routes[$requestMethod])) {
+            throw (new ExceptionFactory)->methodNotAllowed($requestMethod, $this->getAllowedMethods());
         }
 
-        $requestedUri = $request->getUri()->getPath();
-        foreach ($routes[$requestedMethod] as $route) {
-            if (path_match($route->getPath(), $requestedUri, $attributes)) {
+        $requestUri = $request->getUri()->getPath();
+        foreach ($routes[$requestMethod] as $route) {
+            if (path_match($route->getPath(), $requestUri, $attributes)) {
                 return $route->withAddedAttributes($attributes);
             }
         }
 
-        throw (new ExceptionFactory)->routeNotFoundByUri($requestedUri, [
-            'request' => $request,
-        ]);
+        throw (new ExceptionFactory)->routeNotFoundByUri($requestUri);
     }
 
     /**

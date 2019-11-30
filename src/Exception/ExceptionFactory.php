@@ -42,8 +42,6 @@ class ExceptionFactory
     /**
      * Used when the given method isn't allowed
      *
-     * It is recommended to add a request instance to the context.
-     *
      * @param string $method
      * @param array $allowed
      * @param array $context
@@ -117,8 +115,6 @@ class ExceptionFactory
 
     /**
      * Used when trying to find a route by the given URI
-     *
-     * It is recommended to add a request instance to the context.
      *
      * @param string $uri
      * @param array $context
