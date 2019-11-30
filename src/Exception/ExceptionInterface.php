@@ -32,8 +32,6 @@ interface ExceptionInterface extends Throwable
     /**
      * Gets data from the exception context for the given key
      *
-     * The given default value will be returned if is no data in the exception context for the given key.
-     *
      * @param mixed $key
      * @param mixed $default
      *
