@@ -49,7 +49,7 @@ class RouteCollectorGroupAction
      *
      * @param string $prefix
      *
-     * @return RouteCollectionGroupActionInterface
+     * @return self
      */
     public function addPrefix(string $prefix) : self
     {
@@ -65,7 +65,7 @@ class RouteCollectorGroupAction
      *
      * @param string $suffix
      *
-     * @return RouteCollectionGroupActionInterface
+     * @return self
      */
     public function addSuffix(string $suffix) : self
     {
@@ -81,7 +81,7 @@ class RouteCollectorGroupAction
      *
      * @param string ...$methods
      *
-     * @return RouteCollectionGroupActionInterface
+     * @return self
      */
     public function addMethod(string ...$methods) : self
     {
@@ -97,7 +97,7 @@ class RouteCollectorGroupAction
      *
      * @param MiddlewareInterface ...$middlewares
      *
-     * @return RouteCollectionGroupActionInterface
+     * @return self
      */
     public function addMiddleware(MiddlewareInterface ...$middlewares) : self
     {
@@ -113,7 +113,7 @@ class RouteCollectorGroupAction
      *
      * @param MiddlewareInterface ...$middlewares
      *
-     * @return RouteCollectionGroupActionInterface
+     * @return self
      */
     public function unshiftMiddleware(MiddlewareInterface ...$middlewares) : self
     {
