@@ -305,9 +305,9 @@ class RouteCollector
      *
      * @param callable $callback
      *
-     * @return RouteCollectionGroupActionInterface
+     * @return RouteCollectorGroupAction
      */
-    public function group(callable $callback) : RouteCollectionGroupActionInterface
+    public function group(callable $callback) : RouteCollectorGroupAction
     {
         $collector = new self(
             $this->collectionFactory,
@@ -318,6 +318,6 @@ class RouteCollector
 
         $this->collection->add(...$collector->collection->all());
 
-        return new RouteCollectionGroupAction($collector->collection);
+        return new RouteCollectorGroupAction($collector->collection);
     }
 }

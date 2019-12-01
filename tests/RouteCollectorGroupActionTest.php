@@ -7,8 +7,7 @@ namespace Sunrise\Http\Router\Tests;
  */
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\RouteCollection;
-use Sunrise\Http\Router\RouteCollectionGroupAction;
-use Sunrise\Http\Router\RouteCollectionGroupActionInterface;
+use Sunrise\Http\Router\RouteCollectorGroupAction;
 
 /**
  * Import functions
@@ -16,20 +15,10 @@ use Sunrise\Http\Router\RouteCollectionGroupActionInterface;
 use function array_merge;
 
 /**
- * RouteCollectionGroupActionTest
+ * RouteCollectorGroupActionTest
  */
-class RouteCollectionGroupActionTest extends TestCase
+class RouteCollectorGroupActionTest extends TestCase
 {
-
-    /**
-     * @return void
-     */
-    public function testConstructor() : void
-    {
-        $groupAction = new RouteCollectionGroupAction(new RouteCollection());
-
-        $this->assertInstanceOf(RouteCollectionGroupActionInterface::class, $groupAction);
-    }
 
     /**
      * @return void
@@ -49,7 +38,7 @@ class RouteCollectionGroupActionTest extends TestCase
         $collection = new RouteCollection();
         $collection->add(...$routes);
 
-        $groupAction = new RouteCollectionGroupAction($collection);
+        $groupAction = new RouteCollectorGroupAction($collection);
         $groupAction->addPrefix('/api');
 
         $this->assertSame('/api/foo', $routes[0]->getPath());
@@ -75,7 +64,7 @@ class RouteCollectionGroupActionTest extends TestCase
         $collection = new RouteCollection();
         $collection->add(...$routes);
 
-        $groupAction = new RouteCollectionGroupAction($collection);
+        $groupAction = new RouteCollectorGroupAction($collection);
         $groupAction->addSuffix('.json');
 
         $this->assertSame('/foo.json', $routes[0]->getPath());
@@ -101,7 +90,7 @@ class RouteCollectionGroupActionTest extends TestCase
         $collection = new RouteCollection();
         $collection->add(...$routes);
 
-        $groupAction = new RouteCollectionGroupAction($collection);
+        $groupAction = new RouteCollectorGroupAction($collection);
         $groupAction->addMethod('QUX', 'QUUX');
 
         $this->assertSame(['FOO', 'QUX', 'QUUX'], $routes[0]->getMethods());
@@ -139,7 +128,7 @@ class RouteCollectionGroupActionTest extends TestCase
         $collection = new RouteCollection();
         $collection->add(...$routes);
 
-        $groupAction = new RouteCollectionGroupAction($collection);
+        $groupAction = new RouteCollectorGroupAction($collection);
         $groupAction->addMiddleware(...$additionalMiddlewares);
 
         $this->assertSame(array_merge($newMiddlewares, $additionalMiddlewares), $routes[0]->getMiddlewares());
@@ -177,7 +166,7 @@ class RouteCollectionGroupActionTest extends TestCase
         $collection = new RouteCollection();
         $collection->add(...$routes);
 
-        $groupAction = new RouteCollectionGroupAction($collection);
+        $groupAction = new RouteCollectorGroupAction($collection);
         $groupAction->unshiftMiddleware(...$additionalMiddlewares);
 
         $this->assertSame(array_merge($additionalMiddlewares, $newMiddlewares), $routes[0]->getMiddlewares());
