@@ -244,7 +244,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     {
         try {
             return $this->handle($request);
-        } catch (MethodNotAllowedException|RouteNotFoundException $e) {
+        } catch (MethodNotAllowedException | RouteNotFoundException $e) {
             return $handler->handle(
                 $request->withAttribute(self::ATTR_NAME_FOR_ROUTING_ERROR, $e)
             );
