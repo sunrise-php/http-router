@@ -130,23 +130,6 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     }
 
     /**
-     * Gets allowed HTTP methods
-     *
-     * @return string[]
-     */
-    public function getAllowedMethods() : array
-    {
-        $methods = [];
-        foreach ($this->routes as $route) {
-            foreach ($route->getMethods() as $method) {
-                $methods[$method] = true;
-            }
-        }
-
-        return array_keys($methods);
-    }
-
-    /**
      * Gets a route for the given name
      *
      * @param string $name
@@ -164,6 +147,23 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
         }
 
         return $this->routes[$name];
+    }
+
+    /**
+     * Gets allowed HTTP methods
+     *
+     * @return string[]
+     */
+    public function getAllowedMethods() : array
+    {
+        $methods = [];
+        foreach ($this->routes as $route) {
+            foreach ($route->getMethods() as $method) {
+                $methods[$method] = true;
+            }
+        }
+
+        return array_keys($methods);
     }
 
     /**
