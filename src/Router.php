@@ -208,7 +208,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
             $errmsg = sprintf('The method "%s" is not allowed.', $method);
 
             throw new MethodNotAllowedException($errmsg, [
-                'allowed' => $this->getAllowedMethods(),
+                'allowed' => array_keys($routes),
             ]);
         }
 
