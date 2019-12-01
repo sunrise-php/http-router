@@ -25,6 +25,8 @@ use function sprintf;
 /**
  * Sends the given response
  *
+ * Don't use the function in your production environment, it's only for tests!
+ *
  * @param ResponseInterface $response
  *
  * @return void
