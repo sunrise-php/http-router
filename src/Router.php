@@ -130,6 +130,23 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     }
 
     /**
+     * Gets allowed methods
+     *
+     * @return string[]
+     */
+    public function getAllowedMethods() : array
+    {
+        $methods = [];
+        foreach ($this->routes as $route) {
+            foreach ($route->getMethods() as $method) {
+                $methods[$method] = true;
+            }
+        }
+
+        return array_keys($methods);
+    }
+
+    /**
      * Gets a route for the given name
      *
      * @param string $name
@@ -150,23 +167,6 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     }
 
     /**
-     * Gets allowed HTTP methods
-     *
-     * @return string[]
-     */
-    public function getAllowedMethods() : array
-    {
-        $methods = [];
-        foreach ($this->routes as $route) {
-            foreach ($route->getMethods() as $method) {
-                $methods[$method] = true;
-            }
-        }
-
-        return array_keys($methods);
-    }
-
-    /**
      * Generates a URI for the given named route
      *
      * @param string $name
@@ -174,6 +174,15 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      * @param bool $strict
      *
      * @return string
+     *
+     * @throws RouteNotFoundException
+     *         If the given named route wasn't found.
+     *
+     * @throws Exception\InvalidAttributeValueException
+     *         It can be thrown in strict mode, if an attribute value is not valid.
+     *
+     * @throws Exception\MissingAttributeValueException
+     *         If a required attribute value is not given.
      */
     public function generateUri(string $name, array $attributes = [], bool $strict = false) : string
     {
