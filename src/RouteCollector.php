@@ -24,21 +24,21 @@ class RouteCollector
 {
 
     /**
-     * The collector a route collection factory
+     * Route collection factory of the collector
      *
      * @var RouteCollectionFactoryInterface
      */
     private $collectionFactory;
 
     /**
-     * The collector a route factory
+     * Route factory of the collector
      *
      * @var RouteFactoryInterface
      */
     private $routeFactory;
 
     /**
-     * The collector a route collection
+     * Route collection of the collector
      *
      * @var RouteCollectionInterface
      */
