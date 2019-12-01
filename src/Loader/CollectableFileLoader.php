@@ -14,7 +14,7 @@ namespace Sunrise\Http\Router\Loader;
 /**
  * Import classes
  */
-use Sunrise\Http\Router\Exception\ExceptionFactory;
+use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
 use Sunrise\Http\Router\RouteCollectionFactory;
 use Sunrise\Http\Router\RouteCollectionFactoryInterface;
 use Sunrise\Http\Router\RouteCollectionInterface;
@@ -26,6 +26,7 @@ use Sunrise\Http\Router\RouteFactoryInterface;
  * Import functions
  */
 use function is_file;
+use function sprintf;
 
 /**
  * CollectableFileLoader
@@ -68,7 +69,9 @@ class CollectableFileLoader implements LoaderInterface
     public function attach($resource) : void
     {
         if (!is_file($resource)) {
-            throw (new ExceptionFactory)->invalidLoaderFileResource($resource);
+            throw new InvalidLoaderResourceException(
+                sprintf('The resource "%s" is not found.', $resource)
+            );
         }
 
         $this->resources[] = $resource;

@@ -18,7 +18,7 @@ use Doctrine\Common\Annotations\SimpleAnnotationReader;
 use Psr\Container\ContainerInterface;
 use Psr\SimpleCache\CacheInterface;
 use Sunrise\Http\Router\Annotation\Route as AnnotationRoute;
-use Sunrise\Http\Router\Exception\ExceptionFactory;
+use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
 use Sunrise\Http\Router\RouteCollectionFactory;
 use Sunrise\Http\Router\RouteCollectionFactoryInterface;
 use Sunrise\Http\Router\RouteCollectionInterface;
@@ -38,6 +38,7 @@ use function get_declared_classes;
 use function hash;
 use function is_dir;
 use function iterator_to_array;
+use function sprintf;
 use function uasort;
 
 /**
@@ -143,7 +144,9 @@ class AnnotationDirectoryLoader implements LoaderInterface
     public function attach($resource) : void
     {
         if (!is_dir($resource)) {
-            throw (new ExceptionFactory)->invalidLoaderFileResource($resource);
+            throw new InvalidLoaderResourceException(
+                sprintf('The resource "%s" is not found.', $resource)
+            );
         }
 
         $this->resources[] = $resource;
