@@ -274,7 +274,7 @@ class RouteTest extends TestCase
      * @return void
      * @dataProvider invalidDataProviderIfStringExpected
      */
-    public function testConstructorMethodsParamContainInvalidValue($invalidMethod) : void
+    public function testConstructorMethodsParamContainsInvalidValue($invalidMethod) : void
     {
         $this->expectException(InvalidAnnotationParameterException::class);
         $this->expectExceptionMessage('@Route.methods must contain only strings.');
@@ -291,7 +291,7 @@ class RouteTest extends TestCase
      * @return void
      * @dataProvider invalidDataProviderIfStringExpected
      */
-    public function testConstructorMiddlewaresParamContainInvalidValue($invalidMiddleware) : void
+    public function testConstructorMiddlewaresParamContainsInvalidValue($invalidMiddleware) : void
     {
         $this->expectException(InvalidAnnotationParameterException::class);
         $this->expectExceptionMessage('@Route.middlewares must contain only strings.');
@@ -307,7 +307,7 @@ class RouteTest extends TestCase
     /**
      * @return void
      */
-    public function testConstructorMiddlewaresParamContainNonexistentClass() : void
+    public function testConstructorMiddlewaresParamContainsNonexistentClass() : void
     {
         $this->expectException(InvalidAnnotationParameterException::class);
         $this->expectExceptionMessage('@Route.middlewares contains a nonexistent or non-middleware class.');
@@ -323,7 +323,7 @@ class RouteTest extends TestCase
     /**
      * @return void
      */
-    public function testConstructorMiddlewaresParamContainNonMiddlewareClass() : void
+    public function testConstructorMiddlewaresParamContainsNonMiddlewareClass() : void
     {
         $this->expectException(InvalidAnnotationParameterException::class);
         $this->expectExceptionMessage('@Route.middlewares contains a nonexistent or non-middleware class.');
