@@ -18,7 +18,6 @@ use Doctrine\Common\Annotations\SimpleAnnotationReader;
 use Sunrise\Http\Router\Annotation\OpenApi\Operation;
 use Sunrise\Http\Router\Annotation\OpenApi\Parameter;
 use Sunrise\Http\Router\Annotation\OpenApi\Schema;
-use Sunrise\Http\Router\RouteCollectionInterface;
 use Sunrise\Http\Router\RouteInterface;
 use ReflectionClass;
 
@@ -38,9 +37,11 @@ class OpenApi
 {
 
     /**
-     * @var RouteCollectionInterface
+     * Version of OpenAPI specification
+     *
+     * @var string
      */
-    private $routes;
+    public const VERSION = '3.0.2';
 
     /**
      * @var SimpleAnnotationReader
@@ -48,46 +49,82 @@ class OpenApi
     private $annotationReader;
 
     /**
+     * @var RouteInterface[]
+     */
+    private $routes = [];
+
+    /**
+     * @var string
+     */
+    private $title = 'REST API';
+
+    /**
+     * @var string
+     */
+    private $version = '0.0.1';
+
+    /**
      * @var array
      */
     private $description = [];
 
     /**
-     * Constructor of the class
-     *
-     * @param string $title
-     * @param string $version
-     * @param RouteCollectionInterface $routes
+     * @var array
      */
-    public function __construct(string $title, string $version, RouteCollectionInterface $routes)
-    {
-        $this->routes = $routes;
+    private $schemasMap = [];
 
+    /**
+     * Constructor of the class
+     */
+    public function __construct()
+    {
         $this->annotationReader = new SimpleAnnotationReader();
         $this->annotationReader->addNamespace('Sunrise\Http\Router\Annotation');
-
-        $this->description['openapi'] = '3.0.2';
-        $this->description['info']['title'] = $title;
-        $this->description['info']['version'] = $version;
-
-        // auto build...
-        $this->build();
     }
 
     /**
-     * @return array
+     * @param RouteInterface ...$routes
+     *
+     * @return void
      */
-    public function toArray() : array
+    public function addRoute(RouteInterface ...$routes) : void
     {
-        return $this->description;
+        foreach ($routes as $route) {
+            $this->routes[] = $route;
+        }
+    }
+
+    /**
+     * @param string $title
+     *
+     * @return void
+     */
+    public function setTitle(string $title) : void
+    {
+        $this->title = $title;
+    }
+
+    /**
+     * @param string $version
+     *
+     * @return void
+     */
+    public function setVersion(string $version) : void
+    {
+        $this->version = $version;
     }
 
     /**
      * @return void
      */
-    private function build() : void
+    public function describe() : void
     {
-        foreach ($this->routes->all() as $route) {
+        $this->description['openapi'] = self::VERSION;
+
+        $this->description['info']['title'] = $this->title;
+        $this->description['info']['version'] = $this->version;
+
+        foreach ($this->routes as $route) {
             $path = $this->createPatternedPathFromRoute($route);
             $operation = $this->createOperationAnnotationFromRoute($route);
 
@@ -100,6 +137,14 @@ class OpenApi
         }
 
         $this->handleComponentSchemas();
+    }
+
+    /**
+     * @return array
+     */
+    public function toArray() : array
+    {
+        return $this->description;
     }
 
     /**
@@ -162,6 +207,8 @@ class OpenApi
 
             // the schema already exists...
             if (isset($this->description['components']['schemas'][$value])) {
+                $value = $this->schemasMap[$value];
+
                 return;
             }
 
@@ -174,7 +221,8 @@ class OpenApi
             $this->description['components']['schemas'][$value]['type'] = 'object';
             $this->description['components']['schemas'][$value] += $schema->toArray();
 
-            $value = '#/components/schemas/' . $value;
+            $this->schemasMap[$value] = '#/components/schemas/' . $value;
+            $value = $this->schemasMap[$value];
         });
     }
 }
