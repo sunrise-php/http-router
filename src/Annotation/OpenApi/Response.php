@@ -9,7 +9,7 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
-namespace Sunrise\Http\Router\OpenApi\Annotation\OpenApi;
+namespace Sunrise\Http\Router\Annotation\OpenApi;
 
 /**
  * @Annotation
@@ -27,14 +27,17 @@ final class Response
     public $code;
 
     /**
-     * @Required
-     *
      * @var string
      */
-    public $description;
+    public $description = '';
 
     /**
-     * @var array<Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Content>
+     * @var array<Sunrise\Http\Router\Annotation\OpenApi\Header>
+     */
+    public $headers = [];
+
+    /**
+     * @var array<Sunrise\Http\Router\Annotation\OpenApi\MediaType>
      */
     public $content = [];
 
@@ -43,14 +46,18 @@ final class Response
      */
     public function toArray() : array
     {
-        $content = [];
-        foreach ($this->content as $value) {
-            $content[$value->mediaType] = $value->toArray();
+        $result = [
+            'description' => $this->description,
+        ];
+
+        foreach ($this->headers as $value) {
+            $result['headers'][$value->name] = $value->toArray();
         }
 
-        return [
-            'description' => $this->description,
-            'content' => $content,
-        ];
+        foreach ($this->content as $value) {
+            $result['content'][$value->mediaType] = $value->toArray();
+        }
+
+        return $result;
     }
 }

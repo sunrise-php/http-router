@@ -9,14 +9,14 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
-namespace Sunrise\Http\Router\OpenApi\Annotation\OpenApi;
+namespace Sunrise\Http\Router\Annotation\OpenApi;
 
 /**
  * @Annotation
  *
  * @Target({"ANNOTATION"})
  */
-final class Content
+final class MediaType
 {
 
     /**
@@ -27,11 +27,21 @@ final class Content
     public $mediaType;
 
     /**
+     * @var Sunrise\Http\Router\Annotation\OpenApi\Schema
+     */
+    public $schema;
+
+    /**
      * @return array
      */
     public function toArray() : array
     {
-        return [
-        ];
+        $result = [];
+
+        if (isset($this->schema)) {
+            $result['schema'] = $this->schema->toArray();
+        }
+
+        return $result;
     }
 }

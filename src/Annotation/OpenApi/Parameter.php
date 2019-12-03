@@ -9,7 +9,7 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
-namespace Sunrise\Http\Router\OpenApi\Annotation\OpenApi;
+namespace Sunrise\Http\Router\Annotation\OpenApi;
 
 /**
  * @Annotation
@@ -43,6 +43,11 @@ final class Parameter
     /**
      * @var bool
      */
+    public $deprecated = false;
+
+    /**
+     * @var bool
+     */
     public $required = false;
 
     /**
@@ -51,22 +56,19 @@ final class Parameter
     public $allowEmptyValue = false;
 
     /**
-     * @var bool
-     */
-    public $deprecated = false;
-
-    /**
      * @return array
      */
     public function toArray() : array
     {
-        return [
+        $result = [
             'in' => $this->in,
             'name' => $this->name,
             'description' => $this->description,
+            'deprecated' => $this->deprecated,
             'required' => $this->required,
             'allowEmptyValue' => $this->allowEmptyValue,
-            'deprecated' => $this->deprecated,
         ];
+
+        return $result;
     }
 }

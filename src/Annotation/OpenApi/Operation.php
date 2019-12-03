@@ -9,7 +9,7 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
-namespace Sunrise\Http\Router\OpenApi\Annotation\OpenApi;
+namespace Sunrise\Http\Router\Annotation\OpenApi;
 
 /**
  * @Annotation
@@ -35,12 +35,22 @@ final class Operation
     public $description = '';
 
     /**
-     * @var array<Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Parameter>
+     * @var bool
+     */
+    public $deprecated = false;
+
+    /**
+     * @var array<Sunrise\Http\Router\Annotation\OpenApi\Parameter>
      */
     public $parameters = [];
 
     /**
-     * @var array<Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Response>
+     * @var Sunrise\Http\Router\Annotation\OpenApi\RequestBody
+     */
+    public $requestBody;
+
+    /**
+     * @var array<Sunrise\Http\Router\Annotation\OpenApi\Response>
      */
     public $responses = [];
 
@@ -49,22 +59,25 @@ final class Operation
      */
     public function toArray() : array
     {
-        $parameters = [];
-        foreach ($this->parameters as $value) {
-            $parameters[] = $value->toArray();
-        }
-
-        $responses = [];
-        foreach ($this->responses as $value) {
-            $responses[$value->code] = $value->toArray();
-        }
-
-        return [
+        $result = [
             'tags' => $this->tags,
             'summary' => $this->summary,
             'description' => $this->description,
-            'parameters' => $parameters,
-            'responses' => $responses,
+            'deprecated' => $this->deprecated,
         ];
+
+        foreach ($this->parameters as $value) {
+            $result['parameters'][] = $value->toArray();
+        }
+
+        if (isset($this->requestBody)) {
+            $result['requestBody'] = $this->requestBody->toArray();
+        }
+
+        foreach ($this->responses as $value) {
+            $result['responses'][$value->code] = $value->toArray();
+        }
+
+        return $result;
     }
 }
