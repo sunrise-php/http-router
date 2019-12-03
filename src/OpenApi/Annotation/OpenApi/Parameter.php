@@ -15,21 +15,14 @@ namespace Sunrise\Http\Router\OpenApi\Annotation\OpenApi;
  * @Annotation
  *
  * @Target({"ANNOTATION"})
- *
- * @link https://swagger.io/docs/specification/2-0/describing-parameters/
  */
 final class Parameter
 {
 
     /**
-     * @Enum({
-     *   "header",
-     *   "query",
-     *   "body",
-     *   "formData"
-     * })
-     *
      * @Required
+     *
+     * @Enum({"cookie", "header", "query"})
      *
      * @var string
      */
@@ -53,7 +46,27 @@ final class Parameter
     public $required = false;
 
     /**
-     * @var string
+     * @var bool
      */
-    public $schema;
+    public $allowEmptyValue = false;
+
+    /**
+     * @var bool
+     */
+    public $deprecated = false;
+
+    /**
+     * @return array
+     */
+    public function toArray() : array
+    {
+        return [
+            'in' => $this->in,
+            'name' => $this->name,
+            'description' => $this->description,
+            'required' => $this->required,
+            'allowEmptyValue' => $this->allowEmptyValue,
+            'deprecated' => $this->deprecated,
+        ];
+    }
 }

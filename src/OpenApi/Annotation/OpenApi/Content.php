@@ -16,41 +16,22 @@ namespace Sunrise\Http\Router\OpenApi\Annotation\OpenApi;
  *
  * @Target({"ANNOTATION"})
  */
-final class Response
+final class Content
 {
-
-    /**
-     * @Required
-     *
-     * @var int
-     */
-    public $code;
 
     /**
      * @Required
      *
      * @var string
      */
-    public $description;
-
-    /**
-     * @var array<Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Content>
-     */
-    public $content = [];
+    public $mediaType;
 
     /**
      * @return array
      */
     public function toArray() : array
     {
-        $content = [];
-        foreach ($this->content as $value) {
-            $content[$value->mediaType] = $value->toArray();
-        }
-
         return [
-            'description' => $this->description,
-            'content' => $content,
         ];
     }
 }

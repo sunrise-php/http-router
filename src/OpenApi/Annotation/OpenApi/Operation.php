@@ -15,40 +15,24 @@ namespace Sunrise\Http\Router\OpenApi\Annotation\OpenApi;
  * @Annotation
  *
  * @Target({"CLASS"})
- *
- * @link https://swagger.io/docs/specification/2-0/paths-and-operations/
  */
-final class Path
+final class Operation
 {
 
     /**
-     * @Required
-     *
      * @var array<string>
      */
-    public $tags;
+    public $tags = [];
 
     /**
-     * @Required
-     *
      * @var string
      */
-    public $summary;
+    public $summary = '';
 
     /**
      * @var string
      */
     public $description = '';
-
-    /**
-     * @var array<string>
-     */
-    public $consumes = [];
-
-    /**
-     * @var array<string>
-     */
-    public $produces = [];
 
     /**
      * @var array<Sunrise\Http\Router\OpenApi\Annotation\OpenApi\Parameter>
@@ -61,7 +45,26 @@ final class Path
     public $responses = [];
 
     /**
-     * @var bool
+     * @return array
      */
-    public $deprecated = false;
+    public function toArray() : array
+    {
+        $parameters = [];
+        foreach ($this->parameters as $value) {
+            $parameters[] = $value->toArray();
+        }
+
+        $responses = [];
+        foreach ($this->responses as $value) {
+            $responses[$value->code] = $value->toArray();
+        }
+
+        return [
+            'tags' => $this->tags,
+            'summary' => $this->summary,
+            'description' => $this->description,
+            'parameters' => $parameters,
+            'responses' => $responses,
+        ];
+    }
 }
