@@ -56,6 +56,16 @@ final class Parameter
     public $allowEmptyValue = false;
 
     /**
+     * @var Sunrise\Http\Router\Annotation\OpenApi\Example
+     */
+    public $example;
+
+    /**
+     * @var array<Sunrise\Http\Router\Annotation\OpenApi\Example>
+     */
+    public $examples = [];
+
+    /**
      * @return array
      */
     public function toArray() : array
@@ -68,6 +78,14 @@ final class Parameter
             'required' => $this->required,
             'allowEmptyValue' => $this->allowEmptyValue,
         ];
+
+        if (isset($this->example)) {
+            $this->examples[] = $this->example;
+        }
+
+        foreach ($this->examples as $i => $example) {
+            $result['examples']['example-' . $i] = $example->toArray();
+        }
 
         return $result;
     }
