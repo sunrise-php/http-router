@@ -36,6 +36,11 @@ final class Property
     public $type;
 
     /**
+     * @var string
+     */
+    public $ref;
+
+    /**
      * @var bool
      */
     public $deprecated = false;
@@ -67,6 +72,10 @@ final class Property
             'writeOnly' => $this->writeOnly,
             'nullable' => $this->nullable,
         ];
+
+        if (isset($this->ref)) {
+            $result['$ref'] = $this->ref;
+        }
 
         return $result;
     }
