@@ -6,9 +6,8 @@ namespace Sunrise\Http\Router\Tests\Exception;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\Exception\ExceptionInterface;
+use Sunrise\Http\Router\Exception\Exception;
 use Sunrise\Http\Router\Exception\MethodNotAllowedException;
-use RuntimeException;
 
 /**
  * MethodNotAllowedExceptionTest
@@ -21,19 +20,58 @@ class MethodNotAllowedExceptionTest extends TestCase
      */
     public function testConstructor() : void
     {
-        $exception = new MethodNotAllowedException([]);
+        $exception = new MethodNotAllowedException();
 
-        $this->assertInstanceOf(RuntimeException::class, $exception);
-        $this->assertInstanceOf(ExceptionInterface::class, $exception);
+        $this->assertInstanceOf(Exception::class, $exception);
     }
 
     /**
      * @return void
      */
-    public function testGetAllowedMethods() : void
+    public function testMessage() : void
     {
-        $exception = new MethodNotAllowedException(['foo']);
+        $message = 'blah';
 
-        $this->assertSame(['foo'], $exception->getAllowedMethods());
+        $exception = new MethodNotAllowedException($message);
+
+        $this->assertSame($message, $exception->getMessage());
+    }
+
+    /**
+     * @return void
+     */
+    public function testContext() : void
+    {
+        $context = ['foo' => 'bar'];
+
+        $exception = new MethodNotAllowedException('blah', $context);
+
+        $this->assertSame($context, $exception->getContext());
+    }
+
+    /**
+     * @return void
+     */
+    public function testAllowedMethods() : void
+    {
+        $expected = ['foo', 'bar'];
+
+        $exception = new MethodNotAllowedException('blah', [
+            'allowed' => $expected,
+        ]);
+
+        $this->assertSame($expected, $exception->getAllowedMethods());
+    }
+
+    /**
+     * @return void
+     */
+    public function testAllowedMethodsWithEmptyContext() : void
+    {
+        $expected = [];
+
+        $exception = new MethodNotAllowedException('blah');
+
+        $this->assertSame($expected, $exception->getAllowedMethods());
     }
 }

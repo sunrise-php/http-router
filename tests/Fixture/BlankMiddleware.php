@@ -12,6 +12,11 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Message\ResponseFactory;
 
 /**
+ * Import functions
+ */
+use function spl_object_hash;
+
+/**
  * BlankMiddleware
  */
 class BlankMiddleware implements MiddlewareInterface
@@ -33,6 +38,14 @@ class BlankMiddleware implements MiddlewareInterface
     public function __construct(bool $isBroken = false)
     {
         $this->isBroken = $isBroken;
+    }
+
+    /**
+     * @return string
+     */
+    public function getHash() : string
+    {
+        return spl_object_hash($this);
     }
 
     /**

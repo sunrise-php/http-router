@@ -12,46 +12,18 @@
 namespace Sunrise\Http\Router\Exception;
 
 /**
- * Import classes
- */
-use RuntimeException;
-use Throwable;
-
-/**
  * MethodNotAllowedException
  */
-class MethodNotAllowedException extends RuntimeException implements ExceptionInterface
+class MethodNotAllowedException extends Exception
 {
 
     /**
-     * Allowed HTTP methods
-     *
-     * @var string[]
-     */
-    private $allowedMethods;
-
-    /**
-     * Constructor of the class
-     *
-     * @param string[]  $allowedMethods
-     * @param string    $message
-     * @param int       $code
-     * @param Throwable $previous
-     */
-    public function __construct(array $allowedMethods, string $message = '', int $code = 0, Throwable $previous = null)
-    {
-        $this->allowedMethods = $allowedMethods;
-
-        parent::__construct($message, $code, $previous);
-    }
-
-    /**
-     * Gets allowed HTTP methods
+     * Gets allowed methods
      *
      * @return string[]
      */
     public function getAllowedMethods() : array
     {
-        return $this->allowedMethods;
+        return $this->fromContext('allowed', []);
     }
 }

@@ -8,12 +8,12 @@ namespace Sunrise\Http\Router\Tests;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Exception\ExceptionInterface;
 use Sunrise\Http\Router\Exception\MethodNotAllowedException;
+use Sunrise\Http\Router\Exception\MiddlewareAlreadyExistsException;
+use Sunrise\Http\Router\Exception\RouteAlreadyExistsException;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
+use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\RouteCollection;
-use Sunrise\Http\Router\RouteCollectionInterface;
-use Sunrise\Http\Router\RouteInterface;
 use Sunrise\Http\Router\Router;
 use Sunrise\Http\ServerRequest\ServerRequestFactory;
 
@@ -35,9 +35,112 @@ class RouterTest extends TestCase
     {
         $router = new Router();
 
-        $this->assertInstanceOf(RouteCollection::class, $router);
         $this->assertInstanceOf(MiddlewareInterface::class, $router);
         $this->assertInstanceOf(RequestHandlerInterface::class, $router);
+    }
+
+    /**
+     * @return void
+     */
+    public function testAddRoute() : void
+    {
+        $routes = [
+            new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
+        ];
+
+        $router = new Router();
+        $router->addRoute(...$routes);
+
+        $this->assertSame($routes, $router->getRoutes());
+    }
+
+    /**
+     * @return void
+     */
+    public function testAddMiddleware() : void
+    {
+        $middlewares = [
+            new Fixture\BlankMiddleware(),
+            new Fixture\BlankMiddleware(),
+            new Fixture\BlankMiddleware(),
+        ];
+
+        $router = new Router();
+        $router->addMiddleware(...$middlewares);
+
+        $this->assertSame($middlewares, $router->getMiddlewares());
+    }
+
+    /**
+     * @return void
+     */
+    public function testAddExistingRoute() : void
+    {
+        $route = new Fixture\TestRoute();
+
+        $router = new Router();
+        $router->addRoute($route);
+
+        // the given exception message should be tested through exceptions factory...
+        $this->expectException(RouteAlreadyExistsException::class);
+
+        try {
+            $router->addRoute($route);
+        } catch (RouteAlreadyExistsException $e) {
+            // $this->assertSame($route, $e->fromContext('route'));
+
+            throw $e;
+        }
+    }
+
+    /**
+     * @return void
+     */
+    public function testAddExistingMiddleware() : void
+    {
+        $middleware = new Fixture\BlankMiddleware();
+
+        $router = new Router();
+        $router->addMiddleware($middleware);
+
+        // the given exception message should be tested through exceptions factory...
+        $this->expectException(MiddlewareAlreadyExistsException::class);
+
+        try {
+            $router->addMiddleware($middleware);
+        } catch (MiddlewareAlreadyExistsException $e) {
+            // $this->assertSame($middleware, $e->fromContext('middleware'));
+
+            throw $e;
+        }
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetAllowedMethods() : void
+    {
+        $routes = [
+            new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
+        ];
+
+        $expectedMethods = array_merge(
+            $routes[0]->getMethods(),
+            $routes[1]->getMethods(),
+            $routes[2]->getMethods()
+        );
+
+        $router = new Router();
+
+        $this->assertSame([], $router->getAllowedMethods());
+
+        $router->addRoute(...$routes);
+
+        $this->assertSame($expectedMethods, $router->getAllowedMethods());
     }
 
     /**
@@ -52,11 +155,9 @@ class RouterTest extends TestCase
         ];
 
         $router = new Router();
-        $router->addRoutes(...$routes);
+        $router->addRoute(...$routes);
 
-        $this->assertSame($routes[0], $router->getRoute($routes[0]->getName()));
         $this->assertSame($routes[1], $router->getRoute($routes[1]->getName()));
-        $this->assertSame($routes[2], $router->getRoute($routes[2]->getName()));
     }
 
     /**
@@ -64,10 +165,41 @@ class RouterTest extends TestCase
      */
     public function testGetUndefinedRoute() : void
     {
-        $router = new Router();
+        $routes = [
+            new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
+        ];
 
+        $router = new Router();
+        $router->addRoute(...$routes);
+
+        // the given exception message should be tested through exceptions factory...
         $this->expectException(RouteNotFoundException::class);
-        $router->getRoute('foo');
+
+        try {
+            $router->getRoute('foo');
+        } catch (RouteNotFoundException $e) {
+            // $this->assertSame('foo', $e->fromContext('name'));
+
+            throw $e;
+        }
+    }
+
+    /**
+     * The test method only proxies the function `path_build`,
+     * the function should be tested separately.
+     *
+     * @return void
+     */
+    public function testGenerateUri() : void
+    {
+        $route = new Fixture\TestRoute();
+
+        $router = new Router();
+        $router->addRoute($route);
+
+        $this->assertSame($route->getPath(), $router->generateUri($route->getName()));
     }
 
     /**
@@ -84,15 +216,13 @@ class RouterTest extends TestCase
         ];
 
         $router = new Router();
-        $router->addRoutes(...$routes);
+        $router->addRoute(...$routes);
 
-        $request = (new ServerRequestFactory)
+        $foundRoute = $router->match((new ServerRequestFactory)
             ->createServerRequest(
                 $routes[2]->getMethods()[1],
                 $routes[2]->getPath()
-            );
-
-        $foundRoute = $router->match($request);
+            ));
 
         $this->assertSame($routes[2]->getName(), $foundRoute->getName());
     }
@@ -109,11 +239,12 @@ class RouterTest extends TestCase
         ];
 
         $router = new Router();
-        $router->addRoutes(...$routes);
+        $router->addRoute(...$routes);
 
         $request = (new ServerRequestFactory)
-            ->createServerRequest('GET', '/');
+            ->createServerRequest('GET', $routes[0]->getPath());
 
+        // the given exception message should be tested through exceptions factory...
         $this->expectException(MethodNotAllowedException::class);
 
         try {
@@ -125,6 +256,8 @@ class RouterTest extends TestCase
                 $routes[2]->getMethods()
             );
 
+            // $this->assertSame('GET', $e->fromContext('method'));
+            $this->assertSame($allowedMethods, $e->fromContext('allowed'));
             $this->assertSame($allowedMethods, $e->getAllowedMethods());
 
             throw $e;
@@ -143,13 +276,21 @@ class RouterTest extends TestCase
         ];
 
         $router = new Router();
-        $router->addRoutes(...$routes);
+        $router->addRoute(...$routes);
 
         $request = (new ServerRequestFactory)
             ->createServerRequest($routes[0]->getMethods()[0], '/');
 
+        // the given exception message should be tested through exceptions factory...
         $this->expectException(RouteNotFoundException::class);
-        $router->match($request);
+
+        try {
+            $router->match($request);
+        } catch (RouteNotFoundException $e) {
+            // $this->assertSame('/', $e->fromContext('uri'));
+
+            throw $e;
+        }
     }
 
     /**
@@ -166,17 +307,71 @@ class RouterTest extends TestCase
         ];
 
         $router = new Router();
-        $router->addRoutes(...$routes);
+        $router->addRoute(...$routes);
 
-        $request = (new ServerRequestFactory)
+        $router->handle((new ServerRequestFactory)
             ->createServerRequest(
                 $routes[2]->getMethods()[1],
                 $routes[2]->getPath()
-            );
-
-        $router->handle($request);
+            ));
 
         $this->assertTrue($routes[2]->getRequestHandler()->isRunned());
+    }
+
+    /**
+     * @return void
+     */
+    public function testHandleWithMiddlewares() : void
+    {
+        $route = new Fixture\TestRoute();
+
+        $middlewares = [
+            new Fixture\BlankMiddleware(),
+            new Fixture\BlankMiddleware(),
+            new Fixture\BlankMiddleware(),
+        ];
+
+        $router = new Router();
+        $router->addRoute($route);
+        $router->addMiddleware(...$middlewares);
+        $router->handle((new ServerRequestFactory)
+            ->createServerRequest(
+                $route->getMethods()[0],
+                $route->getPath()
+            ));
+
+        $this->assertTrue($middlewares[0]->isRunned());
+        $this->assertTrue($middlewares[1]->isRunned());
+        $this->assertTrue($middlewares[2]->isRunned());
+        $this->assertTrue($route->getRequestHandler()->isRunned());
+    }
+
+    /**
+     * @return void
+     */
+    public function testHandleWithBrokenMiddleware() : void
+    {
+        $route = new Fixture\TestRoute();
+
+        $middlewares = [
+            new Fixture\BlankMiddleware(),
+            new Fixture\BlankMiddleware(true),
+            new Fixture\BlankMiddleware(),
+        ];
+
+        $router = new Router();
+        $router->addRoute($route);
+        $router->addMiddleware(...$middlewares);
+        $router->handle((new ServerRequestFactory)
+            ->createServerRequest(
+                $route->getMethods()[0],
+                $route->getPath()
+            ));
+
+        $this->assertTrue($middlewares[0]->isRunned());
+        $this->assertTrue($middlewares[1]->isRunned());
+        $this->assertFalse($middlewares[2]->isRunned());
+        $this->assertFalse($route->getRequestHandler()->isRunned());
     }
 
     /**
@@ -191,11 +386,12 @@ class RouterTest extends TestCase
         ];
 
         $router = new Router();
-        $router->addRoutes(...$routes);
+        $router->addRoute(...$routes);
 
         $request = (new ServerRequestFactory)
             ->createServerRequest('GET', '/');
 
+        // the given exception message should be tested through exceptions factory...
         $this->expectException(MethodNotAllowedException::class);
 
         try {
@@ -207,6 +403,8 @@ class RouterTest extends TestCase
                 $routes[2]->getMethods()
             );
 
+            // $this->assertSame('GET', $e->fromContext('method'));
+            $this->assertSame($allowedMethods, $e->fromContext('allowed'));
             $this->assertSame($allowedMethods, $e->getAllowedMethods());
 
             throw $e;
@@ -225,13 +423,21 @@ class RouterTest extends TestCase
         ];
 
         $router = new Router();
-        $router->addRoutes(...$routes);
+        $router->addRoute(...$routes);
 
         $request = (new ServerRequestFactory)
             ->createServerRequest($routes[0]->getMethods()[0], '/');
 
+        // the given exception message should be tested through exceptions factory...
         $this->expectException(RouteNotFoundException::class);
-        $router->handle($request);
+
+        try {
+            $router->handle($request);
+        } catch (RouteNotFoundException $e) {
+            // $this->assertSame('/', $e->fromContext('uri'));
+
+            throw $e;
+        }
     }
 
     /**
@@ -248,17 +454,15 @@ class RouterTest extends TestCase
         ];
 
         $router = new Router();
-        $router->addRoutes(...$routes);
-
-        $request = (new ServerRequestFactory)
-            ->createServerRequest(
-                $routes[2]->getMethods()[1],
-                $routes[2]->getPath()
-            );
+        $router->addRoute(...$routes);
 
         $fallback = new Fixture\BlankRequestHandler();
 
-        $router->process($request, $fallback);
+        $router->process((new ServerRequestFactory)
+            ->createServerRequest(
+                $routes[2]->getMethods()[1],
+                $routes[2]->getPath()
+            ), $fallback);
 
         $this->assertTrue($routes[2]->getRequestHandler()->isRunned());
         $this->assertFalse($fallback->isRunned());
@@ -276,7 +480,7 @@ class RouterTest extends TestCase
         ];
 
         $router = new Router();
-        $router->addRoutes(...$routes);
+        $router->addRoute(...$routes);
 
         $request = (new ServerRequestFactory)
             ->createServerRequest('GET', '/');
@@ -305,7 +509,7 @@ class RouterTest extends TestCase
         ];
 
         $router = new Router();
-        $router->addRoutes(...$routes);
+        $router->addRoute(...$routes);
 
         $request = (new ServerRequestFactory)
             ->createServerRequest($routes[0]->getMethods()[0], '/');
@@ -325,48 +529,60 @@ class RouterTest extends TestCase
     /**
      * @return void
      */
-    public function testMatchPatterns() : void
+    public function testLoad() : void
     {
         $router = new Router();
-        $router->get('test', '/{foo<[0-9]+>}/{bar<[a-zA-Z]+>}(/{baz<.*?>})', new Fixture\BlankRequestHandler());
 
-        $route = $this->discoverRoute($router, 'GET', '/1990/Surgut/Tyumen');
-        $this->assertEquals($route->getAttributes(), [
-            'foo' => '1990',
-            'bar' => 'Surgut',
-            'baz' => 'Tyumen',
-        ]);
+        $expectedRoutes = [
+            new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
+        ];
 
-        $route = $this->discoverRoute($router, 'GET', '/1990/Surgut/Tyumen/Moscow');
-        $this->assertEquals($route->getAttributes(), [
-            'foo' => '1990',
-            'bar' => 'Surgut',
-            'baz' => 'Tyumen/Moscow',
-        ]);
+        $loader = $this->createMock(LoaderInterface::class);
 
-        $route = $this->discoverRoute($router, 'GET', '/Oops/Surgut/Tyumen/Moscow');
-        $this->assertNull($route);
+        $loader->method('load')->willReturn(
+            new RouteCollection(...$expectedRoutes)
+        );
 
-        $route = $this->discoverRoute($router, 'GET', '/1990/2018/Moscow');
-        $this->assertNull($route);
+        $router->load($loader);
+
+        $this->assertSame($expectedRoutes, $router->getRoutes());
     }
 
     /**
-     * @param Router $router
-     * @param string $method
-     * @param string $uri
-     *
-     * @return null|RouteInterface
+     * @return void
      */
-    private function discoverRoute(Router $router, string $method, string $uri) : ?RouteInterface
+    public function testMultipleLoad() : void
     {
-        $request = (new ServerRequestFactory)
-        ->createServerRequest($method, $uri);
+        $router = new Router();
 
-        try {
-            return $router->match($request);
-        } catch (ExceptionInterface $e) {
-            return null;
-        }
+        $expectedRoutes = [
+            new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
+        ];
+
+        $loaders = [
+            $this->createMock(LoaderInterface::class),
+            $this->createMock(LoaderInterface::class),
+            $this->createMock(LoaderInterface::class),
+        ];
+
+        $loaders[0]->method('load')->willReturn(
+            new RouteCollection($expectedRoutes[0])
+        );
+
+        $loaders[1]->method('load')->willReturn(
+            new RouteCollection($expectedRoutes[1])
+        );
+
+        $loaders[2]->method('load')->willReturn(
+            new RouteCollection($expectedRoutes[2])
+        );
+
+        $router->load(...$loaders);
+
+        $this->assertSame($expectedRoutes, $router->getRoutes());
     }
 }

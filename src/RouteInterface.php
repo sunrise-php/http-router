@@ -20,7 +20,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 /**
  * RouteInterface
  */
-interface RouteInterface
+interface RouteInterface extends RequestHandlerInterface
 {
 
     /**
@@ -120,6 +120,42 @@ interface RouteInterface
     public function setAttributes(array $attributes) : RouteInterface;
 
     /**
+     * Adds the given prefix to the route path
+     *
+     * @param string $prefix
+     *
+     * @return RouteInterface
+     */
+    public function addPrefix(string $prefix) : RouteInterface;
+
+    /**
+     * Adds the given suffix to the route path
+     *
+     * @param string $suffix
+     *
+     * @return RouteInterface
+     */
+    public function addSuffix(string $suffix) : RouteInterface;
+
+    /**
+     * Adds the given method(s) to the route
+     *
+     * @param string ...$methods
+     *
+     * @return RouteInterface
+     */
+    public function addMethod(string ...$methods) : RouteInterface;
+
+    /**
+     * Adds the given middleware(s) to the route
+     *
+     * @param MiddlewareInterface ...$middlewares
+     *
+     * @return RouteInterface
+     */
+    public function addMiddleware(MiddlewareInterface ...$middlewares) : RouteInterface;
+
+    /**
      * Returns the route clone with the given attributes
      *
      * This method MUST NOT change the state of the object.
@@ -128,5 +164,5 @@ interface RouteInterface
      *
      * @return RouteInterface
      */
-    public function withAttributes(array $attributes) : RouteInterface;
+    public function withAddedAttributes(array $attributes) : RouteInterface;
 }

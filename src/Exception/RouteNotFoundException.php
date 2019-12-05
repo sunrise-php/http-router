@@ -12,13 +12,8 @@
 namespace Sunrise\Http\Router\Exception;
 
 /**
- * Import classes
- */
-use RuntimeException;
-
-/**
  * RouteNotFoundException
  */
-class RouteNotFoundException extends RuntimeException implements ExceptionInterface
+class RouteNotFoundException extends Exception
 {
 }

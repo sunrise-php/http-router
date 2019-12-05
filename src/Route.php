@@ -14,19 +14,32 @@ namespace Sunrise\Http\Router;
 /**
  * Import classes
  */
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
 
 /**
  * Import functions
  */
+use function rtrim;
 use function strtoupper;
 
 /**
  * Route
+ *
+ * Use the factory to create this class.
  */
 class Route implements RouteInterface
 {
+
+    /**
+     * Server Request attribute name for the route name
+     *
+     * @var string
+     */
+    public const ATTR_NAME_FOR_ROUTE_NAME = '@route-name';
 
     /**
      * The route name
@@ -211,7 +224,54 @@ class Route implements RouteInterface
     /**
      * {@inheritDoc}
      */
-    public function withAttributes(array $attributes) : RouteInterface
+    public function addPrefix(string $prefix) : RouteInterface
+    {
+        // https://github.com/sunrise-php/http-router/issues/26
+        $prefix = rtrim($prefix, '/');
+
+        $this->path = $prefix . $this->path;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function addSuffix(string $suffix) : RouteInterface
+    {
+        $this->path .= $suffix;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function addMethod(string ...$methods) : RouteInterface
+    {
+        foreach ($methods as $method) {
+            $this->methods[] = strtoupper($method);
+        }
+
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function addMiddleware(MiddlewareInterface ...$middlewares) : RouteInterface
+    {
+        foreach ($middlewares as $middleware) {
+            $this->middlewares[] = $middleware;
+        }
+
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function withAddedAttributes(array $attributes) : RouteInterface
     {
         $clone = clone $this;
 
@@ -220,5 +280,22 @@ class Route implements RouteInterface
         }
 
         return $clone;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function handle(ServerRequestInterface $request) : ResponseInterface
+    {
+        $request = $request->withAttribute(self::ATTR_NAME_FOR_ROUTE_NAME, $this->name);
+
+        foreach ($this->attributes as $key => $value) {
+            $request = $request->withAttribute($key, $value);
+        }
+
+        $handler = new QueueableRequestHandler($this->requestHandler);
+        $handler->add(...$this->middlewares);
+
+        return $handler->handle($request);
     }
 }

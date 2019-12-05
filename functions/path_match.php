@@ -18,23 +18,24 @@ use function is_int;
 use function preg_match;
 
 /**
- * Compares the given path with the given subject...
+ * Compares the given path and the given subject...
  *
  * @param string $path
  * @param string $subject
  *
  * @return bool
  */
-function path_match(string $path, string $subject, &$attributes = []) : bool
+function path_match(string $path, string $subject, &$attributes = null) : bool
 {
+    $attributes = [];
+
     $regex = path_regex($path);
-    if (! preg_match($regex, $subject, $matches)) {
+    if (!preg_match($regex, $subject, $matches)) {
         return false;
     }
 
-    $attributes = [];
     foreach ($matches as $key => $value) {
-        if (! (is_int($key) || '' === $value)) {
+        if (!is_int($key) && '' !== $value) {
             $attributes[$key] = $value;
         }
     }
