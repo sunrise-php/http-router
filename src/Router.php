@@ -33,6 +33,8 @@ use function array_keys;
 use function array_values;
 use function spl_object_hash;
 use function sprintf;
+use function array_unique;
+use function array_merge;
 
 /**
  * Router
