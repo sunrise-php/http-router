@@ -224,7 +224,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
         }
 
         throw new RouteNotFoundException(
-            sprintf('No route found for the URI "%s".', $target)
+            sprintf('Route not found for the request "%s".', $target)
         );
     }
 
@@ -250,7 +250,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
             return $this->handle($request);
         } catch (MethodNotAllowedException | RouteNotFoundException $e) {
             return $handler->handle(
-                $request->withAttribute(self::ATTR_NAME_FOR_ROUTING_ERROR, $e)
+                $request->withAttribute(static::ATTR_NAME_FOR_ROUTING_ERROR, $e)
             );
         }
     }
