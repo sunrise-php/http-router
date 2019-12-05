@@ -35,6 +35,7 @@ use function spl_object_hash;
 use function sprintf;
 use function array_unique;
 use function array_merge;
+use function in_array;
 
 /**
  * Router
@@ -205,24 +206,18 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      */
     public function match(ServerRequestInterface $request) : RouteInterface
     {
-        $routes = [];
-        foreach ($this->routes as $route) {
-            foreach ($route->getMethods() as $method) {
-                $routes[$method][] = $route;
-            }
-        }
-
         $method = $request->getMethod();
-        if (!isset($routes[$method])) {
-            $errmsg = sprintf('The method "%s" is not allowed.', $method);
-
-            throw new MethodNotAllowedException($errmsg, [
-                'allowed' => array_keys($routes),
-            ]);
+        $allowedMethods = $this->getAllowedMethods();
+        if (!in_array($method, $allowedMethods)) {
+            $errmsg = sprintf('The method "%s" not allowed.', $method);
+            throw new MethodNotAllowedException($errmsg, ['allowed' => $allowedMethods]);
         }
 
         $target = $request->getUri()->getPath();
-        foreach ($routes[$method] as $route) {
+        foreach ($this->routes as $route) {
+            if (!in_array($method, $route->getMethods())) {
+                continue;
+            }
             if (path_match($route->getPath(), $target, $attributes)) {
                 return $route->withAddedAttributes($attributes);
             }
