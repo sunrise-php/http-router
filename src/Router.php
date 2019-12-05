@@ -138,12 +138,10 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     {
         $methods = [];
         foreach ($this->routes as $route) {
-            foreach ($route->getMethods() as $method) {
-                $methods[$method] = true;
-            }
+            $methods = $route->getMethods();
         }
 
-        return array_keys($methods);
+        return array_unique(array_merge(...$methods));
     }
 
     /**
