@@ -21,6 +21,7 @@ use Sunrise\Http\ServerRequest\ServerRequestFactory;
  * Import functions
  */
 use function array_merge;
+use function array_unique;
 
 /**
  * RouterTest
@@ -397,11 +398,11 @@ class RouterTest extends TestCase
         try {
             $router->handle($request);
         } catch (MethodNotAllowedException $e) {
-            $allowedMethods = array_merge(
+            $allowedMethods = array_unique(array_merge(
                 $routes[0]->getMethods(),
                 $routes[1]->getMethods(),
                 $routes[2]->getMethods()
-            );
+            ));
 
             // $this->assertSame('GET', $e->fromContext('method'));
             $this->assertSame($allowedMethods, $e->fromContext('allowed'));
