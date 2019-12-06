@@ -15,9 +15,9 @@ namespace Sunrise\Http\Router\OpenApi;
  * Import classes
  */
 use Doctrine\Common\Annotations\SimpleAnnotationReader;
+use Sunrise\Http\Router\Annotation\OpenApi\AbstractReference;
 use Sunrise\Http\Router\Annotation\OpenApi\Operation;
 use Sunrise\Http\Router\Annotation\OpenApi\Parameter;
-use Sunrise\Http\Router\Annotation\OpenApi\Schema;
 use Sunrise\Http\Router\RouteInterface;
 use ReflectionClass;
 
@@ -26,7 +26,6 @@ use ReflectionClass;
  */
 use function Sunrise\Http\Router\path_parse;
 use function array_walk_recursive;
-use function class_exists;
 use function str_replace;
 use function strtolower;
 
@@ -66,12 +65,7 @@ class OpenApi
     /**
      * @var array
      */
-    private $description = [];
-
-    /**
-     * @var array
-     */
-    private $schemasMap = [];
+    private $documentation = [];
 
     /**
      * Constructor of the class
@@ -119,10 +113,9 @@ class OpenApi
      */
     public function describe() : void
     {
-        $this->description['openapi'] = self::VERSION;
-
-        $this->description['info']['title'] = $this->title;
-        $this->description['info']['version'] = $this->version;
+        $this->documentation['openapi'] = self::VERSION;
+        $this->documentation['info']['title'] = $this->title;
+        $this->documentation['info']['version'] = $this->version;
 
         foreach ($this->routes as $route) {
             $path = $this->createPatternedPathFromRoute($route);
@@ -131,12 +124,12 @@ class OpenApi
             foreach ($route->getMethods() as $method) {
                 $method = strtolower($method);
 
-                $this->description['paths'][$path][$method]['operationId'] = $route->getName();
-                $this->description['paths'][$path][$method] += $operation->toArray();
+                $this->documentation['paths'][$path][$method]['operationId'] = $route->getName();
+                $this->documentation['paths'][$path][$method] += $operation->toArray();
             }
         }
 
-        $this->handleComponentSchemas();
+        $this->handleReferences();
     }
 
     /**
@@ -144,7 +137,7 @@ class OpenApi
      */
     public function toArray() : array
     {
-        return $this->description;
+        return $this->documentation;
     }
 
     /**
@@ -173,22 +166,15 @@ class OpenApi
      */
     private function createOperationAnnotationFromRoute(RouteInterface $route) : Operation
     {
-        $source = $route->getRequestHandler();
-
-        $operation = $this->annotationReader->getClassAnnotation(new ReflectionClass($source), Operation::class);
-
-        if (!$operation) {
-            $operation = new Operation();
-        }
-
+        $target = new ReflectionClass($route->getRequestHandler());
+        $operation = $this->annotationReader->getClassAnnotation($target, Operation::class) ?? new Operation();
         $attributes = path_parse($route->getPath());
 
         foreach ($attributes as $attribute) {
             $parameter = new Parameter();
             $parameter->in = 'path';
             $parameter->name = $attribute['name'];
-            $parameter->required = $attribute['isOptional'];
-
+            $parameter->required = !$attribute['isOptional'];
             $operation->parameters[] = $parameter;
         }
 
@@ -198,31 +184,28 @@ class OpenApi
     /**
      * @return void
      */
-    private function handleComponentSchemas() : void
+    private function handleReferences() : void
     {
-        array_walk_recursive($this->description, function (&$value, $key) {
-            if (!('$ref' === $key && null !== $value && class_exists($value))) {
+        array_walk_recursive($this->documentation, function (&$value) {
+            if (!($value instanceof AbstractReference)) {
                 return;
             }
 
-            // the schema already exists...
-            if (isset($this->description['components']['schemas'][$value])) {
-                $value = $this->schemasMap[$value];
+            $ref = $value;
+            $value = $ref->getComponentPath();
+            $component = &$this->documentation['components'][$ref->getComponentName()];
 
+            if (isset($component[$ref->name])) {
                 return;
             }
 
-            $schema = $this->annotationReader->getClassAnnotation(new ReflectionClass($value), Schema::class);
+            $annotation = $ref->getAnnotation($this->annotationReader);
 
-            if (!$schema) {
+            if (empty($annotation)) {
                 return;
             }
 
-            $this->description['components']['schemas'][$value]['type'] = 'object';
-            $this->description['components']['schemas'][$value] += $schema->toArray();
-
-            $this->schemasMap[$value] = '#/components/schemas/' . $value;
-            $value = $this->schemasMap[$value];
+            $component[$ref->name] = $annotation->toArray();
         });
     }
 }
