@@ -77,11 +77,6 @@ final class Schema extends AbstractAnnotation implements SchemaInterface
     public $deprecated = false;
 
     /**
-     * @var bool
-     */
-    public $required = false;
-
-    /**
      * {@inheritDoc}
      */
     public function toArray() : array
@@ -92,7 +87,6 @@ final class Schema extends AbstractAnnotation implements SchemaInterface
             'readOnly' => $this->readOnly,
             'writeOnly' => $this->writeOnly,
             'deprecated' => $this->deprecated,
-            'required' => $this->required,
         ];
 
         if (isset($this->type)) {
