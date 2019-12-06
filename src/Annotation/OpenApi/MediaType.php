@@ -18,7 +18,7 @@ namespace Sunrise\Http\Router\Annotation\OpenApi;
  *
  * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#media-type-object
  */
-final class MediaType implements MediaTypeInterface
+final class MediaType extends AbstractAnnotation implements MediaTypeInterface
 {
 
     /**
