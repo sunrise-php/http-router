@@ -77,6 +77,13 @@ final class Schema extends AbstractAnnotation implements SchemaInterface
     public $deprecated = false;
 
     /**
+     * @var array
+     *
+     * @link https://json-schema.org/draft/2019-09/json-schema-validation.html
+     */
+    public $validation = [];
+
+    /**
      * {@inheritDoc}
      */
     public function toArray() : array
@@ -112,6 +119,8 @@ final class Schema extends AbstractAnnotation implements SchemaInterface
         foreach ($this->properties as $key => $value) {
             $result['properties'][$key] = $value->toArray();
         }
+
+        $result += $this->validation;
 
         return $result;
     }
