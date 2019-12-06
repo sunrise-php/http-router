@@ -14,17 +14,12 @@ namespace Sunrise\Http\Router\Annotation\OpenApi;
 /**
  * @Annotation
  *
- * @Target({"ANNOTATION"})
+ * @Target({"ALL"})
+ *
+ * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#header-object
  */
-final class Header
+final class Header extends AbstractAnnotation implements HeaderInterface
 {
-
-    /**
-     * @Required
-     *
-     * @var string
-     */
-    public $name;
 
     /**
      * @var string
@@ -34,12 +29,12 @@ final class Header
     /**
      * @var bool
      */
-    public $deprecated = false;
+    public $required = false;
 
     /**
      * @var bool
      */
-    public $required = false;
+    public $deprecated = false;
 
     /**
      * @var bool
@@ -47,21 +42,30 @@ final class Header
     public $allowEmptyValue = false;
 
     /**
-     * @var Sunrise\Http\Router\Annotation\OpenApi\Schema
+     * @var mixed
+     */
+    public $example;
+
+    /**
+     * @var Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface
      */
     public $schema;
 
     /**
-     * @return array
+     * {@inheritDoc}
      */
     public function toArray() : array
     {
         $result = [
             'description' => $this->description,
-            'deprecated' => $this->deprecated,
             'required' => $this->required,
+            'deprecated' => $this->deprecated,
             'allowEmptyValue' => $this->allowEmptyValue,
         ];
+
+        if (isset($this->example)) {
+            $result['example'] = $this->example;
+        }
 
         if (isset($this->schema)) {
             $result['schema'] = $this->schema->toArray();

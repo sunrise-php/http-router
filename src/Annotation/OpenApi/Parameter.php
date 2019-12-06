@@ -14,9 +14,11 @@ namespace Sunrise\Http\Router\Annotation\OpenApi;
 /**
  * @Annotation
  *
- * @Target({"ANNOTATION"})
+ * @Target({"ALL"})
+ *
+ * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#parameter-object
  */
-final class Parameter
+final class Parameter extends AbstractAnnotation implements ParameterInterface
 {
 
     /**
@@ -43,12 +45,12 @@ final class Parameter
     /**
      * @var bool
      */
-    public $deprecated = false;
+    public $required = false;
 
     /**
      * @var bool
      */
-    public $required = false;
+    public $deprecated = false;
 
     /**
      * @var bool
@@ -56,17 +58,17 @@ final class Parameter
     public $allowEmptyValue = false;
 
     /**
-     * @var Sunrise\Http\Router\Annotation\OpenApi\Example
+     * @var mixed
      */
     public $example;
 
     /**
-     * @var array<Sunrise\Http\Router\Annotation\OpenApi\Example>
+     * @var Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface
      */
-    public $examples = [];
+    public $schema;
 
     /**
-     * @return array
+     * {@inheritDoc}
      */
     public function toArray() : array
     {
@@ -74,17 +76,17 @@ final class Parameter
             'in' => $this->in,
             'name' => $this->name,
             'description' => $this->description,
-            'deprecated' => $this->deprecated,
             'required' => $this->required,
+            'deprecated' => $this->deprecated,
             'allowEmptyValue' => $this->allowEmptyValue,
         ];
 
         if (isset($this->example)) {
-            $this->examples[] = $this->example;
+            $result['example'] = $this->example;
         }
 
-        foreach ($this->examples as $i => $example) {
-            $result['examples']['example-' . $i] = $example->toArray();
+        if (isset($this->schema)) {
+            $result['schema'] = $this->schema->toArray();
         }
 
         return $result;

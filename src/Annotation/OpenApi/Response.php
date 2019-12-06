@@ -14,35 +14,34 @@ namespace Sunrise\Http\Router\Annotation\OpenApi;
 /**
  * @Annotation
  *
- * @Target({"ANNOTATION"})
+ * @Target({"ALL"})
+ *
+ * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#response-object
  */
-final class Response
+final class Response extends AbstractAnnotation implements ResponseInterface
 {
 
     /**
      * @Required
      *
-     * @var int
-     */
-    public $code;
-
-    /**
      * @var string
      */
     public $description = '';
 
     /**
-     * @var array<Sunrise\Http\Router\Annotation\OpenApi\Header>
+     * @var array<Sunrise\Http\Router\Annotation\OpenApi\HeaderInterface>
      */
     public $headers = [];
 
     /**
-     * @var array<Sunrise\Http\Router\Annotation\OpenApi\MediaType>
+     * @var array<Sunrise\Http\Router\Annotation\OpenApi\MediaTypeInterface>
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#media-types
      */
     public $content = [];
 
     /**
-     * @return array
+     * {@inheritDoc}
      */
     public function toArray() : array
     {
@@ -50,12 +49,12 @@ final class Response
             'description' => $this->description,
         ];
 
-        foreach ($this->headers as $value) {
-            $result['headers'][$value->name] = $value->toArray();
+        foreach ($this->headers as $key => $value) {
+            $result['headers'][$key] = $value->toArray();
         }
 
-        foreach ($this->content as $value) {
-            $result['content'][$value->mediaType] = $value->toArray();
+        foreach ($this->content as $key => $value) {
+            $result['content'][$key] = $value->toArray();
         }
 
         return $result;

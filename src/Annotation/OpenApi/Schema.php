@@ -14,15 +14,17 @@ namespace Sunrise\Http\Router\Annotation\OpenApi;
 /**
  * @Annotation
  *
- * @Target({"ANNOTATION", "CLASS"})
+ * @Target({"ALL"})
+ *
+ * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#schema-object
  */
-final class Schema
+final class Schema extends AbstractAnnotation implements SchemaInterface
 {
 
     /**
      * @var string
      */
-    public $ref;
+    public $description = '';
 
     /**
      * @var string
@@ -30,27 +32,91 @@ final class Schema
     public $type;
 
     /**
-     * @var array<Sunrise\Http\Router\Annotation\OpenApi\Property>
+     * @var string
+     */
+    public $format;
+
+    /**
+     * @var mixed
+     */
+    public $default;
+
+    /**
+     * @var mixed
+     */
+    public $example;
+
+    /**
+     * @var Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface
+     */
+    public $items;
+
+    /**
+     * @var array<Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface>
      */
     public $properties = [];
 
     /**
-     * @return array
+     * @var bool
+     */
+    public $nullable = false;
+
+    /**
+     * @var bool
+     */
+    public $readOnly = false;
+
+    /**
+     * @var bool
+     */
+    public $writeOnly = false;
+
+    /**
+     * @var bool
+     */
+    public $deprecated = false;
+
+    /**
+     * @var bool
+     */
+    public $required = false;
+
+    /**
+     * {@inheritDoc}
      */
     public function toArray() : array
     {
-        $result = [];
-
-        if (isset($this->ref)) {
-            $result['$ref'] = $this->ref;
-        }
+        $result = [
+            'description' => $this->description,
+            'nullable' => $this->nullable,
+            'readOnly' => $this->readOnly,
+            'writeOnly' => $this->writeOnly,
+            'deprecated' => $this->deprecated,
+            'required' => $this->required,
+        ];
 
         if (isset($this->type)) {
             $result['type'] = $this->type;
         }
 
-        foreach ($this->properties as $value) {
-            $result['properties'][$value->name] = $value->toArray();
+        if (isset($this->format)) {
+            $result['format'] = $this->format;
+        }
+
+        if (isset($this->default)) {
+            $result['default'] = $this->default;
+        }
+
+        if (isset($this->example)) {
+            $result['example'] = $this->example;
+        }
+
+        if (isset($this->items)) {
+            $result['items'] = $this->items->toArray();
+        }
+
+        foreach ($this->properties as $key => $value) {
+            $result['properties'][$key] = $value->toArray();
         }
 
         return $result;

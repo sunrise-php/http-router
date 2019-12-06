@@ -14,9 +14,11 @@ namespace Sunrise\Http\Router\Annotation\OpenApi;
 /**
  * @Annotation
  *
- * @Target({"ANNOTATION"})
+ * @Target({"ALL"})
+ *
+ * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#request-body-object
  */
-final class RequestBody
+final class RequestBody extends AbstractAnnotation implements RequestBodyInterface
 {
 
     /**
@@ -25,19 +27,21 @@ final class RequestBody
     public $description = '';
 
     /**
-     * @Required
-     *
-     * @var array<Sunrise\Http\Router\Annotation\OpenApi\MediaType>
-     */
-    public $content = [];
-
-    /**
      * @var bool
      */
     public $required = false;
 
     /**
-     * @return array
+     * @Required
+     *
+     * @var array<Sunrise\Http\Router\Annotation\OpenApi\MediaTypeInterface>
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#media-types
+     */
+    public $content = [];
+
+    /**
+     * {@inheritDoc}
      */
     public function toArray() : array
     {
@@ -46,8 +50,8 @@ final class RequestBody
             'required' => $this->required,
         ];
 
-        foreach ($this->content as $value) {
-            $result['content'][$value->mediaType] = $value->toArray();
+        foreach ($this->content as $key => $value) {
+            $result['content'][$key] = $value->toArray();
         }
 
         return $result;

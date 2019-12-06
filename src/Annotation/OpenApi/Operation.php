@@ -15,6 +15,8 @@ namespace Sunrise\Http\Router\Annotation\OpenApi;
  * @Annotation
  *
  * @Target({"CLASS"})
+ *
+ * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#operation-object
  */
 final class Operation
 {
@@ -40,17 +42,19 @@ final class Operation
     public $deprecated = false;
 
     /**
-     * @var array<Sunrise\Http\Router\Annotation\OpenApi\Parameter>
+     * @var array<Sunrise\Http\Router\Annotation\OpenApi\ParameterInterface>
      */
     public $parameters = [];
 
     /**
-     * @var Sunrise\Http\Router\Annotation\OpenApi\RequestBody
+     * @var Sunrise\Http\Router\Annotation\OpenApi\RequestBodyInterface
      */
     public $requestBody;
 
     /**
-     * @var array<Sunrise\Http\Router\Annotation\OpenApi\Response>
+     * @Required
+     *
+     * @var array<Sunrise\Http\Router\Annotation\OpenApi\ResponseInterface>
      */
     public $responses = [];
 
@@ -74,8 +78,8 @@ final class Operation
             $result['requestBody'] = $this->requestBody->toArray();
         }
 
-        foreach ($this->responses as $value) {
-            $result['responses'][$value->code] = $value->toArray();
+        foreach ($this->responses as $key => $value) {
+            $result['responses'][$key] = $value->toArray();
         }
 
         return $result;

@@ -15,31 +15,21 @@ namespace Sunrise\Http\Router\Annotation\OpenApi;
  * @Annotation
  *
  * @Target({"ANNOTATION"})
+ *
+ * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#media-type-object
  */
-final class MediaType
+final class MediaType implements MediaTypeInterface
 {
 
     /**
-     * @Required
-     *
-     * @var string
-     */
-    public $mediaType;
-
-    /**
-     * @var Sunrise\Http\Router\Annotation\OpenApi\Schema
-     */
-    public $schema;
-
-    /**
-     * @var Sunrise\Http\Router\Annotation\OpenApi\Example
+     * @var mixed
      */
     public $example;
 
     /**
-     * @var array<Sunrise\Http\Router\Annotation\OpenApi\Example>
+     * @var Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface
      */
-    public $examples = [];
+    public $schema;
 
     /**
      * @return array
@@ -48,16 +38,12 @@ final class MediaType
     {
         $result = [];
 
+        if (isset($this->example)) {
+            $result['example'] = $this->example;
+        }
+
         if (isset($this->schema)) {
             $result['schema'] = $this->schema->toArray();
-        }
-
-        if (isset($this->example)) {
-            $this->examples[] = $this->example;
-        }
-
-        foreach ($this->examples as $i => $example) {
-            $result['examples']['example-' . $i] = $example->toArray();
         }
 
         return $result;
