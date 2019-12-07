@@ -15,7 +15,7 @@ namespace Sunrise\Http\Router\OpenApi;
  * Import classes
  */
 use Doctrine\Common\Annotations\SimpleAnnotationReader;
-use Sunrise\Http\Router\Annotation\OpenApi\AnnotationInterface;
+use Sunrise\Http\Router\Annotation\OpenApi\AbstractReference;
 use Sunrise\Http\Router\Annotation\OpenApi\Operation;
 use Sunrise\Http\Router\Annotation\OpenApi\Parameter;
 use Sunrise\Http\Router\RouteInterface;
@@ -187,7 +187,7 @@ class OpenApi
     private function handleReferences() : void
     {
         array_walk_recursive($this->documentation, function (&$value) {
-            if (!($value instanceof AnnotationInterface)) {
+            if (!($value instanceof AbstractReference)) {
                 return;
             }
 
