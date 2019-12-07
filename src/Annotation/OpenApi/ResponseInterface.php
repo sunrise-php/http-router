@@ -14,6 +14,6 @@ namespace Sunrise\Http\Router\Annotation\OpenApi;
 /**
  * ResponseInterface
  */
-interface ResponseInterface
+interface ResponseInterface extends AnnotationInterface
 {
 }

@@ -14,11 +14,6 @@ namespace Sunrise\Http\Router\Annotation\OpenApi;
 /**
  * AbstractAnnotation
  */
-abstract class AbstractAnnotation
+abstract class AbstractAnnotation implements AnnotationInterface
 {
-
-    /**
-     * @return array
-     */
-    abstract public function toArray() : array;
 }

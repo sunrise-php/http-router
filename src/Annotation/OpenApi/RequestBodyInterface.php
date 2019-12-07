@@ -14,6 +14,6 @@ namespace Sunrise\Http\Router\Annotation\OpenApi;
 /**
  * RequestBodyInterface
  */
-interface RequestBodyInterface
+interface RequestBodyInterface extends AnnotationInterface
 {
 }

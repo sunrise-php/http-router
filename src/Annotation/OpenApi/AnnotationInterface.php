@@ -12,8 +12,13 @@
 namespace Sunrise\Http\Router\Annotation\OpenApi;
 
 /**
- * MediaTypeInterface
+ * AnnotationInterface
  */
-interface MediaTypeInterface extends AnnotationInterface
+interface AnnotationInterface
 {
+
+    /**
+     * @return array
+     */
+    public function toArray() : array;
 }
