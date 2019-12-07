@@ -17,24 +17,25 @@ namespace Sunrise\Http\Router\Annotation\OpenApi;
  * @Target({"ALL"})
  *
  * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#schema-object
+ * @link https://json-schema.org/draft/2019-09/json-schema-validation.html
  */
 final class Schema extends AbstractAnnotation implements SchemaInterface
 {
 
     /**
-     * @var string
+     * @var \Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface
      */
-    public $description = '';
+    public $additionalProperties;
 
     /**
-     * @var string
+     * @var array<\Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface>
      */
-    public $type;
+    public $allOf = [];
 
     /**
-     * @var string
+     * @var array<\Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface>
      */
-    public $format;
+    public $anyOf = [];
 
     /**
      * @var mixed
@@ -42,14 +43,141 @@ final class Schema extends AbstractAnnotation implements SchemaInterface
     public $default;
 
     /**
+     * @var bool
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-schemadeprecated
+     */
+    public $deprecated;
+
+    /**
+     * @var string
+     */
+    public $description;
+
+    /**
+     * @var array
+     *
+     * @link https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.6.1.2
+     */
+    public $enum;
+
+    /**
      * @var mixed
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-schemaexample
      */
     public $example;
+
+    /**
+     * @var int
+     *
+     * @link https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.6.2.3
+     */
+    public $exclusiveMaximum;
+
+    /**
+     * @var int
+     *
+     * @link https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.6.2.5
+     */
+    public $exclusiveMinimum;
+
+    /**
+     * @var string
+     */
+    public $format;
 
     /**
      * @var \Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface
      */
     public $items;
+
+    /**
+     * @var int
+     *
+     * @link https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.6.2.2
+     */
+    public $maximum;
+
+    /**
+     * @var int
+     *
+     * @link https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.6.4.1
+     */
+    public $maxItems;
+
+    /**
+     * @var int
+     *
+     * @link https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.6.3.1
+     */
+    public $maxLength;
+
+    /**
+     * @var int
+     *
+     * @link https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.6.5.1
+     */
+    public $maxProperties;
+
+    /**
+     * @var int
+     *
+     * @link https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.6.2.4
+     */
+    public $minimum;
+
+    /**
+     * @var int
+     *
+     * @link https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.6.4.2
+     */
+    public $minItems;
+
+    /**
+     * @var int
+     *
+     * @link https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.6.3.2
+     */
+    public $minLength;
+
+    /**
+     * @var int
+     *
+     * @link https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.6.5.2
+     */
+    public $minProperties;
+
+    /**
+     * @var int
+     *
+     * @link https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.6.2.1
+     */
+    public $multipleOf;
+
+    /**
+     * @var \Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface
+     */
+    public $not;
+
+    /**
+     * @var bool
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-schemanullable
+     */
+    public $nullable;
+
+    /**
+     * @var array<\Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface>
+     */
+    public $oneOf = [];
+
+    /**
+     * @var string
+     *
+     * @link https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.6.3.3
+     */
+    public $pattern;
 
     /**
      * @var array<\Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface>
@@ -58,69 +186,118 @@ final class Schema extends AbstractAnnotation implements SchemaInterface
 
     /**
      * @var bool
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-schemareadonly
      */
-    public $nullable = false;
+    public $readOnly;
+
+    /**
+     * @var array<string>
+     *
+     * @link https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.6.5.3
+     */
+    public $required;
+
+    /**
+     * @var string
+     *
+     * @link https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.9.1
+     */
+    public $title;
+
+    /**
+     * @var string
+     */
+    public $type;
 
     /**
      * @var bool
+     *
+     * @link https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.6.4.3
      */
-    public $readOnly = false;
+    public $uniqueItems;
 
     /**
      * @var bool
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-schemawriteonly
      */
-    public $writeOnly = false;
-
-    /**
-     * @var bool
-     */
-    public $deprecated = false;
+    public $writeOnly;
 
     /**
      * @var array
-     *
-     * @link https://json-schema.org/draft/2019-09/json-schema-validation.html
      */
-    public $validation = [];
+    private $optionalScalarFields = [
+        'default',
+        'deprecated',
+        'description',
+        'enum',
+        'example',
+        'exclusiveMaximum',
+        'exclusiveMinimum',
+        'format',
+        'maximum',
+        'maxItems',
+        'maxLength',
+        'maxProperties',
+        'minimum',
+        'minItems',
+        'minLength',
+        'minProperties',
+        'multipleOf',
+        'nullable',
+        'pattern',
+        'readOnly',
+        'required',
+        'title',
+        'type',
+        'uniqueItems',
+        'writeOnly',
+    ];
+
+    /**
+     * @var array
+     */
+    private $optionalSchemableFields = [
+        'additionalProperties',
+        'items',
+        'not',
+    ];
 
     /**
      * {@inheritDoc}
      */
     public function toArray() : array
     {
-        $result = [
-            'description' => $this->description,
-            'nullable' => $this->nullable,
-            'readOnly' => $this->readOnly,
-            'writeOnly' => $this->writeOnly,
-            'deprecated' => $this->deprecated,
-        ];
+        $result = [];
 
-        if (isset($this->type)) {
-            $result['type'] = $this->type;
+        foreach ($this->optionalScalarFields as $fieldName) {
+            if (isset($this->{$fieldName})) {
+                $result[$fieldName] = $this->{$fieldName};
+            }
         }
 
-        if (isset($this->format)) {
-            $result['format'] = $this->format;
+        foreach ($this->optionalSchemableFields as $fieldName) {
+            if (isset($this->{$fieldName})) {
+                $result[$fieldName] = $this->{$fieldName}->toArray();
+            }
         }
 
-        if (isset($this->default)) {
-            $result['default'] = $this->default;
+        foreach ($this->allOf as $value) {
+            $result['allOf'][] = $value->toArray();
         }
 
-        if (isset($this->example)) {
-            $result['example'] = $this->example;
+        foreach ($this->anyOf as $value) {
+            $result['anyOf'][] = $value->toArray();
         }
 
-        if (isset($this->items)) {
-            $result['items'] = $this->items->toArray();
+        foreach ($this->oneOf as $value) {
+            $result['oneOf'][] = $value->toArray();
         }
 
         foreach ($this->properties as $key => $value) {
             $result['properties'][$key] = $value->toArray();
         }
-
-        $result += $this->validation;
 
         return $result;
     }
