@@ -227,7 +227,7 @@ final class Schema extends AbstractAnnotation implements SchemaInterface
     /**
      * @var array
      */
-    private $optionalScalarFields = [
+    private $simpleFields = [
         'default',
         'deprecated',
         'description',
@@ -258,10 +258,20 @@ final class Schema extends AbstractAnnotation implements SchemaInterface
     /**
      * @var array
      */
-    private $optionalSchemableFields = [
+    private $annotatedFields = [
         'additionalProperties',
         'items',
         'not',
+    ];
+
+    /**
+     * @var array
+     */
+    private $mappedFields = [
+        'allOf',
+        'anyOf',
+        'oneOf',
+        'properties',
     ];
 
     /**
@@ -269,34 +279,51 @@ final class Schema extends AbstractAnnotation implements SchemaInterface
      */
     public function toArray() : array
     {
-        $result = [];
+        return $this->getSimpleFields() + $this->getAnnotatedFields() + $this->getMappedFields();
+    }
 
-        foreach ($this->optionalScalarFields as $fieldName) {
+    /**
+     * @return array
+     */
+    private function getSimpleFields() : array
+    {
+        $result = [];
+        foreach ($this->simpleFields as $fieldName) {
             if (isset($this->{$fieldName})) {
                 $result[$fieldName] = $this->{$fieldName};
             }
         }
 
-        foreach ($this->optionalSchemableFields as $fieldName) {
+        return $result;
+    }
+
+    /**
+     * @return array
+     */
+    private function getAnnotatedFields() : array
+    {
+        $result = [];
+        foreach ($this->annotatedFields as $fieldName) {
             if (isset($this->{$fieldName})) {
                 $result[$fieldName] = $this->{$fieldName}->toArray();
             }
         }
 
-        foreach ($this->allOf as $value) {
-            $result['allOf'][] = $value->toArray();
-        }
+        return $result;
+    }
 
-        foreach ($this->anyOf as $value) {
-            $result['anyOf'][] = $value->toArray();
-        }
-
-        foreach ($this->oneOf as $value) {
-            $result['oneOf'][] = $value->toArray();
-        }
-
-        foreach ($this->properties as $key => $value) {
-            $result['properties'][$key] = $value->toArray();
+    /**
+     * @return array
+     */
+    private function getMappedFields() : array
+    {
+        $result = [];
+        foreach ($this->mappedFields as $fieldName) {
+            if (isset($this->{$fieldName})) {
+                foreach ($this->{$fieldName} as $i => $value) {
+                    $result[$fieldName][$i] = $value->toArray();
+                }
+            }
         }
 
         return $result;
