@@ -63,7 +63,7 @@ final class Parameter extends AbstractAnnotation implements ParameterInterface
     public $example;
 
     /**
-     * @var Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface
+     * @var \Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface
      */
     public $schema;
 

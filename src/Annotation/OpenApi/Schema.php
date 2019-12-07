@@ -47,12 +47,12 @@ final class Schema extends AbstractAnnotation implements SchemaInterface
     public $example;
 
     /**
-     * @var Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface
+     * @var \Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface
      */
     public $items;
 
     /**
-     * @var array<Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface>
+     * @var array<\Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface>
      */
     public $properties = [];
 

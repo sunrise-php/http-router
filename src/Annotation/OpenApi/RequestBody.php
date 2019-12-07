@@ -34,7 +34,7 @@ final class RequestBody extends AbstractAnnotation implements RequestBodyInterfa
     /**
      * @Required
      *
-     * @var array<Sunrise\Http\Router\Annotation\OpenApi\MediaTypeInterface>
+     * @var array<\Sunrise\Http\Router\Annotation\OpenApi\MediaTypeInterface>
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#media-types
      */

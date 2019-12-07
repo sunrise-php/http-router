@@ -29,12 +29,12 @@ final class Response extends AbstractAnnotation implements ResponseInterface
     public $description = '';
 
     /**
-     * @var array<Sunrise\Http\Router\Annotation\OpenApi\HeaderInterface>
+     * @var array<\Sunrise\Http\Router\Annotation\OpenApi\HeaderInterface>
      */
     public $headers = [];
 
     /**
-     * @var array<Sunrise\Http\Router\Annotation\OpenApi\MediaTypeInterface>
+     * @var array<\Sunrise\Http\Router\Annotation\OpenApi\MediaTypeInterface>
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#media-types
      */

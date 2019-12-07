@@ -27,7 +27,7 @@ final class MediaType extends AbstractAnnotation implements MediaTypeInterface
     public $example;
 
     /**
-     * @var Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface
+     * @var \Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface
      */
     public $schema;
 

@@ -47,7 +47,7 @@ final class Header extends AbstractAnnotation implements HeaderInterface
     public $example;
 
     /**
-     * @var Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface
+     * @var \Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface
      */
     public $schema;
 

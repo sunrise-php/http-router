@@ -42,19 +42,19 @@ final class Operation extends AbstractAnnotation
     public $deprecated = false;
 
     /**
-     * @var array<Sunrise\Http\Router\Annotation\OpenApi\ParameterInterface>
+     * @var array<\Sunrise\Http\Router\Annotation\OpenApi\ParameterInterface>
      */
     public $parameters = [];
 
     /**
-     * @var Sunrise\Http\Router\Annotation\OpenApi\RequestBodyInterface
+     * @var \Sunrise\Http\Router\Annotation\OpenApi\RequestBodyInterface
      */
     public $requestBody;
 
     /**
      * @Required
      *
-     * @var array<Sunrise\Http\Router\Annotation\OpenApi\ResponseInterface>
+     * @var array<\Sunrise\Http\Router\Annotation\OpenApi\ResponseInterface>
      */
     public $responses = [];
 
