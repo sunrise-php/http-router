@@ -27,13 +27,10 @@ abstract class AbstractAnnotation implements AnnotationInterface
      */
     public function toArray() : array
     {
+        $fields = $this->getFields();
+
         $result = [];
-
-        foreach ($this as $field => $value) {
-            if (null === $value) {
-                continue;
-            }
-
+        foreach ($fields as $field => $value) {
             if (!is_array($value)) {
                 $result[$field] = ($value instanceof AnnotationInterface) ? $value->toArray() : $value;
                 continue;
@@ -41,6 +38,21 @@ abstract class AbstractAnnotation implements AnnotationInterface
 
             foreach ($value as $key => $item) {
                 $result[$field][$key] = ($item instanceof AnnotationInterface) ? $item->toArray() : $item;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @return array
+     */
+    private function getFields() : array
+    {
+        $result = [];
+        foreach ($this as $field => $value) {
+            if (isset($value)) {
+                $result[$field] = $value;
             }
         }
 
