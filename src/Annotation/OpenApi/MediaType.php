@@ -22,14 +22,19 @@ final class MediaType extends AbstractAnnotation implements MediaTypeInterface
 {
 
     /**
+     * @var \Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface
+     */
+    public $schema;
+
+    /**
      * @var mixed
      */
     public $example;
 
     /**
-     * @var \Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface
+     * @var array<\Sunrise\Http\Router\Annotation\OpenApi\ExampleInterface>
      */
-    public $schema;
+    public $examples = [];
 
     /**
      * @return array
@@ -38,12 +43,16 @@ final class MediaType extends AbstractAnnotation implements MediaTypeInterface
     {
         $result = [];
 
+        if (isset($this->schema)) {
+            $result['schema'] = $this->schema->toArray();
+        }
+
         if (isset($this->example)) {
             $result['example'] = $this->example;
         }
 
-        if (isset($this->schema)) {
-            $result['schema'] = $this->schema->toArray();
+        foreach ($this->examples as $key => $value) {
+            $result['examples'][$key] = $value->toArray();
         }
 
         return $result;

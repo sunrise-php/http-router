@@ -57,6 +57,11 @@ final class Header extends AbstractAnnotation implements HeaderInterface
     public $example;
 
     /**
+     * @var array<\Sunrise\Http\Router\Annotation\OpenApi\ExampleInterface>
+     */
+    public $examples = [];
+
+    /**
      * {@inheritDoc}
      */
     public function toArray() : array
@@ -75,6 +80,10 @@ final class Header extends AbstractAnnotation implements HeaderInterface
 
         if (isset($this->example)) {
             $result['example'] = $this->example;
+        }
+
+        foreach ($this->examples as $key => $value) {
+            $result['examples'][$key] = $value->toArray();
         }
 
         return $result;

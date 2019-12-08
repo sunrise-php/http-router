@@ -73,6 +73,11 @@ final class Parameter extends AbstractAnnotation implements ParameterInterface
     public $example;
 
     /**
+     * @var array<\Sunrise\Http\Router\Annotation\OpenApi\ExampleInterface>
+     */
+    public $examples = [];
+
+    /**
      * {@inheritDoc}
      */
     public function toArray() : array
@@ -93,6 +98,10 @@ final class Parameter extends AbstractAnnotation implements ParameterInterface
 
         if (isset($this->example)) {
             $result['example'] = $this->example;
+        }
+
+        foreach ($this->examples as $key => $value) {
+            $result['examples'][$key] = $value->toArray();
         }
 
         return $result;
