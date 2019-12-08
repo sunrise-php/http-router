@@ -202,7 +202,7 @@ class OpenApi
             $ref = $value;
             $value = $ref->getComponentPath();
 
-            $component = &$this->documentation['components'][$ref->getComponentName()];
+            $component =& $this->documentation['components'][$ref->getComponentName()];
             if (isset($component[$ref->name])) {
                 return;
             }
