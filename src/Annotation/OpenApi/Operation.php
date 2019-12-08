@@ -59,7 +59,7 @@ final class Operation extends AbstractAnnotation
     public $responses = [];
 
     /**
-     * @return array
+     * {@inheritDoc}
      */
     public function toArray() : array
     {

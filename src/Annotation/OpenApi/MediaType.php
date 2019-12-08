@@ -37,7 +37,12 @@ final class MediaType extends AbstractAnnotation implements MediaTypeInterface
     public $examples = [];
 
     /**
-     * @return array
+     * @var array<\Sunrise\Http\Router\Annotation\OpenApi\EncodingInterface>
+     */
+    public $encoding = [];
+
+    /**
+     * {@inheritDoc}
      */
     public function toArray() : array
     {
@@ -53,6 +58,10 @@ final class MediaType extends AbstractAnnotation implements MediaTypeInterface
 
         foreach ($this->examples as $key => $value) {
             $result['examples'][$key] = $value->toArray();
+        }
+
+        foreach ($this->encoding as $key => $value) {
+            $result['encoding'][$key] = $value->toArray();
         }
 
         return $result;
