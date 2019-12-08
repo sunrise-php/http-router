@@ -18,6 +18,8 @@ interface AnnotationInterface
 {
 
     /**
+     * Converts the annotation to an array
+     *
      * @return array
      */
     public function toArray() : array;

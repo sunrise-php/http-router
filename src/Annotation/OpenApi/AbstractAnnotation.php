@@ -45,15 +45,20 @@ abstract class AbstractAnnotation implements AnnotationInterface
     }
 
     /**
+     * Gets only filled fields from the object
+     *
      * @return array
      */
     private function getFields() : array
     {
         $result = [];
         foreach ($this as $field => $value) {
-            if (isset($value)) {
-                $result[$field] = $value;
+            // not set value...
+            if (null === $value) {
+                continue;
             }
+
+            $result[$field] = $value;
         }
 
         return $result;
