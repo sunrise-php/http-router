@@ -64,4 +64,9 @@ final class Operation extends AbstractAnnotation
      * @var array<\Sunrise\Http\Router\Annotation\OpenApi\ResponseInterface>
      */
     public $responses;
+
+    /**
+     * @var array
+     */
+    public $security;
 }
