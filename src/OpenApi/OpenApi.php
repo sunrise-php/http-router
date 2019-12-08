@@ -18,6 +18,7 @@ use Doctrine\Common\Annotations\SimpleAnnotationReader;
 use Sunrise\Http\Router\Annotation\OpenApi\AbstractReference;
 use Sunrise\Http\Router\Annotation\OpenApi\Operation;
 use Sunrise\Http\Router\Annotation\OpenApi\Parameter;
+use Sunrise\Http\Router\Annotation\OpenApi\Schema;
 use Sunrise\Http\Router\RouteInterface;
 use ReflectionClass;
 
@@ -175,6 +176,13 @@ class OpenApi
             $parameter->in = 'path';
             $parameter->name = $attribute['name'];
             $parameter->required = !$attribute['isOptional'];
+
+            if (isset($attribute['pattern'])) {
+                $parameter->schema = new Schema();
+                $parameter->schema->type = 'string';
+                $parameter->schema->pattern = $attribute['pattern'];
+            }
+
             $operation->parameters[] = $parameter;
         }
 
@@ -193,15 +201,14 @@ class OpenApi
 
             $ref = $value;
             $value = $ref->getComponentPath();
-            $component = &$this->documentation['components'][$ref->getComponentName()];
 
+            $component = &$this->documentation['components'][$ref->getComponentName()];
             if (isset($component[$ref->name])) {
                 return;
             }
 
             $annotation = $ref->getAnnotation($this->annotationReader);
-
-            if (empty($annotation)) {
+            if (!isset($annotation)) {
                 return;
             }
 
