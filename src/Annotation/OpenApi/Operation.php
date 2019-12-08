@@ -37,6 +37,13 @@ final class Operation extends AbstractAnnotation
     public $description;
 
     /**
+     * @var \Sunrise\Http\Router\Annotation\OpenApi\ExternalDocumentationInterface
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-operationexternaldocs
+     */
+    public $externalDocs;
+
+    /**
      * @var bool
      */
     public $deprecated;

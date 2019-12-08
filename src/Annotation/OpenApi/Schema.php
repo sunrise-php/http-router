@@ -83,6 +83,13 @@ final class Schema extends AbstractAnnotation implements SchemaInterface
     public $exclusiveMinimum;
 
     /**
+     * @var \Sunrise\Http\Router\Annotation\OpenApi\ExternalDocumentationInterface
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-schemaexternaldocs
+     */
+    public $externalDocs;
+
+    /**
      * @var string
      */
     public $format;
