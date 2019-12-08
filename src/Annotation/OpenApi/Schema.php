@@ -30,12 +30,12 @@ final class Schema extends AbstractAnnotation implements SchemaInterface
     /**
      * @var array<\Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface>
      */
-    public $allOf = [];
+    public $allOf;
 
     /**
      * @var array<\Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface>
      */
-    public $anyOf = [];
+    public $anyOf;
 
     /**
      * @var mixed
@@ -170,7 +170,7 @@ final class Schema extends AbstractAnnotation implements SchemaInterface
     /**
      * @var array<\Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface>
      */
-    public $oneOf = [];
+    public $oneOf;
 
     /**
      * @var string
@@ -182,7 +182,7 @@ final class Schema extends AbstractAnnotation implements SchemaInterface
     /**
      * @var array<\Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface>
      */
-    public $properties = [];
+    public $properties;
 
     /**
      * @var bool
