@@ -42,14 +42,19 @@ final class Header extends AbstractAnnotation implements HeaderInterface
     public $allowEmptyValue = false;
 
     /**
-     * @var mixed
+     * @var bool
      */
-    public $example;
+    public $allowReserved = false;
 
     /**
      * @var \Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface
      */
     public $schema;
+
+    /**
+     * @var mixed
+     */
+    public $example;
 
     /**
      * {@inheritDoc}
@@ -61,14 +66,15 @@ final class Header extends AbstractAnnotation implements HeaderInterface
             'required' => $this->required,
             'deprecated' => $this->deprecated,
             'allowEmptyValue' => $this->allowEmptyValue,
+            'allowReserved' => $this->allowReserved,
         ];
-
-        if (isset($this->example)) {
-            $result['example'] = $this->example;
-        }
 
         if (isset($this->schema)) {
             $result['schema'] = $this->schema->toArray();
+        }
+
+        if (isset($this->example)) {
+            $result['example'] = $this->example;
         }
 
         return $result;
