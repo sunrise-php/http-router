@@ -24,27 +24,27 @@ final class Operation extends AbstractAnnotation
     /**
      * @var array<string>
      */
-    public $tags = [];
+    public $tags;
 
     /**
      * @var string
      */
-    public $summary = '';
+    public $summary;
 
     /**
      * @var string
      */
-    public $description = '';
+    public $description;
 
     /**
      * @var bool
      */
-    public $deprecated = false;
+    public $deprecated;
 
     /**
      * @var array<\Sunrise\Http\Router\Annotation\OpenApi\ParameterInterface>
      */
-    public $parameters = [];
+    public $parameters;
 
     /**
      * @var \Sunrise\Http\Router\Annotation\OpenApi\RequestBodyInterface
@@ -56,32 +56,5 @@ final class Operation extends AbstractAnnotation
      *
      * @var array<\Sunrise\Http\Router\Annotation\OpenApi\ResponseInterface>
      */
-    public $responses = [];
-
-    /**
-     * {@inheritDoc}
-     */
-    public function toArray() : array
-    {
-        $result = [
-            'tags' => $this->tags,
-            'summary' => $this->summary,
-            'description' => $this->description,
-            'deprecated' => $this->deprecated,
-        ];
-
-        foreach ($this->parameters as $value) {
-            $result['parameters'][] = $value->toArray();
-        }
-
-        if (isset($this->requestBody)) {
-            $result['requestBody'] = $this->requestBody->toArray();
-        }
-
-        foreach ($this->responses as $key => $value) {
-            $result['responses'][$key] = $value->toArray();
-        }
-
-        return $result;
-    }
+    public $responses;
 }

@@ -12,8 +12,38 @@
 namespace Sunrise\Http\Router\Annotation\OpenApi;
 
 /**
+ * Import functions
+ */
+use function is_array;
+
+/**
  * AbstractAnnotation
  */
 abstract class AbstractAnnotation implements AnnotationInterface
 {
+
+    /**
+     * {@inheritDoc}
+     */
+    public function toArray() : array
+    {
+        $result = [];
+
+        foreach ($this as $field => $value) {
+            if (null === $value) {
+                continue;
+            }
+
+            if (!is_array($value)) {
+                $result[$field] = ($value instanceof AnnotationInterface) ? $value->toArray() : $value;
+                continue;
+            }
+
+            foreach ($value as $key => $item) {
+                $result[$field][$key] = ($item instanceof AnnotationInterface) ? $item->toArray() : $item;
+            }
+        }
+
+        return $result;
+    }
 }

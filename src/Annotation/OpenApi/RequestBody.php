@@ -24,12 +24,12 @@ final class RequestBody extends AbstractAnnotation implements RequestBodyInterfa
     /**
      * @var string
      */
-    public $description = '';
+    public $description;
 
     /**
      * @var bool
      */
-    public $required = false;
+    public $required;
 
     /**
      * @Required
@@ -38,22 +38,5 @@ final class RequestBody extends AbstractAnnotation implements RequestBodyInterfa
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#media-types
      */
-    public $content = [];
-
-    /**
-     * {@inheritDoc}
-     */
-    public function toArray() : array
-    {
-        $result = [
-            'description' => $this->description,
-            'required' => $this->required,
-        ];
-
-        foreach ($this->content as $key => $value) {
-            $result['content'][$key] = $value->toArray();
-        }
-
-        return $result;
-    }
+    public $content;
 }

@@ -29,7 +29,7 @@ use function sprintf;
  *
  * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#reference-object
  */
-abstract class AbstractReference extends AbstractAnnotation
+abstract class AbstractReference implements AnnotationInterface
 {
 
     /**

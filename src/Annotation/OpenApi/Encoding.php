@@ -33,7 +33,7 @@ final class Encoding extends AbstractAnnotation implements EncodingInterface
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-encodingheaders
      */
-    public $headers = [];
+    public $headers;
 
     /**
      * @var string
@@ -54,33 +54,5 @@ final class Encoding extends AbstractAnnotation implements EncodingInterface
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-encodingallowreserved
      */
-    public $allowReserved = false;
-
-    /**
-     * {@inheritDoc}
-     */
-    public function toArray() : array
-    {
-        $result = [
-            'allowReserved' => $this->allowReserved,
-        ];
-
-        if (isset($this->contentType)) {
-            $result['contentType'] = $this->contentType;
-        }
-
-        foreach ($this->headers as $key => $value) {
-            $result['headers'][$key] = $value->toArray();
-        }
-
-        if (isset($this->style)) {
-            $result['style'] = $this->style;
-        }
-
-        if (isset($this->explode)) {
-            $result['explode'] = $this->explode;
-        }
-
-        return $result;
-    }
+    public $allowReserved;
 }

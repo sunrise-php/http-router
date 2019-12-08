@@ -24,27 +24,27 @@ final class Header extends AbstractAnnotation implements HeaderInterface
     /**
      * @var string
      */
-    public $description = '';
+    public $description;
 
     /**
      * @var bool
      */
-    public $required = false;
+    public $required;
 
     /**
      * @var bool
      */
-    public $deprecated = false;
+    public $deprecated;
 
     /**
      * @var bool
      */
-    public $allowEmptyValue = false;
+    public $allowEmptyValue;
 
     /**
      * @var bool
      */
-    public $allowReserved = false;
+    public $allowReserved;
 
     /**
      * @var \Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface
@@ -59,33 +59,5 @@ final class Header extends AbstractAnnotation implements HeaderInterface
     /**
      * @var array<\Sunrise\Http\Router\Annotation\OpenApi\ExampleInterface>
      */
-    public $examples = [];
-
-    /**
-     * {@inheritDoc}
-     */
-    public function toArray() : array
-    {
-        $result = [
-            'description' => $this->description,
-            'required' => $this->required,
-            'deprecated' => $this->deprecated,
-            'allowEmptyValue' => $this->allowEmptyValue,
-            'allowReserved' => $this->allowReserved,
-        ];
-
-        if (isset($this->schema)) {
-            $result['schema'] = $this->schema->toArray();
-        }
-
-        if (isset($this->example)) {
-            $result['example'] = $this->example;
-        }
-
-        foreach ($this->examples as $key => $value) {
-            $result['examples'][$key] = $value->toArray();
-        }
-
-        return $result;
-    }
+    public $examples;
 }

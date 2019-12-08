@@ -34,36 +34,10 @@ final class MediaType extends AbstractAnnotation implements MediaTypeInterface
     /**
      * @var array<\Sunrise\Http\Router\Annotation\OpenApi\ExampleInterface>
      */
-    public $examples = [];
+    public $examples;
 
     /**
      * @var array<\Sunrise\Http\Router\Annotation\OpenApi\EncodingInterface>
      */
-    public $encoding = [];
-
-    /**
-     * {@inheritDoc}
-     */
-    public function toArray() : array
-    {
-        $result = [];
-
-        if (isset($this->schema)) {
-            $result['schema'] = $this->schema->toArray();
-        }
-
-        if (isset($this->example)) {
-            $result['example'] = $this->example;
-        }
-
-        foreach ($this->examples as $key => $value) {
-            $result['examples'][$key] = $value->toArray();
-        }
-
-        foreach ($this->encoding as $key => $value) {
-            $result['encoding'][$key] = $value->toArray();
-        }
-
-        return $result;
-    }
+    public $encoding;
 }

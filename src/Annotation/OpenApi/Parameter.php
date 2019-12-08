@@ -46,28 +46,28 @@ final class Parameter extends AbstractAnnotation implements ParameterInterface
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-parameterdescription
      */
-    public $description = '';
+    public $description;
 
     /**
      * @var bool
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-parameterrequired
      */
-    public $required = false;
+    public $required;
 
     /**
      * @var bool
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-parameterdeprecated
      */
-    public $deprecated = false;
+    public $deprecated;
 
     /**
      * @var bool
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-parameterallowemptyvalue
      */
-    public $allowEmptyValue = false;
+    public $allowEmptyValue;
 
     /**
      * @Enum({"matrix", "label", "form", "simple", "spaceDelimited", "pipeDelimited", "deepObject"})
@@ -91,7 +91,7 @@ final class Parameter extends AbstractAnnotation implements ParameterInterface
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-parameterallowreserved
      */
-    public $allowReserved = false;
+    public $allowReserved;
 
     /**
      * @var \Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface
@@ -112,54 +112,12 @@ final class Parameter extends AbstractAnnotation implements ParameterInterface
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-parameterexamples
      */
-    public $examples = [];
+    public $examples;
 
     /**
      * @var array<\Sunrise\Http\Router\Annotation\OpenApi\MediaTypeInterface>
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-parametercontent
      */
-    public $content = [];
-
-    /**
-     * {@inheritDoc}
-     */
-    public function toArray() : array
-    {
-        $result = [
-            'in' => $this->in,
-            'name' => $this->name,
-            'description' => $this->description,
-            'required' => $this->required,
-            'deprecated' => $this->deprecated,
-            'allowEmptyValue' => $this->allowEmptyValue,
-            'allowReserved' => $this->allowReserved,
-        ];
-
-        if (isset($this->style)) {
-            $result['style'] = $this->style;
-        }
-
-        if (isset($this->explode)) {
-            $result['explode'] = $this->explode;
-        }
-
-        if (isset($this->schema)) {
-            $result['schema'] = $this->schema->toArray();
-        }
-
-        if (isset($this->example)) {
-            $result['example'] = $this->example;
-        }
-
-        foreach ($this->examples as $key => $value) {
-            $result['examples'][$key] = $value->toArray();
-        }
-
-        foreach ($this->content as $key => $value) {
-            $result['content'][$key] = $value->toArray();
-        }
-
-        return $result;
-    }
+    public $content;
 }

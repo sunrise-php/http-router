@@ -26,37 +26,17 @@ final class Response extends AbstractAnnotation implements ResponseInterface
      *
      * @var string
      */
-    public $description = '';
+    public $description;
 
     /**
      * @var array<\Sunrise\Http\Router\Annotation\OpenApi\HeaderInterface>
      */
-    public $headers = [];
+    public $headers;
 
     /**
      * @var array<\Sunrise\Http\Router\Annotation\OpenApi\MediaTypeInterface>
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#media-types
      */
-    public $content = [];
-
-    /**
-     * {@inheritDoc}
-     */
-    public function toArray() : array
-    {
-        $result = [
-            'description' => $this->description,
-        ];
-
-        foreach ($this->headers as $key => $value) {
-            $result['headers'][$key] = $value->toArray();
-        }
-
-        foreach ($this->content as $key => $value) {
-            $result['content'][$key] = $value->toArray();
-        }
-
-        return $result;
-    }
+    public $content;
 }
