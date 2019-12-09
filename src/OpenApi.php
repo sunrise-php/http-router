@@ -9,7 +9,7 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
-namespace Sunrise\Http\Router\OpenApi;
+namespace Sunrise\Http\Router;
 
 /**
  * Import classes
@@ -19,15 +19,12 @@ use Sunrise\Http\Router\Annotation\OpenApi\AbstractReference;
 use Sunrise\Http\Router\Annotation\OpenApi\Operation;
 use Sunrise\Http\Router\Annotation\OpenApi\Parameter;
 use Sunrise\Http\Router\Annotation\OpenApi\Schema;
-use Sunrise\Http\Router\RouteInterface;
 use ReflectionClass;
 
 /**
  * Import functions
  */
-use function Sunrise\Http\Router\path_parse;
 use function array_walk_recursive;
-use function str_replace;
 use function strtolower;
 
 /**
@@ -112,15 +109,15 @@ class OpenApi
     /**
      * @return void
      */
-    public function describe() : void
+    public function generateDocumentation() : void
     {
         $this->documentation['openapi'] = self::VERSION;
         $this->documentation['info']['title'] = $this->title;
         $this->documentation['info']['version'] = $this->version;
 
         foreach ($this->routes as $route) {
-            $path = $this->createPatternedPathFromRoute($route);
-            $operation = $this->createOperationAnnotationFromRoute($route);
+            $path = path_plain($route->getPath());
+            $operation = $this->createOperation($route);
 
             foreach ($route->getMethods() as $method) {
                 $method = strtolower($method);
@@ -142,22 +139,19 @@ class OpenApi
     }
 
     /**
-     * @param RouteInterface $route
-     *
      * @return string
-     *
-     * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#patterned-fields
      */
-    private function createPatternedPathFromRoute(RouteInterface $route) : string
+    public function toJson() : string
     {
-        $path = $route->getPath();
-        $attributes = path_parse($path);
+        return json_encode($this->documentation);
+    }
 
-        foreach ($attributes as $attribute) {
-            $path = str_replace($attribute['raw'], '{' . $attribute['name'] . '}', $path);
-        }
-
-        return str_replace(['(', ')'], '', $path);
+    /**
+     * @return string
+     */
+    public function toYaml() : string
+    {
+        return yaml_emit($this->documentation);
     }
 
     /**
@@ -165,7 +159,7 @@ class OpenApi
      *
      * @return Operation
      */
-    private function createOperationAnnotationFromRoute(RouteInterface $route) : Operation
+    private function createOperation(RouteInterface $route) : Operation
     {
         $target = new ReflectionClass($route->getRequestHandler());
         $operation = $this->annotationReader->getClassAnnotation($target, Operation::class) ?? new Operation();
