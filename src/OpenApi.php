@@ -19,6 +19,10 @@ use Sunrise\Http\Router\Annotation\OpenApi\AbstractReference;
 use Sunrise\Http\Router\Annotation\OpenApi\Operation;
 use Sunrise\Http\Router\Annotation\OpenApi\Parameter;
 use Sunrise\Http\Router\Annotation\OpenApi\Schema;
+use Sunrise\Http\Router\OpenApi\Info;
+use Sunrise\Http\Router\OpenApi\SecurityRequirement;
+use Sunrise\Http\Router\OpenApi\SecurityScheme;
+use Sunrise\Http\Router\OpenApi\Server;
 use ReflectionClass;
 
 /**
@@ -34,11 +38,14 @@ class OpenApi
 {
 
     /**
-     * Version of OpenAPI specification
-     *
      * @var string
      */
     public const VERSION = '3.0.2';
+
+    /**
+     * @var array
+     */
+    private $documentation;
 
     /**
      * @var SimpleAnnotationReader
@@ -51,25 +58,17 @@ class OpenApi
     private $routes = [];
 
     /**
-     * @var string
-     */
-    private $title = 'REST API';
-
-    /**
-     * @var string
-     */
-    private $version = '0.0.1';
-
-    /**
-     * @var array
-     */
-    private $documentation = [];
-
-    /**
      * Constructor of the class
+     *
+     * @param Info $info
      */
-    public function __construct()
+    public function __construct(Info $info)
     {
+        $this->documentation = [
+            'openapi' => self::VERSION,
+            'info' => $info->toArray(),
+        ];
+
         $this->annotationReader = new SimpleAnnotationReader();
         $this->annotationReader->addNamespace('Sunrise\Http\Router\Annotation');
     }
@@ -87,47 +86,34 @@ class OpenApi
     }
 
     /**
-     * @param string $title
+     * @param Server $server
      *
      * @return void
      */
-    public function setTitle(string $title) : void
+    public function pushServer(Server $server) : void
     {
-        $this->title = $title;
+        $this->documentation['servers'][] = $server->toArray();
     }
 
     /**
-     * @param string $version
+     * @param SecurityRequirement $securityRequirement
      *
      * @return void
      */
-    public function setVersion(string $version) : void
+    public function pushSecurityRequirement(SecurityRequirement $securityRequirement) : void
     {
-        $this->version = $version;
+        $this->documentation['security'][] = $securityRequirement->toArray();
     }
 
     /**
+     * @param string $name
+     * @param SecurityScheme $securityScheme
+     *
      * @return void
      */
-    public function generateDocumentation() : void
+    public function pushSecurityScheme(string $name, SecurityScheme $securityScheme) : void
     {
-        $this->documentation['openapi'] = self::VERSION;
-        $this->documentation['info']['title'] = $this->title;
-        $this->documentation['info']['version'] = $this->version;
-
-        foreach ($this->routes as $route) {
-            $path = path_plain($route->getPath());
-            $operation = $this->createOperation($route);
-
-            foreach ($route->getMethods() as $method) {
-                $method = strtolower($method);
-
-                $this->documentation['paths'][$path][$method]['operationId'] = $route->getName();
-                $this->documentation['paths'][$path][$method] += $operation->toArray();
-            }
-        }
-
-        $this->handleReferences();
+        $this->documentation['components']['securitySchemes'][$name] = $securityScheme->toArray();
     }
 
     /**
@@ -155,11 +141,31 @@ class OpenApi
     }
 
     /**
+     * @return void
+     */
+    public function generateDocumentation() : void
+    {
+        foreach ($this->routes as $route) {
+            $path = path_plain($route->getPath());
+            $operation = $this->convertRouteToOperation($route);
+
+            foreach ($route->getMethods() as $method) {
+                $method = strtolower($method);
+
+                $this->documentation['paths'][$path][$method]['operationId'] = $route->getName();
+                $this->documentation['paths'][$path][$method] += $operation->toArray();
+            }
+        }
+
+        $this->handleReferences();
+    }
+
+    /**
      * @param RouteInterface $route
      *
      * @return Operation
      */
-    private function createOperation(RouteInterface $route) : Operation
+    private function convertRouteToOperation(RouteInterface $route) : Operation
     {
         $target = new ReflectionClass($route->getRequestHandler());
         $operation = $this->annotationReader->getClassAnnotation($target, Operation::class) ?? new Operation();
