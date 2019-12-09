@@ -44,4 +44,11 @@ final class Response extends AbstractAnnotation implements ResponseInterface
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#media-types
      */
     public $content;
+
+    /**
+     * @var array<\Sunrise\Http\Router\Annotation\OpenApi\LinkInterface>
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-responselinks
+     */
+    public $links;
 }
