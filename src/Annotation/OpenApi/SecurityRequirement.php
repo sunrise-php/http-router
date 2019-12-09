@@ -35,6 +35,8 @@ final class SecurityRequirement extends AbstractAnnotation implements SecurityRe
 
     /**
      * {@inheritDoc}
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#security-requirement-object-examples
      */
     public function toArray() : array
     {
