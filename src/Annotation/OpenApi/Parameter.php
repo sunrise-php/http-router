@@ -24,6 +24,15 @@ final class Parameter extends AbstractAnnotation implements ParameterInterface
     /**
      * @Required
      *
+     * @var string
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-parametername
+     */
+    public $name;
+
+    /**
+     * @Required
+     *
      * @Enum({"cookie", "header", "query"})
      *
      * @var string
@@ -31,15 +40,6 @@ final class Parameter extends AbstractAnnotation implements ParameterInterface
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-parameterin
      */
     public $in;
-
-    /**
-     * @Required
-     *
-     * @var string
-     *
-     * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-parametername
-     */
-    public $name;
 
     /**
      * @var string
