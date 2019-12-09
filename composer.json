@@ -42,6 +42,7 @@
             "functions/path_build.php",
             "functions/path_match.php",
             "functions/path_parse.php",
+            "functions/path_plain.php",
             "functions/path_regex.php"
         ],
         "psr-4": {
