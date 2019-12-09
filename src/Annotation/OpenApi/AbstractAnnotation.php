@@ -12,55 +12,13 @@
 namespace Sunrise\Http\Router\Annotation\OpenApi;
 
 /**
- * Import functions
+ * Import classes
  */
-use function is_array;
+use Sunrise\Http\Router\OpenApi\AbstractObject;
 
 /**
  * AbstractAnnotation
  */
-abstract class AbstractAnnotation implements AnnotationInterface
+abstract class AbstractAnnotation extends AbstractObject implements AnnotationInterface
 {
-
-    /**
-     * {@inheritDoc}
-     */
-    public function toArray() : array
-    {
-        $fields = $this->getFields();
-
-        $result = [];
-        foreach ($fields as $field => $value) {
-            if (!is_array($value)) {
-                $result[$field] = ($value instanceof AnnotationInterface) ? $value->toArray() : $value;
-                continue;
-            }
-
-            foreach ($value as $key => $item) {
-                $result[$field][$key] = ($item instanceof AnnotationInterface) ? $item->toArray() : $item;
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * Gets only filled fields from the object
-     *
-     * @return array
-     */
-    private function getFields() : array
-    {
-        $result = [];
-        foreach ($this as $field => $value) {
-            // not set value...
-            if (null === $value) {
-                continue;
-            }
-
-            $result[$field] = $value;
-        }
-
-        return $result;
-    }
 }
