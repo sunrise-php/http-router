@@ -44,11 +44,6 @@ final class Operation extends AbstractAnnotation
     public $externalDocs;
 
     /**
-     * @var bool
-     */
-    public $deprecated;
-
-    /**
      * @var array<\Sunrise\Http\Router\Annotation\OpenApi\ParameterInterface>
      */
     public $parameters;
@@ -64,6 +59,11 @@ final class Operation extends AbstractAnnotation
      * @var array<\Sunrise\Http\Router\Annotation\OpenApi\ResponseInterface>
      */
     public $responses;
+
+    /**
+     * @var bool
+     */
+    public $deprecated;
 
     /**
      * @var array
