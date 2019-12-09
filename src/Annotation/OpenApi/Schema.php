@@ -55,6 +55,13 @@ final class Schema extends AbstractAnnotation implements SchemaInterface
     public $description;
 
     /**
+     * @var \Sunrise\Http\Router\Annotation\OpenApi\DiscriminatorInterface
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-schemadiscriminator
+     */
+    public $discriminator;
+
+    /**
      * @var array
      *
      * @link https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.6.1.2
