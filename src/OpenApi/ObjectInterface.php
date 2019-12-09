@@ -9,16 +9,18 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
-namespace Sunrise\Http\Router\Annotation\OpenApi;
+namespace Sunrise\Http\Router\OpenApi;
 
 /**
- * Import classes
+ * ObjectInterface
  */
-use Sunrise\Http\Router\OpenApi\ObjectInterface;
-
-/**
- * AnnotationInterface
- */
-interface AnnotationInterface extends ObjectInterface
+interface ObjectInterface
 {
+
+    /**
+     * Converts the object to an array
+     *
+     * @return array
+     */
+    public function toArray() : array;
 }
