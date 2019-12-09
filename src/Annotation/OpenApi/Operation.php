@@ -23,16 +23,22 @@ final class Operation extends AbstractAnnotation
 
     /**
      * @var array<string>
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-operationtags
      */
     public $tags;
 
     /**
      * @var string
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-operationsummary
      */
     public $summary;
 
     /**
      * @var string
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-operationdescription
      */
     public $description;
 
@@ -45,11 +51,15 @@ final class Operation extends AbstractAnnotation
 
     /**
      * @var array<\Sunrise\Http\Router\Annotation\OpenApi\ParameterInterface>
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-operationparameters
      */
     public $parameters;
 
     /**
      * @var \Sunrise\Http\Router\Annotation\OpenApi\RequestBodyInterface
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-operationrequestbody
      */
     public $requestBody;
 
@@ -57,16 +67,22 @@ final class Operation extends AbstractAnnotation
      * @Required
      *
      * @var array<\Sunrise\Http\Router\Annotation\OpenApi\ResponseInterface>
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-operationresponses
      */
     public $responses;
 
     /**
      * @var bool
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-operationdeprecated
      */
     public $deprecated;
 
     /**
      * @var array
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-operationsecurity
      */
     public $security;
 }
