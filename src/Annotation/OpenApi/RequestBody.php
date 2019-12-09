@@ -27,11 +27,6 @@ final class RequestBody extends AbstractAnnotation implements RequestBodyInterfa
     public $description;
 
     /**
-     * @var bool
-     */
-    public $required;
-
-    /**
      * @Required
      *
      * @var array<\Sunrise\Http\Router\Annotation\OpenApi\MediaTypeInterface>
@@ -39,4 +34,9 @@ final class RequestBody extends AbstractAnnotation implements RequestBodyInterfa
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#media-types
      */
     public $content;
+
+    /**
+     * @var bool
+     */
+    public $required;
 }
