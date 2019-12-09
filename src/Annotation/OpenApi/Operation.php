@@ -80,7 +80,7 @@ final class Operation extends AbstractAnnotation
     public $deprecated;
 
     /**
-     * @var array
+     * @var array<\Sunrise\Http\Router\Annotation\OpenApi\SecurityRequirementInterface>
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-operationsecurity
      */
