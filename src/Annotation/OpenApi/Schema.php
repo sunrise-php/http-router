@@ -230,4 +230,11 @@ final class Schema extends AbstractAnnotation implements SchemaInterface
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-schemawriteonly
      */
     public $writeOnly;
+
+    /**
+     * @var \Sunrise\Http\Router\Annotation\OpenApi\XmlInterface
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-schemaxml
+     */
+    public $xml;
 }
