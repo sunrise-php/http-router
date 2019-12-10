@@ -12,12 +12,22 @@
 namespace Sunrise\Http\Router\OpenApi;
 
 /**
+ * Import functions
+ */
+use function sprintf;
+
+/**
  * OAS Security Scheme Object
  *
  * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#security-scheme-object
  */
-class SecurityScheme extends AbstractObject
+class SecurityScheme extends AbstractObject implements ObjectComponentInterface
 {
+
+    /**
+     * @var string
+     */
+    private $accessKey;
 
     /**
      * @var string
@@ -76,11 +86,37 @@ class SecurityScheme extends AbstractObject
     protected $openIdConnectUrl;
 
     /**
+     * @param string $accessKey
      * @param string $type
      */
-    public function __construct(string $type)
+    public function __construct(string $accessKey, string $type)
     {
+        $this->accessKey = $accessKey;
         $this->type = $type;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getAccessKey() : string
+    {
+        return $this->accessKey;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getComponentName() : string
+    {
+        return 'securitySchemes';
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getComponentObjectPath() : string
+    {
+        return sprintf('#/components/%s/%s', $this->getComponentName(), $this->getAccessKey());
     }
 
     /**
