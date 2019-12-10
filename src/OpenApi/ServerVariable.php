@@ -22,7 +22,7 @@ class ServerVariable extends AbstractObject
     /**
      * @var string
      */
-    protected $name;
+    private $name;
 
     /**
      * @var string[]
