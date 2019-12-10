@@ -21,7 +21,7 @@ use function sprintf;
  *
  * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#security-scheme-object
  */
-class SecurityScheme extends AbstractObject implements ObjectComponentInterface
+class SecurityScheme extends AbstractObject implements ComponentObjectInterface
 {
 
     /**
@@ -98,14 +98,6 @@ class SecurityScheme extends AbstractObject implements ObjectComponentInterface
     /**
      * {@inheritDoc}
      */
-    public function getAccessKey() : string
-    {
-        return $this->accessKey;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public function getComponentName() : string
     {
         return 'securitySchemes';
@@ -114,9 +106,25 @@ class SecurityScheme extends AbstractObject implements ObjectComponentInterface
     /**
      * {@inheritDoc}
      */
-    public function getComponentObjectPath() : string
+    public function getObjectAccessKey() : string
     {
-        return sprintf('#/components/%s/%s', $this->getComponentName(), $this->getAccessKey());
+        return $this->accessKey;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getObjectPath() : string
+    {
+        return sprintf('#/components/%s/%s', $this->getComponentName(), $this->getObjectAccessKey());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getObject() : ObjectInterface
+    {
+        return $this;
     }
 
     /**
