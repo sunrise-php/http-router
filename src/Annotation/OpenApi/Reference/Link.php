@@ -9,14 +9,20 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
-namespace Sunrise\Http\Router\Annotation\OpenApi;
+namespace Sunrise\Http\Router\Annotation\OpenApi\Reference;
+
+/**
+ * Import classes
+ */
+use Sunrise\Http\Router\Annotation\OpenApi\Link as LinkObject;
+use Sunrise\Http\Router\Annotation\OpenApi\LinkInterface;
 
 /**
  * @Annotation
  *
  * @Target({"ANNOTATION"})
  */
-final class RequestBodyReference extends AbstractReference implements RequestBodyInterface
+final class Link extends AbstractReference implements LinkInterface
 {
 
     /**
@@ -24,7 +30,7 @@ final class RequestBodyReference extends AbstractReference implements RequestBod
      */
     public function getAnnotationName() : string
     {
-        return RequestBody::class;
+        return LinkObject::class;
     }
 
     /**
@@ -32,6 +38,6 @@ final class RequestBodyReference extends AbstractReference implements RequestBod
      */
     public function getComponentName() : string
     {
-        return 'requestBodies';
+        return 'links';
     }
 }

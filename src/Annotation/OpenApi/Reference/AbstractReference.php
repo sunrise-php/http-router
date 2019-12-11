@@ -9,7 +9,7 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
-namespace Sunrise\Http\Router\Annotation\OpenApi;
+namespace Sunrise\Http\Router\Annotation\OpenApi\Reference;
 
 /**
  * Import classes
@@ -18,6 +18,7 @@ use Doctrine\Common\Annotations\SimpleAnnotationReader;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
+use Sunrise\Http\Router\Annotation\OpenApi\AnnotationInterface;
 
 /**
  * Import functions

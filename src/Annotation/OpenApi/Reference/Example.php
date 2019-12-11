@@ -9,14 +9,20 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
-namespace Sunrise\Http\Router\Annotation\OpenApi;
+namespace Sunrise\Http\Router\Annotation\OpenApi\Reference;
+
+/**
+ * Import classes
+ */
+use Sunrise\Http\Router\Annotation\OpenApi\Example as ExampleObject;
+use Sunrise\Http\Router\Annotation\OpenApi\ExampleInterface;
 
 /**
  * @Annotation
  *
  * @Target({"ANNOTATION"})
  */
-final class LinkReference extends AbstractReference implements LinkInterface
+final class Example extends AbstractReference implements ExampleInterface
 {
 
     /**
@@ -24,7 +30,7 @@ final class LinkReference extends AbstractReference implements LinkInterface
      */
     public function getAnnotationName() : string
     {
-        return Link::class;
+        return ExampleObject::class;
     }
 
     /**
@@ -32,6 +38,6 @@ final class LinkReference extends AbstractReference implements LinkInterface
      */
     public function getComponentName() : string
     {
-        return 'links';
+        return 'examples';
     }
 }
