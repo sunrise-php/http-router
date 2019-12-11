@@ -18,7 +18,7 @@ namespace Sunrise\Http\Router\Annotation\OpenApi;
  *
  * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#operation-object
  */
-final class Operation extends AbstractAnnotation
+final class Operation extends AbstractAnnotation implements OperationInterface
 {
 
     /**
