@@ -87,7 +87,7 @@ class OpenApi extends OpenApi\OpenApi
 
         $operation->operationId = $operation->operationId ?? $route->getName();
 
-        $this->addComponentObject(...$operation->getComponentObjects($this->annotationReader));
+        $this->addComponentObject(...$operation->fetchComponentObjects($this->annotationReader));
 
         $attributes = path_parse($route->getPath());
 
