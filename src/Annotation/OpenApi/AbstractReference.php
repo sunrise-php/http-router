@@ -18,12 +18,14 @@ use Doctrine\Common\Annotations\SimpleAnnotationReader;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
+use Sunrise\Http\Router\Exception\InvalidAnnotationParameterException;
 use Sunrise\Http\Router\OpenApi\ComponentObjectInterface;
 
 /**
  * Import functions
  */
 use function hash;
+use function sprintf;
 
 /**
  * AbstractReference
@@ -56,55 +58,9 @@ abstract class AbstractReference
     public $property;
 
     /**
-     * @var null|ComponentObjectInterface
+     * @var ComponentObjectInterface
      */
     private $target;
-
-    /**
-     * @return string
-     */
-    abstract protected function getAnnotationName() : string;
-
-    /**
-     * @param SimpleAnnotationReader $annotationReader
-     *
-     * @return null|ComponentObjectInterface
-     */
-    public function getAnnotation(SimpleAnnotationReader $annotationReader) : ?ComponentObjectInterface
-    {
-        $key = hash(
-            'md5',
-            $this->class .
-            $this->method .
-            $this->property .
-            $this->getAnnotationName()
-        );
-
-        $this->target =& self::$cache[$key];
-
-        if (isset(self::$cache[$key])) {
-            return self::$cache[$key];
-        }
-
-        if (isset($this->method)) {
-            return $this->target = $annotationReader->getMethodAnnotation(
-                new ReflectionMethod($this->class, $this->method),
-                $this->getAnnotationName()
-            );
-        }
-
-        if (isset($this->property)) {
-            return $this->target = $annotationReader->getPropertyAnnotation(
-                new ReflectionProperty($this->class, $this->property),
-                $this->getAnnotationName()
-            );
-        }
-
-        return $this->target = $annotationReader->getClassAnnotation(
-            new ReflectionClass($this->class),
-            $this->getAnnotationName()
-        );
-    }
 
     /**
      * {@inheritDoc}
@@ -121,4 +77,115 @@ abstract class AbstractReference
 
         return ['$ref' => 'undefined'];
     }
+
+    /**
+     * @param SimpleAnnotationReader $annotationReader
+     *
+     * @return ComponentObjectInterface
+     *
+     * @throws InvalidAnnotationParameterException
+     */
+    public function getAnnotation(SimpleAnnotationReader $annotationReader) : ComponentObjectInterface
+    {
+        $key = hash(
+            'md5',
+            $this->class .
+            $this->method .
+            $this->property .
+            $this->getAnnotationName()
+        );
+
+        $this->target =& self::$cache[$key];
+
+        if (isset(self::$cache[$key])) {
+            return self::$cache[$key];
+        }
+
+        if (isset($this->method)) {
+            return $this->target = $this->getMethodAnnotation($annotationReader);
+        }
+
+        if (isset($this->property)) {
+            return $this->target = $this->getPropertyAnnotation($annotationReader);
+        }
+
+        return $this->target = $this->getClassAnnotation($annotationReader);
+    }
+
+    /**
+     * @param SimpleAnnotationReader $annotationReader
+     *
+     * @return ComponentObjectInterface
+     *
+     * @throws InvalidAnnotationParameterException
+     */
+    private function getMethodAnnotation(SimpleAnnotationReader $annotationReader) : ComponentObjectInterface
+    {
+        $target = $annotationReader->getMethodAnnotation(
+            new ReflectionMethod($this->class, $this->method),
+            $this->getAnnotationName()
+        );
+
+        if (null === $target) {
+            $message = 'Method %s::%s() does not contain the annotation %s';
+            throw new InvalidAnnotationParameterException(
+                sprintf($message, $this->class, $this->method, $this->getAnnotationName())
+            );
+        }
+
+        return $target;
+    }
+
+    /**
+     * @param SimpleAnnotationReader $annotationReader
+     *
+     * @return ComponentObjectInterface
+     *
+     * @throws InvalidAnnotationParameterException
+     */
+    private function getPropertyAnnotation(SimpleAnnotationReader $annotationReader) : ComponentObjectInterface
+    {
+        $target = $annotationReader->getPropertyAnnotation(
+            new ReflectionProperty($this->class, $this->property),
+            $this->getAnnotationName()
+        );
+
+        if (null === $target) {
+            $message = 'Property %s::$%s does not contain the annotation %s';
+            throw new InvalidAnnotationParameterException(
+                sprintf($message, $this->class, $this->property, $this->getAnnotationName())
+            );
+        }
+
+        return $target;
+    }
+
+    /**
+     * @param SimpleAnnotationReader $annotationReader
+     *
+     * @return ComponentObjectInterface
+     *
+     * @throws InvalidAnnotationParameterException
+     */
+    private function getClassAnnotation(SimpleAnnotationReader $annotationReader) : ComponentObjectInterface
+    {
+        $target = $annotationReader->getClassAnnotation(
+            new ReflectionClass($this->class),
+            $this->getAnnotationName()
+        );
+
+        if (null === $target) {
+            $message = 'Class %s does not contain the annotation %s';
+            throw new InvalidAnnotationParameterException(
+                sprintf($message, $this->class, $this->getAnnotationName())
+            );
+        }
+
+        return $target;
+    }
+
+    /**
+     * @return string
+     */
+    abstract protected function getAnnotationName() : string;
 }
