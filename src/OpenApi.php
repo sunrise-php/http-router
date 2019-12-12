@@ -15,26 +15,21 @@ namespace Sunrise\Http\Router;
  * Import classes
  */
 use Doctrine\Common\Annotations\SimpleAnnotationReader;
-use Sunrise\Http\Router\Annotation\OpenApi\AbstractReference;
 use Sunrise\Http\Router\Annotation\OpenApi\Operation;
 use Sunrise\Http\Router\Annotation\OpenApi\Parameter;
 use Sunrise\Http\Router\Annotation\OpenApi\Schema;
 use Sunrise\Http\Router\OpenApi\Info;
-use Sunrise\Http\Router\OpenApi\SecurityRequirement;
-use Sunrise\Http\Router\OpenApi\SecurityScheme;
-use Sunrise\Http\Router\OpenApi\Server;
 use ReflectionClass;
 
 /**
  * Import functions
  */
-use function array_walk_recursive;
 use function strtolower;
 
 /**
  * OpenApi
  */
-class OpenApi
+class OpenApi extends OpenApi\OpenApi
 {
 
     /**
@@ -43,19 +38,9 @@ class OpenApi
     public const VERSION = '3.0.2';
 
     /**
-     * @var array
-     */
-    private $documentation;
-
-    /**
      * @var SimpleAnnotationReader
      */
     private $annotationReader;
-
-    /**
-     * @var RouteInterface[]
-     */
-    private $routes = [];
 
     /**
      * Constructor of the class
@@ -64,10 +49,7 @@ class OpenApi
      */
     public function __construct(Info $info)
     {
-        $this->documentation = [
-            'openapi' => self::VERSION,
-            'info' => $info->toArray(),
-        ];
+        parent::__construct(self::VERSION, $info);
 
         $this->annotationReader = new SimpleAnnotationReader();
         $this->annotationReader->addNamespace('Sunrise\Http\Router\Annotation');
@@ -81,83 +63,15 @@ class OpenApi
     public function addRoute(RouteInterface ...$routes) : void
     {
         foreach ($routes as $route) {
-            $this->routes[] = $route;
-        }
-    }
-
-    /**
-     * @param Server $server
-     *
-     * @return void
-     */
-    public function pushServer(Server $server) : void
-    {
-        $this->documentation['servers'][] = $server->toArray();
-    }
-
-    /**
-     * @param SecurityRequirement $securityRequirement
-     *
-     * @return void
-     */
-    public function pushSecurityRequirement(SecurityRequirement $securityRequirement) : void
-    {
-        $this->documentation['security'][] = $securityRequirement->toArray();
-    }
-
-    /**
-     * @param string $name
-     * @param SecurityScheme $securityScheme
-     *
-     * @return void
-     */
-    public function pushSecurityScheme(string $name, SecurityScheme $securityScheme) : void
-    {
-        $this->documentation['components']['securitySchemes'][$name] = $securityScheme->toArray();
-    }
-
-    /**
-     * @return array
-     */
-    public function toArray() : array
-    {
-        return $this->documentation;
-    }
-
-    /**
-     * @return string
-     */
-    public function toJson() : string
-    {
-        return json_encode($this->documentation);
-    }
-
-    /**
-     * @return string
-     */
-    public function toYaml() : string
-    {
-        return yaml_emit($this->documentation);
-    }
-
-    /**
-     * @return void
-     */
-    public function generateDocumentation() : void
-    {
-        foreach ($this->routes as $route) {
             $path = path_plain($route->getPath());
-            $operation = $this->convertRouteToOperation($route);
+            $operation = $this->createOperation($route);
 
             foreach ($route->getMethods() as $method) {
                 $method = strtolower($method);
 
-                $this->documentation['paths'][$path][$method]['operationId'] = $route->getName();
-                $this->documentation['paths'][$path][$method] += $operation->toArray();
+                $this->paths[$path][$method] = $operation;
             }
         }
-
-        $this->handleReferences();
     }
 
     /**
@@ -165,10 +79,16 @@ class OpenApi
      *
      * @return Operation
      */
-    private function convertRouteToOperation(RouteInterface $route) : Operation
+    private function createOperation(RouteInterface $route) : Operation
     {
         $target = new ReflectionClass($route->getRequestHandler());
+
         $operation = $this->annotationReader->getClassAnnotation($target, Operation::class) ?? new Operation();
+
+        $operation->operationId = $operation->operationId ?? $route->getName();
+
+        $this->addComponentObject(...$operation->getComponentObjects($this->annotationReader));
+
         $attributes = path_parse($route->getPath());
 
         foreach ($attributes as $attribute) {
@@ -187,32 +107,5 @@ class OpenApi
         }
 
         return $operation;
-    }
-
-    /**
-     * @return void
-     */
-    private function handleReferences() : void
-    {
-        array_walk_recursive($this->documentation, function (&$value) {
-            if (!($value instanceof AbstractReference)) {
-                return;
-            }
-
-            $ref = $value;
-            $value = $ref->getComponentPath();
-
-            $component =& $this->documentation['components'][$ref->getComponentName()];
-            if (isset($component[$ref->name])) {
-                return;
-            }
-
-            $annotation = $ref->getAnnotation($this->annotationReader);
-            if (!isset($annotation)) {
-                return;
-            }
-
-            $component[$ref->name] = $annotation->toArray();
-        });
     }
 }
