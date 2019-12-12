@@ -22,6 +22,13 @@ final class Operation extends AbstractAnnotation implements OperationInterface
 {
 
     /**
+     * @var string
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-operationid
+     */
+    public $operationId;
+
+    /**
      * @var array<string>
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-operationtags
