@@ -9,20 +9,14 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
-namespace Sunrise\Http\Router\Annotation\OpenApi\Reference;
-
-/**
- * Import classes
- */
-use Sunrise\Http\Router\Annotation\OpenApi\Schema as Target;
-use Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface;
+namespace Sunrise\Http\Router\Annotation\OpenApi;
 
 /**
  * @Annotation
  *
  * @Target({"ANNOTATION"})
  */
-final class Schema extends AbstractReference implements SchemaInterface
+final class ResponseReference extends AbstractReference implements ResponseInterface
 {
 
     /**
@@ -30,6 +24,6 @@ final class Schema extends AbstractReference implements SchemaInterface
      */
     protected function getTarget() : string
     {
-        return Target::class;
+        return Response::class;
     }
 }

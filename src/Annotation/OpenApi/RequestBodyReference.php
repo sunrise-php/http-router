@@ -9,20 +9,14 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
-namespace Sunrise\Http\Router\Annotation\OpenApi\Reference;
-
-/**
- * Import classes
- */
-use Sunrise\Http\Router\Annotation\OpenApi\RequestBody as Target;
-use Sunrise\Http\Router\Annotation\OpenApi\RequestBodyInterface;
+namespace Sunrise\Http\Router\Annotation\OpenApi;
 
 /**
  * @Annotation
  *
  * @Target({"ANNOTATION"})
  */
-final class RequestBody extends AbstractReference implements RequestBodyInterface
+final class RequestBodyReference extends AbstractReference implements RequestBodyInterface
 {
 
     /**
@@ -30,6 +24,6 @@ final class RequestBody extends AbstractReference implements RequestBodyInterfac
      */
     protected function getTarget() : string
     {
-        return Target::class;
+        return RequestBody::class;
     }
 }
