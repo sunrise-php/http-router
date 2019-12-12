@@ -12,14 +12,34 @@
 namespace Sunrise\Http\Router\Annotation\OpenApi;
 
 /**
+ * Import classes
+ */
+use Sunrise\Http\Router\OpenApi\ComponentObjectInterface;
+
+/**
+ * Import functions
+ */
+use function spl_object_hash;
+
+/**
  * @Annotation
  *
  * @Target({"ALL"})
  *
  * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#response-object
  */
-final class Response extends AbstractAnnotation implements ResponseInterface
+final class Response extends AbstractAnnotation implements ResponseInterface, ComponentObjectInterface
 {
+
+    /**
+     * {@inheritDoc}
+     */
+    protected const IGNORE_FIELDS = ['refName'];
+
+    /**
+     * @var string
+     */
+    public $refName;
 
     /**
      * @Required
@@ -51,4 +71,20 @@ final class Response extends AbstractAnnotation implements ResponseInterface
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-responselinks
      */
     public $links;
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getComponentName() : string
+    {
+        return 'responses';
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getReferenceName() : string
+    {
+        return $this->refName ?? spl_object_hash($this);
+    }
 }

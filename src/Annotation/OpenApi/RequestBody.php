@@ -12,14 +12,34 @@
 namespace Sunrise\Http\Router\Annotation\OpenApi;
 
 /**
+ * Import classes
+ */
+use Sunrise\Http\Router\OpenApi\ComponentObjectInterface;
+
+/**
+ * Import functions
+ */
+use function spl_object_hash;
+
+/**
  * @Annotation
  *
  * @Target({"ALL"})
  *
  * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#request-body-object
  */
-final class RequestBody extends AbstractAnnotation implements RequestBodyInterface
+final class RequestBody extends AbstractAnnotation implements RequestBodyInterface, ComponentObjectInterface
 {
+
+    /**
+     * {@inheritDoc}
+     */
+    protected const IGNORE_FIELDS = ['refName'];
+
+    /**
+     * @var string
+     */
+    public $refName;
 
     /**
      * @var string
@@ -44,4 +64,20 @@ final class RequestBody extends AbstractAnnotation implements RequestBodyInterfa
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-requestbodyrequired
      */
     public $required;
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getComponentName() : string
+    {
+        return 'requestBodies';
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getReferenceName() : string
+    {
+        return $this->refName ?? spl_object_hash($this);
+    }
 }
