@@ -20,6 +20,7 @@ use ReflectionMethod;
 use ReflectionProperty;
 use Sunrise\Http\Router\Exception\InvalidAnnotationParameterException;
 use Sunrise\Http\Router\OpenApi\ComponentObjectInterface;
+use Sunrise\Http\Router\OpenApi\ObjectInterface;
 
 /**
  * Import functions
@@ -32,7 +33,7 @@ use function sprintf;
  *
  * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#reference-object
  */
-abstract class AbstractReference
+abstract class AbstractReference implements ObjectInterface
 {
 
     /**
