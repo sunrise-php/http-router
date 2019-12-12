@@ -14,7 +14,8 @@ namespace Sunrise\Http\Router\OpenApi;
 /**
  * Import functions
  */
-use function is_array;
+use function array_walk_recursive;
+use function in_array;
 
 /**
  * AbstractObject
@@ -23,44 +24,59 @@ abstract class AbstractObject implements ObjectInterface
 {
 
     /**
+     * @var string[]
+     */
+    protected const IGNORE_FIELDS = [];
+
+    /**
+     * @var array
+     */
+    protected const FIELD_ALIASES = [];
+
+    /**
      * {@inheritDoc}
      */
     public function toArray() : array
     {
         $fields = $this->getFields();
 
-        $result = [];
-        foreach ($fields as $field => $value) {
-            if (!is_array($value)) {
-                $result[$field] = ($value instanceof ObjectInterface) ? $value->toArray() : $value;
-                continue;
+        array_walk_recursive($fields, function (&$value) {
+            if ($value instanceof ObjectInterface) {
+                $value = $value->toArray();
             }
+        });
 
-            foreach ($value as $key => $item) {
-                $result[$field][$key] = ($item instanceof ObjectInterface) ? $item->toArray() : $item;
-            }
-        }
-
-        return $result;
+        return $fields;
     }
 
     /**
-     * Gets only filled fields from the object
+     * Gets all filled fields of the object
      *
      * @return array
      */
-    private function getFields() : array
+    protected function getFields() : array
     {
-        $result = [];
-        foreach ($this as $field => $value) {
-            // not set value...
+        $fields = [];
+
+        foreach ($this as $name => $value) {
+            // empty field...
             if (null === $value) {
                 continue;
             }
 
-            $result[$field] = $value;
+            // ignored field...
+            if (in_array($name, static::IGNORE_FIELDS)) {
+                continue;
+            }
+
+            // the field has an alias. renaming...
+            if (isset(static::FIELD_ALIASES[$name])) {
+                $name = static::FIELD_ALIASES[$name];
+            }
+
+            $fields[$name] = $value;
         }
 
-        return $result;
+        return $fields;
     }
 }
