@@ -14,7 +14,7 @@ namespace Sunrise\Http\Router\Annotation\OpenApi\Reference;
 /**
  * Import classes
  */
-use Sunrise\Http\Router\Annotation\OpenApi\Schema as SchemaObject;
+use Sunrise\Http\Router\Annotation\OpenApi\Schema as Target;
 use Sunrise\Http\Router\Annotation\OpenApi\SchemaInterface;
 
 /**
@@ -28,16 +28,8 @@ final class Schema extends AbstractReference implements SchemaInterface
     /**
      * {@inheritDoc}
      */
-    public function getAnnotationName() : string
+    protected function getTarget() : string
     {
-        return SchemaObject::class;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getComponentName() : string
-    {
-        return 'schemas';
+        return Target::class;
     }
 }

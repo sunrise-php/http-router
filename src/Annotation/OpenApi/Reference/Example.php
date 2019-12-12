@@ -14,7 +14,7 @@ namespace Sunrise\Http\Router\Annotation\OpenApi\Reference;
 /**
  * Import classes
  */
-use Sunrise\Http\Router\Annotation\OpenApi\Example as ExampleObject;
+use Sunrise\Http\Router\Annotation\OpenApi\Example as Target;
 use Sunrise\Http\Router\Annotation\OpenApi\ExampleInterface;
 
 /**
@@ -28,16 +28,8 @@ final class Example extends AbstractReference implements ExampleInterface
     /**
      * {@inheritDoc}
      */
-    public function getAnnotationName() : string
+    protected function getTarget() : string
     {
-        return ExampleObject::class;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getComponentName() : string
-    {
-        return 'examples';
+        return Target::class;
     }
 }

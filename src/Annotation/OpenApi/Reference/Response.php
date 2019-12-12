@@ -14,7 +14,7 @@ namespace Sunrise\Http\Router\Annotation\OpenApi\Reference;
 /**
  * Import classes
  */
-use Sunrise\Http\Router\Annotation\OpenApi\Response as ResponseObject;
+use Sunrise\Http\Router\Annotation\OpenApi\Response as Target;
 use Sunrise\Http\Router\Annotation\OpenApi\ResponseInterface;
 
 /**
@@ -28,16 +28,8 @@ final class Response extends AbstractReference implements ResponseInterface
     /**
      * {@inheritDoc}
      */
-    public function getAnnotationName() : string
+    protected function getTarget() : string
     {
-        return ResponseObject::class;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getComponentName() : string
-    {
-        return 'responses';
+        return Target::class;
     }
 }

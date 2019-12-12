@@ -14,7 +14,7 @@ namespace Sunrise\Http\Router\Annotation\OpenApi\Reference;
 /**
  * Import classes
  */
-use Sunrise\Http\Router\Annotation\OpenApi\Link as LinkObject;
+use Sunrise\Http\Router\Annotation\OpenApi\Link as Target;
 use Sunrise\Http\Router\Annotation\OpenApi\LinkInterface;
 
 /**
@@ -28,16 +28,8 @@ final class Link extends AbstractReference implements LinkInterface
     /**
      * {@inheritDoc}
      */
-    public function getAnnotationName() : string
+    protected function getTarget() : string
     {
-        return LinkObject::class;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getComponentName() : string
-    {
-        return 'links';
+        return Target::class;
     }
 }

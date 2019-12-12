@@ -14,7 +14,7 @@ namespace Sunrise\Http\Router\Annotation\OpenApi\Reference;
 /**
  * Import classes
  */
-use Sunrise\Http\Router\Annotation\OpenApi\Header as HeaderObject;
+use Sunrise\Http\Router\Annotation\OpenApi\Header as Target;
 use Sunrise\Http\Router\Annotation\OpenApi\HeaderInterface;
 
 /**
@@ -28,16 +28,8 @@ final class Header extends AbstractReference implements HeaderInterface
     /**
      * {@inheritDoc}
      */
-    public function getAnnotationName() : string
+    protected function getTarget() : string
     {
-        return HeaderObject::class;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getComponentName() : string
-    {
-        return 'headers';
+        return Target::class;
     }
 }

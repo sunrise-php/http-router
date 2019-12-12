@@ -14,7 +14,7 @@ namespace Sunrise\Http\Router\Annotation\OpenApi\Reference;
 /**
  * Import classes
  */
-use Sunrise\Http\Router\Annotation\OpenApi\Parameter as ParameterObject;
+use Sunrise\Http\Router\Annotation\OpenApi\Parameter as Target;
 use Sunrise\Http\Router\Annotation\OpenApi\ParameterInterface;
 
 /**
@@ -28,16 +28,8 @@ final class Parameter extends AbstractReference implements ParameterInterface
     /**
      * {@inheritDoc}
      */
-    public function getAnnotationName() : string
+    protected function getTarget() : string
     {
-        return ParameterObject::class;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getComponentName() : string
-    {
-        return 'parameters';
+        return Target::class;
     }
 }

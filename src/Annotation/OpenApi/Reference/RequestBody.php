@@ -14,7 +14,7 @@ namespace Sunrise\Http\Router\Annotation\OpenApi\Reference;
 /**
  * Import classes
  */
-use Sunrise\Http\Router\Annotation\OpenApi\RequestBody as RequestBodyObject;
+use Sunrise\Http\Router\Annotation\OpenApi\RequestBody as Target;
 use Sunrise\Http\Router\Annotation\OpenApi\RequestBodyInterface;
 
 /**
@@ -28,16 +28,8 @@ final class RequestBody extends AbstractReference implements RequestBodyInterfac
     /**
      * {@inheritDoc}
      */
-    public function getAnnotationName() : string
+    protected function getTarget() : string
     {
-        return RequestBodyObject::class;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function getComponentName() : string
-    {
-        return 'requestBodies';
+        return Target::class;
     }
 }
