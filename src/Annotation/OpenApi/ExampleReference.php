@@ -22,7 +22,7 @@ final class ExampleReference extends AbstractReference implements ExampleInterfa
     /**
      * {@inheritDoc}
      */
-    protected function getTarget() : string
+    protected function getAnnotationName() : string
     {
         return Example::class;
     }

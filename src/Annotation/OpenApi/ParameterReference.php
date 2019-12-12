@@ -22,7 +22,7 @@ final class ParameterReference extends AbstractReference implements ParameterInt
     /**
      * {@inheritDoc}
      */
-    protected function getTarget() : string
+    protected function getAnnotationName() : string
     {
         return Parameter::class;
     }

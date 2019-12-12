@@ -22,7 +22,7 @@ final class HeaderReference extends AbstractReference implements HeaderInterface
     /**
      * {@inheritDoc}
      */
-    protected function getTarget() : string
+    protected function getAnnotationName() : string
     {
         return Header::class;
     }

@@ -22,7 +22,7 @@ final class LinkReference extends AbstractReference implements LinkInterface
     /**
      * {@inheritDoc}
      */
-    protected function getTarget() : string
+    protected function getAnnotationName() : string
     {
         return Link::class;
     }
