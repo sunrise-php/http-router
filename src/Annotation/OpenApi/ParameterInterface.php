@@ -12,8 +12,13 @@
 namespace Sunrise\Http\Router\Annotation\OpenApi;
 
 /**
+ * Import classes
+ */
+use Sunrise\Http\Router\OpenApi\ObjectInterface;
+
+/**
  * ParameterInterface
  */
-interface ParameterInterface extends AnnotationInterface
+interface ParameterInterface extends ObjectInterface
 {
 }
