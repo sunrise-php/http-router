@@ -62,20 +62,16 @@ class OpenApi extends AbstractObject
     protected $security = [];
 
     /**
-     * @var array
+     * @var Tag[]
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-oastags
-     *
-     * @todo need to implement the missing objects...
      */
-    protected $tags;
+    protected $tags = [];
 
     /**
-     * @var array
+     * @var ExternalDocumentation
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-oasexternaldocs
-     *
-     * @todo need to implement the missing objects...
      */
     protected $externalDocs;
 
@@ -123,5 +119,27 @@ class OpenApi extends AbstractObject
         foreach ($requirements as $requirement) {
             $this->security[] = $requirement;
         }
+    }
+
+    /**
+     * @param Tag ...$tags
+     *
+     * @return void
+     */
+    public function addTag(Tag ...$tags) : void
+    {
+        foreach ($tags as $tag) {
+            $this->tags[] = $tag;
+        }
+    }
+
+    /**
+     * @param ExternalDocumentation $externalDocs
+     *
+     * @return void
+     */
+    public function setExternalDocs(ExternalDocumentation $externalDocs) : void
+    {
+        $this->externalDocs = $externalDocs;
     }
 }
