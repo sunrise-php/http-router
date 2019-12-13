@@ -81,9 +81,9 @@ class OpenApi extends OpenApi\OpenApi
      */
     private function createOperation(RouteInterface $route) : Operation
     {
-        $target = new ReflectionClass($route->getRequestHandler());
+        $source = new ReflectionClass($route->getRequestHandler());
 
-        $operation = $this->annotationReader->getClassAnnotation($target, Operation::class) ?? new Operation();
+        $operation = $this->annotationReader->getClassAnnotation($source, Operation::class) ?? new Operation();
 
         $operation->operationId = $operation->operationId ?? $route->getName();
 
