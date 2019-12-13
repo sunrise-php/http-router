@@ -49,6 +49,7 @@ class AbstractAnnotationTest extends TestCase
         ];
 
         $expected = [
+            'bar' => [],
             'baz' => 0,
             'qux' => '',
             'quux' => [
