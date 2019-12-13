@@ -31,24 +31,26 @@ abstract class AbstractAnnotation extends AbstractObject
 {
 
     /**
+     * Recursively collects all annotations referenced by this object or its children
+     *
      * @param SimpleAnnotationReader $annotationReader
      *
      * @return ComponentObjectInterface[]
      */
-    public function fetchComponentObjects(SimpleAnnotationReader $annotationReader) : array
+    public function getReferencedObjects(SimpleAnnotationReader $annotationReader) : array
     {
         $fields = $this->getFields();
         $objects = [];
 
         array_walk_recursive($fields, function ($value) use ($annotationReader, &$objects) {
             if ($value instanceof AbstractAnnotation) {
-                $objects = array_merge($objects, $value->fetchComponentObjects($annotationReader));
+                $objects = array_merge($objects, $value->getReferencedObjects($annotationReader));
             } elseif ($value instanceof AbstractReference) {
                 $object = $value->getAnnotation($annotationReader);
                 $objects[] = $object;
 
                 if ($object instanceof AbstractAnnotation) {
-                    $objects = array_merge($objects, $object->fetchComponentObjects($annotationReader));
+                    $objects = array_merge($objects, $object->getReferencedObjects($annotationReader));
                 }
             }
         });
