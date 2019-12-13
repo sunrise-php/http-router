@@ -19,6 +19,7 @@ use Sunrise\Http\Router\Annotation\OpenApi\Operation;
 use Sunrise\Http\Router\Annotation\OpenApi\Parameter;
 use Sunrise\Http\Router\Annotation\OpenApi\Schema;
 use Sunrise\Http\Router\OpenApi\Info;
+use Sunrise\Http\Router\OpenApi\OpenApi as BaseOpenApi;
 use ReflectionClass;
 
 /**
@@ -29,13 +30,8 @@ use function strtolower;
 /**
  * OpenApi
  */
-class OpenApi extends OpenApi\OpenApi
+class OpenApi extends BaseOpenApi
 {
-
-    /**
-     * @var string
-     */
-    public const VERSION = '3.0.2';
 
     /**
      * @var SimpleAnnotationReader
@@ -49,7 +45,7 @@ class OpenApi extends OpenApi\OpenApi
      */
     public function __construct(Info $info)
     {
-        parent::__construct(self::VERSION, $info);
+        parent::__construct($info);
 
         $this->annotationReader = new SimpleAnnotationReader();
         $this->annotationReader->addNamespace('Sunrise\Http\Router\Annotation');

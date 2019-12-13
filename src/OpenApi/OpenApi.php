@@ -24,7 +24,7 @@ class OpenApi extends AbstractObject
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-oasversion
      */
-    protected $openapi;
+    protected $openapi = '3.0.2';
 
     /**
      * @var Info
@@ -76,12 +76,10 @@ class OpenApi extends AbstractObject
     protected $externalDocs;
 
     /**
-     * @param string $openapi
      * @param Info $info
      */
-    public function __construct(string $openapi, Info $info)
+    public function __construct(Info $info)
     {
-        $this->openapi = $openapi;
         $this->info = $info;
     }
 
