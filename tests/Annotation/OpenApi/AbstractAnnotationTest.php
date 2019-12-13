@@ -7,7 +7,7 @@ namespace Sunrise\Http\Router\Tests\Annotation\OpenApi;
  */
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Annotation\OpenApi\AbstractAnnotation;
-use Sunrise\Http\Router\Annotation\OpenApi\AnnotationInterface;
+use Sunrise\Http\Router\OpenApi\ObjectInterface;
 
 /**
  * AbstractAnnotationTest
@@ -22,7 +22,7 @@ class AbstractAnnotationTest extends TestCase
     {
         $annotation = $this->createMock(AbstractAnnotation::class);
 
-        $this->assertInstanceOf(AnnotationInterface::class, $annotation);
+        $this->assertInstanceOf(ObjectInterface::class, $annotation);
     }
 
     /**
