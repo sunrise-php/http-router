@@ -75,7 +75,7 @@ abstract class AbstractReference implements ObjectInterface
     public function toArray() : array
     {
         // theoretically this condition will never be confirmed...
-        if (!isset($this->referencedObject)) {
+        if (null === $this->referencedObject) {
             return ['$ref' => 'undefined'];
         }
 
