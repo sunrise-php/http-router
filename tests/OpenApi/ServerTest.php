@@ -37,7 +37,6 @@ class ServerTest extends TestCase
 
         $this->assertSame([
             'url' => 'foo',
-            'variables' => [],
         ], $object->toArray());
     }
 
@@ -52,7 +51,6 @@ class ServerTest extends TestCase
         $this->assertSame([
             'url' => 'foo',
             'description' => 'bar',
-            'variables' => [],
         ], $object->toArray());
     }
 

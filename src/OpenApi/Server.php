@@ -38,7 +38,7 @@ class Server extends AbstractObject
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-servervariables
      */
-    protected $variables = [];
+    protected $variables;
 
     /**
      * @param string $url

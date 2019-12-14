@@ -38,35 +38,35 @@ class OpenApi extends AbstractObject
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-oasservers
      */
-    protected $servers = [];
+    protected $servers;
 
     /**
      * @var array
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-oaspaths
      */
-    protected $paths = [];
+    protected $paths;
 
     /**
      * @var array
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-oascomponents
      */
-    protected $components = [];
+    protected $components;
 
     /**
      * @var SecurityRequirement[]
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-oassecurity
      */
-    protected $security = [];
+    protected $security;
 
     /**
      * @var Tag[]
      *
      * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#user-content-oastags
      */
-    protected $tags = [];
+    protected $tags;
 
     /**
      * @var ExternalDocumentation
