@@ -7,13 +7,13 @@ namespace Sunrise\Http\Router\Tests\OpenApi;
  */
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\OpenApi\AbstractObject;
-use Sunrise\Http\Router\OpenApi\License;
+use Sunrise\Http\Router\OpenApi\ExternalDocumentation;
 use Sunrise\Http\Router\OpenApi\ObjectInterface;
 
 /**
- * LicenseTest
+ * ExternalDocumentationTest
  */
-class LicenseTest extends TestCase
+class ExternalDocumentationTest extends TestCase
 {
 
     /**
@@ -21,7 +21,7 @@ class LicenseTest extends TestCase
      */
     public function testContracts() : void
     {
-        $object = new License('foo');
+        $object = new ExternalDocumentation('foo');
 
         $this->assertInstanceOf(AbstractObject::class, $object);
         $this->assertInstanceOf(ObjectInterface::class, $object);
@@ -32,24 +32,24 @@ class LicenseTest extends TestCase
      */
     public function testConstructor() : void
     {
-        $object = new License('foo');
+        $object = new ExternalDocumentation('foo');
 
         $this->assertSame([
-            'name' => 'foo',
+            'url' => 'foo',
         ], $object->toArray());
     }
 
     /**
      * @return void
      */
-    public function testSetUrl() : void
+    public function testSetDescription() : void
     {
-        $object = new License('foo');
-        $object->setUrl('bar');
+        $object = new ExternalDocumentation('foo');
+        $object->setDescription('bar');
 
         $this->assertSame([
-            'name' => 'foo',
-            'url' => 'bar',
+            'url' => 'foo',
+            'description' => 'bar',
         ], $object->toArray());
     }
 }

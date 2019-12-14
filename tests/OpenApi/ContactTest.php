@@ -34,7 +34,9 @@ class ContactTest extends TestCase
     {
         $object = new Contact('foo');
 
-        $this->assertSame(['name' => 'foo'], $object->toArray());
+        $this->assertSame([
+            'name' => 'foo',
+        ], $object->toArray());
     }
 
     /**

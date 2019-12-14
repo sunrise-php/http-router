@@ -7,13 +7,14 @@ namespace Sunrise\Http\Router\Tests\OpenApi;
  */
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\OpenApi\AbstractObject;
-use Sunrise\Http\Router\OpenApi\License;
+use Sunrise\Http\Router\OpenApi\ExternalDocumentation;
 use Sunrise\Http\Router\OpenApi\ObjectInterface;
+use Sunrise\Http\Router\OpenApi\Tag;
 
 /**
- * LicenseTest
+ * TagTest
  */
-class LicenseTest extends TestCase
+class TagTest extends TestCase
 {
 
     /**
@@ -21,7 +22,7 @@ class LicenseTest extends TestCase
      */
     public function testContracts() : void
     {
-        $object = new License('foo');
+        $object = new Tag('foo');
 
         $this->assertInstanceOf(AbstractObject::class, $object);
         $this->assertInstanceOf(ObjectInterface::class, $object);
@@ -32,7 +33,7 @@ class LicenseTest extends TestCase
      */
     public function testConstructor() : void
     {
-        $object = new License('foo');
+        $object = new Tag('foo');
 
         $this->assertSame([
             'name' => 'foo',
@@ -42,14 +43,30 @@ class LicenseTest extends TestCase
     /**
      * @return void
      */
-    public function testSetUrl() : void
+    public function testSetDescription() : void
     {
-        $object = new License('foo');
-        $object->setUrl('bar');
+        $object = new Tag('foo');
+        $object->setDescription('bar');
 
         $this->assertSame([
             'name' => 'foo',
-            'url' => 'bar',
+            'description' => 'bar',
+        ], $object->toArray());
+    }
+
+    /**
+     * @return void
+     */
+    public function testSetExternalDocs() : void
+    {
+        $object = new Tag('foo');
+        $object->setExternalDocs(new ExternalDocumentation('bar'));
+
+        $this->assertSame([
+            'name' => 'foo',
+            'externalDocs' => [
+                'url' => 'bar',
+            ],
         ], $object->toArray());
     }
 }

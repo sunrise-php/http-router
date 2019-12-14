@@ -6,14 +6,13 @@ namespace Sunrise\Http\Router\Tests\OpenApi;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\OpenApi\AbstractObject;
-use Sunrise\Http\Router\OpenApi\License;
 use Sunrise\Http\Router\OpenApi\ObjectInterface;
+use Sunrise\Http\Router\OpenApi\SecurityRequirement;
 
 /**
- * LicenseTest
+ * SecurityRequirementTest
  */
-class LicenseTest extends TestCase
+class SecurityRequirementTest extends TestCase
 {
 
     /**
@@ -21,9 +20,8 @@ class LicenseTest extends TestCase
      */
     public function testContracts() : void
     {
-        $object = new License('foo');
+        $object = new SecurityRequirement('foo');
 
-        $this->assertInstanceOf(AbstractObject::class, $object);
         $this->assertInstanceOf(ObjectInterface::class, $object);
     }
 
@@ -32,24 +30,24 @@ class LicenseTest extends TestCase
      */
     public function testConstructor() : void
     {
-        $object = new License('foo');
+        $object = new SecurityRequirement('foo');
 
         $this->assertSame([
-            'name' => 'foo',
+            'foo' => [],
         ], $object->toArray());
     }
 
     /**
      * @return void
      */
-    public function testSetUrl() : void
+    public function testSetScopes() : void
     {
-        $object = new License('foo');
-        $object->setUrl('bar');
+        $object = new SecurityRequirement('foo');
+        $object->setScopes('bar');
+        $object->setScopes('baz', 'qux'); // overwrite...
 
         $this->assertSame([
-            'name' => 'foo',
-            'url' => 'bar',
+            'foo' => ['baz', 'qux'],
         ], $object->toArray());
     }
 }
