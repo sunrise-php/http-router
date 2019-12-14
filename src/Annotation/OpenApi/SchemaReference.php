@@ -22,7 +22,7 @@ final class SchemaReference extends AbstractReference implements SchemaInterface
     /**
      * {@inheritDoc}
      */
-    protected function getAnnotationName() : string
+    public function getAnnotationName() : string
     {
         return Schema::class;
     }

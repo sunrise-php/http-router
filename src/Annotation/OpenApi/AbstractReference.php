@@ -87,6 +87,13 @@ abstract class AbstractReference implements ObjectInterface
     }
 
     /**
+     * The child class must return a class name that implements the `ComponentObjectInterface` interface
+     *
+     * @return string
+     */
+    abstract public function getAnnotationName() : string;
+
+    /**
      * Tries to find a referenced object that implements the `ComponentObjectInterface` interface
      *
      * @param SimpleAnnotationReader $annotationReader
@@ -226,11 +233,4 @@ abstract class AbstractReference implements ObjectInterface
 
         return $object;
     }
-
-    /**
-     * The child class must return a class name that implements the `ComponentObjectInterface` interface
-     *
-     * @return string
-     */
-    abstract protected function getAnnotationName() : string;
 }

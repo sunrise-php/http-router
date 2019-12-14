@@ -22,7 +22,7 @@ final class RequestBodyReference extends AbstractReference implements RequestBod
     /**
      * {@inheritDoc}
      */
-    protected function getAnnotationName() : string
+    public function getAnnotationName() : string
     {
         return RequestBody::class;
     }

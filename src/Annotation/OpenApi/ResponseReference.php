@@ -22,7 +22,7 @@ final class ResponseReference extends AbstractReference implements ResponseInter
     /**
      * {@inheritDoc}
      */
-    protected function getAnnotationName() : string
+    public function getAnnotationName() : string
     {
         return Response::class;
     }
