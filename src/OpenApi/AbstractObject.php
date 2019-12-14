@@ -24,16 +24,24 @@ abstract class AbstractObject implements ObjectInterface
 {
 
     /**
+     * The fields specified in this array will not be returned when converting this object to an array
+     *
      * @var string[]
      */
     protected const IGNORE_FIELDS = [];
 
     /**
+     * The fields specified in this array will be renamed when converting this object to an array
+     *
+     * The constant must contain the following structure: `[field => alias, ...]`
+     *
      * @var array
      */
     protected const FIELD_ALIASES = [];
 
     /**
+     * Recursively converts the object into an array and its children
+     *
      * {@inheritDoc}
      */
     public function toArray() : array
@@ -50,11 +58,11 @@ abstract class AbstractObject implements ObjectInterface
     }
 
     /**
-     * Gets all filled fields of the object
+     * Gets all filled fields from the object
      *
      * @return array
      */
-    protected function getFields() : array
+    public function getFields() : array
     {
         $fields = [];
 
