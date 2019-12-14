@@ -62,7 +62,7 @@ abstract class AbstractObject implements ObjectInterface
      *
      * @return array
      */
-    public function getFields() : array
+    protected function getFields() : array
     {
         $fields = [];
 
