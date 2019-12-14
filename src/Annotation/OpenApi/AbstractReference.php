@@ -43,7 +43,7 @@ abstract class AbstractReference implements ObjectInterface
     /**
      * Storage for referenced objects
      *
-     * @var array
+     * @var ComponentObjectInterface[]
      */
     private static $cache = [];
 
