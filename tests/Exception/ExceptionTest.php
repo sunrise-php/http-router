@@ -30,6 +30,18 @@ class ExceptionTest extends TestCase
     /**
      * @return void
      */
+    public function testMessage() : void
+    {
+        $message = 'blah';
+
+        $exception = new Exception($message);
+
+        $this->assertSame($message, $exception->getMessage());
+    }
+
+    /**
+     * @return void
+     */
     public function testContext() : void
     {
         $context = [
@@ -40,6 +52,30 @@ class ExceptionTest extends TestCase
         $exception = new Exception('blah', $context);
 
         $this->assertSame($context, $exception->getContext());
+    }
+
+    /**
+     * @return void
+     */
+    public function testCode() : void
+    {
+        $code = 100;
+
+        $exception = new Exception('blah', [], $code);
+
+        $this->assertSame($code, $exception->getCode());
+    }
+
+    /**
+     * @return void
+     */
+    public function testPrevious() : void
+    {
+        $previous = new \Exception();
+
+        $exception = new Exception('blah', [], 0, $previous);
+
+        $this->assertSame($previous, $exception->getPrevious());
     }
 
     /**
