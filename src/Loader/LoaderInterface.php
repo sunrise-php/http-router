@@ -39,7 +39,7 @@ interface LoaderInterface
      *
      * @return RouteCollectionInterface
      *
-     * @throws \RuntimeException If any error occurred.
+     * @throws \RuntimeException May be thrown if any error occurred.
      */
     public function load() : RouteCollectionInterface;
 }
