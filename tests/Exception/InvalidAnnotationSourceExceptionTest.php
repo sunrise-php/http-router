@@ -48,4 +48,28 @@ class InvalidAnnotationSourceExceptionTest extends TestCase
 
         $this->assertSame($context, $exception->getContext());
     }
+
+    /**
+     * @return void
+     */
+    public function testCode() : void
+    {
+        $code = 100;
+
+        $exception = new InvalidAnnotationSourceException('blah', [], $code);
+
+        $this->assertSame($code, $exception->getCode());
+    }
+
+    /**
+     * @return void
+     */
+    public function testPrevious() : void
+    {
+        $previous = new \Exception();
+
+        $exception = new InvalidAnnotationSourceException('blah', [], 0, $previous);
+
+        $this->assertSame($previous, $exception->getPrevious());
+    }
 }

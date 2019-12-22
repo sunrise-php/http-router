@@ -52,6 +52,30 @@ class MethodNotAllowedExceptionTest extends TestCase
     /**
      * @return void
      */
+    public function testCode() : void
+    {
+        $code = 100;
+
+        $exception = new MethodNotAllowedException('blah', [], $code);
+
+        $this->assertSame($code, $exception->getCode());
+    }
+
+    /**
+     * @return void
+     */
+    public function testPrevious() : void
+    {
+        $previous = new \Exception();
+
+        $exception = new MethodNotAllowedException('blah', [], 0, $previous);
+
+        $this->assertSame($previous, $exception->getPrevious());
+    }
+
+    /**
+     * @return void
+     */
     public function testAllowedMethods() : void
     {
         $expected = ['foo', 'bar'];

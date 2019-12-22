@@ -48,4 +48,28 @@ class InvalidPathExceptionTest extends TestCase
 
         $this->assertSame($context, $exception->getContext());
     }
+
+    /**
+     * @return void
+     */
+    public function testCode() : void
+    {
+        $code = 100;
+
+        $exception = new InvalidPathException('blah', [], $code);
+
+        $this->assertSame($code, $exception->getCode());
+    }
+
+    /**
+     * @return void
+     */
+    public function testPrevious() : void
+    {
+        $previous = new \Exception();
+
+        $exception = new InvalidPathException('blah', [], 0, $previous);
+
+        $this->assertSame($previous, $exception->getPrevious());
+    }
 }
