@@ -17,27 +17,10 @@ use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\Tests\Fixture;
 
 /**
- * Import functions
- */
-use function class_alias;
-use function class_exists;
-
-/**
  * AnnotationDirectoryLoaderTest
  */
 class AnnotationDirectoryLoaderTest extends TestCase
 {
-
-    /**
-     * @return void
-     */
-    public static function setUpBeforeClass() : void
-    {
-        // this isn't the best solution...
-        if (!class_exists('Route')) {
-            class_alias(AnnotationRoute::class, 'Route');
-        }
-    }
 
     /**
      * @return void
