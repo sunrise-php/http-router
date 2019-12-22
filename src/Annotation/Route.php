@@ -29,6 +29,7 @@ use function is_subclass_of;
 
 /**
  * @Annotation
+ *
  * @Target({"CLASS"})
  */
 final class Route
