@@ -6,9 +6,9 @@ namespace Sunrise\Http\Router\Tests\Annotation\OpenApi;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\Annotation\OpenApi\AbstractAnnotation;
 use Sunrise\Http\Router\Annotation\OpenApi\ExternalDocumentation;
 use Sunrise\Http\Router\Annotation\OpenApi\ExternalDocumentationInterface;
+use Sunrise\Http\Router\OpenApi\AbstractAnnotation;
 use Sunrise\Http\Router\OpenApi\ObjectInterface;
 
 /**

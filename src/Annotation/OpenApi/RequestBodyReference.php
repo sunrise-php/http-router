@@ -12,11 +12,16 @@
 namespace Sunrise\Http\Router\Annotation\OpenApi;
 
 /**
+ * Import classes
+ */
+use Sunrise\Http\Router\OpenApi\AbstractAnnotationReference;
+
+/**
  * @Annotation
  *
  * @Target({"ANNOTATION"})
  */
-final class RequestBodyReference extends AbstractReference implements RequestBodyInterface
+final class RequestBodyReference extends AbstractAnnotationReference implements RequestBodyInterface
 {
 
     /**

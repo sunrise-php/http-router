@@ -6,10 +6,10 @@ namespace Sunrise\Http\Router\Tests\Annotation\OpenApi;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\Annotation\OpenApi\AbstractReference;
 use Sunrise\Http\Router\Annotation\OpenApi\Parameter;
 use Sunrise\Http\Router\Annotation\OpenApi\ParameterInterface;
 use Sunrise\Http\Router\Annotation\OpenApi\ParameterReference;
+use Sunrise\Http\Router\OpenApi\AbstractAnnotationReference;
 use Sunrise\Http\Router\OpenApi\ObjectInterface;
 
 /**
@@ -25,7 +25,7 @@ class ParameterReferenceTest extends TestCase
     {
         $reference = new ParameterReference();
 
-        $this->assertInstanceOf(AbstractReference::class, $reference);
+        $this->assertInstanceOf(AbstractAnnotationReference::class, $reference);
         $this->assertInstanceOf(ParameterInterface::class, $reference);
         $this->assertInstanceOf(ObjectInterface::class, $reference);
     }

@@ -9,7 +9,7 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
-namespace Sunrise\Http\Router\Annotation\OpenApi;
+namespace Sunrise\Http\Router\OpenApi;
 
 /**
  * Import classes
@@ -19,8 +19,6 @@ use ReflectionClass;
 use ReflectionMethod;
 use ReflectionProperty;
 use Sunrise\Http\Router\Exception\InvalidAnnotationParameterException;
-use Sunrise\Http\Router\OpenApi\ComponentObjectInterface;
-use Sunrise\Http\Router\OpenApi\ObjectInterface;
 
 /**
  * Import functions
@@ -33,11 +31,11 @@ use function property_exists;
 use function get_called_class;
 
 /**
- * AbstractReference
+ * AbstractAnnotationReference
  *
  * @link https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#reference-object
  */
-abstract class AbstractReference implements ObjectInterface
+abstract class AbstractAnnotationReference implements ObjectInterface
 {
 
     /**

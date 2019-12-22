@@ -9,14 +9,12 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
-namespace Sunrise\Http\Router\Annotation\OpenApi;
+namespace Sunrise\Http\Router\OpenApi;
 
 /**
  * Import classes
  */
 use Doctrine\Common\Annotations\SimpleAnnotationReader;
-use Sunrise\Http\Router\OpenApi\AbstractObject;
-use Sunrise\Http\Router\OpenApi\ComponentObjectInterface;
 
 /**
  * Import functions
@@ -45,7 +43,7 @@ abstract class AbstractAnnotation extends AbstractObject
         array_walk_recursive($fields, function ($value) use ($annotationReader, &$objects) {
             if ($value instanceof AbstractAnnotation) {
                 $objects = array_merge($objects, $value->getReferencedObjects($annotationReader));
-            } elseif ($value instanceof AbstractReference) {
+            } elseif ($value instanceof AbstractAnnotationReference) {
                 $object = $value->getAnnotation($annotationReader);
                 $objects[] = $object;
 

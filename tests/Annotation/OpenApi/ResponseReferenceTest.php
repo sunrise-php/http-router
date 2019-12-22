@@ -6,10 +6,10 @@ namespace Sunrise\Http\Router\Tests\Annotation\OpenApi;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\Annotation\OpenApi\AbstractReference;
 use Sunrise\Http\Router\Annotation\OpenApi\Response;
 use Sunrise\Http\Router\Annotation\OpenApi\ResponseInterface;
 use Sunrise\Http\Router\Annotation\OpenApi\ResponseReference;
+use Sunrise\Http\Router\OpenApi\AbstractAnnotationReference;
 use Sunrise\Http\Router\OpenApi\ObjectInterface;
 
 /**
@@ -25,7 +25,7 @@ class ResponseReferenceTest extends TestCase
     {
         $reference = new ResponseReference();
 
-        $this->assertInstanceOf(AbstractReference::class, $reference);
+        $this->assertInstanceOf(AbstractAnnotationReference::class, $reference);
         $this->assertInstanceOf(ResponseInterface::class, $reference);
         $this->assertInstanceOf(ObjectInterface::class, $reference);
     }

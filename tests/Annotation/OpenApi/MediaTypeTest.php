@@ -6,9 +6,9 @@ namespace Sunrise\Http\Router\Tests\Annotation\OpenApi;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\Annotation\OpenApi\AbstractAnnotation;
 use Sunrise\Http\Router\Annotation\OpenApi\MediaType;
 use Sunrise\Http\Router\Annotation\OpenApi\MediaTypeInterface;
+use Sunrise\Http\Router\OpenApi\AbstractAnnotation;
 use Sunrise\Http\Router\OpenApi\ObjectInterface;
 
 /**

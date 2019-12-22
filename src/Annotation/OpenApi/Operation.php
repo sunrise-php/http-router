@@ -12,6 +12,11 @@
 namespace Sunrise\Http\Router\Annotation\OpenApi;
 
 /**
+ * Import classes
+ */
+use Sunrise\Http\Router\OpenApi\AbstractAnnotation;
+
+/**
  * @Annotation
  *
  * @Target({"CLASS"})
