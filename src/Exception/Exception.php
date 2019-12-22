@@ -37,6 +37,8 @@ class Exception extends RuntimeException implements ExceptionInterface
      * @param array $context
      * @param int $code
      * @param null|Throwable $previous
+     *
+     * @see https://www.php.net/manual/en/exception.construct.php
      */
     public function __construct(string $message = '', array $context = [], int $code = 0, Throwable $previous = null)
     {
