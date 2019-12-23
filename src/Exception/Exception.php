@@ -36,7 +36,7 @@ class Exception extends RuntimeException implements ExceptionInterface
      * @param string $message
      * @param array $context
      * @param int $code
-     * @param null|Throwable $previous
+     * @param Throwable $previous
      *
      * @see https://www.php.net/manual/en/exception.construct.php
      */

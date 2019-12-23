@@ -33,14 +33,14 @@ abstract class AbstractObject implements ObjectInterface
     /**
      * The fields specified in this array will be renamed when converting this object to an array
      *
-     * The constant must contain the following structure: `[field => alias, ...]`
+     * This constant must contain the following structure: `[field => alias, ...]`
      *
      * @var array
      */
     protected const FIELD_ALIASES = [];
 
     /**
-     * Recursively converts the object into an array and its children
+     * Recursively converts the object into an array with its descendants
      *
      * {@inheritDoc}
      */
@@ -67,17 +67,15 @@ abstract class AbstractObject implements ObjectInterface
         $fields = [];
 
         foreach ($this as $name => $value) {
-            // empty field...
+            // the field (property) doesn't matter or is NULL...
             if (null === $value) {
                 continue;
             }
 
-            // ignored field...
             if (in_array($name, static::IGNORE_FIELDS)) {
                 continue;
             }
 
-            // the field has an alias. renaming...
             if (isset(static::FIELD_ALIASES[$name])) {
                 $name = static::FIELD_ALIASES[$name];
             }

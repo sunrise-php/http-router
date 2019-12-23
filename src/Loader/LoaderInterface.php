@@ -35,7 +35,7 @@ interface LoaderInterface
     public function attach($resource) : void;
 
     /**
-     * Loads routes from attached resources
+     * Loads routes from previously attached resources
      *
      * @return RouteCollectionInterface
      *
