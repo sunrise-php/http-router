@@ -112,8 +112,8 @@ abstract class AbstractAnnotationReference implements ObjectInterface
 
         $this->referencedObject =& self::$cache[$key];
 
-        if (isset(self::$cache[$key])) {
-            return self::$cache[$key];
+        if (isset($this->referencedObject)) {
+            return $this->referencedObject;
         }
 
         if (isset($this->method)) {
