@@ -39,7 +39,10 @@ class AbstractObjectTest extends TestCase
             public $bar = 'bar';
         };
 
-        $object = new class ($foo, $bar) extends AbstractObject {
+        $baz = new class extends AbstractObject {
+        };
+
+        $object = new class ($foo, $bar, $baz) extends AbstractObject {
             protected const IGNORE_FIELDS = [
                 'p11',
                 'p18',
@@ -72,10 +75,11 @@ class AbstractObjectTest extends TestCase
             public $p18 = 'value';
             public $p19 = 'value';
 
-            public function __construct($foo, $bar)
+            public function __construct($foo, $bar, $baz)
             {
                 $this->p20 = $foo;
                 $this->p21 = $bar;
+                $this->p22 = $baz;
             }
         };
 
@@ -92,6 +96,7 @@ class AbstractObjectTest extends TestCase
             'p19a' => 'value',
             'p20' => ['foo' => 'foo'],
             'p21' => ['bar' => 'bar'],
+            'p22' => [],
         ], $object->toArray());
     }
 }
