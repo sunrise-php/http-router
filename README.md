@@ -1,4 +1,5 @@
-## HTTP router for PHP 7.1+ based on PSR-7 and PSR-15 with support for annotations and OpenApi
+## HTTP router for PHP 7.1+ based on PSR-7 and PSR-15
+## with support for annotations and OpenApi
 
 [![Build Status](https://scrutinizer-ci.com/g/sunrise-php/http-router/badges/build.png?b=master)](https://scrutinizer-ci.com/g/sunrise-php/http-router/build-status/master)
 [![Code Coverage](https://scrutinizer-ci.com/g/sunrise-php/http-router/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/sunrise-php/http-router/?branch=master)
