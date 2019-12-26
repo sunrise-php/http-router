@@ -32,7 +32,7 @@
     },
     "require-dev": {
         "phpbench/phpbench": "0.16.10",
-        "phpunit/phpunit": "7.5.18",
+        "phpunit/phpunit": "8.5.1",
         "sunrise/coding-standard": "1.0.0",
         "sunrise/http-message": "1.0.16",
         "sunrise/http-server-request": "1.0.11"
