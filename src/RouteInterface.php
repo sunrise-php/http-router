@@ -15,136 +15,154 @@ namespace Sunrise\Http\Router;
  * Import classes
  */
 use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * RouteInterface
  */
-interface RouteInterface
+interface RouteInterface extends RequestHandlerInterface
 {
 
-	/**
-	 * Sets the given ID to the route
-	 *
-	 * @param string $id
-	 *
-	 * @return RouteInterface
-	 */
-	public function setId(string $id) : RouteInterface;
+    /**
+     * Gets the route name
+     *
+     * @return string
+     */
+    public function getName() : string;
 
-	/**
-	 * Sets the given path to the route
-	 *
-	 * @param string $path
-	 *
-	 * @return RouteInterface
-	 */
-	public function setPath(string $path) : RouteInterface;
+    /**
+     * Gets the route path
+     *
+     * @return string
+     */
+    public function getPath() : string;
 
-	/**
-	 * Adds the given prefix to the route path
-	 *
-	 * @param string $prefix
-	 *
-	 * @return RouteInterface
-	 */
-	public function addPrefix(string $prefix) : RouteInterface;
+    /**
+     * Gets the route methods
+     *
+     * @return string[]
+     */
+    public function getMethods() : array;
 
-	/**
-	 * Adds the given suffix to the route path
-	 *
-	 * @param string $suffix
-	 *
-	 * @return RouteInterface
-	 */
-	public function addSuffix(string $suffix) : RouteInterface;
+    /**
+     * Gets the route request handler
+     *
+     * @return RequestHandlerInterface
+     */
+    public function getRequestHandler() : RequestHandlerInterface;
 
-	/**
-	 * Adds the given method to the route
-	 *
-	 * @param string $method
-	 *
-	 * @return RouteInterface
-	 */
-	public function addMethod(string $method) : RouteInterface;
+    /**
+     * Gets the route middlewares
+     *
+     * @return MiddlewareInterface[]
+     */
+    public function getMiddlewares() : array;
 
-	/**
-	 * Adds the given pattern to the route
-	 *
-	 * @param string $name
-	 * @param string $value
-	 *
-	 * @return RouteInterface
-	 */
-	public function addPattern(string $name, string $value) : RouteInterface;
+    /**
+     * Gets the route attributes
+     *
+     * @return array
+     */
+    public function getAttributes() : array;
 
-	/**
-	 * Adds the given middleware to the route middleware stack
-	 *
-	 * @param MiddlewareInterface $middleware
-	 *
-	 * @return RouteInterface
-	 */
-	public function addMiddleware(MiddlewareInterface $middleware) : RouteInterface;
+    /**
+     * Sets the given name to the route
+     *
+     * @param string $name
+     *
+     * @return RouteInterface
+     */
+    public function setName(string $name) : RouteInterface;
 
-	/**
-	 * Gets the route ID
-	 *
-	 * @return string
-	 *
-	 * @throws \RuntimeException If the route ID is missing
-	 */
-	public function getId() : string;
+    /**
+     * Sets the given path to the route
+     *
+     * @param string $path
+     *
+     * @return RouteInterface
+     */
+    public function setPath(string $path) : RouteInterface;
 
-	/**
-	 * Gets the route path
-	 *
-	 * @return string
-	 *
-	 * @throws \RuntimeException If the route path is missing
-	 */
-	public function getPath() : string;
+    /**
+     * Sets the given method(s) to the route
+     *
+     * @param string ...$methods
+     *
+     * @return RouteInterface
+     */
+    public function setMethods(string ...$methods) : RouteInterface;
 
-	/**
-	 * Gets the route methods
-	 *
-	 * @return string[]
-	 */
-	public function getMethods() : array;
+    /**
+     * Sets the given request handler to the route
+     *
+     * @param RequestHandlerInterface $requestHandler
+     *
+     * @return RouteInterface
+     */
+    public function setRequestHandler(RequestHandlerInterface $requestHandler) : RouteInterface;
 
-	/**
-	 * Gets the route patterns
-	 *
-	 * @return array
-	 */
-	public function getPatterns() : array;
+    /**
+     * Sets the given middleware(s) to the route
+     *
+     * @param MiddlewareInterface ...$middlewares
+     *
+     * @return RouteInterface
+     */
+    public function setMiddlewares(MiddlewareInterface ...$middlewares) : RouteInterface;
 
-	/**
-	 * Gets the route attributes
-	 *
-	 * @return array
-	 */
-	public function getAttributes() : array;
+    /**
+     * Sets the given attributes to the route
+     *
+     * @param array $attributes
+     *
+     * @return RouteInterface
+     */
+    public function setAttributes(array $attributes) : RouteInterface;
 
-	/**
-	 * Gets the route middleware stack
-	 *
-	 * @return MiddlewareInterface[]
-	 */
-	public function getMiddlewareStack() : array;
+    /**
+     * Adds the given prefix to the route path
+     *
+     * @param string $prefix
+     *
+     * @return RouteInterface
+     */
+    public function addPrefix(string $prefix) : RouteInterface;
 
-	/**
-	 * Returns the route clone with the given attributes
-	 *
-	 * @param array $attributes
-	 *
-	 * @return RouteInterface
-	 */
-	public function withAttributes(array $attributes) : RouteInterface;
+    /**
+     * Adds the given suffix to the route path
+     *
+     * @param string $suffix
+     *
+     * @return RouteInterface
+     */
+    public function addSuffix(string $suffix) : RouteInterface;
 
-	/**
-	 * Builds the route regular expression
-	 *
-	 * @return string
-	 */
-	public function buildRegex() : string;
+    /**
+     * Adds the given method(s) to the route
+     *
+     * @param string ...$methods
+     *
+     * @return RouteInterface
+     */
+    public function addMethod(string ...$methods) : RouteInterface;
+
+    /**
+     * Adds the given middleware(s) to the route
+     *
+     * @param MiddlewareInterface ...$middlewares
+     *
+     * @return RouteInterface
+     */
+    public function addMiddleware(MiddlewareInterface ...$middlewares) : RouteInterface;
+
+    /**
+     * Returns the route clone with the given attributes
+     *
+     * This method MUST NOT change the state of the object.
+     *
+     * @param array $attributes
+     *
+     * @return RouteInterface
+     */
+    public function withAddedAttributes(array $attributes) : RouteInterface;
 }

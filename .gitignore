@@ -1,3 +1,7 @@
+.php_cs.cache
 composer.lock
 coverage.xml
+phpbench.json
+phpcs.xml
+phpunit.xml
 vendor/

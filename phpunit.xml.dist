@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<phpunit colors="true">
+<phpunit bootstrap="tests/bootstrap.php" colors="true">
     <testsuites>
         <testsuite name="Sunrise HTTP Router Test Suite">
             <directory>./tests/</directory>

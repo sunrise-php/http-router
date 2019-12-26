@@ -13,4 +13,4 @@ before_install:
 install:
   - travis_retry composer install --no-interaction --prefer-source --no-suggest
 
-script: vendor/bin/phpunit --colors=always --coverage-text
+script: php vendor/bin/phpunit --colors=always --coverage-text

@@ -14,210 +14,288 @@ namespace Sunrise\Http\Router;
 /**
  * Import classes
  */
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
+
+/**
+ * Import functions
+ */
+use function rtrim;
+use function strtoupper;
 
 /**
  * Route
+ *
+ * Use the factory to create this class.
  */
 class Route implements RouteInterface
 {
 
-	/**
-	 * The route ID
-	 *
-	 * @var string
-	 */
-	protected $id;
+    /**
+     * Server Request attribute name for the route name
+     *
+     * @var string
+     */
+    public const ATTR_NAME_FOR_ROUTE_NAME = '@route-name';
 
-	/**
-	 * The route path
-	 *
-	 * @var string
-	 */
-	protected $path;
+    /**
+     * The route name
+     *
+     * @var string
+     */
+    private $name;
 
-	/**
-	 * The route methods
-	 *
-	 * @var string[]
-	 */
-	protected $methods = [];
+    /**
+     * The route path
+     *
+     * @var string
+     */
+    private $path;
 
-	/**
-	 * The route patterns
-	 *
-	 * @var array
-	 */
-	protected $patterns = [];
+    /**
+     * The route methods
+     *
+     * @var string[]
+     */
+    private $methods;
 
-	/**
-	 * The route attributes
-	 *
-	 * @var array
-	 */
-	protected $attributes = [];
+    /**
+     * The route request handler
+     *
+     * @var RequestHandlerInterface
+     */
+    private $requestHandler;
 
-	/**
-	 * The route middleware stack
-	 *
-	 * @var MiddlewareInterface[]
-	 */
-	protected $middlewareStack = [];
+    /**
+     * The route middlewares
+     *
+     * @var MiddlewareInterface[]
+     */
+    private $middlewares = [];
 
-	/**
-	 * Constructor of the class
-	 *
-	 * @param string $id
-	 * @param string $path
-	 * @param string[] $methods
-	 */
-	public function __construct(string $id, string $path, array $methods)
-	{
-		$this->setId($id);
+    /**
+     * The route attributes
+     *
+     * @var array
+     */
+    private $attributes = [];
 
-		$this->setPath($path);
+    /**
+     * Constructor of the class
+     *
+     * @param string $name
+     * @param string $path
+     * @param string[] $methods
+     * @param RequestHandlerInterface $requestHandler
+     * @param MiddlewareInterface[] $middlewares
+     * @param array $attributes
+     */
+    public function __construct(
+        string $name,
+        string $path,
+        array $methods,
+        RequestHandlerInterface $requestHandler,
+        array $middlewares = [],
+        array $attributes = []
+    ) {
+        $this->setName($name);
+        $this->setPath($path);
+        $this->setMethods(...$methods);
+        $this->setRequestHandler($requestHandler);
+        $this->setMiddlewares(...$middlewares);
+        $this->setAttributes($attributes);
+    }
 
-		foreach ($methods as $method)
-		{
-			$this->addMethod($method);
-		}
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public function getName() : string
+    {
+        return $this->name;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function setId(string $id) : RouteInterface
-	{
-		$this->id = $id;
+    /**
+     * {@inheritDoc}
+     */
+    public function getPath() : string
+    {
+        return $this->path;
+    }
 
-		return $this;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public function getMethods() : array
+    {
+        return $this->methods;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function setPath(string $path) : RouteInterface
-	{
-		$this->path = $path;
+    /**
+     * {@inheritDoc}
+     */
+    public function getRequestHandler() : RequestHandlerInterface
+    {
+        return $this->requestHandler;
+    }
 
-		return $this;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public function getMiddlewares() : array
+    {
+        return $this->middlewares;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function addPrefix(string $prefix) : RouteInterface
-	{
-		$this->path = $prefix . $this->path;
+    /**
+     * {@inheritDoc}
+     */
+    public function getAttributes() : array
+    {
+        return $this->attributes;
+    }
 
-		return $this;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public function setName(string $name) : RouteInterface
+    {
+        $this->name = $name;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function addSuffix(string $suffix) : RouteInterface
-	{
-		$this->path .= $suffix;
+        return $this;
+    }
 
-		return $this;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public function setPath(string $path) : RouteInterface
+    {
+        $this->path = $path;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function addMethod(string $method) : RouteInterface
-	{
-		$this->methods[] = \strtoupper($method);
+        return $this;
+    }
 
-		return $this;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public function setMethods(string ...$methods) : RouteInterface
+    {
+        foreach ($methods as &$method) {
+            $method = strtoupper($method);
+        }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function addPattern(string $name, string $value) : RouteInterface
-	{
-		$this->patterns[$name] = $value;
+        $this->methods = $methods;
 
-		return $this;
-	}
+        return $this;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function addMiddleware(MiddlewareInterface $middleware) : RouteInterface
-	{
-		$this->middlewareStack[] = $middleware;
+    /**
+     * {@inheritDoc}
+     */
+    public function setRequestHandler(RequestHandlerInterface $requestHandler) : RouteInterface
+    {
+        $this->requestHandler = $requestHandler;
 
-		return $this;
-	}
+        return $this;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function getId() : string
-	{
-		return $this->id;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public function setMiddlewares(MiddlewareInterface ...$middlewares) : RouteInterface
+    {
+        $this->middlewares = $middlewares;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function getPath() : string
-	{
-		return $this->path;
-	}
+        return $this;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function getMethods() : array
-	{
-		return $this->methods;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public function setAttributes(array $attributes) : RouteInterface
+    {
+        $this->attributes = $attributes;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function getPatterns() : array
-	{
-		return $this->patterns;
-	}
+        return $this;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function getAttributes() : array
-	{
-		return $this->attributes;
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public function addPrefix(string $prefix) : RouteInterface
+    {
+        // https://github.com/sunrise-php/http-router/issues/26
+        $prefix = rtrim($prefix, '/');
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function getMiddlewareStack() : array
-	{
-		return $this->middlewareStack;
-	}
+        $this->path = $prefix . $this->path;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function withAttributes(array $attributes) : RouteInterface
-	{
-		$clone = clone $this;
+        return $this;
+    }
 
-		$clone->attributes = \array_merge($clone->attributes, $attributes);
+    /**
+     * {@inheritDoc}
+     */
+    public function addSuffix(string $suffix) : RouteInterface
+    {
+        $this->path .= $suffix;
 
-		return $clone;
-	}
+        return $this;
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function buildRegex() : string
-	{
-		return route_regex($this->path, $this->patterns);
-	}
+    /**
+     * {@inheritDoc}
+     */
+    public function addMethod(string ...$methods) : RouteInterface
+    {
+        foreach ($methods as $method) {
+            $this->methods[] = strtoupper($method);
+        }
+
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function addMiddleware(MiddlewareInterface ...$middlewares) : RouteInterface
+    {
+        foreach ($middlewares as $middleware) {
+            $this->middlewares[] = $middleware;
+        }
+
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function withAddedAttributes(array $attributes) : RouteInterface
+    {
+        $clone = clone $this;
+
+        foreach ($attributes as $key => $value) {
+            $clone->attributes[$key] = $value;
+        }
+
+        return $clone;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function handle(ServerRequestInterface $request) : ResponseInterface
+    {
+        $request = $request->withAttribute(self::ATTR_NAME_FOR_ROUTE_NAME, $this->name);
+
+        foreach ($this->attributes as $key => $value) {
+            $request = $request->withAttribute($key, $value);
+        }
+
+        $handler = new QueueableRequestHandler($this->requestHandler);
+        $handler->add(...$this->middlewares);
+
+        return $handler->handle($request);
+    }
 }
