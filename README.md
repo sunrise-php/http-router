@@ -79,3 +79,20 @@ $response = $router->handle($request);
 // if the router is used as middleware
 $response = $router->process($request, $handler);
 ```
+
+## Generation documentation for OAS (Swagger)
+
+```bash
+composer require 'sunrise/http-router-openapi'
+```
+
+```php
+use Sunrise\Http\Router\OpenApi\Object\Info;
+use Sunrise\Http\Router\OpenApi\OpenApi;
+
+$openApi = new OpenApi(new Info('0.0.1', 'API'));
+
+$openApi->addRoute(...$router->getRoutes());
+
+$openApi->toArray();
+```
