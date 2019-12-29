@@ -80,7 +80,7 @@ $response = $router->handle($request);
 $response = $router->process($request, $handler);
 ```
 
-## Generation documentation for OAS (Swagger)
+## Generation documentation for Swagger (OAS)
 
 ```bash
 composer require 'sunrise/http-router-openapi'
