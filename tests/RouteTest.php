@@ -277,7 +277,11 @@ class RouteTest extends TestCase
         $this->assertTrue($route->getMiddlewares()[2]->isRunned());
         $this->assertTrue($route->getRequestHandler()->isRunned());
 
-        $expectedAttributes = [Route::ATTR_NAME_FOR_ROUTE_NAME => $route->getName()];
+        $expectedAttributes = [
+            Route::ATTR_NAME_FOR_ROUTE => $route,
+            Route::ATTR_NAME_FOR_ROUTE_NAME => $route->getName(),
+        ];
+
         $expectedAttributes += $route->getAttributes();
 
         $this->assertSame($expectedAttributes, $route->getRequestHandler()->getAttributes());
