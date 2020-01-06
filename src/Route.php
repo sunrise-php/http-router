@@ -35,6 +35,13 @@ class Route implements RouteInterface
 {
 
     /**
+     * Server Request attribute name for the route instance
+     *
+     * @var string
+     */
+    public const ATTR_NAME_FOR_ROUTE = '@route';
+
+    /**
      * Server Request attribute name for the route name
      *
      * @var string
@@ -287,6 +294,7 @@ class Route implements RouteInterface
      */
     public function handle(ServerRequestInterface $request) : ResponseInterface
     {
+        $request = $request->withAttribute(self::ATTR_NAME_FOR_ROUTE, $this);
         $request = $request->withAttribute(self::ATTR_NAME_FOR_ROUTE_NAME, $this->name);
 
         foreach ($this->attributes as $key => $value) {
