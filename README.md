@@ -12,7 +12,7 @@
 ## Installation via composer
 
 ```bash
-composer require 'sunrise/http-router:^2.0'
+composer require 'sunrise/http-router:^2.1'
 ```
 
 ## Examples of using
@@ -83,7 +83,7 @@ $response = $router->process($request, $handler);
 ## Generation documentation for Swagger (OAS)
 
 ```bash
-composer require 'sunrise/http-router-openapi'
+composer require 'sunrise/http-router-openapi:^1.1'
 ```
 
 ```php
