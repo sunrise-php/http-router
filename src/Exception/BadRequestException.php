@@ -12,28 +12,18 @@
 namespace Sunrise\Http\Router\Exception;
 
 /**
- * UnsupportedMediaTypeException
+ * BadRequestException
  */
-class UnsupportedMediaTypeException extends Exception
+class BadRequestException extends Exception
 {
 
     /**
-     * Gets a type
+     * Gets violations
      *
-     * @return string
+     * @return array
      */
-    public function getType() : string
+    public function getViolations() : array
     {
-        return $this->fromContext('type', '');
-    }
-
-    /**
-     * Gets supported types
-     *
-     * @return string[]
-     */
-    public function getSupportedTypes() : array
-    {
-        return $this->fromContext('supported', []);
+        return $this->fromContext('violations', []);
     }
 }

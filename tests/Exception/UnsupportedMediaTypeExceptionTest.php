@@ -31,7 +31,6 @@ class UnsupportedMediaTypeExceptionTest extends TestCase
     public function testMessage() : void
     {
         $message = 'blah';
-
         $exception = new UnsupportedMediaTypeException($message);
 
         $this->assertSame($message, $exception->getMessage());
@@ -43,7 +42,6 @@ class UnsupportedMediaTypeExceptionTest extends TestCase
     public function testContext() : void
     {
         $context = ['foo' => 'bar'];
-
         $exception = new UnsupportedMediaTypeException('blah', $context);
 
         $this->assertSame($context, $exception->getContext());
@@ -55,7 +53,6 @@ class UnsupportedMediaTypeExceptionTest extends TestCase
     public function testCode() : void
     {
         $code = 100;
-
         $exception = new UnsupportedMediaTypeException('blah', [], $code);
 
         $this->assertSame($code, $exception->getCode());
@@ -67,9 +64,61 @@ class UnsupportedMediaTypeExceptionTest extends TestCase
     public function testPrevious() : void
     {
         $previous = new \Exception();
-
         $exception = new UnsupportedMediaTypeException('blah', [], 0, $previous);
 
         $this->assertSame($previous, $exception->getPrevious());
+    }
+
+    /**
+     * @return void
+     */
+    public function testType() : void
+    {
+        $expected = 'application/octet-stream';
+
+        $exception = new UnsupportedMediaTypeException('blah', [
+            'type' => $expected,
+        ]);
+
+        $this->assertSame($expected, $exception->getType());
+    }
+
+    /**
+     * @return void
+     */
+    public function testTypeWithEmptyContext() : void
+    {
+        $expected = '';
+        $exception = new UnsupportedMediaTypeException('blah');
+
+        $this->assertSame($expected, $exception->getType());
+    }
+
+    /**
+     * @return void
+     */
+    public function testSupportedTypes() : void
+    {
+        $expected = [
+            'application/json',
+            'application/x-www-form-urlencoded',
+        ];
+
+        $exception = new UnsupportedMediaTypeException('blah', [
+            'supported' => $expected,
+        ]);
+
+        $this->assertSame($expected, $exception->getSupportedTypes());
+    }
+
+    /**
+     * @return void
+     */
+    public function testSupportedTypesWithEmptyContext() : void
+    {
+        $expected = [];
+        $exception = new UnsupportedMediaTypeException('blah');
+
+        $this->assertSame($expected, $exception->getSupportedTypes());
     }
 }
