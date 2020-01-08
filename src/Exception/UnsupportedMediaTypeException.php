@@ -16,4 +16,24 @@ namespace Sunrise\Http\Router\Exception;
  */
 class UnsupportedMediaTypeException extends Exception
 {
+
+    /**
+     * Gets a type
+     *
+     * @return string
+     */
+    public function getType() : string
+    {
+        return $this->fromContext('type', '');
+    }
+
+    /**
+     * Gets supported types
+     *
+     * @return string[]
+     */
+    public function getSupportedTypes() : array
+    {
+        return $this->fromContext('supported', []);
+    }
 }
