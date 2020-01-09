@@ -96,3 +96,26 @@ $openApi->addRoute(...$router->getRoutes());
 
 $openApi->toArray();
 ```
+
+### Validation a request body via Swagger documentation
+
+```php
+use Sunrise\Http\Router\OpenApi\Middleware\RequestBodyValidationMiddleware;
+
+$route->addMiddleware(new RequestBodyValidationMiddleware());
+```
+
+or using annotations:
+
+```php
+/**
+ * @Route(
+ *   name="foo",
+ *   path="/foo",
+ *   methods={"post"},
+ *   middlewares={
+ *     "Sunrise\Http\Router\OpenApi\Middleware\RequestBodyValidationMiddleware",
+ *   },
+ * )
+ */
+```
