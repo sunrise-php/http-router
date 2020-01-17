@@ -15,6 +15,42 @@
 composer require 'sunrise/http-router:^2.1'
 ```
 
+## QuickStart
+
+The example uses other sunrise packages, but you can use for example `zend/diactoros`, or any other.
+
+```bash
+composer require sunrise/http-message sunrise/http-server-request
+```
+
+```php
+use Sunrise\Http\Message\ResponseFactory;
+use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
+use Sunrise\Http\Router\RouteCollector;
+use Sunrise\Http\Router\Router;
+use Sunrise\Http\ServerRequest\ServerRequestFactory;
+
+use function Sunrise\Http\Router\emit;
+
+$collect = new RouteCollector();
+
+$collect->get('home', '/', new CallableRequestHandler(function ($request) {
+    $response = (new ResponseFactory)->createResponse();
+
+    $response->getBody()->write('Hello, world!');
+
+    return $response;
+}));
+
+$router = new Router();
+$router->addRoute(...$collect->getCollection()->all());
+
+$request = ServerRequestFactory::fromGlobals();
+$response = $router->handle($request);
+
+emit($response);
+```
+
 ## Examples of using
 
 Study [sunrise/awesome-skeleton](https://github.com/sunrise-php/awesome-skeleton) to understand how this can be used.
