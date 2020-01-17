@@ -9,7 +9,7 @@
 
 ---
 
-## Installation via composer
+## Installation
 
 ```bash
 composer require 'sunrise/http-router:^2.1'
@@ -32,24 +32,24 @@ use Sunrise\Http\ServerRequest\ServerRequestFactory;
 
 use function Sunrise\Http\Router\emit;
 
-$collect = new RouteCollector();
+$collector = new RouteCollector();
 
-$collect->get('home', '/', new CallableRequestHandler(function ($request) {
-    $response = (new ResponseFactory)->createResponse();
-
-    $response->getBody()->write('Hello, world!');
-
-    return $response;
+$collector->get('home', '/', new CallableRequestHandler(function ($request) {
+    return (new ResponseFactory)->createJsonResponse(200, [
+        'status' => 'ok',
+    ]);
 }));
 
 $router = new Router();
-$router->addRoute(...$collect->getCollection()->all());
+$router->addRoute(...$collector->getCollection()->all());
 
 $request = ServerRequestFactory::fromGlobals();
 $response = $router->handle($request);
 
 emit($response);
 ```
+
+---
 
 ## Examples of using
 
@@ -86,7 +86,7 @@ use Sunrise\Http\Router\Router;
 AnnotationRegistry::registerLoader('class_exists');
 
 $loader = new AnnotationDirectoryLoader();
-$loader->attach('src/Http/RequestHandler');
+$loader->attach('src/Controller');
 
 $router = new Router();
 $router->load($loader);
@@ -101,12 +101,12 @@ $response = $router->process($request, $handler);
 #### Without loading strategy
 
 ```php
-use App\Http\RequestHandler\HomeRequestHandler;
+use App\Controller\HomeController;
 use Sunrise\Http\Router\RouteCollector;
 use Sunrise\Http\Router\Router;
 
 $collector = new RouteCollector();
-$collector->get('home', '/', new HomeRequestHandler());
+$collector->get('home', '/', new HomeController());
 
 $router = new Router();
 $router->addRoute(...$collector->getCollection()->all());
@@ -118,11 +118,17 @@ $response = $router->handle($request);
 $response = $router->process($request, $handler);
 ```
 
-## Generation documentation for Swagger (OAS)
+---
+
+## Useful to know
+
+### OpenApi (Swagger)
 
 ```bash
 composer require 'sunrise/http-router-openapi:^1.1'
 ```
+
+#### Generation documentation for Swagger (OAS)
 
 ```php
 use Sunrise\Http\Router\OpenApi\Object\Info;
@@ -135,7 +141,7 @@ $openApi->addRoute(...$router->getRoutes());
 $openApi->toArray();
 ```
 
-### Validation a request body via Swagger documentation
+#### Validation a request body via Swagger documentation
 
 ```php
 use Sunrise\Http\Router\OpenApi\Middleware\RequestBodyValidationMiddleware;
@@ -156,4 +162,43 @@ or using annotations:
  *   },
  * )
  */
+```
+
+### Generation a route URI
+
+```php
+$uri = $router->generateUri('route.name', [
+    'attribute' => 'value',
+], true);
+```
+
+### Run a route
+
+```php
+$response = $router->getRoute('route.name')->handle($request);
+```
+
+### Route grouping
+
+```php
+$collector->group(function ($collector) {
+    $collector->group(function ($collector) {
+        $collector->group(function ($collector) {
+            $collector->get('api.entry.read', '/{id<\d+>}', ...)
+                ->addMiddleware(...); // add the middleware(s) to the route...
+        })
+        ->addPrefix('/entry') // add the prefix to the group...
+        ->unshiftMiddleware(...); // add the middleware(s) to the group...
+    })
+    ->addPrefix('/v1') // add the prefix to the group...
+    ->unshiftMiddleware(...); // add the middleware(s) to the group...
+})
+->addPrefix('/api') // add the prefix to the group...
+->unshiftMiddleware(...); // add the middleware(s) to the group...
+```
+
+### Route patterns
+
+```php
+$collector->get('api.entry.read', '/api/v1/entry/{id<\d+>}(/{optional<\w+>})');
 ```
