@@ -202,3 +202,20 @@ $collector->group(function ($collector) {
 ```php
 $collector->get('api.entry.read', '/api/v1/entry/{id<\d+>}(/{optional<\w+>})');
 ```
+
+---
+
+## Test run
+
+```bash
+composer test
+```
+
+---
+
+## Useful links
+
+* https://www.php-fig.org/psr/psr-7/
+* https://www.php-fig.org/psr/psr-15/
+* https://github.com/sunrise-php/awesome-skeleton
+* https://github.com/middlewares
