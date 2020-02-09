@@ -2,4 +2,4 @@
 
 use Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler;
 
-$this->get('home', '/', new BlankRequestHandler());
+$this->get('bar', '/bar', new BlankRequestHandler());

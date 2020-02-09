@@ -42,12 +42,24 @@ class CollectableFileLoaderTest extends TestCase
     /**
      * @return void
      */
-    public function testLoad() : void
+    public function testLoadFile() : void
     {
         $loader = new CollectableFileLoader();
 
-        $loader->attach(__DIR__ . '/../Fixture/collectable-routes.php');
+        $loader->attach(__DIR__ . '/../Fixture/routes/foo.php');
 
         $this->assertCount(1, $loader->load()->all());
+    }
+
+    /**
+     * @return void
+     */
+    public function testLoadDirectory() : void
+    {
+        $loader = new CollectableFileLoader();
+
+        $loader->attach(__DIR__ . '/../Fixture/routes');
+
+        $this->assertCount(2, $loader->load()->all());
     }
 }
