@@ -12,7 +12,7 @@
 ## Installation
 
 ```bash
-composer require 'sunrise/http-router:^2.1'
+composer require 'sunrise/http-router:^2.2'
 ```
 
 ## QuickStart
@@ -65,6 +65,10 @@ $loader = new CollectableFileLoader();
 $loader->attach('routes/api.php');
 $loader->attach('routes/admin.php');
 $loader->attach('routes/public.php');
+
+// or attach a directory...
+// [!] available from version 2.2
+$loader->attach('routes');
 
 $router = new Router();
 $router->load($loader);

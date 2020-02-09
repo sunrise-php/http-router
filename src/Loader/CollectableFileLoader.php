@@ -25,6 +25,8 @@ use Sunrise\Http\Router\RouteFactoryInterface;
 /**
  * Import functions
  */
+use function glob;
+use function is_dir;
 use function is_file;
 use function sprintf;
 
@@ -68,6 +70,16 @@ class CollectableFileLoader implements LoaderInterface
      */
     public function attach($resource) : void
     {
+        if (is_dir($resource)) {
+            $resources = glob($resource . '/*.php');
+
+            foreach ($resources as $resource) {
+                $this->resources[] = $resource;
+            }
+
+            return;
+        }
+
         if (!is_file($resource)) {
             throw new InvalidLoaderResourceException(
                 sprintf('The resource "%s" is not found.', $resource)
