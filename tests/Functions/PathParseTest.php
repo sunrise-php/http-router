@@ -15,6 +15,11 @@ use function Sunrise\Http\Router\path_parse;
 use function chr;
 
 /**
+ * Import constants
+ */
+use const Sunrise\Http\Router\NAMED_PATTERNS;
+
+/**
  * PathParseTest
  */
 class PathParseTest extends TestCase
@@ -54,6 +59,37 @@ class PathParseTest extends TestCase
                 'isOptional' => false,
                 'startPosition' => 33,
                 'endPosition' => 44,
+            ],
+        ];
+
+        $this->assertSame($expected, path_parse($path));
+    }
+
+    /**
+     * @return void
+     */
+    public function testNamedPatterns() : void
+    {
+        $path = '/{foo<@slug>}/{bar<@uuid>}';
+
+        $expected = [
+            [
+                'raw' => '{foo<@slug>}',
+                'withParentheses' => null,
+                'name' => 'foo',
+                'pattern' => NAMED_PATTERNS['@slug'],
+                'isOptional' => false,
+                'startPosition' => 1,
+                'endPosition' => 12,
+            ],
+            [
+                'raw' => '{bar<@uuid>}',
+                'withParentheses' => null,
+                'name' => 'bar',
+                'pattern' => NAMED_PATTERNS['@uuid'],
+                'isOptional' => false,
+                'startPosition' => 14,
+                'endPosition' => 25,
             ],
         ];
 

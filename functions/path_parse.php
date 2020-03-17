@@ -53,6 +53,16 @@ const CHARACTER_TABLE_FOR_SUBPATTERN_NAME = [
 ];
 
 /**
+ * Named patters
+ *
+ * @var array
+ */
+const NAMED_PATTERNS = [
+    '@slug' => '[\da-z-]+',
+    '@uuid' => '[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}',
+];
+
+/**
  * Parses the given path
  *
  * @param string $path
@@ -167,6 +177,10 @@ function path_parse(string $path) : array
                 throw new InvalidPathException(
                     sprintf('[%s:%d] an attribute pattern is empty.', $path, $cursorPosition)
                 );
+            }
+
+            if (isset(NAMED_PATTERNS[$attributes[$attributeIndex]['pattern']])) {
+                $attributes[$attributeIndex]['pattern'] = NAMED_PATTERNS[$attributes[$attributeIndex]['pattern']];
             }
 
             $cursorInPattern = false;
