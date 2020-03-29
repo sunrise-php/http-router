@@ -35,7 +35,7 @@
         "phpunit/phpunit": "7.5.20",
         "sunrise/coding-standard": "1.0.0",
         "sunrise/http-message": "1.2.0",
-        "sunrise/http-server-request": "1.0.11"
+        "sunrise/http-server-request": "1.0.12"
     },
     "autoload": {
         "files": [
