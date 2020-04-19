@@ -79,6 +79,25 @@ class AnnotationDirectoryLoaderTest extends TestCase
 
     /**
      * @return void
+     *
+     * @runInSeparateProcess
+     */
+    public function testAttachArray() : void
+    {
+        $loader = new AnnotationDirectoryLoader();
+
+        $loader->attachArray([
+            __DIR__ . '/../Fixture/Annotation/Route/Valid',
+            __DIR__ . '/../Fixture/Annotation/Route/Containerable',
+        ]);
+
+        $this->assertCount(5, $loader->load()->all());
+    }
+
+    /**
+     * @return void
+     *
+     * @runInSeparateProcess
      */
     public function testLoad() : void
     {
@@ -163,6 +182,8 @@ class AnnotationDirectoryLoaderTest extends TestCase
 
     /**
      * @return void
+     *
+     * @runInSeparateProcess
      */
     public function testLoadWithContainer() : void
     {
@@ -196,6 +217,8 @@ class AnnotationDirectoryLoaderTest extends TestCase
 
     /**
      * @return void
+     *
+     * @runInSeparateProcess
      */
     public function testLoadWithCache() : void
     {
@@ -241,6 +264,8 @@ class AnnotationDirectoryLoaderTest extends TestCase
      * @return void
      *
      * @dataProvider invalidAnnotatedClassesProvider
+     *
+     * @runInSeparateProcess
      */
     public function testLoadInvalidAnnotatedClasses(string $resource, string $expectedException) : void
     {
