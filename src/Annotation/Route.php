@@ -61,6 +61,27 @@ final class Route
     public $attributes;
 
     /**
+     * @var string
+     *
+     * @since 2.4.0
+     */
+    public $summary;
+
+    /**
+     * @var string
+     *
+     * @since 2.4.0
+     */
+    public $description;
+
+    /**
+     * @var array
+     *
+     * @since 2.4.0
+     */
+    public $tags;
+
+    /**
      * @var int
      */
     public $priority;
@@ -73,6 +94,9 @@ final class Route
         $params += [
             'middlewares' => [],
             'attributes' => [],
+            'summary' => '',
+            'description' => '',
+            'tags' => [],
             'priority' => 0,
         ];
 
@@ -81,6 +105,9 @@ final class Route
         $this->assertParamsContainValidMethods($params);
         $this->assertParamsContainValidMiddlewares($params);
         $this->assertParamsContainValidAttributes($params);
+        $this->assertParamsContainValidSummary($params);
+        $this->assertParamsContainValidDescription($params);
+        $this->assertParamsContainValidTags($params);
         $this->assertParamsContainValidPriority($params);
 
         $this->name = $params['name'];
@@ -88,6 +115,9 @@ final class Route
         $this->methods = $params['methods'];
         $this->middlewares = $params['middlewares'];
         $this->attributes = $params['attributes'];
+        $this->summary = $params['summary'];
+        $this->description = $params['description'];
+        $this->tags = $params['tags'];
         $this->priority = $params['priority'];
     }
 
@@ -206,6 +236,62 @@ final class Route
             throw new InvalidAnnotationParameterException(
                 '@Route.attributes must be an array.'
             );
+        }
+    }
+
+    /**
+     * @param array $params
+     *
+     * @return void
+     *
+     * @throws InvalidAnnotationParameterException
+     */
+    private function assertParamsContainValidSummary(array $params) : void
+    {
+        if (!is_string($params['summary'])) {
+            throw new InvalidAnnotationParameterException(
+                '@Route.summary must be a string.'
+            );
+        }
+    }
+
+    /**
+     * @param array $params
+     *
+     * @return void
+     *
+     * @throws InvalidAnnotationParameterException
+     */
+    private function assertParamsContainValidDescription(array $params) : void
+    {
+        if (!is_string($params['description'])) {
+            throw new InvalidAnnotationParameterException(
+                '@Route.description must be a string.'
+            );
+        }
+    }
+
+    /**
+     * @param array $params
+     *
+     * @return void
+     *
+     * @throws InvalidAnnotationParameterException
+     */
+    private function assertParamsContainValidTags(array $params) : void
+    {
+        if (!is_array($params['tags'])) {
+            throw new InvalidAnnotationParameterException(
+                '@Route.tags must be an array.'
+            );
+        }
+
+        foreach ($params['tags'] as $middleware) {
+            if (!is_string($middleware)) {
+                throw new InvalidAnnotationParameterException(
+                    '@Route.tags must contain only strings.'
+                );
+            }
         }
     }
 

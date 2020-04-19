@@ -50,6 +50,9 @@ class RouteTest extends TestCase
         // default property values...
         $this->assertSame([], $route->middlewares);
         $this->assertSame([], $route->attributes);
+        $this->assertSame('', $route->summary);
+        $this->assertSame('', $route->description);
+        $this->assertSame([], $route->tags);
         $this->assertSame(0, $route->priority);
     }
 
@@ -64,6 +67,9 @@ class RouteTest extends TestCase
             'methods' => ['GET'],
             'middlewares' => [Fixture\BlankMiddleware::class],
             'attributes' => ['foo' => 'bar'],
+            'summary' => 'foo summary',
+            'description' => 'foo description',
+            'tags' => ['foo', 'bar'],
             'priority' => 100,
         ];
 
@@ -74,6 +80,9 @@ class RouteTest extends TestCase
         $this->assertSame($params['methods'], $route->methods);
         $this->assertSame($params['middlewares'], $route->middlewares);
         $this->assertSame($params['attributes'], $route->attributes);
+        $this->assertSame($params['summary'], $route->summary);
+        $this->assertSame($params['description'], $route->description);
+        $this->assertSame($params['tags'], $route->tags);
         $this->assertSame($params['priority'], $route->priority);
     }
 
@@ -252,6 +261,60 @@ class RouteTest extends TestCase
     }
 
     /**
+     * @param mixed $invalidSummary
+     * @return void
+     * @dataProvider invalidDataProviderIfStringExpected
+     */
+    public function testConstructorParamsContainInvalidSummary($invalidSummary) : void
+    {
+        $this->expectException(InvalidAnnotationParameterException::class);
+        $this->expectExceptionMessage('@Route.summary must be a string.');
+
+        new Route([
+            'name' => 'foo',
+            'path' => '/foo',
+            'methods' => ['GET'],
+            'summary' => $invalidSummary,
+        ]);
+    }
+
+    /**
+     * @param mixed $invalidDescription
+     * @return void
+     * @dataProvider invalidDataProviderIfStringExpected
+     */
+    public function testConstructorParamsContainInvalidDescription($invalidDescription) : void
+    {
+        $this->expectException(InvalidAnnotationParameterException::class);
+        $this->expectExceptionMessage('@Route.description must be a string.');
+
+        new Route([
+            'name' => 'foo',
+            'path' => '/foo',
+            'methods' => ['GET'],
+            'description' => $invalidDescription,
+        ]);
+    }
+
+    /**
+     * @param mixed $invalidTags
+     * @return void
+     * @dataProvider invalidDataProviderIfArrayExpected
+     */
+    public function testConstructorParamsContainInvalidTags($invalidTags) : void
+    {
+        $this->expectException(InvalidAnnotationParameterException::class);
+        $this->expectExceptionMessage('@Route.tags must be an array.');
+
+        new Route([
+            'name' => 'foo',
+            'path' => '/foo',
+            'methods' => ['GET'],
+            'tags' => $invalidTags,
+        ]);
+    }
+
+    /**
      * @param mixed $invalidPriority
      * @return void
      * @dataProvider invalidDataProviderIfIntegerExpected
@@ -333,6 +396,24 @@ class RouteTest extends TestCase
             'path' => '/foo',
             'methods' => ['GET'],
             'middlewares' => ['stdClass'],
+        ]);
+    }
+
+    /**
+     * @param mixed $invalidTag
+     * @return void
+     * @dataProvider invalidDataProviderIfStringExpected
+     */
+    public function testConstructorTagsParamContainsInvalidValue($invalidTag) : void
+    {
+        $this->expectException(InvalidAnnotationParameterException::class);
+        $this->expectExceptionMessage('@Route.tags must contain only strings.');
+
+        new Route([
+            'name' => 'foo',
+            'path' => '/foo',
+            'methods' => ['GET'],
+            'tags' => [$invalidTag],
         ]);
     }
 
