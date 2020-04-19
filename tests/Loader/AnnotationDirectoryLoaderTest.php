@@ -153,6 +153,12 @@ class AnnotationDirectoryLoaderTest extends TestCase
                 'bar' => 'baz',
             ],
         ], Fixture\Helper::routesToArray($routes));
+
+        $this->assertContains([
+            'summary' => 'the route summary',
+            'description' => 'the route description',
+            'tags' => ['foo', 'bar'],
+        ], Fixture\Helper::routesToArray204($routes));
     }
 
     /**

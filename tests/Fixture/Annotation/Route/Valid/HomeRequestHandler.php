@@ -20,6 +20,9 @@ use Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler;
  *     "foo": "bar",
  *     "bar": "baz"
  *   },
+ *   summary="the route summary",
+ *   description="the route description",
+ *   tags={"foo", "bar"},
  *   priority=1000
  * )
  */
