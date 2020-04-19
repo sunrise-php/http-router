@@ -12,6 +12,11 @@
 namespace Sunrise\Http\Router\Exception;
 
 /**
+ * Import functions
+ */
+use function implode;
+
+/**
  * UnsupportedMediaTypeException
  */
 class UnsupportedMediaTypeException extends Exception
@@ -35,5 +40,15 @@ class UnsupportedMediaTypeException extends Exception
     public function getSupportedTypes() : array
     {
         return $this->fromContext('supported', []);
+    }
+
+    /**
+     * Gets joined supported types
+     *
+     * @return string
+     */
+    public function getJoinedSupportedTypes() : string
+    {
+        return implode(',', $this->getSupportedTypes());
     }
 }

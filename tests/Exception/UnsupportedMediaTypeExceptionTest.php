@@ -121,4 +121,16 @@ class UnsupportedMediaTypeExceptionTest extends TestCase
 
         $this->assertSame($expected, $exception->getSupportedTypes());
     }
+
+    /**
+     * @return void
+     */
+    public function testGluingSupportedTypes() : void
+    {
+        $exception = new UnsupportedMediaTypeException('blah', [
+            'supported' => ['foo', 'bar'],
+        ]);
+
+        $this->assertSame('foo,bar', $exception->getJoinedSupportedTypes());
+    }
 }
