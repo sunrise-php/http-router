@@ -301,4 +301,43 @@ class RouteTest extends TestCase
         $this->assertFalse($route->getRequestHandler()->isRunned());
         $this->assertSame([], $route->getRequestHandler()->getAttributes());
     }
+
+    /**
+     * @return void
+     */
+    public function testSummary() : void
+    {
+        $route = new Fixture\TestRoute();
+        $expectedSummary = 'foo bar';
+
+        $this->assertSame('', $route->getSummary());
+        $this->assertSame($route, $route->setSummary($expectedSummary));
+        $this->assertSame($expectedSummary, $route->getSummary());
+    }
+
+    /**
+     * @return void
+     */
+    public function testDescription() : void
+    {
+        $route = new Fixture\TestRoute();
+        $expectedDescription = 'foo bar';
+
+        $this->assertSame('', $route->getDescription());
+        $this->assertSame($route, $route->setDescription($expectedDescription));
+        $this->assertSame($expectedDescription, $route->getDescription());
+    }
+
+    /**
+     * @return void
+     */
+    public function testTags() : void
+    {
+        $route = new Fixture\TestRoute();
+        $expectedTags = ['foo', 'bar'];
+
+        $this->assertSame([], $route->getTags());
+        $this->assertSame($route, $route->setTags(...$expectedTags));
+        $this->assertSame($expectedTags, $route->getTags());
+    }
 }

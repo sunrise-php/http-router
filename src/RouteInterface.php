@@ -66,6 +66,33 @@ interface RouteInterface extends RequestHandlerInterface
     public function getAttributes() : array;
 
     /**
+     * Gets the route summary
+     *
+     * @return string
+     *
+     * @since 2.4.0
+     */
+    public function getSummary() : string;
+
+    /**
+     * Gets the route description
+     *
+     * @return string
+     *
+     * @since 2.4.0
+     */
+    public function getDescription() : string;
+
+    /**
+     * Gets the route tags
+     *
+     * @return string[]
+     *
+     * @since 2.4.0
+     */
+    public function getTags() : array;
+
+    /**
      * Sets the given name to the route
      *
      * @param string $name
@@ -118,6 +145,39 @@ interface RouteInterface extends RequestHandlerInterface
      * @return RouteInterface
      */
     public function setAttributes(array $attributes) : RouteInterface;
+
+    /**
+     * Sets the given summary to the route
+     *
+     * @param string $summary
+     *
+     * @return RouteInterface
+     *
+     * @since 2.4.0
+     */
+    public function setSummary(string $summary) : RouteInterface;
+
+    /**
+     * Sets the given description to the route
+     *
+     * @param string $description
+     *
+     * @return RouteInterface
+     *
+     * @since 2.4.0
+     */
+    public function setDescription(string $description) : RouteInterface;
+
+    /**
+     * Sets the given tag(s) to the route
+     *
+     * @param string ...$tags
+     *
+     * @return RouteInterface
+     *
+     * @since 2.4.0
+     */
+    public function setTags(string ...$tags) : RouteInterface;
 
     /**
      * Adds the given prefix to the route path

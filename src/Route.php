@@ -91,6 +91,27 @@ class Route implements RouteInterface
     private $attributes = [];
 
     /**
+     * The route summary
+     *
+     * @var string
+     */
+    private $summary = '';
+
+    /**
+     * The route description
+     *
+     * @var string
+     */
+    private $description = '';
+
+    /**
+     * The route tags
+     *
+     * @var string[]
+     */
+    private $tags = [];
+
+    /**
      * Constructor of the class
      *
      * @param string $name
@@ -167,6 +188,30 @@ class Route implements RouteInterface
     /**
      * {@inheritDoc}
      */
+    public function getSummary() : string
+    {
+        return $this->summary;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getDescription() : string
+    {
+        return $this->description;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getTags() : array
+    {
+        return $this->tags;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function setName(string $name) : RouteInterface
     {
         $this->name = $name;
@@ -224,6 +269,36 @@ class Route implements RouteInterface
     public function setAttributes(array $attributes) : RouteInterface
     {
         $this->attributes = $attributes;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setSummary(string $summary) : RouteInterface
+    {
+        $this->summary = $summary;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setDescription(string $description) : RouteInterface
+    {
+        $this->description = $description;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setTags(string ...$tags) : RouteInterface
+    {
+        $this->tags = $tags;
 
         return $this;
     }
