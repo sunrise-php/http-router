@@ -98,4 +98,16 @@ class MethodNotAllowedExceptionTest extends TestCase
 
         $this->assertSame($expected, $exception->getAllowedMethods());
     }
+
+    /**
+     * @return void
+     */
+    public function testGluingAllowedMethods() : void
+    {
+        $exception = new MethodNotAllowedException('blah', [
+            'allowed' => ['foo', 'bar'],
+        ]);
+
+        $this->assertSame('foo,bar', $exception->getJoinedAllowedMethods());
+    }
 }
