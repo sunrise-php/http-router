@@ -236,13 +236,18 @@ class RouterTest extends TestCase
             new Fixture\TestRoute(),
             new Fixture\TestRoute(),
             new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
         ];
+
+        $routes[2]->setPath($routes[1]->getPath());
+        $routes[3]->setPath($routes[1]->getPath());
 
         $router = new Router();
         $router->addRoute(...$routes);
 
         $request = (new ServerRequestFactory)
-            ->createServerRequest('GET', $routes[0]->getPath());
+            ->createServerRequest('GET', $routes[2]->getPath());
 
         // the given exception message should be tested through exceptions factory...
         $this->expectException(MethodNotAllowedException::class);
@@ -251,9 +256,9 @@ class RouterTest extends TestCase
             $router->match($request);
         } catch (MethodNotAllowedException $e) {
             $allowedMethods = array_merge(
-                $routes[0]->getMethods(),
                 $routes[1]->getMethods(),
-                $routes[2]->getMethods()
+                $routes[2]->getMethods(),
+                $routes[3]->getMethods()
             );
 
             // $this->assertSame('GET', $e->fromContext('method'));
@@ -389,7 +394,7 @@ class RouterTest extends TestCase
         $router->addRoute(...$routes);
 
         $request = (new ServerRequestFactory)
-            ->createServerRequest('GET', '/');
+            ->createServerRequest('GET', $routes[1]->getPath());
 
         // the given exception message should be tested through exceptions factory...
         $this->expectException(MethodNotAllowedException::class);
@@ -397,11 +402,7 @@ class RouterTest extends TestCase
         try {
             $router->handle($request);
         } catch (MethodNotAllowedException $e) {
-            $allowedMethods = array_merge(
-                $routes[0]->getMethods(),
-                $routes[1]->getMethods(),
-                $routes[2]->getMethods()
-            );
+            $allowedMethods = $routes[1]->getMethods();
 
             // $this->assertSame('GET', $e->fromContext('method'));
             $this->assertSame($allowedMethods, $e->fromContext('allowed'));
@@ -483,7 +484,7 @@ class RouterTest extends TestCase
         $router->addRoute(...$routes);
 
         $request = (new ServerRequestFactory)
-            ->createServerRequest('GET', '/');
+            ->createServerRequest('GET', $routes[0]->getPath());
 
         $fallback = new Fixture\BlankRequestHandler();
 
