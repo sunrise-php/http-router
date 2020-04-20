@@ -50,6 +50,24 @@ class Helper
      * @param iterable $routes
      * @return array
      */
+    public static function routesToArray204(iterable $routes) : array
+    {
+        $result = [];
+        foreach ($routes as $route) {
+            $result[] = [
+                'summary' => $route->getSummary(),
+                'description' => $route->getDescription(),
+                'tags' => $route->getTags(),
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param iterable $routes
+     * @return array
+     */
     public static function routesToNames(iterable $routes) : array
     {
         $result = [];

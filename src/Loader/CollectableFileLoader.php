@@ -92,6 +92,16 @@ class CollectableFileLoader implements LoaderInterface
     /**
      * {@inheritDoc}
      */
+    public function attachArray(array $resources) : void
+    {
+        foreach ($resources as $resource) {
+            $this->attach($resource);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function load() : RouteCollectionInterface
     {
         $collect = new RouteCollector(

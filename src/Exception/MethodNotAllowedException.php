@@ -12,6 +12,11 @@
 namespace Sunrise\Http\Router\Exception;
 
 /**
+ * Import functions
+ */
+use function implode;
+
+/**
  * MethodNotAllowedException
  */
 class MethodNotAllowedException extends Exception
@@ -25,5 +30,15 @@ class MethodNotAllowedException extends Exception
     public function getAllowedMethods() : array
     {
         return $this->fromContext('allowed', []);
+    }
+
+    /**
+     * Gets joined allowed methods
+     *
+     * @return string
+     */
+    public function getJoinedAllowedMethods() : string
+    {
+        return implode(',', $this->getAllowedMethods());
     }
 }

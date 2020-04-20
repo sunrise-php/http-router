@@ -29,6 +29,7 @@ use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
 /**
  * Import functions
  */
+use function array_flip;
 use function array_keys;
 use function array_values;
 use function spl_object_hash;
@@ -205,32 +206,34 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      */
     public function match(ServerRequestInterface $request) : RouteInterface
     {
-        $routes = [];
+        $requestPath = $request->getUri()->getPath();
+        $requestMethod = $request->getMethod();
+        $allowedMethods = [];
+
         foreach ($this->routes as $route) {
-            foreach ($route->getMethods() as $method) {
-                $routes[$method][] = $route;
+            // https://github.com/sunrise-php/http-router/issues/50
+            // https://tools.ietf.org/html/rfc7231#section-6.5.5
+            if (!path_match($route->getPath(), $requestPath, $attributes)) {
+                continue;
             }
+
+            $routeMethods = array_flip($route->getMethods());
+            $allowedMethods += $routeMethods;
+
+            if (!isset($routeMethods[$requestMethod])) {
+                continue;
+            }
+
+            return $route->withAddedAttributes($attributes);
         }
 
-        $method = $request->getMethod();
-        if (!isset($routes[$method])) {
-            $errmsg = sprintf('The method "%s" is not allowed.', $method);
-
-            throw new MethodNotAllowedException($errmsg, [
-                'allowed' => array_keys($routes),
+        if (!empty($allowedMethods)) {
+            throw new MethodNotAllowedException('Method Not Allowed', [
+                'allowed' => array_keys($allowedMethods),
             ]);
         }
 
-        $target = $request->getUri()->getPath();
-        foreach ($routes[$method] as $route) {
-            if (path_match($route->getPath(), $target, $attributes)) {
-                return $route->withAddedAttributes($attributes);
-            }
-        }
-
-        throw new RouteNotFoundException(
-            sprintf('No route found for the URI "%s".', $target)
-        );
+        throw new RouteNotFoundException('Route Not Found');
     }
 
     /**

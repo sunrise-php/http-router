@@ -12,7 +12,7 @@
 ## Installation
 
 ```bash
-composer require 'sunrise/http-router:^2.2'
+composer require 'sunrise/http-router:^2.4'
 ```
 
 ## QuickStart
@@ -70,6 +70,14 @@ $loader->attach('routes/public.php');
 // [!] available from version 2.2
 $loader->attach('routes');
 
+// or attach an array...
+// [!] available from version 2.4
+$loader->attachArray([
+    'routes/api.php',
+    'routes/admin.php',
+    'routes/public.php',
+]);
+
 $router = new Router();
 $router->load($loader);
 
@@ -91,6 +99,13 @@ AnnotationRegistry::registerLoader('class_exists');
 
 $loader = new AnnotationDirectoryLoader();
 $loader->attach('src/Controller');
+
+// or attach an array
+// [!] available from version 2.4
+$loader->attachArray([
+    'src/Controller',
+    'src/Bundle/BundleName/Controller',
+]);
 
 $router = new Router();
 $router->load($loader);
@@ -120,6 +135,29 @@ $response = $router->handle($request);
 
 // if the router is used as middleware
 $response = $router->process($request, $handler);
+```
+
+#### Route Annotation Example
+
+```php
+/**
+ * @Route(
+ *   name="apiEntryUpdate",
+ *   path="/api/v1/entry/{id<@uuid>}(/{optionalAttribute})",
+ *   methods={"PATCH"},
+ *   middlewares={
+ *     "App\Middleware\CorsMiddleware",
+ *     "App\Middleware\ApiAuthMiddleware",
+ *   },
+ *   attributes={
+ *     "optionalAttribute": "defaultValue",
+ *   },
+ *   summary="Updates an entry by UUID",
+ *   description="Here you can describe the method in more detail...",
+ *   tags={"api", "entry"},
+ *   priority=0,
+ * )
+ */
 ```
 
 ---

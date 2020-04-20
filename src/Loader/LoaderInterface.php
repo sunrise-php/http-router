@@ -35,6 +35,17 @@ interface LoaderInterface
     public function attach($resource) : void;
 
     /**
+     * Attaches the given array with resources to the loader
+     *
+     * @param array $resources
+     *
+     * @return void
+     *
+     * @throws InvalidLoaderResourceException
+     */
+    public function attachArray(array $resources) : void;
+
+    /**
      * Loads routes from previously attached resources
      *
      * @return RouteCollectionInterface

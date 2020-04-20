@@ -155,6 +155,16 @@ class AnnotationDirectoryLoader implements LoaderInterface
     /**
      * {@inheritDoc}
      */
+    public function attachArray(array $resources) : void
+    {
+        foreach ($resources as $resource) {
+            $this->attach($resource);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function load() : RouteCollectionInterface
     {
         $annotations = [];
@@ -171,7 +181,10 @@ class AnnotationDirectoryLoader implements LoaderInterface
                 $this->initClass($class),
                 $this->initClasses(...$annotation->middlewares),
                 $annotation->attributes
-            );
+            )
+            ->setSummary($annotation->summary)
+            ->setDescription($annotation->description)
+            ->setTags(...$annotation->tags);
         }
 
         return $this->collectionFactory->createCollection(...$routes);
