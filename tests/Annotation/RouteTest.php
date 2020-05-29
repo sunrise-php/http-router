@@ -281,12 +281,12 @@ class RouteTest extends TestCase
     /**
      * @param mixed $invalidDescription
      * @return void
-     * @dataProvider invalidDataProviderIfStringExpected
+     * @dataProvider invalidDataProviderIfArrayOrStringExpected
      */
     public function testConstructorParamsContainInvalidDescription($invalidDescription) : void
     {
         $this->expectException(InvalidAnnotationParameterException::class);
-        $this->expectExceptionMessage('@Route.description must be a string.');
+        $this->expectExceptionMessage('@Route.description must be an array or a string.');
 
         new Route([
             'name' => 'foo',
@@ -418,6 +418,28 @@ class RouteTest extends TestCase
     }
 
     /**
+     * @return void
+     */
+    public function testDescriptionConcatenation() : void
+    {
+        $params = [
+            'name' => 'foo',
+            'path' => '/foo',
+            'methods' => ['GET'],
+            'description' => [
+                'foo ',
+                'bar ',
+                'baz ',
+                'qux.',
+            ],
+        ];
+
+        $route = new Route($params);
+
+        $this->assertSame('foo bar baz qux.', $route->description);
+    }
+
+    /**
      * @return array
      */
     public function invalidDataProviderIfArrayExpected() : array
@@ -467,6 +489,24 @@ class RouteTest extends TestCase
             [0],
             [0.0],
             [[]],
+            [new \stdClass],
+            [function () {
+            }],
+            [\STDOUT],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function invalidDataProviderIfArrayOrStringExpected() : array
+    {
+        return [
+            [null],
+            [true],
+            [false],
+            [0],
+            [0.0],
             [new \stdClass],
             [function () {
             }],

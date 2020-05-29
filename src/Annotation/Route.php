@@ -26,6 +26,7 @@ use function is_array;
 use function is_int;
 use function is_string;
 use function is_subclass_of;
+use function implode;
 
 /**
  * @Annotation
@@ -68,7 +69,7 @@ final class Route
     public $summary;
 
     /**
-     * @var string
+     * @var array|string
      *
      * @since 2.4.0
      */
@@ -109,6 +110,11 @@ final class Route
         $this->assertParamsContainValidDescription($params);
         $this->assertParamsContainValidTags($params);
         $this->assertParamsContainValidPriority($params);
+
+        // Opportunity for concatenation...
+        if (is_array($params['description'])) {
+            $params['description'] = implode($params['description']);
+        }
 
         $this->name = $params['name'];
         $this->path = $params['path'];
@@ -264,9 +270,9 @@ final class Route
      */
     private function assertParamsContainValidDescription(array $params) : void
     {
-        if (!is_string($params['description'])) {
+        if (!is_array($params['description']) && !is_string($params['description'])) {
             throw new InvalidAnnotationParameterException(
-                '@Route.description must be a string.'
+                '@Route.description must be an array or a string.'
             );
         }
     }
