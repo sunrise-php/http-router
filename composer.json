@@ -31,7 +31,7 @@
         "doctrine/annotations": "^1.6"
     },
     "require-dev": {
-        "phpbench/phpbench": "0.16.10",
+        "phpbench/phpbench": "0.17.1",
         "phpunit/phpunit": "7.5.20",
         "sunrise/coding-standard": "1.0.0",
         "sunrise/http-message": "1.2.0",
