@@ -8,12 +8,11 @@ namespace Sunrise\Http\Router\Tests\Exception;
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Exception\Exception;
 use Sunrise\Http\Router\Exception\PageNotFoundException;
-use Sunrise\Http\Router\Exception\RouteNotFoundException;
 
 /**
- * RouteNotFoundExceptionTest
+ * PageNotFoundExceptionTest
  */
-class RouteNotFoundExceptionTest extends TestCase
+class PageNotFoundExceptionTest extends TestCase
 {
 
     /**
@@ -21,10 +20,9 @@ class RouteNotFoundExceptionTest extends TestCase
      */
     public function testConstructor() : void
     {
-        $exception = new RouteNotFoundException();
+        $exception = new PageNotFoundException();
 
         $this->assertInstanceOf(Exception::class, $exception);
-        $this->assertInstanceOf(PageNotFoundException::class, $exception);
     }
 
     /**
@@ -34,7 +32,7 @@ class RouteNotFoundExceptionTest extends TestCase
     {
         $message = 'blah';
 
-        $exception = new RouteNotFoundException($message);
+        $exception = new PageNotFoundException($message);
 
         $this->assertSame($message, $exception->getMessage());
     }
@@ -46,7 +44,7 @@ class RouteNotFoundExceptionTest extends TestCase
     {
         $context = ['foo' => 'bar'];
 
-        $exception = new RouteNotFoundException('blah', $context);
+        $exception = new PageNotFoundException('blah', $context);
 
         $this->assertSame($context, $exception->getContext());
     }
@@ -58,7 +56,7 @@ class RouteNotFoundExceptionTest extends TestCase
     {
         $code = 100;
 
-        $exception = new RouteNotFoundException('blah', [], $code);
+        $exception = new PageNotFoundException('blah', [], $code);
 
         $this->assertSame($code, $exception->getCode());
     }
@@ -70,7 +68,7 @@ class RouteNotFoundExceptionTest extends TestCase
     {
         $previous = new \Exception();
 
-        $exception = new RouteNotFoundException('blah', [], 0, $previous);
+        $exception = new PageNotFoundException('blah', [], 0, $previous);
 
         $this->assertSame($previous, $exception->getPrevious());
     }
