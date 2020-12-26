@@ -1,4 +1,4 @@
-# HTTP router for PHP 7.1+ based on PSR-7 and PSR-15 with support for annotations and OpenApi (Swagger)
+# HTTP router for PHP 7.1+ (incl. PHP 8) based on PSR-7 and PSR-15 with support for annotations and OpenApi (Swagger)
 
 [![Build Status](https://scrutinizer-ci.com/g/sunrise-php/http-router/badges/build.png?b=master)](https://scrutinizer-ci.com/g/sunrise-php/http-router/build-status/master)
 [![Code Coverage](https://scrutinizer-ci.com/g/sunrise-php/http-router/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/sunrise-php/http-router/?branch=master)
@@ -12,7 +12,7 @@
 ## Installation
 
 ```bash
-composer require 'sunrise/http-router:^2.4'
+composer require 'sunrise/http-router:^2.5'
 ```
 
 ## QuickStart
