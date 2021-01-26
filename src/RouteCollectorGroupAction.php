@@ -45,6 +45,24 @@ class RouteCollectorGroupAction
     }
 
     /**
+     * Sets the given host to all routes in the collection
+     *
+     * @param string $host
+     *
+     * @return self
+     *
+     * @since 2.6.0
+     */
+    public function setHost(string $host) : self
+    {
+        foreach ($this->collection->all() as $route) {
+            $route->setHost($host);
+        }
+
+        return $this;
+    }
+
+    /**
      * Adds the given path prefix to all routes in the collection
      *
      * @param string $prefix
