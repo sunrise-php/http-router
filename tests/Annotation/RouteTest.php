@@ -8,7 +8,6 @@ namespace Sunrise\Http\Router\Tests\Annotation;
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Annotation\Route;
 use Sunrise\Http\Router\Exception\InvalidAnnotationParameterException;
-use Sunrise\Http\Router\Exception\InvalidAnnotationSourceException;
 use Sunrise\Http\Router\RouteDescriptorInterface;
 use Sunrise\Http\Router\Tests\Fixture;
 
