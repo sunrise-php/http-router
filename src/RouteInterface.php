@@ -31,6 +31,15 @@ interface RouteInterface extends RequestHandlerInterface
     public function getName() : string;
 
     /**
+     * Gets the route host
+     *
+     * @return null|string
+     *
+     * @since 2.6.0
+     */
+    public function getHost() : ?string;
+
+    /**
      * Gets the route path
      *
      * @return string
@@ -100,6 +109,17 @@ interface RouteInterface extends RequestHandlerInterface
      * @return RouteInterface
      */
     public function setName(string $name) : RouteInterface;
+
+    /**
+     * Sets the given host to the route
+     *
+     * @param null|string $host
+     *
+     * @return RouteInterface
+     *
+     * @since 2.6.0
+     */
+    public function setHost(?string $host) : RouteInterface;
 
     /**
      * Sets the given path to the route

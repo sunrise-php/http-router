@@ -56,6 +56,13 @@ class Route implements RouteInterface
     private $name;
 
     /**
+     * The route host
+     *
+     * @var null|string
+     */
+    private $host = null;
+
+    /**
      * The route path
      *
      * @var string
@@ -148,6 +155,14 @@ class Route implements RouteInterface
     /**
      * {@inheritDoc}
      */
+    public function getHost() : ?string
+    {
+        return $this->host;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public function getPath() : string
     {
         return $this->path;
@@ -215,6 +230,16 @@ class Route implements RouteInterface
     public function setName(string $name) : RouteInterface
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setHost(?string $host) : RouteInterface
+    {
+        $this->host = $host;
 
         return $this;
     }
