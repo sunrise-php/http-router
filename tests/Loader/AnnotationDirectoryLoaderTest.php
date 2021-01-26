@@ -10,9 +10,9 @@ use Psr\Container\ContainerInterface;
 use Psr\SimpleCache\CacheInterface;
 use Sunrise\Http\Router\Annotation\Route as AnnotationRoute;
 use Sunrise\Http\Router\Exception\InvalidAnnotationParameterException;
-use Sunrise\Http\Router\Exception\InvalidAnnotationSourceException;
 use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
 use Sunrise\Http\Router\Loader\AnnotationDirectoryLoader;
+use Sunrise\Http\Router\Loader\DescriptorDirectoryLoader;
 use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\Tests\Fixture;
 
@@ -30,6 +30,9 @@ class AnnotationDirectoryLoaderTest extends TestCase
         $loader = new AnnotationDirectoryLoader();
 
         $this->assertInstanceOf(LoaderInterface::class, $loader);
+
+        // BC 2.6.0
+        $this->assertInstanceOf(DescriptorDirectoryLoader::class, $loader);
     }
 
     /**
@@ -178,6 +181,10 @@ class AnnotationDirectoryLoaderTest extends TestCase
             'description' => 'the route description',
             'tags' => ['foo', 'bar'],
         ], Fixture\Helper::routesToArray204($routes));
+
+        $this->assertContains([
+            'host' => 'localhost',
+        ], Fixture\Helper::routesToArray206($routes));
     }
 
     /**
@@ -297,6 +304,10 @@ class AnnotationDirectoryLoaderTest extends TestCase
                 InvalidAnnotationParameterException::class,
             ],
             [
+                __DIR__ . '/../Fixture/Annotation/Route/Invalid/InvalidHost',
+                InvalidAnnotationParameterException::class,
+            ],
+            [
                 __DIR__ . '/../Fixture/Annotation/Route/Invalid/PathMissing',
                 InvalidAnnotationParameterException::class,
             ],
@@ -347,10 +358,6 @@ class AnnotationDirectoryLoaderTest extends TestCase
             [
                 __DIR__ . '/../Fixture/Annotation/Route/Invalid/PriorityNotInteger',
                 InvalidAnnotationParameterException::class,
-            ],
-            [
-                __DIR__ . '/../Fixture/Annotation/Route/Invalid/SourceNotValid',
-                InvalidAnnotationSourceException::class,
             ],
         ];
     }
