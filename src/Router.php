@@ -49,6 +49,13 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     public const ATTR_NAME_FOR_ROUTING_ERROR = '@routing-error';
 
     /**
+     * The router host table
+     *
+     * @var array
+     */
+    private $hosts = [];
+
+    /**
      * The router routes
      *
      * @var RouteInterface[]
@@ -61,6 +68,18 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      * @var MiddlewareInterface[]
      */
     private $middlewares = [];
+
+    /**
+     * Gets the router host table
+     *
+     * @return array
+     *
+     * @since 2.6.0
+     */
+    public function getHosts() : array
+    {
+        return $this->hosts;
+    }
 
     /**
      * Gets the router routes
@@ -80,6 +99,21 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     public function getMiddlewares() : array
     {
         return array_values($this->middlewares);
+    }
+
+    /**
+     * Adds the given host alias to the router host table
+     *
+     * @param string $alias
+     * @param string $host
+     *
+     * @return void
+     *
+     * @since 2.6.0
+     */
+    public function addHost(string $alias, string $host) : void
+    {
+        $this->hosts[$alias] = $host;
     }
 
     /**
@@ -206,11 +240,20 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      */
     public function match(ServerRequestInterface $request) : RouteInterface
     {
+        $requestHost = $request->getUri()->getHost();
         $requestPath = $request->getUri()->getPath();
         $requestMethod = $request->getMethod();
         $allowedMethods = [];
 
         foreach ($this->routes as $route) {
+            $routeHost = $route->getHost();
+            if (isset($routeHost)) {
+                $routeHost = $this->hosts[$routeHost] ?? $routeHost;
+                if ($routeHost <> $requestHost) {
+                    continue;
+                }
+            }
+
             // https://github.com/sunrise-php/http-router/issues/50
             // https://tools.ietf.org/html/rfc7231#section-6.5.5
             if (!path_match($route->getPath(), $requestPath, $attributes)) {

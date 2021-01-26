@@ -13,6 +13,7 @@ use Sunrise\Http\Router\Exception\MiddlewareAlreadyExistsException;
 use Sunrise\Http\Router\Exception\RouteAlreadyExistsException;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
 use Sunrise\Http\Router\Loader\LoaderInterface;
+use Sunrise\Http\Router\Route;
 use Sunrise\Http\Router\RouteCollection;
 use Sunrise\Http\Router\Router;
 use Sunrise\Http\ServerRequest\ServerRequestFactory;
@@ -585,5 +586,84 @@ class RouterTest extends TestCase
         $router->load(...$loaders);
 
         $this->assertSame($expectedRoutes, $router->getRoutes());
+    }
+
+    /**
+     * @return void
+     *
+     * @since 2.6.0
+     */
+    public function testHostStorage() : void
+    {
+        $router = new Router();
+
+        $this->assertSame([], $router->getHosts());
+
+        $router->addHost('google', 'google.com');
+        $this->assertSame([
+            'google' => 'google.com',
+        ], $router->getHosts());
+
+        $router->addHost('yahoo', 'yahoo.com');
+        $this->assertSame([
+            'google' => 'google.com',
+            'yahoo' => 'yahoo.com',
+        ], $router->getHosts());
+
+        $router->addHost('google', 'localhost');
+        $this->assertSame([
+            'google' => 'localhost',
+            'yahoo' => 'yahoo.com',
+        ], $router->getHosts());
+    }
+
+    /**
+     * @return void
+     *
+     * @since 2.6.0
+     */
+    public function testMatchWithHosts() : void
+    {
+        $requestHandler = new Fixture\BlankRequestHandler();
+
+        $routes = [
+            new Route('foo', '/ping', ['GET'], $requestHandler),
+            new Route('bar', '/ping', ['GET'], $requestHandler),
+            new Route('baz', '/ping', ['GET'], $requestHandler),
+            new Route('qux', '/ping', ['GET'], $requestHandler),
+        ];
+
+        $routes[0]->setHost('foo.host');
+        $routes[1]->setHost('bar.host');
+        $routes[2]->setHost('baz.host');
+
+        $router = new Router();
+        $router->addHost('baz.host', 'example.com');
+        $router->addRoute(...$routes);
+
+        $foundRoute = $router->match((new ServerRequestFactory)
+            ->createServerRequest('GET', 'http://foo.host/ping'));
+        $this->assertSame($routes[0]->getName(), $foundRoute->getName());
+
+        $foundRoute = $router->match((new ServerRequestFactory)
+            ->createServerRequest('GET', 'http://bar.host/ping'));
+        $this->assertSame($routes[1]->getName(), $foundRoute->getName());
+
+        $foundRoute = $router->match((new ServerRequestFactory)
+            ->createServerRequest('GET', 'http://example.com/ping'));
+        $this->assertSame($routes[2]->getName(), $foundRoute->getName());
+
+        $foundRoute = $router->match((new ServerRequestFactory)
+            ->createServerRequest('GET', 'http://localhost/ping'));
+        $this->assertSame($routes[3]->getName(), $foundRoute->getName());
+
+        $foundRoute = $router->match((new ServerRequestFactory)
+            ->createServerRequest('GET', 'http://baz.host/ping'));
+        $this->assertSame($routes[3]->getName(), $foundRoute->getName());
+
+        $routes[3]->setHost('qux.host');
+        $this->expectException(RouteNotFoundException::class);
+        $router->match((new ServerRequestFactory)
+            ->createServerRequest('GET', 'http://baz.host/ping'));
     }
 }
