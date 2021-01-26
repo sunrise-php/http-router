@@ -8,6 +8,7 @@ namespace Sunrise\Http\Router\Tests\Exception;
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Exception\Exception;
 use Sunrise\Http\Router\Exception\InvalidAnnotationParameterException;
+use Sunrise\Http\Router\Exception\InvalidDescriptorArgumentException;
 
 /**
  * InvalidAnnotationParameterExceptionTest
@@ -23,6 +24,9 @@ class InvalidAnnotationParameterExceptionTest extends TestCase
         $exception = new InvalidAnnotationParameterException();
 
         $this->assertInstanceOf(Exception::class, $exception);
+
+        // BC for 2.6.0
+        $this->assertInstanceOf(InvalidDescriptorArgumentException::class, $exception);
     }
 
     /**
