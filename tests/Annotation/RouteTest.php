@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Annotation\Route;
 use Sunrise\Http\Router\Exception\InvalidAnnotationParameterException;
 use Sunrise\Http\Router\Exception\InvalidAnnotationSourceException;
+use Sunrise\Http\Router\RouteDescriptorInterface;
 use Sunrise\Http\Router\Tests\Fixture;
 
 /**
@@ -16,19 +17,6 @@ use Sunrise\Http\Router\Tests\Fixture;
  */
 class RouteTest extends TestCase
 {
-
-    /**
-     * @return void
-     */
-    public function testAssertValidSource() : void
-    {
-        Route::assertValidSource(Fixture\BlankRequestHandler::class);
-
-        $this->expectException(InvalidAnnotationSourceException::class);
-        $this->expectExceptionMessage('@Route annotation source stdClass is not a request handler.');
-
-        Route::assertValidSource(\stdClass::class);
-    }
 
     /**
      * @return void
@@ -43,17 +31,20 @@ class RouteTest extends TestCase
 
         $route = new Route($params);
 
-        $this->assertSame($params['name'], $route->name);
-        $this->assertSame($params['path'], $route->path);
-        $this->assertSame($params['methods'], $route->methods);
+        $this->assertInstanceOf(RouteDescriptorInterface::class, $route);
+
+        $this->assertSame($params['name'], $route->getName());
+        $this->assertSame($params['path'], $route->getPath());
+        $this->assertSame($params['methods'], $route->getMethods());
 
         // default property values...
-        $this->assertSame([], $route->middlewares);
-        $this->assertSame([], $route->attributes);
-        $this->assertSame('', $route->summary);
-        $this->assertSame('', $route->description);
-        $this->assertSame([], $route->tags);
-        $this->assertSame(0, $route->priority);
+        $this->assertSame(null, $route->getHost());
+        $this->assertSame([], $route->getMiddlewares());
+        $this->assertSame([], $route->getAttributes());
+        $this->assertSame('', $route->getSummary());
+        $this->assertSame('', $route->getDescription());
+        $this->assertSame([], $route->getTags());
+        $this->assertSame(0, $route->getPriority());
     }
 
     /**
@@ -63,6 +54,7 @@ class RouteTest extends TestCase
     {
         $params = [
             'name' => 'foo',
+            'host' => 'localhost',
             'path' => '/foo',
             'methods' => ['GET'],
             'middlewares' => [Fixture\BlankMiddleware::class],
@@ -75,15 +67,38 @@ class RouteTest extends TestCase
 
         $route = new Route($params);
 
-        $this->assertSame($params['name'], $route->name);
-        $this->assertSame($params['path'], $route->path);
-        $this->assertSame($params['methods'], $route->methods);
-        $this->assertSame($params['middlewares'], $route->middlewares);
-        $this->assertSame($params['attributes'], $route->attributes);
-        $this->assertSame($params['summary'], $route->summary);
-        $this->assertSame($params['description'], $route->description);
-        $this->assertSame($params['tags'], $route->tags);
-        $this->assertSame($params['priority'], $route->priority);
+        $this->assertSame($params['name'], $route->getName());
+        $this->assertSame($params['host'], $route->getHost());
+        $this->assertSame($params['path'], $route->getPath());
+        $this->assertSame($params['methods'], $route->getMethods());
+        $this->assertSame($params['middlewares'], $route->getMiddlewares());
+        $this->assertSame($params['attributes'], $route->getAttributes());
+        $this->assertSame($params['summary'], $route->getSummary());
+        $this->assertSame($params['description'], $route->getDescription());
+        $this->assertSame($params['tags'], $route->getTags());
+        $this->assertSame($params['priority'], $route->getPriority());
+    }
+
+    /**
+     * @return void
+     *
+     * @since 2.6.0
+     */
+    public function testConstructorWithNullableHost() : void
+    {
+        $params = [
+            'name' => 'foo',
+            'host' => null,
+            'path' => '/foo',
+            'methods' => ['GET'],
+        ];
+
+        $route = new Route($params);
+
+        $this->assertSame($params['name'], $route->getName());
+        $this->assertSame($params['host'], $route->getHost());
+        $this->assertSame($params['path'], $route->getPath());
+        $this->assertSame($params['methods'], $route->getMethods());
     }
 
     /**
@@ -185,6 +200,25 @@ class RouteTest extends TestCase
 
         new Route([
             'name' => $invalidName,
+            'path' => '/foo',
+            'methods' => ['GET'],
+        ]);
+    }
+
+    /**
+     * @param mixed $invalidHost
+     * @return void
+     * @dataProvider invalidDataProviderIfNullOrStringExpected
+     * @since 2.6.0
+     */
+    public function testConstructorParamsContainInvalidHost($invalidHost) : void
+    {
+        $this->expectException(InvalidAnnotationParameterException::class);
+        $this->expectExceptionMessage('@Route.host must be null or string.');
+
+        new Route([
+            'name' => 'foo',
+            'host' => $invalidHost,
             'path' => '/foo',
             'methods' => ['GET'],
         ]);
@@ -507,6 +541,26 @@ class RouteTest extends TestCase
             [false],
             [0],
             [0.0],
+            [new \stdClass],
+            [function () {
+            }],
+            [\STDOUT],
+        ];
+    }
+
+    /**
+     * @return array
+     *
+     * @since 2.6.0
+     */
+    public function invalidDataProviderIfNullOrStringExpected() : array
+    {
+        return [
+            [true],
+            [false],
+            [0],
+            [0.0],
+            [[]],
             [new \stdClass],
             [function () {
             }],

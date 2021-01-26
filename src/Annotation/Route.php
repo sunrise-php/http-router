@@ -17,82 +17,134 @@ namespace Sunrise\Http\Router\Annotation;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Exception\InvalidAnnotationParameterException;
-use Sunrise\Http\Router\Exception\InvalidAnnotationSourceException;
+use Sunrise\Http\Router\Exception\InvalidDescriptorArgumentException;
+use Sunrise\Http\Router\RouteDescriptorInterface;
 
 /**
  * Import functions
  */
 use function is_array;
 use function is_int;
+use function is_null;
 use function is_string;
 use function is_subclass_of;
 use function implode;
 
 /**
+ * Annotation for a route description
+ *
  * @Annotation
  *
  * @Target({"CLASS"})
  */
-final class Route
+final class Route implements RouteDescriptorInterface
 {
 
     /**
+     * A route name
+     *
      * @var string
+     *
+     * @deprecated 2.6.0 The public property will be closed at the near time. Please use getters.
      */
     public $name;
 
     /**
+     * A route host
+     *
+     * @var null|string
+     */
+    private $host;
+
+    /**
+     * A route path
+     *
      * @var string
+     *
+     * @deprecated 2.6.0 The public property will be closed at the near time. Please use getters.
      */
     public $path;
 
     /**
+     * A route methods
+     *
      * @var array
+     *
+     * @deprecated 2.6.0 The public property will be closed at the near time. Please use getters.
      */
     public $methods;
 
     /**
+     * A route middlewares
+     *
      * @var array
+     *
+     * @deprecated 2.6.0 The public property will be closed at the near time. Please use getters.
      */
     public $middlewares;
 
     /**
+     * A route attributes
+     *
      * @var array
+     *
+     * @deprecated 2.6.0 The public property will be closed at the near time. Please use getters.
      */
     public $attributes;
 
     /**
+     * A route summary
+     *
      * @var string
      *
      * @since 2.4.0
+     *
+     * @deprecated 2.6.0 The public property will be closed at the near time. Please use getters.
      */
     public $summary;
 
     /**
+     * A route description
+     *
      * @var array|string
      *
      * @since 2.4.0
+     *
+     * @deprecated 2.6.0 The public property will be closed at the near time. Please use getters.
      */
     public $description;
 
     /**
+     * A route tags
+     *
      * @var array
      *
      * @since 2.4.0
+     *
+     * @deprecated 2.6.0 The public property will be closed at the near time. Please use getters.
      */
     public $tags;
 
     /**
+     * A route priority
+     *
      * @var int
+     *
+     * @deprecated 2.6.0 The public property will be closed at the near time. Please use getters.
      */
     public $priority;
 
     /**
+     * Constructor of the annotation
+     *
      * @param array $params
+     *
+     * @throws InvalidDescriptorArgumentException
      */
     public function __construct(array $params)
     {
         $params += [
+            'host' => null,
             'middlewares' => [],
             'attributes' => [],
             'summary' => '',
@@ -102,6 +154,7 @@ final class Route
         ];
 
         $this->assertParamsContainValidName($params);
+        $this->assertParamsContainValidHost($params);
         $this->assertParamsContainValidPath($params);
         $this->assertParamsContainValidMethods($params);
         $this->assertParamsContainValidMiddlewares($params);
@@ -117,6 +170,7 @@ final class Route
         }
 
         $this->name = $params['name'];
+        $this->host = $params['host'];
         $this->path = $params['path'];
         $this->methods = $params['methods'];
         $this->middlewares = $params['middlewares'];
@@ -128,19 +182,103 @@ final class Route
     }
 
     /**
-     * @param string $source
+     * {@inheritDoc}
      *
-     * @return void
-     *
-     * @throws InvalidAnnotationSourceException
+     * @since 2.6.0
      */
-    public static function assertValidSource(string $source) : void
+    public function getName() : string
     {
-        if (!is_subclass_of($source, RequestHandlerInterface::class)) {
-            throw new InvalidAnnotationSourceException(
-                sprintf('@Route annotation source %s is not a request handler.', $source)
-            );
-        }
+        return $this->name;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 2.6.0
+     */
+    public function getHost() : ?string
+    {
+        return $this->host;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 2.6.0
+     */
+    public function getPath() : string
+    {
+        return $this->path;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 2.6.0
+     */
+    public function getMethods() : array
+    {
+        return $this->methods;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 2.6.0
+     */
+    public function getMiddlewares() : array
+    {
+        return $this->middlewares;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 2.6.0
+     */
+    public function getAttributes() : array
+    {
+        return $this->attributes;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 2.6.0
+     */
+    public function getSummary() : string
+    {
+        return $this->summary;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 2.6.0
+     */
+    public function getDescription() : string
+    {
+        return $this->description;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 2.6.0
+     */
+    public function getTags() : array
+    {
+        return $this->tags;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @since 2.6.0
+     */
+    public function getPriority() : int
+    {
+        return $this->priority;
     }
 
     /**
@@ -148,7 +286,7 @@ final class Route
      *
      * @return void
      *
-     * @throws InvalidAnnotationParameterException
+     * @throws InvalidDescriptorArgumentException
      */
     private function assertParamsContainValidName(array $params) : void
     {
@@ -164,7 +302,23 @@ final class Route
      *
      * @return void
      *
-     * @throws InvalidAnnotationParameterException
+     * @throws InvalidDescriptorArgumentException
+     */
+    private function assertParamsContainValidHost(array $params) : void
+    {
+        if (!is_null($params['host']) && !is_string($params['host'])) {
+            throw new InvalidAnnotationParameterException(
+                '@Route.host must be null or string.'
+            );
+        }
+    }
+
+    /**
+     * @param array $params
+     *
+     * @return void
+     *
+     * @throws InvalidDescriptorArgumentException
      */
     private function assertParamsContainValidPath(array $params) : void
     {
@@ -180,7 +334,7 @@ final class Route
      *
      * @return void
      *
-     * @throws InvalidAnnotationParameterException
+     * @throws InvalidDescriptorArgumentException
      */
     private function assertParamsContainValidMethods(array $params) : void
     {
@@ -204,7 +358,7 @@ final class Route
      *
      * @return void
      *
-     * @throws InvalidAnnotationParameterException
+     * @throws InvalidDescriptorArgumentException
      */
     private function assertParamsContainValidMiddlewares(array $params) : void
     {
@@ -234,7 +388,7 @@ final class Route
      *
      * @return void
      *
-     * @throws InvalidAnnotationParameterException
+     * @throws InvalidDescriptorArgumentException
      */
     private function assertParamsContainValidAttributes(array $params) : void
     {
@@ -250,7 +404,7 @@ final class Route
      *
      * @return void
      *
-     * @throws InvalidAnnotationParameterException
+     * @throws InvalidDescriptorArgumentException
      */
     private function assertParamsContainValidSummary(array $params) : void
     {
@@ -266,7 +420,7 @@ final class Route
      *
      * @return void
      *
-     * @throws InvalidAnnotationParameterException
+     * @throws InvalidDescriptorArgumentException
      */
     private function assertParamsContainValidDescription(array $params) : void
     {
@@ -282,7 +436,7 @@ final class Route
      *
      * @return void
      *
-     * @throws InvalidAnnotationParameterException
+     * @throws InvalidDescriptorArgumentException
      */
     private function assertParamsContainValidTags(array $params) : void
     {
@@ -306,7 +460,7 @@ final class Route
      *
      * @return void
      *
-     * @throws InvalidAnnotationParameterException
+     * @throws InvalidDescriptorArgumentException
      */
     private function assertParamsContainValidPriority(array $params) : void
     {
