@@ -16,6 +16,6 @@ namespace Sunrise\Http\Router\Exception;
  *
  * @deprecated 2.6.0 The exception will be removed at the near time.
  */
-class InvalidAnnotationParameterException extends Exception
+class InvalidAnnotationParameterException extends InvalidDescriptorArgumentException
 {
 }
