@@ -250,13 +250,11 @@ class DescriptorDirectoryLoader implements LoaderInterface
             $reflection = new ReflectionClass($class);
 
             if (8 === PHP_MAJOR_VERSION) {
-                // @codeCoverageIgnoreStart
                 $attribute = $reflection->getAttributes(AttributeRouteDescriptor::class)[0] ?? null;
                 if (isset($attribute)) {
                     $descriptors[$class] = $attribute->newInstance();
                     continue;
                 }
-                // @codeCoverageIgnoreEnd
             }
 
             $annotation = $this->annotationReader->getClassAnnotation($reflection, AnnotationRouteDescriptor::class);
