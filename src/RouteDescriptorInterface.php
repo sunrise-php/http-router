@@ -55,7 +55,7 @@ interface RouteDescriptorInterface
     /**
      * Gets a route middlewares
      *
-     * @return MiddlewareInterface[]
+     * @return string[]
      */
     public function getMiddlewares() : array;
 
