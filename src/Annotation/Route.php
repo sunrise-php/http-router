@@ -15,7 +15,6 @@ namespace Sunrise\Http\Router\Annotation;
  * Import classes
  */
 use Psr\Http\Server\MiddlewareInterface;
-use Sunrise\Http\Router\Exception\InvalidAnnotationParameterException;
 use Sunrise\Http\Router\Exception\InvalidDescriptorArgumentException;
 use Sunrise\Http\Router\RouteDescriptorInterface;
 
@@ -43,15 +42,15 @@ final class Route implements RouteDescriptorInterface
      * A route name
      *
      * @var string
-     *
-     * @deprecated 2.6.0 The public property will be closed at the near time. Please use getters.
      */
-    public $name;
+    private $name;
 
     /**
      * A route host
      *
      * @var null|string
+     *
+     * @since 2.6.0
      */
     private $host;
 
@@ -59,37 +58,29 @@ final class Route implements RouteDescriptorInterface
      * A route path
      *
      * @var string
-     *
-     * @deprecated 2.6.0 The public property will be closed at the near time. Please use getters.
      */
-    public $path;
+    private $path;
 
     /**
      * A route methods
      *
      * @var array
-     *
-     * @deprecated 2.6.0 The public property will be closed at the near time. Please use getters.
      */
-    public $methods;
+    private $methods;
 
     /**
      * A route middlewares
      *
      * @var array
-     *
-     * @deprecated 2.6.0 The public property will be closed at the near time. Please use getters.
      */
-    public $middlewares;
+    private $middlewares;
 
     /**
      * A route attributes
      *
      * @var array
-     *
-     * @deprecated 2.6.0 The public property will be closed at the near time. Please use getters.
      */
-    public $attributes;
+    private $attributes;
 
     /**
      * A route summary
@@ -97,10 +88,8 @@ final class Route implements RouteDescriptorInterface
      * @var string
      *
      * @since 2.4.0
-     *
-     * @deprecated 2.6.0 The public property will be closed at the near time. Please use getters.
      */
-    public $summary;
+    private $summary;
 
     /**
      * A route description
@@ -108,10 +97,8 @@ final class Route implements RouteDescriptorInterface
      * @var array|string
      *
      * @since 2.4.0
-     *
-     * @deprecated 2.6.0 The public property will be closed at the near time. Please use getters.
      */
-    public $description;
+    private $description;
 
     /**
      * A route tags
@@ -119,19 +106,15 @@ final class Route implements RouteDescriptorInterface
      * @var array
      *
      * @since 2.4.0
-     *
-     * @deprecated 2.6.0 The public property will be closed at the near time. Please use getters.
      */
-    public $tags;
+    private $tags;
 
     /**
      * A route priority
      *
      * @var int
-     *
-     * @deprecated 2.6.0 The public property will be closed at the near time. Please use getters.
      */
-    public $priority;
+    private $priority;
 
     /**
      * Constructor of the annotation
@@ -168,16 +151,16 @@ final class Route implements RouteDescriptorInterface
             $params['description'] = implode($params['description']);
         }
 
-        /** @scrutinizer ignore-deprecated */ $this->name = $params['name'];
-        /** @scrutinizer ignore-deprecated */ $this->host = $params['host'];
-        /** @scrutinizer ignore-deprecated */ $this->path = $params['path'];
-        /** @scrutinizer ignore-deprecated */ $this->methods = $params['methods'];
-        /** @scrutinizer ignore-deprecated */ $this->middlewares = $params['middlewares'];
-        /** @scrutinizer ignore-deprecated */ $this->attributes = $params['attributes'];
-        /** @scrutinizer ignore-deprecated */ $this->summary = $params['summary'];
-        /** @scrutinizer ignore-deprecated */ $this->description = $params['description'];
-        /** @scrutinizer ignore-deprecated */ $this->tags = $params['tags'];
-        /** @scrutinizer ignore-deprecated */ $this->priority = $params['priority'];
+        $this->name = $params['name'];
+        $this->host = $params['host'];
+        $this->path = $params['path'];
+        $this->methods = $params['methods'];
+        $this->middlewares = $params['middlewares'];
+        $this->attributes = $params['attributes'];
+        $this->summary = $params['summary'];
+        $this->description = $params['description'];
+        $this->tags = $params['tags'];
+        $this->priority = $params['priority'];
     }
 
     /**
@@ -187,7 +170,7 @@ final class Route implements RouteDescriptorInterface
      */
     public function getName() : string
     {
-        return /** @scrutinizer ignore-deprecated */ $this->name;
+        return $this->name;
     }
 
     /**
@@ -197,7 +180,7 @@ final class Route implements RouteDescriptorInterface
      */
     public function getHost() : ?string
     {
-        return /** @scrutinizer ignore-deprecated */ $this->host;
+        return $this->host;
     }
 
     /**
@@ -207,7 +190,7 @@ final class Route implements RouteDescriptorInterface
      */
     public function getPath() : string
     {
-        return /** @scrutinizer ignore-deprecated */ $this->path;
+        return $this->path;
     }
 
     /**
@@ -217,7 +200,7 @@ final class Route implements RouteDescriptorInterface
      */
     public function getMethods() : array
     {
-        return /** @scrutinizer ignore-deprecated */ $this->methods;
+        return $this->methods;
     }
 
     /**
@@ -227,7 +210,7 @@ final class Route implements RouteDescriptorInterface
      */
     public function getMiddlewares() : array
     {
-        return /** @scrutinizer ignore-deprecated */ $this->middlewares;
+        return $this->middlewares;
     }
 
     /**
@@ -237,7 +220,7 @@ final class Route implements RouteDescriptorInterface
      */
     public function getAttributes() : array
     {
-        return /** @scrutinizer ignore-deprecated */ $this->attributes;
+        return $this->attributes;
     }
 
     /**
@@ -247,7 +230,7 @@ final class Route implements RouteDescriptorInterface
      */
     public function getSummary() : string
     {
-        return /** @scrutinizer ignore-deprecated */ $this->summary;
+        return $this->summary;
     }
 
     /**
@@ -257,7 +240,7 @@ final class Route implements RouteDescriptorInterface
      */
     public function getDescription() : string
     {
-        return /** @scrutinizer ignore-deprecated */ $this->description;
+        return $this->description;
     }
 
     /**
@@ -267,7 +250,7 @@ final class Route implements RouteDescriptorInterface
      */
     public function getTags() : array
     {
-        return /** @scrutinizer ignore-deprecated */ $this->tags;
+        return $this->tags;
     }
 
     /**
@@ -277,7 +260,7 @@ final class Route implements RouteDescriptorInterface
      */
     public function getPriority() : int
     {
-        return /** @scrutinizer ignore-deprecated */ $this->priority;
+        return $this->priority;
     }
 
     /**
@@ -290,7 +273,7 @@ final class Route implements RouteDescriptorInterface
     private function assertParamsContainValidName(array $params) : void
     {
         if (empty($params['name']) || !is_string($params['name'])) {
-            throw /** @scrutinizer ignore-deprecated */ new InvalidAnnotationParameterException(
+            throw new InvalidDescriptorArgumentException(
                 '@Route.name must be not an empty string.'
             );
         }
@@ -306,7 +289,7 @@ final class Route implements RouteDescriptorInterface
     private function assertParamsContainValidHost(array $params) : void
     {
         if (!is_null($params['host']) && !is_string($params['host'])) {
-            throw /** @scrutinizer ignore-deprecated */ new InvalidAnnotationParameterException(
+            throw new InvalidDescriptorArgumentException(
                 '@Route.host must be null or string.'
             );
         }
@@ -322,7 +305,7 @@ final class Route implements RouteDescriptorInterface
     private function assertParamsContainValidPath(array $params) : void
     {
         if (empty($params['path']) || !is_string($params['path'])) {
-            throw /** @scrutinizer ignore-deprecated */ new InvalidAnnotationParameterException(
+            throw new InvalidDescriptorArgumentException(
                 '@Route.path must be not an empty string.'
             );
         }
@@ -338,14 +321,14 @@ final class Route implements RouteDescriptorInterface
     private function assertParamsContainValidMethods(array $params) : void
     {
         if (empty($params['methods']) || !is_array($params['methods'])) {
-            throw /** @scrutinizer ignore-deprecated */ new InvalidAnnotationParameterException(
+            throw new InvalidDescriptorArgumentException(
                 '@Route.methods must be not an empty array.'
             );
         }
 
         foreach ($params['methods'] as $method) {
             if (!is_string($method)) {
-                throw /** @scrutinizer ignore-deprecated */ new InvalidAnnotationParameterException(
+                throw new InvalidDescriptorArgumentException(
                     '@Route.methods must contain only strings.'
                 );
             }
@@ -362,20 +345,20 @@ final class Route implements RouteDescriptorInterface
     private function assertParamsContainValidMiddlewares(array $params) : void
     {
         if (!is_array($params['middlewares'])) {
-            throw /** @scrutinizer ignore-deprecated */ new InvalidAnnotationParameterException(
+            throw new InvalidDescriptorArgumentException(
                 '@Route.middlewares must be an array.'
             );
         }
 
         foreach ($params['middlewares'] as $middleware) {
             if (!is_string($middleware)) {
-                throw /** @scrutinizer ignore-deprecated */ new InvalidAnnotationParameterException(
+                throw new InvalidDescriptorArgumentException(
                     '@Route.middlewares must contain only strings.'
                 );
             }
 
             if (!is_subclass_of($middleware, MiddlewareInterface::class)) {
-                throw /** @scrutinizer ignore-deprecated */ new InvalidAnnotationParameterException(
+                throw new InvalidDescriptorArgumentException(
                     '@Route.middlewares contains a nonexistent or non-middleware class.'
                 );
             }
@@ -392,7 +375,7 @@ final class Route implements RouteDescriptorInterface
     private function assertParamsContainValidAttributes(array $params) : void
     {
         if (!is_array($params['attributes'])) {
-            throw /** @scrutinizer ignore-deprecated */ new InvalidAnnotationParameterException(
+            throw new InvalidDescriptorArgumentException(
                 '@Route.attributes must be an array.'
             );
         }
@@ -408,7 +391,7 @@ final class Route implements RouteDescriptorInterface
     private function assertParamsContainValidSummary(array $params) : void
     {
         if (!is_string($params['summary'])) {
-            throw /** @scrutinizer ignore-deprecated */ new InvalidAnnotationParameterException(
+            throw new InvalidDescriptorArgumentException(
                 '@Route.summary must be a string.'
             );
         }
@@ -424,7 +407,7 @@ final class Route implements RouteDescriptorInterface
     private function assertParamsContainValidDescription(array $params) : void
     {
         if (!is_array($params['description']) && !is_string($params['description'])) {
-            throw /** @scrutinizer ignore-deprecated */ new InvalidAnnotationParameterException(
+            throw new InvalidDescriptorArgumentException(
                 '@Route.description must be an array or a string.'
             );
         }
@@ -440,14 +423,14 @@ final class Route implements RouteDescriptorInterface
     private function assertParamsContainValidTags(array $params) : void
     {
         if (!is_array($params['tags'])) {
-            throw /** @scrutinizer ignore-deprecated */ new InvalidAnnotationParameterException(
+            throw new InvalidDescriptorArgumentException(
                 '@Route.tags must be an array.'
             );
         }
 
         foreach ($params['tags'] as $middleware) {
             if (!is_string($middleware)) {
-                throw /** @scrutinizer ignore-deprecated */ new InvalidAnnotationParameterException(
+                throw new InvalidDescriptorArgumentException(
                     '@Route.tags must contain only strings.'
                 );
             }
@@ -464,7 +447,7 @@ final class Route implements RouteDescriptorInterface
     private function assertParamsContainValidPriority(array $params) : void
     {
         if (!is_int($params['priority'])) {
-            throw /** @scrutinizer ignore-deprecated */ new InvalidAnnotationParameterException(
+            throw new InvalidDescriptorArgumentException(
                 '@Route.priority must be an integer.'
             );
         }
