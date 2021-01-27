@@ -64,14 +64,14 @@ final class Route implements RouteDescriptorInterface
     /**
      * A route methods
      *
-     * @var array
+     * @var string[]
      */
     private $methods;
 
     /**
      * A route middlewares
      *
-     * @var array
+     * @var string[]
      */
     private $middlewares;
 
@@ -94,7 +94,7 @@ final class Route implements RouteDescriptorInterface
     /**
      * A route description
      *
-     * @var array|string
+     * @var string
      *
      * @since 2.4.0
      */
@@ -103,7 +103,7 @@ final class Route implements RouteDescriptorInterface
     /**
      * A route tags
      *
-     * @var array
+     * @var string[]
      *
      * @since 2.4.0
      */
