@@ -23,10 +23,8 @@ use Sunrise\Http\Router\RouteDescriptorInterface;
  */
 use function is_array;
 use function is_int;
-use function is_null;
 use function is_string;
 use function is_subclass_of;
-use function implode;
 
 /**
  * Annotation for a route description
@@ -49,8 +47,6 @@ final class Route implements RouteDescriptorInterface
      * A route host
      *
      * @var null|string
-     *
-     * @since 2.6.0
      */
     private $host;
 
@@ -86,8 +82,6 @@ final class Route implements RouteDescriptorInterface
      * A route summary
      *
      * @var string
-     *
-     * @since 2.4.0
      */
     private $summary;
 
@@ -95,8 +89,6 @@ final class Route implements RouteDescriptorInterface
      * A route description
      *
      * @var string
-     *
-     * @since 2.4.0
      */
     private $description;
 
@@ -104,8 +96,6 @@ final class Route implements RouteDescriptorInterface
      * A route tags
      *
      * @var string[]
-     *
-     * @since 2.4.0
      */
     private $tags;
 
@@ -125,48 +115,20 @@ final class Route implements RouteDescriptorInterface
      */
     public function __construct(array $params)
     {
-        $params += [
-            'host' => null,
-            'middlewares' => [],
-            'attributes' => [],
-            'summary' => '',
-            'description' => '',
-            'tags' => [],
-            'priority' => 0,
-        ];
-
-        $this->assertParamsContainValidName($params);
-        $this->assertParamsContainValidHost($params);
-        $this->assertParamsContainValidPath($params);
-        $this->assertParamsContainValidMethods($params);
-        $this->assertParamsContainValidMiddlewares($params);
-        $this->assertParamsContainValidAttributes($params);
-        $this->assertParamsContainValidSummary($params);
-        $this->assertParamsContainValidDescription($params);
-        $this->assertParamsContainValidTags($params);
-        $this->assertParamsContainValidPriority($params);
-
-        // Opportunity for concatenation...
-        if (is_array($params['description'])) {
-            $params['description'] = implode($params['description']);
-        }
-
-        $this->name = $params['name'];
-        $this->host = $params['host'];
-        $this->path = $params['path'];
-        $this->methods = $params['methods'];
-        $this->middlewares = $params['middlewares'];
-        $this->attributes = $params['attributes'];
-        $this->summary = $params['summary'];
-        $this->description = $params['description'];
-        $this->tags = $params['tags'];
-        $this->priority = $params['priority'];
+        $this->name = $this->extractNameFromParams($params);
+        $this->host = $this->extractHostFromParams($params);
+        $this->path = $this->extractPathFromParams($params);
+        $this->methods = $this->extractMethodsFromParams($params);
+        $this->middlewares = $this->extractMiddlewaresFromParams($params);
+        $this->attributes = $this->extractAttributesFromParams($params);
+        $this->summary = $this->extractSummaryFromParams($params);
+        $this->description = $this->extractDescriptionFromParams($params);
+        $this->tags = $this->extractTagsFromParams($params);
+        $this->priority = $this->extractPriorityFromParams($params);
     }
 
     /**
      * {@inheritDoc}
-     *
-     * @since 2.6.0
      */
     public function getName() : string
     {
@@ -175,8 +137,6 @@ final class Route implements RouteDescriptorInterface
 
     /**
      * {@inheritDoc}
-     *
-     * @since 2.6.0
      */
     public function getHost() : ?string
     {
@@ -185,8 +145,6 @@ final class Route implements RouteDescriptorInterface
 
     /**
      * {@inheritDoc}
-     *
-     * @since 2.6.0
      */
     public function getPath() : string
     {
@@ -195,8 +153,6 @@ final class Route implements RouteDescriptorInterface
 
     /**
      * {@inheritDoc}
-     *
-     * @since 2.6.0
      */
     public function getMethods() : array
     {
@@ -205,8 +161,6 @@ final class Route implements RouteDescriptorInterface
 
     /**
      * {@inheritDoc}
-     *
-     * @since 2.6.0
      */
     public function getMiddlewares() : array
     {
@@ -215,8 +169,6 @@ final class Route implements RouteDescriptorInterface
 
     /**
      * {@inheritDoc}
-     *
-     * @since 2.6.0
      */
     public function getAttributes() : array
     {
@@ -225,8 +177,6 @@ final class Route implements RouteDescriptorInterface
 
     /**
      * {@inheritDoc}
-     *
-     * @since 2.6.0
      */
     public function getSummary() : string
     {
@@ -235,8 +185,6 @@ final class Route implements RouteDescriptorInterface
 
     /**
      * {@inheritDoc}
-     *
-     * @since 2.6.0
      */
     public function getDescription() : string
     {
@@ -245,8 +193,6 @@ final class Route implements RouteDescriptorInterface
 
     /**
      * {@inheritDoc}
-     *
-     * @since 2.6.0
      */
     public function getTags() : array
     {
@@ -255,8 +201,6 @@ final class Route implements RouteDescriptorInterface
 
     /**
      * {@inheritDoc}
-     *
-     * @since 2.6.0
      */
     public function getPriority() : int
     {
@@ -266,190 +210,204 @@ final class Route implements RouteDescriptorInterface
     /**
      * @param array $params
      *
-     * @return void
+     * @return string
      *
      * @throws InvalidDescriptorArgumentException
      */
-    private function assertParamsContainValidName(array $params) : void
+    private function extractNameFromParams(array $params) : string
     {
-        if (empty($params['name']) || !is_string($params['name'])) {
-            throw new InvalidDescriptorArgumentException(
-                '@Route.name must be not an empty string.'
-            );
+        if (!isset($params['name']) || '' === $params['name'] || !is_string($params['name'])) {
+            throw new InvalidDescriptorArgumentException('@Route.name must contain a non-empty string.');
         }
+
+        return $params['name'];
     }
 
     /**
      * @param array $params
      *
-     * @return void
+     * @return null|string
      *
      * @throws InvalidDescriptorArgumentException
      */
-    private function assertParamsContainValidHost(array $params) : void
+    private function extractHostFromParams(array $params) : ?string
     {
-        if (!is_null($params['host']) && !is_string($params['host'])) {
-            throw new InvalidDescriptorArgumentException(
-                '@Route.host must be null or string.'
-            );
+        if (isset($params['host']) && ('' === $params['host'] || !is_string($params['host']))) {
+            throw new InvalidDescriptorArgumentException('@Route.host must contain a non-empty string.');
         }
+
+        return $params['host'] ?? null;
     }
 
     /**
      * @param array $params
      *
-     * @return void
+     * @return string
      *
      * @throws InvalidDescriptorArgumentException
      */
-    private function assertParamsContainValidPath(array $params) : void
+    private function extractPathFromParams(array $params) : string
     {
-        if (empty($params['path']) || !is_string($params['path'])) {
-            throw new InvalidDescriptorArgumentException(
-                '@Route.path must be not an empty string.'
-            );
+        if (!isset($params['path']) || '' === $params['path'] || !is_string($params['path'])) {
+            throw new InvalidDescriptorArgumentException('@Route.path must contain a non-empty string.');
         }
+
+        return $params['path'];
     }
 
     /**
      * @param array $params
      *
-     * @return void
+     * @return string[]
      *
      * @throws InvalidDescriptorArgumentException
      */
-    private function assertParamsContainValidMethods(array $params) : void
+    private function extractMethodsFromParams(array $params) : array
     {
-        if (empty($params['methods']) || !is_array($params['methods'])) {
-            throw new InvalidDescriptorArgumentException(
-                '@Route.methods must be not an empty array.'
-            );
+        if (!isset($params['methods']) || [] === $params['methods'] || !is_array($params['methods'])) {
+            throw new InvalidDescriptorArgumentException('@Route.methods must contain a non-empty array.');
         }
 
-        foreach ($params['methods'] as $method) {
-            if (!is_string($method)) {
-                throw new InvalidDescriptorArgumentException(
-                    '@Route.methods must contain only strings.'
-                );
+        foreach ($params['methods'] as $value) {
+            if ('' === $value || !is_string($value)) {
+                throw new InvalidDescriptorArgumentException('@Route.methods must contain non-empty strings.');
             }
         }
+
+        return $params['methods'];
     }
 
     /**
      * @param array $params
      *
-     * @return void
+     * @return string[]
      *
      * @throws InvalidDescriptorArgumentException
      */
-    private function assertParamsContainValidMiddlewares(array $params) : void
+    private function extractMiddlewaresFromParams(array $params) : array
     {
+        if (!isset($params['middlewares'])) {
+            return [];
+        }
+
         if (!is_array($params['middlewares'])) {
-            throw new InvalidDescriptorArgumentException(
-                '@Route.middlewares must be an array.'
-            );
+            throw new InvalidDescriptorArgumentException('@Route.middlewares must contain an array.');
         }
 
-        foreach ($params['middlewares'] as $middleware) {
-            if (!is_string($middleware)) {
+        foreach ($params['middlewares'] as $value) {
+            if ('' === $value || !is_string($value) || !is_subclass_of($value, MiddlewareInterface::class)) {
                 throw new InvalidDescriptorArgumentException(
-                    '@Route.middlewares must contain only strings.'
-                );
-            }
-
-            if (!is_subclass_of($middleware, MiddlewareInterface::class)) {
-                throw new InvalidDescriptorArgumentException(
-                    '@Route.middlewares contains a nonexistent or non-middleware class.'
+                    '@Route.middlewares must contain the class names of existing middlewares.'
                 );
             }
         }
+
+        return $params['middlewares'];
     }
 
     /**
      * @param array $params
      *
-     * @return void
+     * @return array
      *
      * @throws InvalidDescriptorArgumentException
      */
-    private function assertParamsContainValidAttributes(array $params) : void
+    private function extractAttributesFromParams(array $params) : array
     {
+        if (!isset($params['attributes'])) {
+            return [];
+        }
+
         if (!is_array($params['attributes'])) {
-            throw new InvalidDescriptorArgumentException(
-                '@Route.attributes must be an array.'
-            );
+            throw new InvalidDescriptorArgumentException('@Route.attributes must contain an array.');
         }
+
+        return $params['attributes'];
     }
 
     /**
      * @param array $params
      *
-     * @return void
+     * @return string
      *
      * @throws InvalidDescriptorArgumentException
      */
-    private function assertParamsContainValidSummary(array $params) : void
+    private function extractSummaryFromParams(array $params) : string
     {
+        if (!isset($params['summary'])) {
+            return '';
+        }
+
         if (!is_string($params['summary'])) {
-            throw new InvalidDescriptorArgumentException(
-                '@Route.summary must be a string.'
-            );
+            throw new InvalidDescriptorArgumentException('@Route.summary must contain a string.');
         }
+
+        return $params['summary'];
     }
 
     /**
      * @param array $params
      *
-     * @return void
+     * @return string
      *
      * @throws InvalidDescriptorArgumentException
      */
-    private function assertParamsContainValidDescription(array $params) : void
+    private function extractDescriptionFromParams(array $params) : string
     {
-        if (!is_array($params['description']) && !is_string($params['description'])) {
-            throw new InvalidDescriptorArgumentException(
-                '@Route.description must be an array or a string.'
-            );
+        if (!isset($params['description'])) {
+            return '';
         }
+
+        if (!is_string($params['description'])) {
+            throw new InvalidDescriptorArgumentException('@Route.description must contain a string.');
+        }
+
+        return $params['description'];
     }
 
     /**
      * @param array $params
      *
-     * @return void
+     * @return string[]
      *
      * @throws InvalidDescriptorArgumentException
      */
-    private function assertParamsContainValidTags(array $params) : void
+    private function extractTagsFromParams(array $params) : array
     {
+        if (!isset($params['tags'])) {
+            return [];
+        }
+
         if (!is_array($params['tags'])) {
-            throw new InvalidDescriptorArgumentException(
-                '@Route.tags must be an array.'
-            );
+            throw new InvalidDescriptorArgumentException('@Route.tags must contain an array.');
         }
 
-        foreach ($params['tags'] as $middleware) {
-            if (!is_string($middleware)) {
-                throw new InvalidDescriptorArgumentException(
-                    '@Route.tags must contain only strings.'
-                );
+        foreach ($params['tags'] as $value) {
+            if ('' === $value || !is_string($value)) {
+                throw new InvalidDescriptorArgumentException('@Route.tags must contain non-empty strings.');
             }
         }
+
+        return $params['tags'];
     }
 
     /**
      * @param array $params
      *
-     * @return void
+     * @return int
      *
      * @throws InvalidDescriptorArgumentException
      */
-    private function assertParamsContainValidPriority(array $params) : void
+    private function extractPriorityFromParams(array $params) : int
     {
-        if (!is_int($params['priority'])) {
-            throw new InvalidDescriptorArgumentException(
-                '@Route.priority must be an integer.'
-            );
+        if (!isset($params['priority'])) {
+            return 0;
         }
+
+        if (!is_int($params['priority'])) {
+            throw new InvalidDescriptorArgumentException('@Route.priority must contain an integer.');
+        }
+
+        return $params['priority'];
     }
 }
