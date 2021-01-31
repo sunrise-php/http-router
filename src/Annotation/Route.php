@@ -19,14 +19,6 @@ use Sunrise\Http\Router\Exception\InvalidDescriptorArgumentException;
 use Sunrise\Http\Router\RouteDescriptorInterface;
 
 /**
- * Import functions
- */
-use function is_array;
-use function is_int;
-use function is_string;
-use function is_subclass_of;
-
-/**
  * Annotation for a route description
  *
  * @Annotation
@@ -218,9 +210,10 @@ final class Route implements RouteDescriptorInterface
     {
         $name = $params['name'] ?? '';
 
-        if ('' === $name || !is_string($name)) {
-            throw new InvalidDescriptorArgumentException('@Route.name must contain a non-empty string.');
-        }
+        InvalidDescriptorArgumentException::assertIsNotEmptyString(
+            $name,
+            '@Route.name must contain a non-empty string.'
+        );
 
         return $name;
     }
@@ -236,9 +229,15 @@ final class Route implements RouteDescriptorInterface
     {
         $host = $params['host'] ?? null;
 
-        if (isset($host) && ('' === $host || !is_string($host))) {
-            throw new InvalidDescriptorArgumentException('@Route.host must contain a non-empty string.');
+        // isn't required parameter...
+        if (null === $host) {
+            return null;
         }
+
+        InvalidDescriptorArgumentException::assertIsNotEmptyString(
+            $host,
+            '@Route.host must contain a non-empty string.'
+        );
 
         return $host;
     }
@@ -254,9 +253,10 @@ final class Route implements RouteDescriptorInterface
     {
         $path = $params['path'] ?? '';
 
-        if ('' === $path || !is_string($path)) {
-            throw new InvalidDescriptorArgumentException('@Route.path must contain a non-empty string.');
-        }
+        InvalidDescriptorArgumentException::assertIsNotEmptyString(
+            $path,
+            '@Route.path must contain a non-empty string.'
+        );
 
         return $path;
     }
@@ -272,14 +272,16 @@ final class Route implements RouteDescriptorInterface
     {
         $methods = $params['methods'] ?? [];
 
-        if ([] === $methods || !is_array($methods)) {
-            throw new InvalidDescriptorArgumentException('@Route.methods must contain a non-empty array.');
-        }
+        InvalidDescriptorArgumentException::assertIsNotEmptyArray(
+            $methods,
+            '@Route.methods must contain a non-empty array.'
+        );
 
         foreach ($methods as $value) {
-            if (!is_string($value)) {
-                throw new InvalidDescriptorArgumentException('@Route.methods must contain strings.');
-            }
+            InvalidDescriptorArgumentException::assertIsNotEmptyString(
+                $value,
+                '@Route.methods must contain non-empty strings.'
+            );
         }
 
         return $methods;
@@ -294,18 +296,24 @@ final class Route implements RouteDescriptorInterface
      */
     private function extractMiddlewaresFromParams(array $params) : array
     {
-        $middlewares = $params['middlewares'] ?? [];
+        $middlewares = $params['middlewares'] ?? null;
 
-        if (!is_array($middlewares)) {
-            throw new InvalidDescriptorArgumentException('@Route.middlewares must contain an array.');
+        // isn't required parameter...
+        if (null === $middlewares) {
+            return [];
         }
 
+        InvalidDescriptorArgumentException::assertIsArray(
+            $middlewares,
+            '@Route.middlewares must contain an array.'
+        );
+
         foreach ($middlewares as $value) {
-            if (!is_string($value) || !is_subclass_of($value, MiddlewareInterface::class)) {
-                throw new InvalidDescriptorArgumentException(
-                    '@Route.middlewares must contain the class names of existing middlewares.'
-                );
-            }
+            InvalidDescriptorArgumentException::assertIsSubclassOf(
+                $value,
+                MiddlewareInterface::class,
+                '@Route.middlewares must contain the class names of existing middlewares.'
+            );
         }
 
         return $middlewares;
@@ -320,11 +328,17 @@ final class Route implements RouteDescriptorInterface
      */
     private function extractAttributesFromParams(array $params) : array
     {
-        $attributes = $params['attributes'] ?? [];
+        $attributes = $params['attributes'] ?? null;
 
-        if (!is_array($attributes)) {
-            throw new InvalidDescriptorArgumentException('@Route.attributes must contain an array.');
+        // isn't required parameter...
+        if (null === $attributes) {
+            return [];
         }
+
+        InvalidDescriptorArgumentException::assertIsArray(
+            $attributes,
+            '@Route.attributes must contain an array.'
+        );
 
         return $attributes;
     }
@@ -338,11 +352,17 @@ final class Route implements RouteDescriptorInterface
      */
     private function extractSummaryFromParams(array $params) : string
     {
-        $summary = $params['summary'] ?? '';
+        $summary = $params['summary'] ?? null;
 
-        if (!is_string($summary)) {
-            throw new InvalidDescriptorArgumentException('@Route.summary must contain a string.');
+        // isn't required parameter...
+        if (null === $summary) {
+            return '';
         }
+
+        InvalidDescriptorArgumentException::assertIsString(
+            $summary,
+            '@Route.summary must contain a string.'
+        );
 
         return $summary;
     }
@@ -356,11 +376,17 @@ final class Route implements RouteDescriptorInterface
      */
     private function extractDescriptionFromParams(array $params) : string
     {
-        $description = $params['description'] ?? '';
+        $description = $params['description'] ?? null;
 
-        if (!is_string($description)) {
-            throw new InvalidDescriptorArgumentException('@Route.description must contain a string.');
+        // isn't required parameter...
+        if (null === $description) {
+            return '';
         }
+
+        InvalidDescriptorArgumentException::assertIsString(
+            $description,
+            '@Route.description must contain a string.'
+        );
 
         return $description;
     }
@@ -374,16 +400,23 @@ final class Route implements RouteDescriptorInterface
      */
     private function extractTagsFromParams(array $params) : array
     {
-        $tags = $params['tags'] ?? [];
+        $tags = $params['tags'] ?? null;
 
-        if (!is_array($tags)) {
-            throw new InvalidDescriptorArgumentException('@Route.tags must contain an array.');
+        // isn't required parameter...
+        if (null === $tags) {
+            return [];
         }
 
+        InvalidDescriptorArgumentException::assertIsArray(
+            $tags,
+            '@Route.tags must contain an array.'
+        );
+
         foreach ($tags as $value) {
-            if (!is_string($value)) {
-                throw new InvalidDescriptorArgumentException('@Route.tags must contain strings.');
-            }
+            InvalidDescriptorArgumentException::assertIsNotEmptyString(
+                $value,
+                '@Route.tags must contain non-empty strings.'
+            );
         }
 
         return $tags;
@@ -398,11 +431,17 @@ final class Route implements RouteDescriptorInterface
      */
     private function extractPriorityFromParams(array $params) : int
     {
-        $priority = $params['priority'] ?? 0;
+        $priority = $params['priority'] ?? null;
 
-        if (!is_int($priority)) {
-            throw new InvalidDescriptorArgumentException('@Route.priority must contain an integer.');
+        // isn't required parameter...
+        if (null === $priority) {
+            return 0;
         }
+
+        InvalidDescriptorArgumentException::assertIsInteger(
+            $priority,
+            '@Route.priority must contain an integer.'
+        );
 
         return $priority;
     }

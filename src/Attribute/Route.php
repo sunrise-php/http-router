@@ -20,12 +20,6 @@ use Sunrise\Http\Router\Exception\InvalidDescriptorArgumentException;
 use Sunrise\Http\Router\RouteDescriptorInterface;
 
 /**
- * Import functions
- */
-use function is_string;
-use function is_subclass_of;
-
-/**
  * Attribute for a route description
  *
  * @since 2.6.0
@@ -240,9 +234,10 @@ final class Route implements RouteDescriptorInterface
      */
     private function assertValidName() : void
     {
-        if ('' === $this->name) {
-            throw new InvalidDescriptorArgumentException('#[Route.name] must contain a non-empty string.');
-        }
+        InvalidDescriptorArgumentException::assertIsNotEmpty(
+            $this->name,
+            '#[Route.name] must contain a non-empty string.'
+        );
     }
 
     /**
@@ -254,9 +249,10 @@ final class Route implements RouteDescriptorInterface
      */
     private function assertValidHost() : void
     {
-        if ('' === $this->host) {
-            throw new InvalidDescriptorArgumentException('#[Route.host] must contain a non-empty string or null.');
-        }
+        InvalidDescriptorArgumentException::assertIsNotEmpty(
+            $this->host,
+            '#[Route.host] must contain a non-empty string or null.'
+        );
     }
 
     /**
@@ -268,9 +264,10 @@ final class Route implements RouteDescriptorInterface
      */
     private function assertValidPath() : void
     {
-        if ('' === $this->path) {
-            throw new InvalidDescriptorArgumentException('#[Route.path] must contain a non-empty string.');
-        }
+        InvalidDescriptorArgumentException::assertIsNotEmpty(
+            $this->path,
+            '#[Route.path] must contain a non-empty string.'
+        );
     }
 
     /**
@@ -282,14 +279,16 @@ final class Route implements RouteDescriptorInterface
      */
     private function assertValidMethods() : void
     {
-        if ([] === $this->methods) {
-            throw new InvalidDescriptorArgumentException('#[Route.methods] must contain at least one element.');
-        }
+        InvalidDescriptorArgumentException::assertIsNotEmpty(
+            $this->methods,
+            '#[Route.methods] must contain at least one element.'
+        );
 
         foreach ($this->methods as $value) {
-            if ('' === $value || !is_string($value)) {
-                throw new InvalidDescriptorArgumentException('#[Route.methods] must contain non-empty strings.');
-            }
+            InvalidDescriptorArgumentException::assertIsNotEmptyString(
+                $value,
+                '#[Route.methods] must contain non-empty strings.'
+            );
         }
     }
 
@@ -307,11 +306,11 @@ final class Route implements RouteDescriptorInterface
         }
 
         foreach ($this->middlewares as $value) {
-            if ('' === $value || !is_string($value) || !is_subclass_of($value, MiddlewareInterface::class)) {
-                throw new InvalidDescriptorArgumentException(
-                    '#[Route.middlewares] must contain the class names of existing middlewares.'
-                );
-            }
+            InvalidDescriptorArgumentException::assertIsSubclassOf(
+                $value,
+                MiddlewareInterface::class,
+                '#[Route.middlewares] must contain the class names of existing middlewares.'
+            );
         }
     }
 
@@ -329,9 +328,10 @@ final class Route implements RouteDescriptorInterface
         }
 
         foreach ($this->tags as $value) {
-            if ('' === $value || !is_string($value)) {
-                throw new InvalidDescriptorArgumentException('#[Route.tags] must contain non-empty strings.');
-            }
+            InvalidDescriptorArgumentException::assertIsNotEmptyString(
+                $value,
+                '#[Route.tags] must contain non-empty strings.'
+            );
         }
     }
 }
