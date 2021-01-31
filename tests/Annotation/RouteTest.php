@@ -330,7 +330,7 @@ class RouteTest extends TestCase
     /**
      * @param mixed $invalidDescription
      * @return void
-     * @dataProvider invalidDataProviderIfArrayOrStringExpected
+     * @dataProvider invalidDataProviderIfStringExpected
      */
     public function testConstructorParamsContainInvalidDescription($invalidDescription) : void
     {
@@ -389,7 +389,7 @@ class RouteTest extends TestCase
     public function testConstructorMethodsParamContainsInvalidValue($invalidMethod) : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
-        $this->expectExceptionMessage('@Route.methods must contain strings.');
+        $this->expectExceptionMessage('@Route.methods must contain non-empty strings.');
 
         new Route([
             'name' => 'foo',
@@ -456,7 +456,7 @@ class RouteTest extends TestCase
     public function testConstructorTagsParamContainsInvalidValue($invalidTag) : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
-        $this->expectExceptionMessage('@Route.tags must contain strings.');
+        $this->expectExceptionMessage('@Route.tags must contain non-empty strings.');
 
         new Route([
             'name' => 'foo',
@@ -513,23 +513,6 @@ class RouteTest extends TestCase
             [0],
             [0.0],
             [[]],
-            [new \stdClass],
-            [function () {
-            }],
-            [\STDOUT],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public function invalidDataProviderIfArrayOrStringExpected() : array
-    {
-        return [
-            [true],
-            [false],
-            [0],
-            [0.0],
             [new \stdClass],
             [function () {
             }],
