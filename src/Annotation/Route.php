@@ -115,19 +115,6 @@ final class Route implements RouteDescriptorInterface
      */
     public function __construct(array $params)
     {
-        $params += [
-            'name' => '',
-            'host' => null,
-            'path' => '',
-            'methods' => [],
-            'middlewares' => [],
-            'attributes' => [],
-            'summary' => '',
-            'description' => '',
-            'tags' => [],
-            'priority' => 0,
-        ];
-
         $this->name = $this->extractNameFromParams($params);
         $this->host = $this->extractHostFromParams($params);
         $this->path = $this->extractPathFromParams($params);
@@ -229,7 +216,7 @@ final class Route implements RouteDescriptorInterface
      */
     private function extractNameFromParams(array $params) : string
     {
-        $name = $params['name'];
+        $name = $params['name'] ?? '';
 
         if ('' === $name || !is_string($name)) {
             throw new InvalidDescriptorArgumentException('@Route.name must contain a non-empty string.');
@@ -247,7 +234,7 @@ final class Route implements RouteDescriptorInterface
      */
     private function extractHostFromParams(array $params) : ?string
     {
-        $host = $params['host'];
+        $host = $params['host'] ?? null;
 
         if (isset($host) && ('' === $host || !is_string($host))) {
             throw new InvalidDescriptorArgumentException('@Route.host must contain a non-empty string.');
@@ -265,7 +252,7 @@ final class Route implements RouteDescriptorInterface
      */
     private function extractPathFromParams(array $params) : string
     {
-        $path = $params['path'];
+        $path = $params['path'] ?? '';
 
         if ('' === $path || !is_string($path)) {
             throw new InvalidDescriptorArgumentException('@Route.path must contain a non-empty string.');
@@ -283,15 +270,15 @@ final class Route implements RouteDescriptorInterface
      */
     private function extractMethodsFromParams(array $params) : array
     {
-        $methods = $params['methods'];
+        $methods = $params['methods'] ?? [];
 
         if ([] === $methods || !is_array($methods)) {
             throw new InvalidDescriptorArgumentException('@Route.methods must contain a non-empty array.');
         }
 
         foreach ($methods as $value) {
-            if ('' === $value || !is_string($value)) {
-                throw new InvalidDescriptorArgumentException('@Route.methods must contain non-empty strings.');
+            if (!is_string($value)) {
+                throw new InvalidDescriptorArgumentException('@Route.methods must contain strings.');
             }
         }
 
@@ -307,14 +294,14 @@ final class Route implements RouteDescriptorInterface
      */
     private function extractMiddlewaresFromParams(array $params) : array
     {
-        $middlewares = $params['middlewares'];
+        $middlewares = $params['middlewares'] ?? [];
 
         if (!is_array($middlewares)) {
             throw new InvalidDescriptorArgumentException('@Route.middlewares must contain an array.');
         }
 
         foreach ($middlewares as $value) {
-            if ('' === $value || !is_string($value) || !is_subclass_of($value, MiddlewareInterface::class)) {
+            if (!is_string($value) || !is_subclass_of($value, MiddlewareInterface::class)) {
                 throw new InvalidDescriptorArgumentException(
                     '@Route.middlewares must contain the class names of existing middlewares.'
                 );
@@ -333,7 +320,7 @@ final class Route implements RouteDescriptorInterface
      */
     private function extractAttributesFromParams(array $params) : array
     {
-        $attributes = $params['attributes'];
+        $attributes = $params['attributes'] ?? [];
 
         if (!is_array($attributes)) {
             throw new InvalidDescriptorArgumentException('@Route.attributes must contain an array.');
@@ -351,7 +338,7 @@ final class Route implements RouteDescriptorInterface
      */
     private function extractSummaryFromParams(array $params) : string
     {
-        $summary = $params['summary'];
+        $summary = $params['summary'] ?? '';
 
         if (!is_string($summary)) {
             throw new InvalidDescriptorArgumentException('@Route.summary must contain a string.');
@@ -369,7 +356,7 @@ final class Route implements RouteDescriptorInterface
      */
     private function extractDescriptionFromParams(array $params) : string
     {
-        $description = $params['description'];
+        $description = $params['description'] ?? '';
 
         if (!is_string($description)) {
             throw new InvalidDescriptorArgumentException('@Route.description must contain a string.');
@@ -387,15 +374,15 @@ final class Route implements RouteDescriptorInterface
      */
     private function extractTagsFromParams(array $params) : array
     {
-        $tags = $params['tags'];
+        $tags = $params['tags'] ?? [];
 
         if (!is_array($tags)) {
             throw new InvalidDescriptorArgumentException('@Route.tags must contain an array.');
         }
 
         foreach ($tags as $value) {
-            if ('' === $value || !is_string($value)) {
-                throw new InvalidDescriptorArgumentException('@Route.tags must contain non-empty strings.');
+            if (!is_string($value)) {
+                throw new InvalidDescriptorArgumentException('@Route.tags must contain strings.');
             }
         }
 
@@ -411,7 +398,7 @@ final class Route implements RouteDescriptorInterface
      */
     private function extractPriorityFromParams(array $params) : int
     {
-        $priority = $params['priority'];
+        $priority = $params['priority'] ?? 0;
 
         if (!is_int($priority)) {
             throw new InvalidDescriptorArgumentException('@Route.priority must contain an integer.');
