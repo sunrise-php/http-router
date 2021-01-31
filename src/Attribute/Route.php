@@ -286,8 +286,8 @@ final class Route implements RouteDescriptorInterface
             throw new InvalidDescriptorArgumentException('#[Route.methods] must contain at least one element.');
         }
 
-        foreach ($this->methods as $method) {
-            if ('' === $method || !is_string($method)) {
+        foreach ($this->methods as $value) {
+            if ('' === $value || !is_string($value)) {
                 throw new InvalidDescriptorArgumentException('#[Route.methods] must contain non-empty strings.');
             }
         }
@@ -306,13 +306,11 @@ final class Route implements RouteDescriptorInterface
             return;
         }
 
-        foreach ($this->middlewares as $middleware) {
-            if ('' === $middleware || !is_string($middleware)) {
-                throw new InvalidDescriptorArgumentException('#[Route.middlewares] must contain non-empty strings.');
-            }
-
-            if (!is_subclass_of($middleware, MiddlewareInterface::class)) {
-                throw new InvalidDescriptorArgumentException('#[Route.middlewares] must contain existing middlewares.');
+        foreach ($this->middlewares as $value) {
+            if ('' === $value || !is_string($value) || !is_subclass_of($value, MiddlewareInterface::class)) {
+                throw new InvalidDescriptorArgumentException(
+                    '#[Route.middlewares] must contain the class names of existing middlewares.'
+                );
             }
         }
     }
@@ -330,8 +328,8 @@ final class Route implements RouteDescriptorInterface
             return;
         }
 
-        foreach ($this->tags as $tag) {
-            if ('' === $tag || !is_string($tag)) {
+        foreach ($this->tags as $value) {
+            if ('' === $value || !is_string($value)) {
                 throw new InvalidDescriptorArgumentException('#[Route.tags] must contain non-empty strings.');
             }
         }
