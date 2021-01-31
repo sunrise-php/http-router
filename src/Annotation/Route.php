@@ -37,58 +37,80 @@ final class Route implements RouteDescriptorInterface
 {
 
     /**
+     * A route name
+     *
      * @var string
      */
     private $name;
 
     /**
+     * A route host
+     *
      * @var null|string
      */
     private $host;
 
     /**
+     * A route path
+     *
      * @var string
      */
     private $path;
 
     /**
+     * A route methods
+     *
      * @var string[]
      */
     private $methods;
 
     /**
+     * A route middlewares
+     *
      * @var string[]
      */
     private $middlewares;
 
     /**
+     * A route attributes
+     *
      * @var array
      */
     private $attributes;
 
     /**
+     * A route summary
+     *
      * @var string
      */
     private $summary;
 
     /**
+     * A route description
+     *
      * @var string
      */
     private $description;
 
     /**
+     * A route tags
+     *
      * @var string[]
      */
     private $tags;
 
     /**
+     * A route priority
+     *
      * @var int
      */
     private $priority;
 
     /**
      * Constructor of the annotation
+     *
      * @param array $params
+     *
      * @throws InvalidDescriptorArgumentException
      */
     public function __construct(array $params)
@@ -185,9 +207,17 @@ final class Route implements RouteDescriptorInterface
         return $this->priority;
     }
 
+    /**
+     * @param array $params
+     *
+     * @return string
+     *
+     * @throws InvalidDescriptorArgumentException
+     */
     private function extractNameFromParams(array $params) : string
     {
         $name = $params['name'] ?? '';
+
         if ('' === $name || !is_string($name)) {
             throw new InvalidDescriptorArgumentException('@Route.name must contain a non-empty string.');
         }
@@ -195,9 +225,17 @@ final class Route implements RouteDescriptorInterface
         return $name;
     }
 
+    /**
+     * @param array $params
+     *
+     * @return null|string
+     *
+     * @throws InvalidDescriptorArgumentException
+     */
     private function extractHostFromParams(array $params) : ?string
     {
         $host = $params['host'] ?? null;
+
         if (isset($host) && ('' === $host || !is_string($host))) {
             throw new InvalidDescriptorArgumentException('@Route.host must contain a non-empty string.');
         }
@@ -205,9 +243,17 @@ final class Route implements RouteDescriptorInterface
         return $host;
     }
 
+    /**
+     * @param array $params
+     *
+     * @return string
+     *
+     * @throws InvalidDescriptorArgumentException
+     */
     private function extractPathFromParams(array $params) : string
     {
         $path = $params['path'] ?? '';
+
         if ('' === $path || !is_string($path)) {
             throw new InvalidDescriptorArgumentException('@Route.path must contain a non-empty string.');
         }
@@ -215,9 +261,17 @@ final class Route implements RouteDescriptorInterface
         return $path;
     }
 
+    /**
+     * @param array $params
+     *
+     * @return string[]
+     *
+     * @throws InvalidDescriptorArgumentException
+     */
     private function extractMethodsFromParams(array $params) : array
     {
         $methods = $params['methods'] ?? [];
+
         if ([] === $methods || !is_array($methods)) {
             throw new InvalidDescriptorArgumentException('@Route.methods must contain a non-empty array.');
         }
@@ -231,9 +285,17 @@ final class Route implements RouteDescriptorInterface
         return $methods;
     }
 
+    /**
+     * @param array $params
+     *
+     * @return string[]
+     *
+     * @throws InvalidDescriptorArgumentException
+     */
     private function extractMiddlewaresFromParams(array $params) : array
     {
         $middlewares = $params['middlewares'] ?? [];
+
         if (!is_array($middlewares)) {
             throw new InvalidDescriptorArgumentException('@Route.middlewares must contain an array.');
         }
@@ -249,9 +311,17 @@ final class Route implements RouteDescriptorInterface
         return $middlewares;
     }
 
+    /**
+     * @param array $params
+     *
+     * @return array
+     *
+     * @throws InvalidDescriptorArgumentException
+     */
     private function extractAttributesFromParams(array $params) : array
     {
         $attributes = $params['attributes'] ?? [];
+
         if (!is_array($attributes)) {
             throw new InvalidDescriptorArgumentException('@Route.attributes must contain an array.');
         }
@@ -259,9 +329,17 @@ final class Route implements RouteDescriptorInterface
         return $attributes;
     }
 
+    /**
+     * @param array $params
+     *
+     * @return string
+     *
+     * @throws InvalidDescriptorArgumentException
+     */
     private function extractSummaryFromParams(array $params) : string
     {
         $summary = $params['summary'] ?? '';
+
         if (!is_string($summary)) {
             throw new InvalidDescriptorArgumentException('@Route.summary must contain a string.');
         }
@@ -269,9 +347,17 @@ final class Route implements RouteDescriptorInterface
         return $summary;
     }
 
+    /**
+     * @param array $params
+     *
+     * @return string
+     *
+     * @throws InvalidDescriptorArgumentException
+     */
     private function extractDescriptionFromParams(array $params) : string
     {
         $description = $params['description'] ?? '';
+
         if (!is_string($description)) {
             throw new InvalidDescriptorArgumentException('@Route.description must contain a string.');
         }
@@ -279,9 +365,17 @@ final class Route implements RouteDescriptorInterface
         return $description;
     }
 
+    /**
+     * @param array $params
+     *
+     * @return string[]
+     *
+     * @throws InvalidDescriptorArgumentException
+     */
     private function extractTagsFromParams(array $params) : array
     {
         $tags = $params['tags'] ?? [];
+
         if (!is_array($tags)) {
             throw new InvalidDescriptorArgumentException('@Route.tags must contain an array.');
         }
@@ -295,9 +389,17 @@ final class Route implements RouteDescriptorInterface
         return $tags;
     }
 
+    /**
+     * @param array $params
+     *
+     * @return int
+     *
+     * @throws InvalidDescriptorArgumentException
+     */
     private function extractPriorityFromParams(array $params) : int
     {
         $priority = $params['priority'] ?? 0;
+
         if (!is_int($priority)) {
             throw new InvalidDescriptorArgumentException('@Route.priority must contain an integer.');
         }
