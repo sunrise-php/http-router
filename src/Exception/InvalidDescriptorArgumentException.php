@@ -16,6 +16,6 @@ namespace Sunrise\Http\Router\Exception;
  *
  * @since 2.6.0
  */
-class InvalidDescriptorArgumentException extends Exception
+class InvalidDescriptorArgumentException extends ArgumentException
 {
 }
