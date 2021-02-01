@@ -72,7 +72,6 @@ class CollectableFileLoader implements LoaderInterface
     {
         if (is_dir($resource)) {
             $resources = glob($resource . '/*.php');
-
             foreach ($resources as $resource) {
                 $this->resources[] = $resource;
             }
