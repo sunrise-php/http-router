@@ -9,13 +9,13 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
-namespace Sunrise\Http\Router\Loader;
+namespace Sunrise\Http\Router\Exception;
 
 /**
- * AnnotationDirectoryLoader
+ * InvalidDescriptorArgumentException
  *
- * @deprecated 2.6.0 The loader will be removed at the near time. Please use the `DescriptorDirectoryLoader`.
+ * @since 2.6.0
  */
-class AnnotationDirectoryLoader extends DescriptorDirectoryLoader
+class InvalidDescriptorArgumentException extends ArgumentException
 {
 }

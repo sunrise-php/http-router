@@ -340,4 +340,22 @@ class RouteTest extends TestCase
         $this->assertSame($route, $route->setTags(...$expectedTags));
         $this->assertSame($expectedTags, $route->getTags());
     }
+
+    /**
+     * @return void
+     *
+     * @since 2.6.0
+     */
+    public function testHost() : void
+    {
+        $route = new Fixture\TestRoute();
+
+        $this->assertSame(null, $route->getHost());
+
+        $this->assertSame($route, $route->setHost('localhost'));
+        $this->assertSame('localhost', $route->getHost());
+
+        $this->assertSame($route, $route->setHost(null));
+        $this->assertSame(null, $route->getHost());
+    }
 }

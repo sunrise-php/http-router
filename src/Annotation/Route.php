@@ -15,305 +15,434 @@ namespace Sunrise\Http\Router\Annotation;
  * Import classes
  */
 use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Exception\InvalidAnnotationParameterException;
-use Sunrise\Http\Router\Exception\InvalidAnnotationSourceException;
+use Sunrise\Http\Router\Exception\InvalidDescriptorArgumentException;
+use Sunrise\Http\Router\RouteDescriptorInterface;
 
 /**
- * Import functions
- */
-use function is_array;
-use function is_int;
-use function is_string;
-use function is_subclass_of;
-use function implode;
-
-/**
+ * Annotation for a route description
+ *
  * @Annotation
  *
  * @Target({"CLASS"})
  */
-final class Route
+final class Route implements RouteDescriptorInterface
 {
 
     /**
+     * A route name
+     *
      * @var string
      */
-    public $name;
+    private $name;
 
     /**
+     * A route host
+     *
+     * @var null|string
+     */
+    private $host;
+
+    /**
+     * A route path
+     *
      * @var string
      */
-    public $path;
+    private $path;
 
     /**
+     * A route methods
+     *
+     * @var string[]
+     */
+    private $methods;
+
+    /**
+     * A route middlewares
+     *
+     * @var string[]
+     */
+    private $middlewares;
+
+    /**
+     * A route attributes
+     *
      * @var array
      */
-    public $methods;
+    private $attributes;
 
     /**
-     * @var array
-     */
-    public $middlewares;
-
-    /**
-     * @var array
-     */
-    public $attributes;
-
-    /**
+     * A route summary
+     *
      * @var string
-     *
-     * @since 2.4.0
      */
-    public $summary;
+    private $summary;
 
     /**
-     * @var array|string
+     * A route description
      *
-     * @since 2.4.0
+     * @var string
      */
-    public $description;
+    private $description;
 
     /**
-     * @var array
+     * A route tags
      *
-     * @since 2.4.0
+     * @var string[]
      */
-    public $tags;
+    private $tags;
 
     /**
+     * A route priority
+     *
      * @var int
      */
-    public $priority;
+    private $priority;
 
     /**
+     * Constructor of the annotation
+     *
      * @param array $params
+     *
+     * @throws InvalidDescriptorArgumentException
      */
     public function __construct(array $params)
     {
-        $params += [
-            'middlewares' => [],
-            'attributes' => [],
-            'summary' => '',
-            'description' => '',
-            'tags' => [],
-            'priority' => 0,
-        ];
-
-        $this->assertParamsContainValidName($params);
-        $this->assertParamsContainValidPath($params);
-        $this->assertParamsContainValidMethods($params);
-        $this->assertParamsContainValidMiddlewares($params);
-        $this->assertParamsContainValidAttributes($params);
-        $this->assertParamsContainValidSummary($params);
-        $this->assertParamsContainValidDescription($params);
-        $this->assertParamsContainValidTags($params);
-        $this->assertParamsContainValidPriority($params);
-
-        // Opportunity for concatenation...
-        if (is_array($params['description'])) {
-            $params['description'] = implode($params['description']);
-        }
-
-        $this->name = $params['name'];
-        $this->path = $params['path'];
-        $this->methods = $params['methods'];
-        $this->middlewares = $params['middlewares'];
-        $this->attributes = $params['attributes'];
-        $this->summary = $params['summary'];
-        $this->description = $params['description'];
-        $this->tags = $params['tags'];
-        $this->priority = $params['priority'];
+        $this->name = $this->extractNameFromParams($params);
+        $this->host = $this->extractHostFromParams($params);
+        $this->path = $this->extractPathFromParams($params);
+        $this->methods = $this->extractMethodsFromParams($params);
+        $this->middlewares = $this->extractMiddlewaresFromParams($params);
+        $this->attributes = $this->extractAttributesFromParams($params);
+        $this->summary = $this->extractSummaryFromParams($params);
+        $this->description = $this->extractDescriptionFromParams($params);
+        $this->tags = $this->extractTagsFromParams($params);
+        $this->priority = $this->extractPriorityFromParams($params);
     }
 
     /**
-     * @param string $source
-     *
-     * @return void
-     *
-     * @throws InvalidAnnotationSourceException
+     * {@inheritDoc}
      */
-    public static function assertValidSource(string $source) : void
+    public function getName() : string
     {
-        if (!is_subclass_of($source, RequestHandlerInterface::class)) {
-            throw new InvalidAnnotationSourceException(
-                sprintf('@Route annotation source %s is not a request handler.', $source)
-            );
-        }
+        return $this->name;
     }
 
     /**
-     * @param array $params
-     *
-     * @return void
-     *
-     * @throws InvalidAnnotationParameterException
+     * {@inheritDoc}
      */
-    private function assertParamsContainValidName(array $params) : void
+    public function getHost() : ?string
     {
-        if (empty($params['name']) || !is_string($params['name'])) {
-            throw new InvalidAnnotationParameterException(
-                '@Route.name must be not an empty string.'
-            );
-        }
+        return $this->host;
     }
 
     /**
-     * @param array $params
-     *
-     * @return void
-     *
-     * @throws InvalidAnnotationParameterException
+     * {@inheritDoc}
      */
-    private function assertParamsContainValidPath(array $params) : void
+    public function getPath() : string
     {
-        if (empty($params['path']) || !is_string($params['path'])) {
-            throw new InvalidAnnotationParameterException(
-                '@Route.path must be not an empty string.'
-            );
-        }
+        return $this->path;
     }
 
     /**
-     * @param array $params
-     *
-     * @return void
-     *
-     * @throws InvalidAnnotationParameterException
+     * {@inheritDoc}
      */
-    private function assertParamsContainValidMethods(array $params) : void
+    public function getMethods() : array
     {
-        if (empty($params['methods']) || !is_array($params['methods'])) {
-            throw new InvalidAnnotationParameterException(
-                '@Route.methods must be not an empty array.'
-            );
-        }
+        return $this->methods;
+    }
 
-        foreach ($params['methods'] as $method) {
-            if (!is_string($method)) {
-                throw new InvalidAnnotationParameterException(
-                    '@Route.methods must contain only strings.'
-                );
-            }
-        }
+    /**
+     * {@inheritDoc}
+     */
+    public function getMiddlewares() : array
+    {
+        return $this->middlewares;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getAttributes() : array
+    {
+        return $this->attributes;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getSummary() : string
+    {
+        return $this->summary;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getDescription() : string
+    {
+        return $this->description;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getTags() : array
+    {
+        return $this->tags;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getPriority() : int
+    {
+        return $this->priority;
     }
 
     /**
      * @param array $params
      *
-     * @return void
+     * @return string
      *
-     * @throws InvalidAnnotationParameterException
+     * @throws InvalidDescriptorArgumentException
      */
-    private function assertParamsContainValidMiddlewares(array $params) : void
+    private function extractNameFromParams(array $params) : string
     {
-        if (!is_array($params['middlewares'])) {
-            throw new InvalidAnnotationParameterException(
-                '@Route.middlewares must be an array.'
-            );
-        }
+        $name = $params['name'] ?? '';
 
-        foreach ($params['middlewares'] as $middleware) {
-            if (!is_string($middleware)) {
-                throw new InvalidAnnotationParameterException(
-                    '@Route.middlewares must contain only strings.'
-                );
-            }
+        InvalidDescriptorArgumentException::assertIsNotEmptyString(
+            $name,
+            '@Route.name must contain a non-empty string.'
+        );
 
-            if (!is_subclass_of($middleware, MiddlewareInterface::class)) {
-                throw new InvalidAnnotationParameterException(
-                    '@Route.middlewares contains a nonexistent or non-middleware class.'
-                );
-            }
-        }
+        return $name;
     }
 
     /**
      * @param array $params
      *
-     * @return void
+     * @return null|string
      *
-     * @throws InvalidAnnotationParameterException
+     * @throws InvalidDescriptorArgumentException
      */
-    private function assertParamsContainValidAttributes(array $params) : void
+    private function extractHostFromParams(array $params) : ?string
     {
-        if (!is_array($params['attributes'])) {
-            throw new InvalidAnnotationParameterException(
-                '@Route.attributes must be an array.'
-            );
+        $host = $params['host'] ?? null;
+
+        // isn't required parameter...
+        if (null === $host) {
+            return null;
         }
+
+        InvalidDescriptorArgumentException::assertIsNotEmptyString(
+            $host,
+            '@Route.host must contain a non-empty string.'
+        );
+
+        return $host;
     }
 
     /**
      * @param array $params
      *
-     * @return void
+     * @return string
      *
-     * @throws InvalidAnnotationParameterException
+     * @throws InvalidDescriptorArgumentException
      */
-    private function assertParamsContainValidSummary(array $params) : void
+    private function extractPathFromParams(array $params) : string
     {
-        if (!is_string($params['summary'])) {
-            throw new InvalidAnnotationParameterException(
-                '@Route.summary must be a string.'
-            );
-        }
+        $path = $params['path'] ?? '';
+
+        InvalidDescriptorArgumentException::assertIsNotEmptyString(
+            $path,
+            '@Route.path must contain a non-empty string.'
+        );
+
+        return $path;
     }
 
     /**
      * @param array $params
      *
-     * @return void
+     * @return string[]
      *
-     * @throws InvalidAnnotationParameterException
+     * @throws InvalidDescriptorArgumentException
      */
-    private function assertParamsContainValidDescription(array $params) : void
+    private function extractMethodsFromParams(array $params) : array
     {
-        if (!is_array($params['description']) && !is_string($params['description'])) {
-            throw new InvalidAnnotationParameterException(
-                '@Route.description must be an array or a string.'
+        $methods = $params['methods'] ?? [];
+
+        InvalidDescriptorArgumentException::assertIsNotEmptyArray(
+            $methods,
+            '@Route.methods must contain a non-empty array.'
+        );
+
+        foreach ($methods as $value) {
+            InvalidDescriptorArgumentException::assertIsNotEmptyString(
+                $value,
+                '@Route.methods must contain non-empty strings.'
             );
         }
+
+        return $methods;
     }
 
     /**
      * @param array $params
      *
-     * @return void
+     * @return string[]
      *
-     * @throws InvalidAnnotationParameterException
+     * @throws InvalidDescriptorArgumentException
      */
-    private function assertParamsContainValidTags(array $params) : void
+    private function extractMiddlewaresFromParams(array $params) : array
     {
-        if (!is_array($params['tags'])) {
-            throw new InvalidAnnotationParameterException(
-                '@Route.tags must be an array.'
+        $middlewares = $params['middlewares'] ?? null;
+
+        // isn't required parameter...
+        if (null === $middlewares) {
+            return [];
+        }
+
+        InvalidDescriptorArgumentException::assertIsArray(
+            $middlewares,
+            '@Route.middlewares must contain an array.'
+        );
+
+        foreach ($middlewares as $value) {
+            InvalidDescriptorArgumentException::assertIsSubclassOf(
+                $value,
+                MiddlewareInterface::class,
+                '@Route.middlewares must contain the class names of existing middlewares.'
             );
         }
 
-        foreach ($params['tags'] as $middleware) {
-            if (!is_string($middleware)) {
-                throw new InvalidAnnotationParameterException(
-                    '@Route.tags must contain only strings.'
-                );
-            }
-        }
+        return $middlewares;
     }
 
     /**
      * @param array $params
      *
-     * @return void
+     * @return array
      *
-     * @throws InvalidAnnotationParameterException
+     * @throws InvalidDescriptorArgumentException
      */
-    private function assertParamsContainValidPriority(array $params) : void
+    private function extractAttributesFromParams(array $params) : array
     {
-        if (!is_int($params['priority'])) {
-            throw new InvalidAnnotationParameterException(
-                '@Route.priority must be an integer.'
+        $attributes = $params['attributes'] ?? null;
+
+        // isn't required parameter...
+        if (null === $attributes) {
+            return [];
+        }
+
+        InvalidDescriptorArgumentException::assertIsArray(
+            $attributes,
+            '@Route.attributes must contain an array.'
+        );
+
+        return $attributes;
+    }
+
+    /**
+     * @param array $params
+     *
+     * @return string
+     *
+     * @throws InvalidDescriptorArgumentException
+     */
+    private function extractSummaryFromParams(array $params) : string
+    {
+        $summary = $params['summary'] ?? null;
+
+        // isn't required parameter...
+        if (null === $summary) {
+            return '';
+        }
+
+        InvalidDescriptorArgumentException::assertIsString(
+            $summary,
+            '@Route.summary must contain a string.'
+        );
+
+        return $summary;
+    }
+
+    /**
+     * @param array $params
+     *
+     * @return string
+     *
+     * @throws InvalidDescriptorArgumentException
+     */
+    private function extractDescriptionFromParams(array $params) : string
+    {
+        $description = $params['description'] ?? null;
+
+        // isn't required parameter...
+        if (null === $description) {
+            return '';
+        }
+
+        InvalidDescriptorArgumentException::assertIsString(
+            $description,
+            '@Route.description must contain a string.'
+        );
+
+        return $description;
+    }
+
+    /**
+     * @param array $params
+     *
+     * @return string[]
+     *
+     * @throws InvalidDescriptorArgumentException
+     */
+    private function extractTagsFromParams(array $params) : array
+    {
+        $tags = $params['tags'] ?? null;
+
+        // isn't required parameter...
+        if (null === $tags) {
+            return [];
+        }
+
+        InvalidDescriptorArgumentException::assertIsArray(
+            $tags,
+            '@Route.tags must contain an array.'
+        );
+
+        foreach ($tags as $value) {
+            InvalidDescriptorArgumentException::assertIsNotEmptyString(
+                $value,
+                '@Route.tags must contain non-empty strings.'
             );
         }
+
+        return $tags;
+    }
+
+    /**
+     * @param array $params
+     *
+     * @return int
+     *
+     * @throws InvalidDescriptorArgumentException
+     */
+    private function extractPriorityFromParams(array $params) : int
+    {
+        $priority = $params['priority'] ?? null;
+
+        // isn't required parameter...
+        if (null === $priority) {
+            return 0;
+        }
+
+        InvalidDescriptorArgumentException::assertIsInteger(
+            $priority,
+            '@Route.priority must contain an integer.'
+        );
+
+        return $priority;
     }
 }

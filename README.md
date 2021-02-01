@@ -1,6 +1,6 @@
-# HTTP router for PHP 7.1+ (incl. PHP 8) based on PSR-7 and PSR-15 with support for annotations and OpenApi (Swagger)
+# HTTP router for PHP 7.1+ (incl. PHP 8 with attributes) based on PSR-7 and PSR-15 with support for annotations and OpenApi (Swagger)
 
-[![Build Status](https://scrutinizer-ci.com/g/sunrise-php/http-router/badges/build.png?b=master)](https://scrutinizer-ci.com/g/sunrise-php/http-router/build-status/master)
+[![Build Status](https://circleci.com/gh/sunrise-php/http-router.svg?style=shield)](https://circleci.com/gh/sunrise-php/http-router)
 [![Code Coverage](https://scrutinizer-ci.com/g/sunrise-php/http-router/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/sunrise-php/http-router/?branch=master)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/sunrise-php/http-router/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/sunrise-php/http-router/?branch=master)
 [![Total Downloads](https://poser.pugx.org/sunrise/http-router/downloads?format=flat)](https://packagist.org/packages/sunrise/http-router)
@@ -12,12 +12,12 @@
 ## Installation
 
 ```bash
-composer require 'sunrise/http-router:^2.5'
+composer require 'sunrise/http-router:^2.6'
 ```
 
 ## QuickStart
 
-The example uses other sunrise packages, but you can use for example `zend/diactoros`, or any other.
+The example uses other sunrise packages, but you can use, for example, `zend/diactoros` or any other.
 
 ```bash
 composer require sunrise/http-message sunrise/http-server-request
@@ -88,16 +88,17 @@ $response = $router->handle($request);
 $response = $router->process($request, $handler);
 ```
 
-#### Strategy loading routes from annotations
+#### Strategy loading routes from descriptors (annotations or attributes)
 
 ```php
 use Doctrine\Common\Annotations\AnnotationRegistry;
-use Sunrise\Http\Router\Loader\AnnotationDirectoryLoader;
+use Sunrise\Http\Router\Loader\DescriptorDirectoryLoader;
 use Sunrise\Http\Router\Router;
 
+// necessary if you will use annotations (annotations isn't attributes)...
 AnnotationRegistry::registerLoader('class_exists');
 
-$loader = new AnnotationDirectoryLoader();
+$loader = new DescriptorDirectoryLoader();
 $loader->attach('src/Controller');
 
 // or attach an array
@@ -139,10 +140,26 @@ $response = $router->process($request, $handler);
 
 #### Route Annotation Example
 
+##### Minimal annotation view
+
 ```php
 /**
  * @Route(
- *   name="apiEntryUpdate",
+ *   name="api_v1_entry_update",
+ *   path="/api/v1/entry/{id<@uuid>}(/{optionalAttribute})",
+ *   methods={"PATCH"},
+ * )
+ */
+final class EntryUpdateRequestHandler implements RequestHandlerInterface
+```
+
+##### Full annotation
+
+```php
+/**
+ * @Route(
+ *   name="api_v1_entry_update",
+ *   host="api.host",
  *   path="/api/v1/entry/{id<@uuid>}(/{optionalAttribute})",
  *   methods={"PATCH"},
  *   middlewares={
@@ -158,6 +175,47 @@ $response = $router->process($request, $handler);
  *   priority=0,
  * )
  */
+final class EntryUpdateRequestHandler implements RequestHandlerInterface
+```
+
+#### Route Attribute Example
+
+##### Minimal attribute view
+
+```php
+use Sunrise\Http\Router\Attribute\Route;
+
+#[Route(
+    name: 'api_v1_entry_update',
+    path: '/api/v1/entry/{id<@uuid>}(/{optionalAttribute})',
+    methods: ['PATCH'],
+)]
+final class EntryUpdateRequestHandler implements RequestHandlerInterface
+```
+
+##### Full attribute
+
+```php
+use Sunrise\Http\Router\Attribute\Route;
+
+#[Route(
+    name: 'api_v1_entry_update',
+    host: 'api.host',
+    path: '/api/v1/entry/{id<@uuid>}(/{optionalAttribute})',
+    methods: ['PATCH'],
+    middlewares: [
+        \App\Middleware\CorsMiddleware::class,
+        \App\Middleware\ApiAuthMiddleware::class,
+    ],
+    attributes: [
+        'optionalAttribute' => 'defaultValue',
+    ],
+    summary: 'Updates an entry by UUID',
+    description: 'Here you can describe the method in more detail...',
+    tags: ['api', 'entry'],
+    priority: 0,
+)]
+final class EntryUpdateRequestHandler implements RequestHandlerInterface
 ```
 
 ---
@@ -243,6 +301,26 @@ $collector->group(function ($collector) {
 
 ```php
 $collector->get('api.entry.read', '/api/v1/entry/{id<\d+>}(/{optional<\w+>})');
+```
+
+### Hosts (available from version 2.6.0)
+
+> Note: if you don't assign a host for a route, it will be available on any hosts!
+
+```php
+// move the hosts table into the settings...
+$router->addHost('public.host', 'www.example.com');
+$router->addHost('admin.host', 'secret.example.com');
+$router->addHost('api.host', 'api.example.com');
+
+// the route will available only on the `secret.example.com` host...
+$route->setHost('admin.host');
+
+// routes in the group will available on the `secret.example.com` host...
+$collector->group(function ($collector) {
+    // some code...
+})
+->setHost('admin.host');
 ```
 
 ---

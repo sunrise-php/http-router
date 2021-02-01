@@ -22,6 +22,30 @@ class RouteCollectorGroupActionTest extends TestCase
 
     /**
      * @return void
+     *
+     * @since 2.6.0
+     */
+    public function testHost() : void
+    {
+        $routes = [
+            new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
+        ];
+
+        $collection = new RouteCollection();
+        $collection->add(...$routes);
+
+        $groupAction = new RouteCollectorGroupAction($collection);
+        $groupAction->setHost('google.com');
+
+        $this->assertSame('google.com', $routes[0]->getHost());
+        $this->assertSame('google.com', $routes[1]->getHost());
+        $this->assertSame('google.com', $routes[2]->getHost());
+    }
+
+    /**
+     * @return void
      */
     public function testAddPrefix() : void
     {

@@ -41,6 +41,8 @@ class CollectableFileLoaderTest extends TestCase
 
     /**
      * @return void
+     *
+     * @runInSeparateProcess
      */
     public function testAttachArray() : void
     {
@@ -56,6 +58,8 @@ class CollectableFileLoaderTest extends TestCase
 
     /**
      * @return void
+     *
+     * @runInSeparateProcess
      */
     public function testLoadFile() : void
     {
@@ -68,6 +72,8 @@ class CollectableFileLoaderTest extends TestCase
 
     /**
      * @return void
+     *
+     * @runInSeparateProcess
      */
     public function testLoadDirectory() : void
     {

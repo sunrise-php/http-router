@@ -10,6 +10,7 @@ use Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler;
 /**
  * @Route(
  *   name="home",
+ *   host="localhost",
  *   path="/",
  *   methods={"HEAD", "GET"},
  *   middlewares={

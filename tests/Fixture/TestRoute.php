@@ -65,9 +65,9 @@ class TestRoute extends BaseRoute
     public static function getTestRouteMethods(int $flags = 0) : array
     {
         return [
-            strtoupper(uniqid()),
-            strtoupper(uniqid()),
-            strtoupper(uniqid()),
+            strtoupper(uniqid('verb_')),
+            strtoupper(uniqid('verb_')),
+            strtoupper(uniqid('verb_')),
         ];
     }
 
@@ -103,9 +103,9 @@ class TestRoute extends BaseRoute
     public static function getTestRouteAttributes(int $flags = 0) : array
     {
         return [
-            uniqid() => uniqid(),
-            uniqid() => uniqid(),
-            uniqid() => uniqid(),
+            uniqid('attr_') => uniqid(),
+            uniqid('attr_') => uniqid(),
+            uniqid('attr_') => uniqid(),
         ];
     }
 }

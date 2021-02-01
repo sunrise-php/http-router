@@ -49,6 +49,13 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     public const ATTR_NAME_FOR_ROUTING_ERROR = '@routing-error';
 
     /**
+     * The router host table
+     *
+     * @var array
+     */
+    private $hosts = [];
+
+    /**
      * The router routes
      *
      * @var RouteInterface[]
@@ -61,6 +68,18 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      * @var MiddlewareInterface[]
      */
     private $middlewares = [];
+
+    /**
+     * Gets the router host table
+     *
+     * @return array
+     *
+     * @since 2.6.0
+     */
+    public function getHosts() : array
+    {
+        return $this->hosts;
+    }
 
     /**
      * Gets the router routes
@@ -80,6 +99,21 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     public function getMiddlewares() : array
     {
         return array_values($this->middlewares);
+    }
+
+    /**
+     * Adds the given host alias to the router host table
+     *
+     * @param string $alias
+     * @param string $host
+     *
+     * @return void
+     *
+     * @since 2.6.0
+     */
+    public function addHost(string $alias, string $host) : void
+    {
+        $this->hosts[$alias] = $host;
     }
 
     /**
@@ -206,11 +240,16 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      */
     public function match(ServerRequestInterface $request) : RouteInterface
     {
+        $requestHost = $request->getUri()->getHost();
         $requestPath = $request->getUri()->getPath();
         $requestMethod = $request->getMethod();
         $allowedMethods = [];
 
         foreach ($this->routes as $route) {
+            if (!$this->compareHosts($route->getHost(), $requestHost)) {
+                continue;
+            }
+
             // https://github.com/sunrise-php/http-router/issues/50
             // https://tools.ietf.org/html/rfc7231#section-6.5.5
             if (!path_match($route->getPath(), $requestPath, $attributes)) {
@@ -257,9 +296,9 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
         try {
             return $this->handle($request);
         } catch (MethodNotAllowedException | RouteNotFoundException $e) {
-            return $handler->handle(
-                $request->withAttribute(self::ATTR_NAME_FOR_ROUTING_ERROR, $e)
-            );
+            $request = $request->withAttribute(self::ATTR_NAME_FOR_ROUTING_ERROR, $e);
+
+            return $handler->handle($request);
         }
     }
 
@@ -275,5 +314,35 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
         foreach ($loaders as $loader) {
             $this->addRoute(...$loader->load()->all());
         }
+    }
+
+    /**
+     * Compares the given route host and the given request host
+     *
+     * Returns `true` if the route host is `null`
+     * or if the route host is equal to the request host,
+     * otherwise returns `false`.
+     *
+     * @param null|string $routeHost
+     * @param string $requestHost
+     *
+     * @return bool
+     */
+    private function compareHosts(?string $routeHost, string $requestHost) : bool
+    {
+        if (null === $routeHost) {
+            return true;
+        }
+
+        // trying to resolve the route host....
+        if (isset($this->hosts[$routeHost])) {
+            $routeHost = $this->hosts[$routeHost];
+        }
+
+        if ($requestHost === $routeHost) {
+            return true;
+        }
+
+        return false;
     }
 }

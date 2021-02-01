@@ -9,10 +9,10 @@ use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\SimpleCache\CacheInterface;
 use Sunrise\Http\Router\Annotation\Route as AnnotationRoute;
-use Sunrise\Http\Router\Exception\InvalidAnnotationParameterException;
-use Sunrise\Http\Router\Exception\InvalidAnnotationSourceException;
+use Sunrise\Http\Router\Exception\InvalidDescriptorArgumentException;
 use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
 use Sunrise\Http\Router\Loader\AnnotationDirectoryLoader;
+use Sunrise\Http\Router\Loader\DescriptorDirectoryLoader;
 use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\Tests\Fixture;
 
@@ -30,6 +30,9 @@ class AnnotationDirectoryLoaderTest extends TestCase
         $loader = new AnnotationDirectoryLoader();
 
         $this->assertInstanceOf(LoaderInterface::class, $loader);
+
+        // BC 2.6.0
+        $this->assertInstanceOf(DescriptorDirectoryLoader::class, $loader);
     }
 
     /**
@@ -178,6 +181,10 @@ class AnnotationDirectoryLoaderTest extends TestCase
             'description' => 'the route description',
             'tags' => ['foo', 'bar'],
         ], Fixture\Helper::routesToArray204($routes));
+
+        $this->assertContains([
+            'host' => 'localhost',
+        ], Fixture\Helper::routesToArray206($routes));
     }
 
     /**
@@ -286,71 +293,71 @@ class AnnotationDirectoryLoaderTest extends TestCase
         return [
             [
                 __DIR__ . '/../Fixture/Annotation/Route/Invalid/NameMissing',
-                InvalidAnnotationParameterException::class,
+                InvalidDescriptorArgumentException::class,
             ],
             [
                 __DIR__ . '/../Fixture/Annotation/Route/Invalid/NameEmpty',
-                InvalidAnnotationParameterException::class,
+                InvalidDescriptorArgumentException::class,
             ],
             [
                 __DIR__ . '/../Fixture/Annotation/Route/Invalid/NameNotString',
-                InvalidAnnotationParameterException::class,
+                InvalidDescriptorArgumentException::class,
+            ],
+            [
+                __DIR__ . '/../Fixture/Annotation/Route/Invalid/InvalidHost',
+                InvalidDescriptorArgumentException::class,
             ],
             [
                 __DIR__ . '/../Fixture/Annotation/Route/Invalid/PathMissing',
-                InvalidAnnotationParameterException::class,
+                InvalidDescriptorArgumentException::class,
             ],
             [
                 __DIR__ . '/../Fixture/Annotation/Route/Invalid/PathEmpty',
-                InvalidAnnotationParameterException::class,
+                InvalidDescriptorArgumentException::class,
             ],
             [
                 __DIR__ . '/../Fixture/Annotation/Route/Invalid/PathNotString',
-                InvalidAnnotationParameterException::class,
+                InvalidDescriptorArgumentException::class,
             ],
             [
                 __DIR__ . '/../Fixture/Annotation/Route/Invalid/MethodsMissing',
-                InvalidAnnotationParameterException::class,
+                InvalidDescriptorArgumentException::class,
             ],
             [
                 __DIR__ . '/../Fixture/Annotation/Route/Invalid/MethodsEmpty',
-                InvalidAnnotationParameterException::class,
+                InvalidDescriptorArgumentException::class,
             ],
             [
                 __DIR__ . '/../Fixture/Annotation/Route/Invalid/MethodsNotArray',
-                InvalidAnnotationParameterException::class,
+                InvalidDescriptorArgumentException::class,
             ],
             [
                 __DIR__ . '/../Fixture/Annotation/Route/Invalid/MethodsNotStringable',
-                InvalidAnnotationParameterException::class,
+                InvalidDescriptorArgumentException::class,
             ],
             [
                 __DIR__ . '/../Fixture/Annotation/Route/Invalid/MiddlewaresNotArray',
-                InvalidAnnotationParameterException::class,
+                InvalidDescriptorArgumentException::class,
             ],
             [
                 __DIR__ . '/../Fixture/Annotation/Route/Invalid/MiddlewaresNotStringable',
-                InvalidAnnotationParameterException::class,
+                InvalidDescriptorArgumentException::class,
             ],
             [
                 __DIR__ . '/../Fixture/Annotation/Route/Invalid/MiddlewaresNotExistable',
-                InvalidAnnotationParameterException::class,
+                InvalidDescriptorArgumentException::class,
             ],
             [
                 __DIR__ . '/../Fixture/Annotation/Route/Invalid/MiddlewaresNotMiddlewarable',
-                InvalidAnnotationParameterException::class,
+                InvalidDescriptorArgumentException::class,
             ],
             [
                 __DIR__ . '/../Fixture/Annotation/Route/Invalid/AttributesNotArray',
-                InvalidAnnotationParameterException::class,
+                InvalidDescriptorArgumentException::class,
             ],
             [
                 __DIR__ . '/../Fixture/Annotation/Route/Invalid/PriorityNotInteger',
-                InvalidAnnotationParameterException::class,
-            ],
-            [
-                __DIR__ . '/../Fixture/Annotation/Route/Invalid/SourceNotValid',
-                InvalidAnnotationSourceException::class,
+                InvalidDescriptorArgumentException::class,
             ],
         ];
     }

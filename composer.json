@@ -1,7 +1,7 @@
 {
     "name": "sunrise/http-router",
     "homepage": "https://github.com/sunrise-php/http-router",
-    "description": "Sunrise // HTTP router for PHP 7.1+ (incl. PHP 8) based on PSR-7 and PSR-15 with support for annotations and OpenApi Specification",
+    "description": "Sunrise // HTTP router for PHP 7.1+ (incl. PHP 8 with attributes) based on PSR-7 and PSR-15 with support for annotations and OpenApi Specification",
     "license": "MIT",
     "keywords": [
         "fenric",
@@ -14,7 +14,9 @@
         "psr-7",
         "psr-15",
         "php7",
-        "php8"
+        "php8",
+        "attributes",
+        "php-attributes"
     ],
     "authors": [
         {
