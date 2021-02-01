@@ -246,12 +246,8 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
         $allowedMethods = [];
 
         foreach ($this->routes as $route) {
-            $routeHost = $route->getHost();
-            if (isset($routeHost)) {
-                $routeHost = $this->hosts[$routeHost] ?? $routeHost;
-                if ($routeHost <> $requestHost) {
-                    continue;
-                }
+            if (!$this->compareHosts($route->getHost(), $requestHost)) {
+                continue;
             }
 
             // https://github.com/sunrise-php/http-router/issues/50
@@ -300,9 +296,9 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
         try {
             return $this->handle($request);
         } catch (MethodNotAllowedException | RouteNotFoundException $e) {
-            return $handler->handle(
-                $request->withAttribute(self::ATTR_NAME_FOR_ROUTING_ERROR, $e)
-            );
+            $request = $request->withAttribute(self::ATTR_NAME_FOR_ROUTING_ERROR, $e);
+
+            return $handler->handle($request);
         }
     }
 
@@ -318,5 +314,35 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
         foreach ($loaders as $loader) {
             $this->addRoute(...$loader->load()->all());
         }
+    }
+
+    /**
+     * Compares the given route host and the given request host
+     *
+     * Returns `true` if the route host is `null`
+     * or if the route host is equal to the request host,
+     * otherwise returns `false`.
+     *
+     * @param null|string $routeHost
+     * @param string $requestHost
+     *
+     * @return bool
+     */
+    private function compareHosts(?string $routeHost, string $requestHost) : bool
+    {
+        if (null === $routeHost) {
+            return true;
+        }
+
+        // trying to resolve the route host....
+        if (isset($this->hosts[$routeHost])) {
+            $routeHost = $this->hosts[$routeHost];
+        }
+
+        if ($requestHost === $routeHost) {
+            return true;
+        }
+
+        return false;
     }
 }
