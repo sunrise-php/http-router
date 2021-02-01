@@ -247,21 +247,12 @@ class DescriptorDirectoryLoader implements LoaderInterface
                 continue;
             }
 
-            $reflection = new ReflectionClass($class);
-
-            if (8 === PHP_MAJOR_VERSION) {
-                $attribute = $reflection->getAttributes(AttributeRouteDescriptor::class)[0] ?? null;
-                if (isset($attribute)) {
-                    $descriptors[$class] = $attribute->newInstance();
-                    continue;
-                }
-            }
-
-            $annotation = $this->annotationReader->getClassAnnotation($reflection, AnnotationRouteDescriptor::class);
-            if (isset($annotation)) {
-                $descriptors[$class] = $annotation;
+            $descriptor = $this->extractDescriptor($class);
+            if (!isset($descriptor)) {
                 continue;
             }
+
+            $descriptors[$class] = $descriptor;
         }
 
         uasort($descriptors, function ($a, $b) {
@@ -269,6 +260,32 @@ class DescriptorDirectoryLoader implements LoaderInterface
         });
 
         return $descriptors;
+    }
+
+    /**
+     * Extracts a descriptor from the given class
+     *
+     * @param string $class
+     *
+     * @return null|RouteDescriptorInterface
+     */
+    private function extractDescriptor(string $class) : ?RouteDescriptorInterface
+    {
+        $reflection = new ReflectionClass($class);
+
+        if (8 === PHP_MAJOR_VERSION) {
+            $attribute = $reflection->getAttributes(AttributeRouteDescriptor::class)[0] ?? null;
+            if (isset($attribute)) {
+                return $attribute->newInstance();
+            }
+        }
+
+        $annotation = $this->annotationReader->getClassAnnotation($reflection, AnnotationRouteDescriptor::class);
+        if (isset($annotation)) {
+            return $annotation;
+        }
+
+        return null;
     }
 
     /**
@@ -300,7 +317,6 @@ class DescriptorDirectoryLoader implements LoaderInterface
     private function findFiles(string $resource) : array
     {
         $flags = FilesystemIterator::CURRENT_AS_PATHNAME;
-
         $directory = new RecursiveDirectoryIterator($resource, $flags);
         $iterator = new RecursiveIteratorIterator($directory);
         $files = new RegexIterator($iterator, '/\.php$/');
