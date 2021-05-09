@@ -6,7 +6,7 @@ version: 2
 jobs:
   php71:
     docker:
-      - image: circleci/php:7.1-cli-node-browsers
+      - image: circleci/php:8.0-cli-node-browsers
     steps:
       - checkout
       - run: php -v
@@ -14,7 +14,7 @@ jobs:
       - run: php vendor/bin/phpunit --colors=always
   php72:
     docker:
-      - image: circleci/php:7.2-cli-node-browsers
+      - image: circleci/php:8.0-cli-node-browsers
     steps:
       - checkout
       - run: php -v
@@ -22,7 +22,7 @@ jobs:
       - run: php vendor/bin/phpunit --colors=always
   php73:
     docker:
-      - image: circleci/php:7.3-cli-node-browsers
+      - image: circleci/php:8.0-cli-node-browsers
     steps:
       - checkout
       - run: php -v
@@ -30,7 +30,7 @@ jobs:
       - run: php vendor/bin/phpunit --colors=always
   php74:
     docker:
-      - image: circleci/php:7.4-cli-node-browsers
+      - image: circleci/php:8.0-cli-node-browsers
     steps:
       - checkout
       - run: php -v
