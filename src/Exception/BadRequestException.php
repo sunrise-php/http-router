@@ -20,9 +20,9 @@ class BadRequestException extends Exception
     /**
      * Gets violations
      *
-     * @return array
+     * @return mixed
      */
-    public function getViolations() : array
+    public function getViolations()
     {
         return $this->fromContext('violations', []);
     }
