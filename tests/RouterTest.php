@@ -12,10 +12,12 @@ use Sunrise\Http\Router\Exception\MethodNotAllowedException;
 use Sunrise\Http\Router\Exception\MiddlewareAlreadyExistsException;
 use Sunrise\Http\Router\Exception\RouteAlreadyExistsException;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
+use Sunrise\Http\Router\Middleware\CallableMiddleware;
 use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\Route;
 use Sunrise\Http\Router\RouteCollection;
 use Sunrise\Http\Router\Router;
+use Sunrise\Http\Message\ResponseFactory;
 use Sunrise\Http\ServerRequest\ServerRequestFactory;
 
 /**
@@ -297,6 +299,84 @@ class RouterTest extends TestCase
 
             throw $e;
         }
+    }
+
+    /**
+     * @return void
+     */
+    public function testRun() : void
+    {
+        $routes = [
+            new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
+        ];
+
+        $router = new Router();
+        $router->addRoute(...$routes);
+        $router->run((new ServerRequestFactory)
+            ->createServerRequest(
+                $routes[1]->getMethods()[1],
+                $routes[1]->getPath()
+            ));
+
+        $this->assertTrue($routes[1]->getRequestHandler()->isRunned());
+    }
+
+    /**
+     * @return void
+     */
+    public function testRunWithNotAllowedMethod() : void
+    {
+        $routes = [
+            new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
+        ];
+
+        $router = new Router();
+        $router->addRoute(...$routes);
+
+        $router->addMiddleware(new CallableMiddleware(function ($request, $handler) {
+            try {
+                return $handler->handle($request);
+            } catch (MethodNotAllowedException $e) {
+                return (new ResponseFactory)->createResponse(405);
+            }
+        }));
+
+        $response = $router->run((new ServerRequestFactory)
+            ->createServerRequest('UNKNOWN', $routes[1]->getPath()));
+
+        $this->assertSame(405, $response->getStatusCode());
+    }
+
+    /**
+     * @return void
+     */
+    public function testRunWithNotFoundRoute() : void
+    {
+        $routes = [
+            new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
+            new Fixture\TestRoute(),
+        ];
+
+        $router = new Router();
+        $router->addRoute(...$routes);
+
+        $router->addMiddleware(new CallableMiddleware(function ($request, $handler) {
+            try {
+                return $handler->handle($request);
+            } catch (RouteNotFoundException $e) {
+                return (new ResponseFactory)->createResponse(404);
+            }
+        }));
+
+        $response = $router->run((new ServerRequestFactory)
+            ->createServerRequest($routes[1]->getMethods()[1], '/unknown'));
+
+        $this->assertSame(404, $response->getStatusCode());
     }
 
     /**
