@@ -24,6 +24,7 @@ use Sunrise\Http\Router\Exception\MiddlewareAlreadyExistsException;
 use Sunrise\Http\Router\Exception\RouteAlreadyExistsException;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
 use Sunrise\Http\Router\Loader\LoaderInterface;
+use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
 
 /**
@@ -276,6 +277,28 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     }
 
     /**
+     * Runs the router
+     *
+     * @param ServerRequestInterface $request
+     *
+     * @return ResponseInterface
+     *
+     * @since 2.8.0
+     */
+    public function run(ServerRequestInterface $request) : ResponseInterface
+    {
+        // lazy resolving of the given request...
+        $routing = new CallableRequestHandler(function (ServerRequestInterface $request) : ResponseInterface {
+            return $this->match($request)->handle($request);
+        });
+
+        $handler = new QueueableRequestHandler($routing);
+        $handler->add(...$this->getMiddlewares());
+
+        return $handler->handle($request);
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function handle(ServerRequestInterface $request) : ResponseInterface
@@ -295,7 +318,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     {
         try {
             return $this->handle($request);
-        } catch (MethodNotAllowedException | RouteNotFoundException $e) {
+        } catch (MethodNotAllowedException|RouteNotFoundException $e) {
             $request = $request->withAttribute(self::ATTR_NAME_FOR_ROUTING_ERROR, $e);
 
             return $handler->handle($request);
