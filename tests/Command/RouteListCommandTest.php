@@ -9,7 +9,6 @@ use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Command\RouteListCommand;
 use Sunrise\Http\Router\Router;
 use Sunrise\Http\Router\Tests\Fixture;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 
@@ -39,6 +38,6 @@ class RouteListCommandTest extends TestCase
         $output = new BufferedOutput();
         $exitCode = $command->execute($input, $output);
 
-        $this->assertSame(Command::SUCCESS, $exitCode);
+        $this->assertSame(0, $exitCode);
     }
 }

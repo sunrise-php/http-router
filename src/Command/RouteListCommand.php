@@ -77,6 +77,6 @@ final class RouteListCommand extends Command
 
         $table->render();
 
-        return Command::SUCCESS;
+        return 0;
     }
 }
