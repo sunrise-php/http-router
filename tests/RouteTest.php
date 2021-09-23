@@ -305,6 +305,26 @@ class RouteTest extends TestCase
     /**
      * @return void
      */
+    public function testHandleWithoutMiddlewares() : void
+    {
+        $route = new Fixture\TestRoute(Fixture\TestRoute::WITHOUT_MIDDLEWARES);
+        $route->handle((new ServerRequestFactory)->createServerRequest('GET', '/'));
+
+        $this->assertTrue($route->getRequestHandler()->isRunned());
+
+        $expectedAttributes = [
+            Route::ATTR_NAME_FOR_ROUTE => $route,
+            Route::ATTR_NAME_FOR_ROUTE_NAME => $route->getName(),
+        ];
+
+        $expectedAttributes += $route->getAttributes();
+
+        $this->assertSame($expectedAttributes, $route->getRequestHandler()->getAttributes());
+    }
+
+    /**
+     * @return void
+     */
     public function testSummary() : void
     {
         $route = new Fixture\TestRoute();

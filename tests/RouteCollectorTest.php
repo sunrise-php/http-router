@@ -6,6 +6,10 @@ namespace Sunrise\Http\Router\Tests;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
+use Sunrise\Http\Router\Exception\UnresolvableObjectException;
+use Sunrise\Http\Router\Middleware\CallableMiddleware;
+use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Sunrise\Http\Router\RouteCollection;
 use Sunrise\Http\Router\RouteCollectionFactoryInterface;
 use Sunrise\Http\Router\RouteCollectionGroupActionInterface;
@@ -16,10 +20,31 @@ use Sunrise\Http\Router\RouteInterface;
 use Sunrise\Http\Router\Router;
 
 /**
+ * Import functions
+ */
+use function get_class;
+
+/**
  * RouteCollectorTest
  */
 class RouteCollectorTest extends TestCase
 {
+
+    /**
+     * @return void
+     */
+    public function testContainer() : void
+    {
+        $collector = new RouteCollector();
+
+        $this->assertNull($collector->getContainer());
+
+        $container = $this->createMock(ContainerInterface::class);
+
+        $collector->setContainer($container);
+
+        $this->assertSame($container, $collector->getContainer());
+    }
 
     /**
      * @return void
@@ -765,5 +790,71 @@ class RouteCollectorTest extends TestCase
             'middlewares' => [],
             'attributes' => [],
         ], Fixture\Helper::routesToArray($routes));
+    }
+
+    /**
+     * @return void
+     */
+    public function testResolvingRequestHandler() : void
+    {
+        $route = (new RouteCollector)->get('foo', '/', function () {
+        });
+
+        $this->assertSame(CallableRequestHandler::class, get_class($route->getRequestHandler()));
+
+        $route = (new RouteCollector)->get('foo', '/', Fixture\BlankRequestHandler::class);
+
+        $this->assertSame(Fixture\BlankRequestHandler::class, get_class($route->getRequestHandler()));
+
+        $container = $this->createMock(ContainerInterface::class);
+        $container->method('has')->willReturn(true);
+        $container->method('get')->willReturn(new Fixture\BlankRequestHandler());
+
+        $collector = new RouteCollector();
+        $collector->setContainer($container);
+
+        $route = $collector->get('foo', '/', Fixture\BlankRequestHandler::class);
+
+        $this->assertSame(Fixture\BlankRequestHandler::class, get_class($route->getRequestHandler()));
+
+        $this->expectException(UnresolvableObjectException::class);
+
+        (new RouteCollector)->get('foo', '/', 'unknown');
+    }
+
+    /**
+     * @return void
+     */
+    public function testResolvingMiddlewares() : void
+    {
+        $route = (new RouteCollector)->get('foo', '/', new Fixture\BlankRequestHandler(), [function () {
+        }]);
+
+        $this->assertSame(CallableMiddleware::class, get_class($route->getMiddlewares()[0]));
+
+        $route = (new RouteCollector)->get('foo', '/', new Fixture\BlankRequestHandler(), [
+            Fixture\BlankMiddleware::class,
+        ]);
+
+        $this->assertSame(Fixture\BlankMiddleware::class, get_class($route->getMiddlewares()[0]));
+
+        $container = $this->createMock(ContainerInterface::class);
+        $container->method('has')->willReturn(true);
+        $container->method('get')->willReturn(new Fixture\BlankMiddleware());
+
+        $collector = new RouteCollector();
+        $collector->setContainer($container);
+
+        $route = $collector->get('foo', '/', new Fixture\BlankRequestHandler(), [
+            Fixture\BlankMiddleware::class,
+        ]);
+
+        $this->assertSame(Fixture\BlankMiddleware::class, get_class($route->getMiddlewares()[0]));
+
+        $this->expectException(UnresolvableObjectException::class);
+
+        (new RouteCollector)->get('foo', '/', new Fixture\BlankRequestHandler(), [
+            'unknown',
+        ]);
     }
 }

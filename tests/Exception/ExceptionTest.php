@@ -8,7 +8,7 @@ namespace Sunrise\Http\Router\Tests\Exception;
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Exception\Exception;
 use Sunrise\Http\Router\Exception\ExceptionInterface;
-use RuntimeException;
+use Throwable;
 
 /**
  * ExceptionTest
@@ -19,12 +19,25 @@ class ExceptionTest extends TestCase
     /**
      * @return void
      */
+    public function testContracts() : void
+    {
+        $exception = new Exception();
+
+        $this->assertInstanceOf(Throwable::class, $exception);
+        $this->assertInstanceOf(ExceptionInterface::class, $exception);
+    }
+
+    /**
+     * @return void
+     */
     public function testConstructor() : void
     {
         $exception = new Exception();
 
-        $this->assertInstanceOf(ExceptionInterface::class, $exception);
-        $this->assertInstanceOf(RuntimeException::class, $exception);
+        $this->assertSame('', $exception->getMessage());
+        $this->assertSame(0, $exception->getCode());
+        $this->assertSame(null, $exception->getPrevious());
+        $this->assertSame([], $exception->getContext());
     }
 
     /**
@@ -52,6 +65,12 @@ class ExceptionTest extends TestCase
         $exception = new Exception('blah', $context);
 
         $this->assertSame($context, $exception->getContext());
+
+        $this->assertSame($context['foo'], $exception->fromContext('foo'));
+        $this->assertSame($context['bar'], $exception->fromContext('bar'));
+
+        $this->assertSame(null, $exception->fromContext('baz'));
+        $this->assertSame(false, $exception->fromContext('baz', false));
     }
 
     /**
@@ -71,30 +90,10 @@ class ExceptionTest extends TestCase
      */
     public function testPrevious() : void
     {
-        $previous = new \Exception();
+        $previous = new Exception();
 
         $exception = new Exception('blah', [], 0, $previous);
 
         $this->assertSame($previous, $exception->getPrevious());
-    }
-
-    /**
-     * @return void
-     */
-    public function testFromContext() : void
-    {
-        $context = [
-            'foo' => 'bar',
-            'bar' => 'baz',
-        ];
-
-        $exception = new Exception('blah', $context);
-
-        $this->assertSame($context['foo'], $exception->fromContext('foo'));
-        $this->assertSame($context['bar'], $exception->fromContext('bar'));
-
-        // undefined the context keys...
-        $this->assertSame(null, $exception->fromContext('baz'));
-        $this->assertSame(false, $exception->fromContext('baz', false));
     }
 }

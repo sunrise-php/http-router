@@ -18,7 +18,7 @@ class BadRequestExceptionTest extends TestCase
     /**
      * @return void
      */
-    public function testConstructor() : void
+    public function testContracts() : void
     {
         $exception = new BadRequestException();
 
@@ -28,45 +28,28 @@ class BadRequestExceptionTest extends TestCase
     /**
      * @return void
      */
-    public function testMessage() : void
+    public function testErrors() : void
     {
-        $message = 'blah';
-        $exception = new BadRequestException($message);
+        $expected = [
+            'foo' => 'bar',
+            'bar' => 'baz',
+        ];
 
-        $this->assertSame($message, $exception->getMessage());
+        $exception = new BadRequestException('blah', [
+            'errors' => $expected,
+        ]);
+
+        $this->assertSame($expected, $exception->getErrors());
     }
 
     /**
      * @return void
      */
-    public function testContext() : void
+    public function testErrorsWithEmptyContext() : void
     {
-        $context = ['foo' => 'bar'];
-        $exception = new BadRequestException('blah', $context);
+        $exception = new BadRequestException('blah');
 
-        $this->assertSame($context, $exception->getContext());
-    }
-
-    /**
-     * @return void
-     */
-    public function testCode() : void
-    {
-        $code = 100;
-        $exception = new BadRequestException('blah', [], $code);
-
-        $this->assertSame($code, $exception->getCode());
-    }
-
-    /**
-     * @return void
-     */
-    public function testPrevious() : void
-    {
-        $previous = new \Exception();
-        $exception = new BadRequestException('blah', [], 0, $previous);
-
-        $this->assertSame($previous, $exception->getPrevious());
+        $this->assertSame([], $exception->getErrors());
     }
 
     /**
@@ -91,9 +74,8 @@ class BadRequestExceptionTest extends TestCase
      */
     public function testViolationsWithEmptyContext() : void
     {
-        $expected = [];
         $exception = new BadRequestException('blah');
 
-        $this->assertSame($expected, $exception->getViolations());
+        $this->assertSame([], $exception->getViolations());
     }
 }

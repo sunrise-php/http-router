@@ -35,7 +35,7 @@ interface LoaderInterface
     public function attach($resource) : void;
 
     /**
-     * Attaches the given array with resources to the loader
+     * Attaches the given resources to the loader
      *
      * @param array $resources
      *
@@ -49,8 +49,6 @@ interface LoaderInterface
      * Loads routes from previously attached resources
      *
      * @return RouteCollectionInterface
-     *
-     * @throws \RuntimeException May be thrown if any error occurred.
      */
     public function load() : RouteCollectionInterface;
 }

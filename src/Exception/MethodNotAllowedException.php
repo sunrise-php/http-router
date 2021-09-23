@@ -23,6 +23,18 @@ class MethodNotAllowedException extends Exception
 {
 
     /**
+     * Gets a method
+     *
+     * @return string
+     *
+     * @since 2.9.0
+     */
+    public function getMethod() : string
+    {
+        return $this->fromContext('method', '');
+    }
+
+    /**
      * Gets allowed methods
      *
      * @return string[]

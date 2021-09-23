@@ -14,8 +14,20 @@ namespace Sunrise\Http\Router;
 /**
  * Import classes
  */
+use Closure;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Router\Exception\UnresolvableObjectException;
+use Sunrise\Http\Router\Middleware\CallableMiddleware;
+use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
+
+/**
+ * Import functions
+ */
+use function is_string;
+use function is_subclass_of;
+use function sprintf;
 
 /**
  * RouteCollector
@@ -45,14 +57,21 @@ class RouteCollector
     private $collection;
 
     /**
+     * The collector container
+     *
+     * @var null|ContainerInterface
+     */
+    private $container = null;
+
+    /**
      * Constructor of the class
      *
      * @param null|RouteCollectionFactoryInterface $collectionFactory
      * @param null|RouteFactoryInterface $routeFactory
      */
     public function __construct(
-        RouteCollectionFactoryInterface $collectionFactory = null,
-        RouteFactoryInterface $routeFactory = null
+        ?RouteCollectionFactoryInterface $collectionFactory = null,
+        ?RouteFactoryInterface $routeFactory = null
     ) {
         $this->collectionFactory = $collectionFactory ?? new RouteCollectionFactory();
         $this->routeFactory = $routeFactory ?? new RouteFactory();
@@ -71,13 +90,39 @@ class RouteCollector
     }
 
     /**
+     * Gets the collector container
+     *
+     * @return null|ContainerInterface
+     *
+     * @since 2.9.0
+     */
+    public function getContainer() : ?ContainerInterface
+    {
+        return $this->container;
+    }
+
+    /**
+     * Sets the given container to the collector
+     *
+     * @param null|ContainerInterface $container
+     *
+     * @return void
+     *
+     * @since 2.9.0
+     */
+    public function setContainer(?ContainerInterface $container) : void
+    {
+        $this->container = $container;
+    }
+
+    /**
      * Makes a new route from the given parameters
      *
      * @param string $name
      * @param string $path
      * @param string[] $methods
-     * @param RequestHandlerInterface $requestHandler
-     * @param MiddlewareInterface[] $middlewares
+     * @param mixed $requestHandler
+     * @param array $middlewares
      * @param array $attributes
      *
      * @return RouteInterface
@@ -86,7 +131,7 @@ class RouteCollector
         string $name,
         string $path,
         array $methods,
-        RequestHandlerInterface $requestHandler,
+        $requestHandler,
         array $middlewares = [],
         array $attributes = []
     ) : RouteInterface {
@@ -94,8 +139,8 @@ class RouteCollector
             $name,
             $path,
             $methods,
-            $requestHandler,
-            $middlewares,
+            $this->resolveRequestHandler($name, $requestHandler),
+            $this->resolveMiddlewares($name, $middlewares),
             $attributes
         );
 
@@ -109,8 +154,8 @@ class RouteCollector
      *
      * @param string $name
      * @param string $path
-     * @param RequestHandlerInterface $requestHandler
-     * @param MiddlewareInterface[] $middlewares
+     * @param mixed $requestHandler
+     * @param array $middlewares
      * @param array $attributes
      *
      * @return RouteInterface
@@ -118,7 +163,7 @@ class RouteCollector
     public function head(
         string $name,
         string $path,
-        RequestHandlerInterface $requestHandler,
+        $requestHandler,
         array $middlewares = [],
         array $attributes = []
     ) : RouteInterface {
@@ -137,8 +182,8 @@ class RouteCollector
      *
      * @param string $name
      * @param string $path
-     * @param RequestHandlerInterface $requestHandler
-     * @param MiddlewareInterface[] $middlewares
+     * @param mixed $requestHandler
+     * @param array $middlewares
      * @param array $attributes
      *
      * @return RouteInterface
@@ -146,7 +191,7 @@ class RouteCollector
     public function get(
         string $name,
         string $path,
-        RequestHandlerInterface $requestHandler,
+        $requestHandler,
         array $middlewares = [],
         array $attributes = []
     ) : RouteInterface {
@@ -165,8 +210,8 @@ class RouteCollector
      *
      * @param string $name
      * @param string $path
-     * @param RequestHandlerInterface $requestHandler
-     * @param MiddlewareInterface[] $middlewares
+     * @param mixed $requestHandler
+     * @param array $middlewares
      * @param array $attributes
      *
      * @return RouteInterface
@@ -174,7 +219,7 @@ class RouteCollector
     public function post(
         string $name,
         string $path,
-        RequestHandlerInterface $requestHandler,
+        $requestHandler,
         array $middlewares = [],
         array $attributes = []
     ) : RouteInterface {
@@ -193,8 +238,8 @@ class RouteCollector
      *
      * @param string $name
      * @param string $path
-     * @param RequestHandlerInterface $requestHandler
-     * @param MiddlewareInterface[] $middlewares
+     * @param mixed $requestHandler
+     * @param array $middlewares
      * @param array $attributes
      *
      * @return RouteInterface
@@ -202,7 +247,7 @@ class RouteCollector
     public function put(
         string $name,
         string $path,
-        RequestHandlerInterface $requestHandler,
+        $requestHandler,
         array $middlewares = [],
         array $attributes = []
     ) : RouteInterface {
@@ -221,8 +266,8 @@ class RouteCollector
      *
      * @param string $name
      * @param string $path
-     * @param RequestHandlerInterface $requestHandler
-     * @param MiddlewareInterface[] $middlewares
+     * @param mixed $requestHandler
+     * @param array $middlewares
      * @param array $attributes
      *
      * @return RouteInterface
@@ -230,7 +275,7 @@ class RouteCollector
     public function patch(
         string $name,
         string $path,
-        RequestHandlerInterface $requestHandler,
+        $requestHandler,
         array $middlewares = [],
         array $attributes = []
     ) : RouteInterface {
@@ -249,8 +294,8 @@ class RouteCollector
      *
      * @param string $name
      * @param string $path
-     * @param RequestHandlerInterface $requestHandler
-     * @param MiddlewareInterface[] $middlewares
+     * @param mixed $requestHandler
+     * @param array $middlewares
      * @param array $attributes
      *
      * @return RouteInterface
@@ -258,7 +303,7 @@ class RouteCollector
     public function delete(
         string $name,
         string $path,
-        RequestHandlerInterface $requestHandler,
+        $requestHandler,
         array $middlewares = [],
         array $attributes = []
     ) : RouteInterface {
@@ -277,8 +322,8 @@ class RouteCollector
      *
      * @param string $name
      * @param string $path
-     * @param RequestHandlerInterface $requestHandler
-     * @param MiddlewareInterface[] $middlewares
+     * @param mixed $requestHandler
+     * @param array $middlewares
      * @param array $attributes
      *
      * @return RouteInterface
@@ -286,7 +331,7 @@ class RouteCollector
     public function purge(
         string $name,
         string $path,
-        RequestHandlerInterface $requestHandler,
+        $requestHandler,
         array $middlewares = [],
         array $attributes = []
     ) : RouteInterface {
@@ -305,19 +350,118 @@ class RouteCollector
      *
      * @param callable $callback
      *
-     * @return RouteCollectorGroupAction
+     * @return RouteCollectionInterface
      */
-    public function group(callable $callback) : RouteCollectorGroupAction
+    public function group(callable $callback) : RouteCollectionInterface
     {
         $collector = new self(
             $this->collectionFactory,
             $this->routeFactory
         );
 
+        $collector->setContainer($this->container);
+
         $callback($collector);
 
         $this->collection->add(...$collector->collection->all());
 
-        return new RouteCollectorGroupAction($collector->collection);
+        return $collector->collection;
+    }
+
+    /**
+     * Tries to resolve the given request handler
+     *
+     * @param string $routeName
+     * @param mixed $requestHandler
+     *
+     * @return RequestHandlerInterface
+     *
+     * @throws UnresolvableObjectException
+     *
+     * @since 2.9.0
+     *
+     * @todo Maybe move to a new abstract layer and think about deeper integration into the router...
+     */
+    private function resolveRequestHandler(string $routeName, $requestHandler) : RequestHandlerInterface
+    {
+        if ($requestHandler instanceof RequestHandlerInterface) {
+            return $requestHandler;
+        }
+
+        if ($requestHandler instanceof Closure) {
+            return new CallableRequestHandler($requestHandler);
+        }
+
+        if (!is_string($requestHandler) || !is_subclass_of($requestHandler, RequestHandlerInterface::class)) {
+            throw new UnresolvableObjectException(sprintf('Route %s refers to invalid request handler.', $routeName));
+        }
+
+        if ($this->container && $this->container->has($requestHandler)) {
+            return $this->container->get($requestHandler);
+        }
+
+        return new $requestHandler;
+    }
+
+    /**
+     * Tries to resolve the given middleware
+     *
+     * @param string $routeName
+     * @param mixed $middleware
+     *
+     * @return MiddlewareInterface
+     *
+     * @throws UnresolvableObjectException
+     *
+     * @since 2.9.0
+     *
+     * @todo Maybe move to a new abstract layer and think about deeper integration into the router...
+     */
+    private function resolveMiddleware(string $routeName, $middleware) : MiddlewareInterface
+    {
+        if ($middleware instanceof MiddlewareInterface) {
+            return $middleware;
+        }
+
+        if ($middleware instanceof Closure) {
+            return new CallableMiddleware($middleware);
+        }
+
+        if (!is_string($middleware) || !is_subclass_of($middleware, MiddlewareInterface::class)) {
+            throw new UnresolvableObjectException(sprintf('Route %s refers to invalid middleware.', $routeName));
+        }
+
+        if ($this->container && $this->container->has($middleware)) {
+            return $this->container->get($middleware);
+        }
+
+        return new $middleware;
+    }
+
+    /**
+     * Tries to resolve the given middlewares
+     *
+     * @param string $routeName
+     * @param array $middlewares
+     *
+     * @return MiddlewareInterface[]
+     *
+     * @throws UnresolvableObjectException
+     *
+     * @since 2.9.0
+     *
+     * @todo Maybe move to a new abstract layer and think about deeper integration into the router...
+     */
+    private function resolveMiddlewares(string $routeName, array $middlewares) : array
+    {
+        if (empty($middlewares)) {
+            return [];
+        }
+
+        foreach ($middlewares as &$middleware) {
+            $middleware = $this->resolveMiddleware($routeName, $middleware);
+        }
+
+        return $middlewares;
     }
 }

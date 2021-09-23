@@ -18,7 +18,7 @@ class RouteCollectionFactory implements RouteCollectionFactoryInterface
 {
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function createCollection(RouteInterface ...$routes) : RouteCollectionInterface
     {

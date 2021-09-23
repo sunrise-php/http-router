@@ -406,7 +406,7 @@ class RouteTest extends TestCase
     public function testConstructorMiddlewaresParamContainsInvalidValue($invalidMiddleware) : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
-        $this->expectExceptionMessage('@Route.middlewares must contain the class names of existing middlewares.');
+        $this->expectExceptionMessage('@Route.middlewares must contain middlewares.');
 
         new Route([
             'name' => 'foo',
@@ -422,7 +422,7 @@ class RouteTest extends TestCase
     public function testConstructorMiddlewaresParamContainsNonexistentClass() : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
-        $this->expectExceptionMessage('@Route.middlewares must contain the class names of existing middlewares.');
+        $this->expectExceptionMessage('@Route.middlewares must contain middlewares.');
 
         new Route([
             'name' => 'foo',
@@ -438,7 +438,7 @@ class RouteTest extends TestCase
     public function testConstructorMiddlewaresParamContainsNonMiddlewareClass() : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
-        $this->expectExceptionMessage('@Route.middlewares must contain the class names of existing middlewares.');
+        $this->expectExceptionMessage('@Route.middlewares must contain middlewares.');
 
         new Route([
             'name' => 'foo',

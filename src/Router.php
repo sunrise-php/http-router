@@ -21,6 +21,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Exception\MethodNotAllowedException;
 use Sunrise\Http\Router\Exception\MiddlewareAlreadyExistsException;
+use Sunrise\Http\Router\Exception\PageNotFoundException;
 use Sunrise\Http\Router\Exception\RouteAlreadyExistsException;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
 use Sunrise\Http\Router\Loader\LoaderInterface;
@@ -52,7 +53,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     /**
      * The router host table
      *
-     * @var array
+     * @var array<string, string[]>
      */
     private $hosts = [];
 
@@ -106,15 +107,15 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      * Adds the given host alias to the router host table
      *
      * @param string $alias
-     * @param string $host
+     * @param string ...$hostname
      *
      * @return void
      *
      * @since 2.6.0
      */
-    public function addHost(string $alias, string $host) : void
+    public function addHost(string $alias, string ...$hostname) : void
     {
-        $this->hosts[$alias] = $host;
+        $this->hosts[$alias] = $hostname;
     }
 
     /**
@@ -237,7 +238,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      * @return RouteInterface
      *
      * @throws MethodNotAllowedException
-     * @throws RouteNotFoundException
+     * @throws PageNotFoundException
      */
     public function match(ServerRequestInterface $request) : RouteInterface
     {
@@ -269,11 +270,12 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
 
         if (!empty($allowedMethods)) {
             throw new MethodNotAllowedException('Method Not Allowed', [
+                'method' => $requestMethod,
                 'allowed' => array_keys($allowedMethods),
             ]);
         }
 
-        throw new RouteNotFoundException('Route Not Found');
+        throw new PageNotFoundException('Page Not Found');
     }
 
     /**
@@ -292,33 +294,43 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
             return $this->match($request)->handle($request);
         });
 
+        $middlewares = $this->getMiddlewares();
+        if (empty($middlewares)) {
+            return $routing->handle($request);
+        }
+
         $handler = new QueueableRequestHandler($routing);
-        $handler->add(...$this->getMiddlewares());
+        $handler->add(...$middlewares);
 
         return $handler->handle($request);
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function handle(ServerRequestInterface $request) : ResponseInterface
     {
         $route = $this->match($request);
 
+        $middlewares = $this->getMiddlewares();
+        if (empty($middlewares)) {
+            return $route->handle($request);
+        }
+
         $handler = new QueueableRequestHandler($route);
-        $handler->add(...$this->getMiddlewares());
+        $handler->add(...$middlewares);
 
         return $handler->handle($request);
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
     {
         try {
             return $this->handle($request);
-        } catch (MethodNotAllowedException|RouteNotFoundException $e) {
+        } catch (MethodNotAllowedException|PageNotFoundException $e) {
             $request = $request->withAttribute(self::ATTR_NAME_FOR_ROUTING_ERROR, $e);
 
             return $handler->handle($request);
@@ -357,13 +369,16 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
             return true;
         }
 
-        // trying to resolve the route host....
-        if (isset($this->hosts[$routeHost])) {
-            $routeHost = $this->hosts[$routeHost];
-        }
-
         if ($requestHost === $routeHost) {
             return true;
+        }
+
+        if (!empty($this->hosts[$routeHost])) {
+            foreach ($this->hosts[$routeHost] as $hostname) {
+                if ($hostname === $requestHost) {
+                    return true;
+                }
+            }
         }
 
         return false;

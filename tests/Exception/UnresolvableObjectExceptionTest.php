@@ -7,12 +7,12 @@ namespace Sunrise\Http\Router\Tests\Exception;
  */
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Exception\Exception;
-use Sunrise\Http\Router\Exception\RouteNotFoundException;
+use Sunrise\Http\Router\Exception\UnresolvableObjectException;
 
 /**
- * RouteNotFoundExceptionTest
+ * UnresolvableObjectExceptionTest
  */
-class RouteNotFoundExceptionTest extends TestCase
+class UnresolvableObjectExceptionTest extends TestCase
 {
 
     /**
@@ -20,7 +20,7 @@ class RouteNotFoundExceptionTest extends TestCase
      */
     public function testContracts() : void
     {
-        $exception = new RouteNotFoundException();
+        $exception = new UnresolvableObjectException();
 
         $this->assertInstanceOf(Exception::class, $exception);
     }

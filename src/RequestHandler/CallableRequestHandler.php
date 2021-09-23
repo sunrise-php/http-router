@@ -42,7 +42,7 @@ class CallableRequestHandler implements RequestHandlerInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function handle(ServerRequestInterface $request) : ResponseInterface
     {

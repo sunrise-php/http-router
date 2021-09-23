@@ -10,6 +10,11 @@ use Sunrise\Http\Router\Exception\Exception;
 use Sunrise\Http\Router\Exception\MethodNotAllowedException;
 
 /**
+ * Import functions
+ */
+use function implode;
+
+/**
  * MethodNotAllowedExceptionTest
  */
 class MethodNotAllowedExceptionTest extends TestCase
@@ -18,7 +23,7 @@ class MethodNotAllowedExceptionTest extends TestCase
     /**
      * @return void
      */
-    public function testConstructor() : void
+    public function testContracts() : void
     {
         $exception = new MethodNotAllowedException();
 
@@ -28,49 +33,25 @@ class MethodNotAllowedExceptionTest extends TestCase
     /**
      * @return void
      */
-    public function testMessage() : void
+    public function testMethod() : void
     {
-        $message = 'blah';
+        $expected = 'foo';
 
-        $exception = new MethodNotAllowedException($message);
+        $exception = new MethodNotAllowedException('blah', [
+            'method' => $expected,
+        ]);
 
-        $this->assertSame($message, $exception->getMessage());
+        $this->assertSame($expected, $exception->getMethod());
     }
 
     /**
      * @return void
      */
-    public function testContext() : void
+    public function testMethodWithEmptyContext() : void
     {
-        $context = ['foo' => 'bar'];
+        $exception = new MethodNotAllowedException('blah');
 
-        $exception = new MethodNotAllowedException('blah', $context);
-
-        $this->assertSame($context, $exception->getContext());
-    }
-
-    /**
-     * @return void
-     */
-    public function testCode() : void
-    {
-        $code = 100;
-
-        $exception = new MethodNotAllowedException('blah', [], $code);
-
-        $this->assertSame($code, $exception->getCode());
-    }
-
-    /**
-     * @return void
-     */
-    public function testPrevious() : void
-    {
-        $previous = new \Exception();
-
-        $exception = new MethodNotAllowedException('blah', [], 0, $previous);
-
-        $this->assertSame($previous, $exception->getPrevious());
+        $this->assertSame('', $exception->getMethod());
     }
 
     /**
@@ -92,11 +73,9 @@ class MethodNotAllowedExceptionTest extends TestCase
      */
     public function testAllowedMethodsWithEmptyContext() : void
     {
-        $expected = [];
-
         $exception = new MethodNotAllowedException('blah');
 
-        $this->assertSame($expected, $exception->getAllowedMethods());
+        $this->assertSame([], $exception->getAllowedMethods());
     }
 
     /**
@@ -104,10 +83,24 @@ class MethodNotAllowedExceptionTest extends TestCase
      */
     public function testGluingAllowedMethods() : void
     {
+        $methods = ['foo', 'bar'];
+
+        $expected = implode(',', $methods);
+
         $exception = new MethodNotAllowedException('blah', [
-            'allowed' => ['foo', 'bar'],
+            'allowed' => $methods,
         ]);
 
-        $this->assertSame('foo,bar', $exception->getJoinedAllowedMethods());
+        $this->assertSame($expected, $exception->getJoinedAllowedMethods());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGluingAllowedMethodsWithEmptyContext() : void
+    {
+        $exception = new MethodNotAllowedException('blah');
+
+        $this->assertSame('', $exception->getJoinedAllowedMethods());
     }
 }

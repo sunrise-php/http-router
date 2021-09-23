@@ -14,6 +14,7 @@ namespace Sunrise\Http\Router\Loader;
 /**
  * Import classes
  */
+use Psr\Container\ContainerInterface;
 use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
 use Sunrise\Http\Router\RouteCollectionFactory;
 use Sunrise\Http\Router\RouteCollectionFactoryInterface;
@@ -52,21 +53,52 @@ class CollectableFileLoader implements LoaderInterface
     private $routeFactory;
 
     /**
+     * @var null|ContainerInterface
+     */
+    private $container = null;
+
+    /**
      * Constructor of the class
      *
      * @param null|RouteCollectionFactoryInterface $collectionFactory
      * @param null|RouteFactoryInterface $routeFactory
      */
     public function __construct(
-        RouteCollectionFactoryInterface $collectionFactory = null,
-        RouteFactoryInterface $routeFactory = null
+        ?RouteCollectionFactoryInterface $collectionFactory = null,
+        ?RouteFactoryInterface $routeFactory = null
     ) {
         $this->collectionFactory = $collectionFactory ?? new RouteCollectionFactory();
         $this->routeFactory = $routeFactory ?? new RouteFactory();
     }
 
     /**
-     * {@inheritDoc}
+     * Gets the loader container
+     *
+     * @return null|ContainerInterface
+     *
+     * @since 2.9.0
+     */
+    public function getContainer() : ?ContainerInterface
+    {
+        return $this->container;
+    }
+
+    /**
+     * Sets the given container to the loader
+     *
+     * @param null|ContainerInterface $container
+     *
+     * @return void
+     *
+     * @since 2.9.0
+     */
+    public function setContainer(?ContainerInterface $container) : void
+    {
+        $this->container = $container;
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function attach($resource) : void
     {
@@ -89,7 +121,7 @@ class CollectableFileLoader implements LoaderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function attachArray(array $resources) : void
     {
@@ -99,7 +131,7 @@ class CollectableFileLoader implements LoaderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function load() : RouteCollectionInterface
     {
@@ -107,6 +139,8 @@ class CollectableFileLoader implements LoaderInterface
             $this->collectionFactory,
             $this->routeFactory
         );
+
+        $collect->setContainer($this->container);
 
         foreach ($this->resources as $resource) {
             (function () use ($resource) {

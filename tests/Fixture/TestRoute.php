@@ -25,6 +25,7 @@ class TestRoute extends BaseRoute
      * @var int
      */
     public const WITH_BROKEN_MIDDLEWARE = 1;
+    public const WITHOUT_MIDDLEWARES = 2;
 
     /**
      * Constructor of the class
@@ -84,6 +85,10 @@ class TestRoute extends BaseRoute
      */
     public static function getTestRouteMiddlewares(int $flags = 0) : array
     {
+        if ($flags & self::WITHOUT_MIDDLEWARES) {
+            return [];
+        }
+
         $middlewares = [new BlankMiddleware()];
 
         if ($flags & self::WITH_BROKEN_MIDDLEWARE) {

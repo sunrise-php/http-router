@@ -36,11 +36,11 @@ class Exception extends RuntimeException implements ExceptionInterface
      * @param string $message
      * @param array $context
      * @param int $code
-     * @param Throwable $previous
+     * @param null|Throwable $previous
      *
      * @see https://www.php.net/manual/en/exception.construct.php
      */
-    public function __construct(string $message = '', array $context = [], int $code = 0, Throwable $previous = null)
+    public function __construct(string $message = '', array $context = [], int $code = 0, ?Throwable $previous = null)
     {
         $this->context = $context;
 
@@ -48,7 +48,7 @@ class Exception extends RuntimeException implements ExceptionInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     final public function getContext() : array
     {
@@ -56,7 +56,7 @@ class Exception extends RuntimeException implements ExceptionInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     final public function fromContext($key, $default = null)
     {
