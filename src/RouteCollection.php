@@ -69,7 +69,7 @@ class RouteCollection implements RouteCollectionInterface
      *
      * @since 2.9.0
      */
-    public function setHost(string $host) : self
+    public function setHost(string $host) : RouteCollectionInterface
     {
         foreach ($this->routes as $route) {
             $route->setHost($host);
@@ -83,7 +83,7 @@ class RouteCollection implements RouteCollectionInterface
      *
      * @since 2.9.0
      */
-    public function addPrefix(string $prefix) : self
+    public function addPrefix(string $prefix) : RouteCollectionInterface
     {
         foreach ($this->routes as $route) {
             $route->addPrefix($prefix);
@@ -97,7 +97,7 @@ class RouteCollection implements RouteCollectionInterface
      *
      * @since 2.9.0
      */
-    public function addSuffix(string $suffix) : self
+    public function addSuffix(string $suffix) : RouteCollectionInterface
     {
         foreach ($this->routes as $route) {
             $route->addSuffix($suffix);
@@ -111,7 +111,7 @@ class RouteCollection implements RouteCollectionInterface
      *
      * @since 2.9.0
      */
-    public function addMethod(string ...$methods) : self
+    public function addMethod(string ...$methods) : RouteCollectionInterface
     {
         foreach ($this->routes as $route) {
             $route->addMethod(...$methods);
@@ -125,7 +125,7 @@ class RouteCollection implements RouteCollectionInterface
      *
      * @since 2.9.0
      */
-    public function appendMiddleware(MiddlewareInterface ...$middlewares) : self
+    public function appendMiddleware(MiddlewareInterface ...$middlewares) : RouteCollectionInterface
     {
         foreach ($this->routes as $route) {
             $route->addMiddleware(...$middlewares);
@@ -139,7 +139,7 @@ class RouteCollection implements RouteCollectionInterface
      *
      * @since 2.9.0
      */
-    public function prependMiddleware(MiddlewareInterface ...$middlewares) : self
+    public function prependMiddleware(MiddlewareInterface ...$middlewares) : RouteCollectionInterface
     {
         foreach ($this->routes as $route) {
             $route->setMiddlewares(...array_merge($middlewares, $route->getMiddlewares()));
@@ -155,7 +155,7 @@ class RouteCollection implements RouteCollectionInterface
      *
      * @deprecated 2.9.0 Use the `appendMiddleware` method.
      */
-    public function addMiddleware(MiddlewareInterface ...$middlewares) : self
+    public function addMiddleware(MiddlewareInterface ...$middlewares) : RouteCollectionInterface
     {
         $this->appendMiddleware(...$middlewares);
 
@@ -169,7 +169,7 @@ class RouteCollection implements RouteCollectionInterface
      *
      * @deprecated 2.9.0 Use the `prependMiddleware` method.
      */
-    public function unshiftMiddleware(MiddlewareInterface ...$middlewares) : self
+    public function unshiftMiddleware(MiddlewareInterface ...$middlewares) : RouteCollectionInterface
     {
         $this->prependMiddleware(...$middlewares);
 
