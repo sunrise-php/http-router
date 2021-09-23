@@ -37,6 +37,7 @@ use RegexIterator;
  * Import functions
  */
 use function array_diff;
+use function class_exists;
 use function get_declared_classes;
 use function hash;
 use function is_dir;
@@ -76,17 +77,17 @@ class DescriptorDirectoryLoader implements LoaderInterface
     /**
      * @var SimpleAnnotationReader
      */
-    private $annotationReader;
+    private $annotationReader = null;
 
     /**
      * @var null|ContainerInterface
      */
-    private $container;
+    private $container = null;
 
     /**
      * @var null|CacheInterface
      */
-    private $cache;
+    private $cache = null;
 
     /**
      * Constructor of the class
@@ -95,14 +96,17 @@ class DescriptorDirectoryLoader implements LoaderInterface
      * @param null|RouteFactoryInterface $routeFactory
      */
     public function __construct(
-        RouteCollectionFactoryInterface $collectionFactory = null,
-        RouteFactoryInterface $routeFactory = null
+        ?RouteCollectionFactoryInterface $collectionFactory = null,
+        ?RouteFactoryInterface $routeFactory = null
     ) {
         $this->collectionFactory = $collectionFactory ?? new RouteCollectionFactory();
         $this->routeFactory = $routeFactory ?? new RouteFactory();
 
-        $this->annotationReader = new SimpleAnnotationReader();
-        $this->annotationReader->addNamespace('Sunrise\Http\Router\Annotation');
+        // The "doctrine/annotations" package must be installed manually.
+        if (class_exists(SimpleAnnotationReader::class)) {
+            $this->annotationReader = new SimpleAnnotationReader();
+            $this->annotationReader->addNamespace('Sunrise\Http\Router\Annotation');
+        }
     }
 
     /**
@@ -128,11 +132,11 @@ class DescriptorDirectoryLoader implements LoaderInterface
     /**
      * Sets the given container to the loader
      *
-     * @param ContainerInterface $container
+     * @param null|ContainerInterface $container
      *
      * @return void
      */
-    public function setContainer(ContainerInterface $container) : void
+    public function setContainer(?ContainerInterface $container) : void
     {
         $this->container = $container;
     }
@@ -140,17 +144,17 @@ class DescriptorDirectoryLoader implements LoaderInterface
     /**
      * Sets the given cache to the loader
      *
-     * @param CacheInterface $cache
+     * @param null|CacheInterface $cache
      *
      * @return void
      */
-    public function setCache(CacheInterface $cache) : void
+    public function setCache(?CacheInterface $cache) : void
     {
         $this->cache = $cache;
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function attach($resource) : void
     {
@@ -164,7 +168,7 @@ class DescriptorDirectoryLoader implements LoaderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function attachArray(array $resources) : void
     {
@@ -174,7 +178,7 @@ class DescriptorDirectoryLoader implements LoaderInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function load() : RouteCollectionInterface
     {
@@ -280,9 +284,11 @@ class DescriptorDirectoryLoader implements LoaderInterface
             }
         }
 
-        $annotation = $this->annotationReader->getClassAnnotation($reflection, AnnotationRouteDescriptor::class);
-        if (isset($annotation)) {
-            return $annotation;
+        if (isset($this->annotationReader)) {
+            $annotation = $this->annotationReader->getClassAnnotation($reflection, AnnotationRouteDescriptor::class);
+            if (isset($annotation)) {
+                return $annotation;
+            }
         }
 
         return null;

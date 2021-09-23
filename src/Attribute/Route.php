@@ -116,7 +116,7 @@ final class Route implements RouteDescriptorInterface
      */
     public function __construct(
         string $name,
-        string $host = null,
+        ?string $host = null,
         string $path,
         array $methods,
         array $middlewares = [],
@@ -137,16 +137,16 @@ final class Route implements RouteDescriptorInterface
         $this->tags = $tags;
         $this->priority = $priority;
 
-        $this->assertValidName();
-        $this->assertValidHost();
-        $this->assertValidPath();
-        $this->assertValidMethods();
-        $this->assertValidMiddlewares();
-        $this->assertValidTags();
+        $this->validateName();
+        $this->validateHost();
+        $this->validatePath();
+        $this->validateMethods();
+        $this->validateMiddlewares();
+        $this->validateTags();
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getName() : string
     {
@@ -154,7 +154,7 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getHost() : ?string
     {
@@ -162,7 +162,7 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getPath() : string
     {
@@ -170,7 +170,7 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getMethods() : array
     {
@@ -178,7 +178,7 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getMiddlewares() : array
     {
@@ -186,7 +186,7 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getAttributes() : array
     {
@@ -194,7 +194,7 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getSummary() : string
     {
@@ -202,7 +202,7 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getDescription() : string
     {
@@ -210,7 +210,7 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getTags() : array
     {
@@ -218,7 +218,7 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getPriority() : int
     {
@@ -226,110 +226,116 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
-     * Throws an exception if the attribute contains invalid a route name
+     * Throws an exception if the attribute contains an invalid route name
      *
      * @return void
      *
      * @throws InvalidDescriptorArgumentException
+     *         If the attribute contains an invalid route name.
      */
-    private function assertValidName() : void
+    private function validateName() : void
     {
-        InvalidDescriptorArgumentException::assertIsNotEmpty(
+        InvalidDescriptorArgumentException::throwIfEmpty(
             $this->name,
             '#[Route.name] must contain a non-empty string.'
         );
     }
 
     /**
-     * Throws an exception if the attribute contains invalid a route host
+     * Throws an exception if the attribute contains an invalid route host
      *
      * @return void
      *
      * @throws InvalidDescriptorArgumentException
+     *         If the attribute contains an invalid route host.
      */
-    private function assertValidHost() : void
+    private function validateHost() : void
     {
-        InvalidDescriptorArgumentException::assertIsNotEmpty(
+        InvalidDescriptorArgumentException::throwIfEmpty(
             $this->host,
             '#[Route.host] must contain a non-empty string or null.'
         );
     }
 
     /**
-     * Throws an exception if the attribute contains invalid a route path
+     * Throws an exception if the attribute contains an invalid route path
      *
      * @return void
      *
      * @throws InvalidDescriptorArgumentException
+     *         If the attribute contains an invalid route path.
      */
-    private function assertValidPath() : void
+    private function validatePath() : void
     {
-        InvalidDescriptorArgumentException::assertIsNotEmpty(
+        InvalidDescriptorArgumentException::throwIfEmpty(
             $this->path,
             '#[Route.path] must contain a non-empty string.'
         );
     }
 
     /**
-     * Throws an exception if the attribute contains invalid a route methods
+     * Throws an exception if the attribute contains an invalid route methods
      *
      * @return void
      *
      * @throws InvalidDescriptorArgumentException
+     *         If the attribute contains an invalid route methods.
      */
-    private function assertValidMethods() : void
+    private function validateMethods() : void
     {
-        InvalidDescriptorArgumentException::assertIsNotEmpty(
+        InvalidDescriptorArgumentException::throwIfEmpty(
             $this->methods,
             '#[Route.methods] must contain at least one element.'
         );
 
-        foreach ($this->methods as $value) {
-            InvalidDescriptorArgumentException::assertIsNotEmptyString(
-                $value,
+        foreach ($this->methods as $method) {
+            InvalidDescriptorArgumentException::throwIfEmptyString(
+                $method,
                 '#[Route.methods] must contain non-empty strings.'
             );
         }
     }
 
     /**
-     * Throws an exception if the attribute contains invalid a route middlewares
+     * Throws an exception if the attribute contains an invalid route middlewares
      *
      * @return void
      *
      * @throws InvalidDescriptorArgumentException
+     *         If the attribute contains an invalid route middlewares.
      */
-    private function assertValidMiddlewares() : void
+    private function validateMiddlewares() : void
     {
         if ([] === $this->middlewares) {
             return;
         }
 
-        foreach ($this->middlewares as $value) {
-            InvalidDescriptorArgumentException::assertIsSubclassOf(
-                $value,
+        foreach ($this->middlewares as $middleware) {
+            InvalidDescriptorArgumentException::throwIfNotImplemented(
+                $middleware,
                 MiddlewareInterface::class,
-                '#[Route.middlewares] must contain the class names of existing middlewares.'
+                '#[Route.middlewares] must contain middlewares.'
             );
         }
     }
 
     /**
-     * Throws an exception if the attribute contains invalid a route tags
+     * Throws an exception if the attribute contains an invalid route tags
      *
      * @return void
      *
      * @throws InvalidDescriptorArgumentException
+     *         If the attribute contains an invalid route tags.
      */
-    private function assertValidTags() : void
+    private function validateTags() : void
     {
         if ([] === $this->tags) {
             return;
         }
 
-        foreach ($this->tags as $value) {
-            InvalidDescriptorArgumentException::assertIsNotEmptyString(
-                $value,
+        foreach ($this->tags as $tag) {
+            InvalidDescriptorArgumentException::throwIfEmptyString(
+                $tag,
                 '#[Route.tags] must contain non-empty strings.'
             );
         }

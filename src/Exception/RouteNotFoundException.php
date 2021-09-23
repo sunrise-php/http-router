@@ -14,6 +14,6 @@ namespace Sunrise\Http\Router\Exception;
 /**
  * RouteNotFoundException
  */
-class RouteNotFoundException extends PageNotFoundException
+class RouteNotFoundException extends Exception
 {
 }

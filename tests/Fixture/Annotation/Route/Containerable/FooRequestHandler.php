@@ -11,7 +11,7 @@ use Sunrise\Http\Router\Tests\Fixture\BlankRequestHandler;
  * @Route(
  *   name="foo",
  *   path="/foo",
- *   methods={"GET"},
+ *   method="GET",
  *   middlewares={
  *     "Sunrise\Http\Router\Tests\Fixture\BlankMiddleware"
  *   }

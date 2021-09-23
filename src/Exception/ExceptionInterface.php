@@ -30,7 +30,7 @@ interface ExceptionInterface extends Throwable
     public function getContext() : array;
 
     /**
-     * Gets data from the exception context for the given key
+     * Gets a value from the exception context by the given key
      *
      * @param mixed $key
      * @param mixed $default

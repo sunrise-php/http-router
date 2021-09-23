@@ -18,9 +18,23 @@ class BadRequestException extends Exception
 {
 
     /**
+     * Gets errors
+     *
+     * @return mixed
+     *
+     * @since 2.9.0
+     */
+    public function getErrors()
+    {
+        return $this->fromContext('errors', []);
+    }
+
+    /**
      * Gets violations
      *
      * @return mixed
+     *
+     * @deprecated 2.9.0 Use the `getErrors` method.
      */
     public function getViolations()
     {

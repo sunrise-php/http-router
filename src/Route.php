@@ -35,7 +35,7 @@ class Route implements RouteInterface
 {
 
     /**
-     * Server Request attribute name for the route instance
+     * Server Request attribute name for the route
      *
      * @var string
      */
@@ -45,8 +45,22 @@ class Route implements RouteInterface
      * Server Request attribute name for the route name
      *
      * @var string
+     *
+     * @deprecated 2.9.0 Use the following construction: `$request->getAttribute('@route')->getName()`.
      */
     public const ATTR_NAME_FOR_ROUTE_NAME = '@route-name';
+
+    /**
+     * Global patterns
+     *
+     * @var array<string, string>
+     *
+     * @since 2.9.0
+     */
+    public static $patterns = [
+        '@slug' => '[0-9a-z-]+',
+        '@uuid' => '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
+    ];
 
     /**
      * The route name
@@ -145,7 +159,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getName() : string
     {
@@ -153,7 +167,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getHost() : ?string
     {
@@ -161,7 +175,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getPath() : string
     {
@@ -169,7 +183,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getMethods() : array
     {
@@ -177,7 +191,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getRequestHandler() : RequestHandlerInterface
     {
@@ -185,7 +199,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getMiddlewares() : array
     {
@@ -193,7 +207,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getAttributes() : array
     {
@@ -201,7 +215,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getSummary() : string
     {
@@ -209,7 +223,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getDescription() : string
     {
@@ -217,7 +231,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getTags() : array
     {
@@ -225,7 +239,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setName(string $name) : RouteInterface
     {
@@ -235,7 +249,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setHost(?string $host) : RouteInterface
     {
@@ -245,7 +259,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setPath(string $path) : RouteInterface
     {
@@ -255,7 +269,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setMethods(string ...$methods) : RouteInterface
     {
@@ -269,7 +283,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setRequestHandler(RequestHandlerInterface $requestHandler) : RouteInterface
     {
@@ -279,7 +293,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setMiddlewares(MiddlewareInterface ...$middlewares) : RouteInterface
     {
@@ -289,7 +303,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setAttributes(array $attributes) : RouteInterface
     {
@@ -299,7 +313,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setSummary(string $summary) : RouteInterface
     {
@@ -309,7 +323,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setDescription(string $description) : RouteInterface
     {
@@ -319,7 +333,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function setTags(string ...$tags) : RouteInterface
     {
@@ -329,7 +343,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function addPrefix(string $prefix) : RouteInterface
     {
@@ -342,7 +356,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function addSuffix(string $suffix) : RouteInterface
     {
@@ -352,7 +366,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function addMethod(string ...$methods) : RouteInterface
     {
@@ -364,7 +378,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function addMiddleware(MiddlewareInterface ...$middlewares) : RouteInterface
     {
@@ -376,7 +390,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function withAddedAttributes(array $attributes) : RouteInterface
     {
@@ -390,15 +404,21 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function handle(ServerRequestInterface $request) : ResponseInterface
     {
         $request = $request->withAttribute(self::ATTR_NAME_FOR_ROUTE, $this);
+
+        /** @todo Must be removed from the 3.0.0 version */
         $request = $request->withAttribute(self::ATTR_NAME_FOR_ROUTE_NAME, $this->name);
 
         foreach ($this->attributes as $key => $value) {
             $request = $request->withAttribute($key, $value);
+        }
+
+        if (empty($this->middlewares)) {
+            return $this->requestHandler->handle($request);
         }
 
         $handler = new QueueableRequestHandler($this->requestHandler);

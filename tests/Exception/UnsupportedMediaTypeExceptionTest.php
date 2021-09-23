@@ -10,6 +10,11 @@ use Sunrise\Http\Router\Exception\Exception;
 use Sunrise\Http\Router\Exception\UnsupportedMediaTypeException;
 
 /**
+ * Import functions
+ */
+use function implode;
+
+/**
  * UnsupportedMediaTypeExceptionTest
  */
 class UnsupportedMediaTypeExceptionTest extends TestCase
@@ -18,55 +23,11 @@ class UnsupportedMediaTypeExceptionTest extends TestCase
     /**
      * @return void
      */
-    public function testConstructor() : void
+    public function testContracts() : void
     {
         $exception = new UnsupportedMediaTypeException();
 
         $this->assertInstanceOf(Exception::class, $exception);
-    }
-
-    /**
-     * @return void
-     */
-    public function testMessage() : void
-    {
-        $message = 'blah';
-        $exception = new UnsupportedMediaTypeException($message);
-
-        $this->assertSame($message, $exception->getMessage());
-    }
-
-    /**
-     * @return void
-     */
-    public function testContext() : void
-    {
-        $context = ['foo' => 'bar'];
-        $exception = new UnsupportedMediaTypeException('blah', $context);
-
-        $this->assertSame($context, $exception->getContext());
-    }
-
-    /**
-     * @return void
-     */
-    public function testCode() : void
-    {
-        $code = 100;
-        $exception = new UnsupportedMediaTypeException('blah', [], $code);
-
-        $this->assertSame($code, $exception->getCode());
-    }
-
-    /**
-     * @return void
-     */
-    public function testPrevious() : void
-    {
-        $previous = new \Exception();
-        $exception = new UnsupportedMediaTypeException('blah', [], 0, $previous);
-
-        $this->assertSame($previous, $exception->getPrevious());
     }
 
     /**
@@ -88,10 +49,9 @@ class UnsupportedMediaTypeExceptionTest extends TestCase
      */
     public function testTypeWithEmptyContext() : void
     {
-        $expected = '';
         $exception = new UnsupportedMediaTypeException('blah');
 
-        $this->assertSame($expected, $exception->getType());
+        $this->assertSame('', $exception->getType());
     }
 
     /**
@@ -116,10 +76,9 @@ class UnsupportedMediaTypeExceptionTest extends TestCase
      */
     public function testSupportedTypesWithEmptyContext() : void
     {
-        $expected = [];
         $exception = new UnsupportedMediaTypeException('blah');
 
-        $this->assertSame($expected, $exception->getSupportedTypes());
+        $this->assertSame([], $exception->getSupportedTypes());
     }
 
     /**
@@ -127,10 +86,24 @@ class UnsupportedMediaTypeExceptionTest extends TestCase
      */
     public function testGluingSupportedTypes() : void
     {
+        $types = ['foo', 'bar'];
+
+        $expected = implode(',', $types);
+
         $exception = new UnsupportedMediaTypeException('blah', [
-            'supported' => ['foo', 'bar'],
+            'supported' => $types,
         ]);
 
-        $this->assertSame('foo,bar', $exception->getJoinedSupportedTypes());
+        $this->assertSame($expected, $exception->getJoinedSupportedTypes());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGluingSupportedTypesWithEmptyContext() : void
+    {
+        $exception = new UnsupportedMediaTypeException('blah');
+
+        $this->assertSame('', $exception->getJoinedSupportedTypes());
     }
 }

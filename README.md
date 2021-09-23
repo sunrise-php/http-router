@@ -12,7 +12,7 @@
 ## Installation
 
 ```bash
-composer require 'sunrise/http-router:^2.8'
+composer require 'sunrise/http-router:^2.9'
 ```
 
 ## QuickStart
@@ -102,6 +102,12 @@ $this->get('home', '/', new CallableRequestHandler(function ($request) {
 ```
 
 #### Strategy loading routes from descriptors (annotations or attributes)
+
+Install the [doctrine/annotations](https://github.com/doctrine/annotations) package if you will be use annotations:
+
+```bash
+composer require doctrine/annotations
+```
 
 ```php
 use Doctrine\Common\Annotations\AnnotationRegistry;
@@ -199,6 +205,64 @@ $router->addMiddleware(new CallableMiddleware(function ($request, $handler) {
 emit($router->run(ServerRequestFactory::fromGlobals()));
 ```
 
+#### Work with PSR-11 container
+
+##### Collector
+
+```php
+$collector = new RouteCollector();
+
+/** @var \Psr\Container\ContainerInterface $container */
+
+// Pass DI container to the collector...
+$collector->setContainer($container);
+
+// Objects passed as strings will be initialized through the DI container...
+$route = $collector->get('home', '/', HomeController::class, [
+    FooMiddleware::class,
+    BarMiddleware::class,
+]);
+```
+
+##### Config loader
+
+```php
+$loader = new CollectableFileLoader();
+
+/** @var \Psr\Container\ContainerInterface $container */
+
+// Pass DI container to the loader...
+$loader->setContainer($container);
+
+// All found objects which has been passed as strings will be initialized through the DI container...
+$routes = $loader->load();
+```
+
+##### Descriptor loader
+
+```php
+$loader = new DescriptorDirectoryLoader();
+
+/** @var \Psr\Container\ContainerInterface $container */
+
+// Pass DI container to the loader...
+$loader->setContainer($container);
+
+// All found objects will be initialized through the DI container...
+$routes = $loader->load();
+```
+
+#### Descriptors cache (PSR-16)
+
+```php
+$loader = new DescriptorDirectoryLoader();
+
+/** @var \Psr\SimpleCache\CacheInterface $cache */
+
+// Pass a cache to the loader...
+$loader->setCache($cache);
+```
+
 #### Route Annotation Example
 
 ##### Minimal annotation view
@@ -237,6 +301,18 @@ final class EntryUpdateRequestHandler implements RequestHandlerInterface
  * )
  */
 final class EntryUpdateRequestHandler implements RequestHandlerInterface
+```
+
+##### One method only
+
+```php
+/**
+ * @Route(
+ *   name="home",
+ *   path="/",
+ *   method="GET",
+ * )
+ */
 ```
 
 #### Route Attribute Example
@@ -349,19 +425,35 @@ $collector->group(function ($collector) {
                 ->addMiddleware(...); // add the middleware(s) to the route...
         })
         ->addPrefix('/entry') // add the prefix to the group...
-        ->unshiftMiddleware(...); // add the middleware(s) to the group...
+        ->prependMiddleware(...); // add the middleware(s) to the group...
     })
     ->addPrefix('/v1') // add the prefix to the group...
-    ->unshiftMiddleware(...); // add the middleware(s) to the group...
+    ->prependMiddleware(...); // add the middleware(s) to the group...
 })
 ->addPrefix('/api') // add the prefix to the group...
-->unshiftMiddleware(...); // add the middleware(s) to the group...
+->prependMiddleware(...); // add the middleware(s) to the group...
 ```
 
 ### Route patterns
 
 ```php
 $collector->get('api.entry.read', '/api/v1/entry/{id<\d+>}(/{optional<\w+>})');
+```
+
+##### Global route patterns
+
+```php
+// @uuid pattern
+$collector->get('api.entry.read', '/api/v1/entry/{id<@uuid>}');
+
+// @slug pattern
+$collector->get('api.entry.read', '/api/v1/entry/{slug<@slug>}');
+
+// Custom patterns (available from version 2.9.0):
+\Sunrise\Http\Router\Route::$patterns['@id'] = '[1-9][0-9]*';
+
+// Just use the custom pattern...
+$collector->get('api.entry.read', '/api/v1/entry/{id<@id>}');
 ```
 
 ### Hosts (available from version 2.6.0)
@@ -382,6 +474,14 @@ $collector->group(function ($collector) {
     // some code...
 })
 ->setHost('admin.host');
+```
+
+### CLI commands
+
+```php
+use Sunrise\Http\Router\Command\RouteListCommand;
+
+new RouteListCommand($router);
 ```
 
 ---

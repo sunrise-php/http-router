@@ -19,6 +19,11 @@ use Sunrise\Http\Router\Exception\InvalidDescriptorArgumentException;
 use Sunrise\Http\Router\RouteDescriptorInterface;
 
 /**
+ * Import functions
+ */
+use function array_key_exists;
+
+/**
  * Annotation for a route description
  *
  * @Annotation
@@ -107,20 +112,20 @@ final class Route implements RouteDescriptorInterface
      */
     public function __construct(array $params)
     {
-        $this->name = $this->extractNameFromParams($params);
-        $this->host = $this->extractHostFromParams($params);
-        $this->path = $this->extractPathFromParams($params);
-        $this->methods = $this->extractMethodsFromParams($params);
-        $this->middlewares = $this->extractMiddlewaresFromParams($params);
-        $this->attributes = $this->extractAttributesFromParams($params);
-        $this->summary = $this->extractSummaryFromParams($params);
-        $this->description = $this->extractDescriptionFromParams($params);
-        $this->tags = $this->extractTagsFromParams($params);
-        $this->priority = $this->extractPriorityFromParams($params);
+        $this->name = $this->extractName($params);
+        $this->host = $this->extractHost($params);
+        $this->path = $this->extractPath($params);
+        $this->methods = $this->extractMethods($params);
+        $this->middlewares = $this->extractMiddlewares($params);
+        $this->attributes = $this->extractAttributes($params);
+        $this->summary = $this->extractSummary($params);
+        $this->description = $this->extractDescription($params);
+        $this->tags = $this->extractTags($params);
+        $this->priority = $this->extractPriority($params);
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getName() : string
     {
@@ -128,7 +133,7 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getHost() : ?string
     {
@@ -136,7 +141,7 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getPath() : string
     {
@@ -144,7 +149,7 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getMethods() : array
     {
@@ -152,7 +157,7 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getMiddlewares() : array
     {
@@ -160,7 +165,7 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getAttributes() : array
     {
@@ -168,7 +173,7 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getSummary() : string
     {
@@ -176,7 +181,7 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getDescription() : string
     {
@@ -184,7 +189,7 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getTags() : array
     {
@@ -192,7 +197,7 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritdoc}
      */
     public function getPriority() : int
     {
@@ -200,17 +205,20 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
+     * Extracts a route name from the given parameters
+     *
      * @param array $params
      *
      * @return string
      *
      * @throws InvalidDescriptorArgumentException
+     *         If the given parameters contain an invalid route name.
      */
-    private function extractNameFromParams(array $params) : string
+    private function extractName(array $params) : string
     {
         $name = $params['name'] ?? '';
 
-        InvalidDescriptorArgumentException::assertIsNotEmptyString(
+        InvalidDescriptorArgumentException::throwIfEmptyString(
             $name,
             '@Route.name must contain a non-empty string.'
         );
@@ -219,13 +227,16 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
+     * Extracts a route host from the given parameters
+     *
      * @param array $params
      *
      * @return null|string
      *
      * @throws InvalidDescriptorArgumentException
+     *         If the given parameters contain an invalid route host.
      */
-    private function extractHostFromParams(array $params) : ?string
+    private function extractHost(array $params) : ?string
     {
         $host = $params['host'] ?? null;
 
@@ -234,7 +245,7 @@ final class Route implements RouteDescriptorInterface
             return null;
         }
 
-        InvalidDescriptorArgumentException::assertIsNotEmptyString(
+        InvalidDescriptorArgumentException::throwIfEmptyString(
             $host,
             '@Route.host must contain a non-empty string.'
         );
@@ -243,17 +254,20 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
+     * Extracts a route path from the given parameters
+     *
      * @param array $params
      *
      * @return string
      *
      * @throws InvalidDescriptorArgumentException
+     *         If the given parameters contain an invalid route path.
      */
-    private function extractPathFromParams(array $params) : string
+    private function extractPath(array $params) : string
     {
         $path = $params['path'] ?? '';
 
-        InvalidDescriptorArgumentException::assertIsNotEmptyString(
+        InvalidDescriptorArgumentException::throwIfEmptyString(
             $path,
             '@Route.path must contain a non-empty string.'
         );
@@ -262,24 +276,31 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
+     * Extracts a route method(s) from the given parameters
+     *
      * @param array $params
      *
      * @return string[]
      *
      * @throws InvalidDescriptorArgumentException
+     *         If the given parameters contain an invalid route method(s).
      */
-    private function extractMethodsFromParams(array $params) : array
+    private function extractMethods(array $params) : array
     {
+        if (array_key_exists('method', $params)) {
+            $params['methods'][] = $params['method'];
+        }
+
         $methods = $params['methods'] ?? [];
 
-        InvalidDescriptorArgumentException::assertIsNotEmptyArray(
+        InvalidDescriptorArgumentException::throwIfEmptyArray(
             $methods,
             '@Route.methods must contain a non-empty array.'
         );
 
-        foreach ($methods as $value) {
-            InvalidDescriptorArgumentException::assertIsNotEmptyString(
-                $value,
+        foreach ($methods as $method) {
+            InvalidDescriptorArgumentException::throwIfEmptyString(
+                $method,
                 '@Route.methods must contain non-empty strings.'
             );
         }
@@ -288,13 +309,16 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
+     * Extracts a route middlewares from the given parameters
+     *
      * @param array $params
      *
      * @return string[]
      *
      * @throws InvalidDescriptorArgumentException
+     *         If the given parameters contain an invalid route middlewares.
      */
-    private function extractMiddlewaresFromParams(array $params) : array
+    private function extractMiddlewares(array $params) : array
     {
         $middlewares = $params['middlewares'] ?? null;
 
@@ -303,16 +327,16 @@ final class Route implements RouteDescriptorInterface
             return [];
         }
 
-        InvalidDescriptorArgumentException::assertIsArray(
+        InvalidDescriptorArgumentException::throwIfNotArray(
             $middlewares,
             '@Route.middlewares must contain an array.'
         );
 
-        foreach ($middlewares as $value) {
-            InvalidDescriptorArgumentException::assertIsSubclassOf(
-                $value,
+        foreach ($middlewares as $middleware) {
+            InvalidDescriptorArgumentException::throwIfNotImplemented(
+                $middleware,
                 MiddlewareInterface::class,
-                '@Route.middlewares must contain the class names of existing middlewares.'
+                '@Route.middlewares must contain middlewares.'
             );
         }
 
@@ -320,13 +344,16 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
+     * Extracts a route attributes from the given parameters
+     *
      * @param array $params
      *
      * @return array
      *
      * @throws InvalidDescriptorArgumentException
+     *         If the given parameters contain an invalid route attributes.
      */
-    private function extractAttributesFromParams(array $params) : array
+    private function extractAttributes(array $params) : array
     {
         $attributes = $params['attributes'] ?? null;
 
@@ -335,7 +362,7 @@ final class Route implements RouteDescriptorInterface
             return [];
         }
 
-        InvalidDescriptorArgumentException::assertIsArray(
+        InvalidDescriptorArgumentException::throwIfNotArray(
             $attributes,
             '@Route.attributes must contain an array.'
         );
@@ -344,13 +371,16 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
+     * Extracts a route summary from the given parameters
+     *
      * @param array $params
      *
      * @return string
      *
      * @throws InvalidDescriptorArgumentException
+     *         If the given parameters contain an invalid route summary.
      */
-    private function extractSummaryFromParams(array $params) : string
+    private function extractSummary(array $params) : string
     {
         $summary = $params['summary'] ?? null;
 
@@ -359,7 +389,7 @@ final class Route implements RouteDescriptorInterface
             return '';
         }
 
-        InvalidDescriptorArgumentException::assertIsString(
+        InvalidDescriptorArgumentException::throwIfNotString(
             $summary,
             '@Route.summary must contain a string.'
         );
@@ -368,13 +398,16 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
+     * Extracts a route description from the given parameters
+     *
      * @param array $params
      *
      * @return string
      *
      * @throws InvalidDescriptorArgumentException
+     *         If the given parameters contain an invalid route description.
      */
-    private function extractDescriptionFromParams(array $params) : string
+    private function extractDescription(array $params) : string
     {
         $description = $params['description'] ?? null;
 
@@ -383,7 +416,7 @@ final class Route implements RouteDescriptorInterface
             return '';
         }
 
-        InvalidDescriptorArgumentException::assertIsString(
+        InvalidDescriptorArgumentException::throwIfNotString(
             $description,
             '@Route.description must contain a string.'
         );
@@ -392,13 +425,16 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
+     * Extracts a route tags from the given parameters
+     *
      * @param array $params
      *
      * @return string[]
      *
      * @throws InvalidDescriptorArgumentException
+     *         If the given parameters contain an invalid route tags.
      */
-    private function extractTagsFromParams(array $params) : array
+    private function extractTags(array $params) : array
     {
         $tags = $params['tags'] ?? null;
 
@@ -407,14 +443,14 @@ final class Route implements RouteDescriptorInterface
             return [];
         }
 
-        InvalidDescriptorArgumentException::assertIsArray(
+        InvalidDescriptorArgumentException::throwIfNotArray(
             $tags,
             '@Route.tags must contain an array.'
         );
 
-        foreach ($tags as $value) {
-            InvalidDescriptorArgumentException::assertIsNotEmptyString(
-                $value,
+        foreach ($tags as $tag) {
+            InvalidDescriptorArgumentException::throwIfEmptyString(
+                $tag,
                 '@Route.tags must contain non-empty strings.'
             );
         }
@@ -423,13 +459,16 @@ final class Route implements RouteDescriptorInterface
     }
 
     /**
+     * Extracts a route priority from the given parameters
+     *
      * @param array $params
      *
      * @return int
      *
      * @throws InvalidDescriptorArgumentException
+     *         If the given parameters contain an invalid route priority.
      */
-    private function extractPriorityFromParams(array $params) : int
+    private function extractPriority(array $params) : int
     {
         $priority = $params['priority'] ?? null;
 
@@ -438,7 +477,7 @@ final class Route implements RouteDescriptorInterface
             return 0;
         }
 
-        InvalidDescriptorArgumentException::assertIsInteger(
+        InvalidDescriptorArgumentException::throwIfNotInteger(
             $priority,
             '@Route.priority must contain an integer.'
         );

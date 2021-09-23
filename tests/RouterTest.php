@@ -679,21 +679,21 @@ class RouterTest extends TestCase
 
         $this->assertSame([], $router->getHosts());
 
-        $router->addHost('google', 'google.com');
+        $router->addHost('google', 'google.com', 'www.google.com');
         $this->assertSame([
-            'google' => 'google.com',
+            'google' => ['google.com', 'www.google.com'],
         ], $router->getHosts());
 
         $router->addHost('yahoo', 'yahoo.com');
         $this->assertSame([
-            'google' => 'google.com',
-            'yahoo' => 'yahoo.com',
+            'google' => ['google.com', 'www.google.com'],
+            'yahoo' => ['yahoo.com'],
         ], $router->getHosts());
 
         $router->addHost('google', 'localhost');
         $this->assertSame([
-            'google' => 'localhost',
-            'yahoo' => 'yahoo.com',
+            'google' => ['localhost'],
+            'yahoo' => ['yahoo.com'],
         ], $router->getHosts());
     }
 
@@ -730,6 +730,10 @@ class RouterTest extends TestCase
         $this->assertSame($routes[1]->getName(), $foundRoute->getName());
 
         $foundRoute = $router->match((new ServerRequestFactory)
+            ->createServerRequest('GET', 'http://baz.host/ping'));
+        $this->assertSame($routes[2]->getName(), $foundRoute->getName());
+
+        $foundRoute = $router->match((new ServerRequestFactory)
             ->createServerRequest('GET', 'http://example.com/ping'));
         $this->assertSame($routes[2]->getName(), $foundRoute->getName());
 
@@ -737,13 +741,9 @@ class RouterTest extends TestCase
             ->createServerRequest('GET', 'http://localhost/ping'));
         $this->assertSame($routes[3]->getName(), $foundRoute->getName());
 
-        $foundRoute = $router->match((new ServerRequestFactory)
-            ->createServerRequest('GET', 'http://baz.host/ping'));
-        $this->assertSame($routes[3]->getName(), $foundRoute->getName());
-
         $routes[3]->setHost('qux.host');
         $this->expectException(RouteNotFoundException::class);
         $router->match((new ServerRequestFactory)
-            ->createServerRequest('GET', 'http://baz.host/ping'));
+            ->createServerRequest('GET', 'http://localhost/ping'));
     }
 }

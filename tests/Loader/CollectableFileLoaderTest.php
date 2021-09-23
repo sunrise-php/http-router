@@ -6,6 +6,7 @@ namespace Sunrise\Http\Router\Tests\Loader;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
 use Sunrise\Http\Router\Loader\CollectableFileLoader;
 use Sunrise\Http\Router\Loader\LoaderInterface;
@@ -24,6 +25,22 @@ class CollectableFileLoaderTest extends TestCase
         $loader = new CollectableFileLoader();
 
         $this->assertInstanceOf(LoaderInterface::class, $loader);
+    }
+
+    /**
+     * @return void
+     */
+    public function testContainer() : void
+    {
+        $loader = new CollectableFileLoader();
+
+        $this->assertNull($loader->getContainer());
+
+        $container = $this->createMock(ContainerInterface::class);
+
+        $loader->setContainer($container);
+
+        $this->assertSame($container, $loader->getContainer());
     }
 
     /**
