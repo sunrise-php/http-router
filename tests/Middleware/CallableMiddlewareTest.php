@@ -22,8 +22,7 @@ class CallableMiddlewareTest extends TestCase
      */
     public function testContracts() : void
     {
-        $middleware = new CallableMiddleware(function ($request, $handler) {
-            return $handler->handle($request);
+        $middleware = new CallableMiddleware(function () {
         });
 
         $this->assertInstanceOf(MiddlewareInterface::class, $middleware);

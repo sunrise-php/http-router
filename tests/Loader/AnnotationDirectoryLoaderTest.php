@@ -25,7 +25,7 @@ class AnnotationDirectoryLoaderTest extends TestCase
     /**
      * @return void
      */
-    public function testConstructor() : void
+    public function testContracts() : void
     {
         $loader = new AnnotationDirectoryLoader();
 
@@ -41,14 +41,14 @@ class AnnotationDirectoryLoaderTest extends TestCase
     public function testContainer() : void
     {
         $loader = new AnnotationDirectoryLoader();
-
         $this->assertNull($loader->getContainer());
 
         $container = $this->createMock(ContainerInterface::class);
-
         $loader->setContainer($container);
-
         $this->assertSame($container, $loader->getContainer());
+
+        $loader->setContainer(null);
+        $this->assertNull($loader->getContainer());
     }
 
     /**
@@ -57,14 +57,14 @@ class AnnotationDirectoryLoaderTest extends TestCase
     public function testCache() : void
     {
         $loader = new AnnotationDirectoryLoader();
-
         $this->assertNull($loader->getCache());
 
         $cache = $this->createMock(CacheInterface::class);
-
         $loader->setCache($cache);
-
         $this->assertSame($cache, $loader->getCache());
+
+        $loader->setCache(null);
+        $this->assertNull($loader->getCache());
     }
 
     /**
@@ -78,6 +78,19 @@ class AnnotationDirectoryLoaderTest extends TestCase
         $this->expectExceptionMessage('The resource "undefined" is not found.');
 
         $loader->attach('undefined');
+    }
+
+    /**
+     * @return void
+     */
+    public function testAttachArrayWithInvalidResource() : void
+    {
+        $loader = new AnnotationDirectoryLoader();
+
+        $this->expectException(InvalidLoaderResourceException::class);
+        $this->expectExceptionMessage('The resource "undefined" is not found.');
+
+        $loader->attachArray(['undefined']);
     }
 
     /**

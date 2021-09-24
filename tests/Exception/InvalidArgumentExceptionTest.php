@@ -42,7 +42,7 @@ class InvalidArgumentExceptionTest extends TestCase
     /**
      * @return void
      */
-    public function testInvalidValueWithEmptyValue() : void
+    public function testInvalidValueWithEmptyContext() : void
     {
         $exception = new InvalidArgumentException('blah');
 

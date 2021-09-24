@@ -34,7 +34,7 @@ class RouterTest extends TestCase
     /**
      * @return void
      */
-    public function testConstructor() : void
+    public function testContracts() : void
     {
         $router = new Router();
 

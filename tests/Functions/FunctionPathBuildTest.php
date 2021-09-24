@@ -16,9 +16,9 @@ use function array_keys;
 use function Sunrise\Http\Router\path_build;
 
 /**
- * PathBuildTest
+ * FunctionPathBuildTest
  */
-class PathBuildTest extends TestCase
+class FunctionPathBuildTest extends TestCase
 {
 
     /**
@@ -38,7 +38,7 @@ class PathBuildTest extends TestCase
     /**
      * @return void
      */
-    public function testBuildPathWithoutRequiredAttributeValue() : void
+    public function testBuildPathWithoutRequiredAttribute() : void
     {
         $path = '/foo/{bar}/{baz}';
 
@@ -62,7 +62,7 @@ class PathBuildTest extends TestCase
     /**
      * @return void
      */
-    public function testBuildPathWithInvalidAttributeValue() : void
+    public function testBuildPathWithInvalidAttribute() : void
     {
         $path = '/foo/{bar}/{baz<[a-z]+>}';
 

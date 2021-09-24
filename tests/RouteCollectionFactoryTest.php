@@ -19,7 +19,7 @@ class RouteCollectionFactoryTest extends TestCase
     /**
      * @return void
      */
-    public function testConstructor() : void
+    public function testContracts() : void
     {
         $factory = new RouteCollectionFactory();
 

@@ -20,7 +20,7 @@ class CollectableFileLoaderTest extends TestCase
     /**
      * @return void
      */
-    public function testConstructor() : void
+    public function testContracts() : void
     {
         $loader = new CollectableFileLoader();
 
@@ -41,6 +41,10 @@ class CollectableFileLoaderTest extends TestCase
         $loader->setContainer($container);
 
         $this->assertSame($container, $loader->getContainer());
+
+        $loader->setContainer(null);
+
+        $this->assertNull($loader->getContainer());
     }
 
     /**
@@ -58,10 +62,23 @@ class CollectableFileLoaderTest extends TestCase
 
     /**
      * @return void
+     */
+    public function testAttachArrayWithInvalidResource() : void
+    {
+        $loader = new CollectableFileLoader();
+
+        $this->expectException(InvalidLoaderResourceException::class);
+        $this->expectExceptionMessage('The resource "undefined" is not found.');
+
+        $loader->attachArray(['undefined']);
+    }
+
+    /**
+     * @return void
      *
      * @runInSeparateProcess
      */
-    public function testAttachArray() : void
+    public function testMultipleLoad() : void
     {
         $loader = new CollectableFileLoader();
 

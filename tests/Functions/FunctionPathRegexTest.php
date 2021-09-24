@@ -13,9 +13,9 @@ use PHPUnit\Framework\TestCase;
 use function Sunrise\Http\Router\path_regex;
 
 /**
- * PathRegexTest
+ * FunctionPathRegexTest
  */
-class PathRegexTest extends TestCase
+class FunctionPathRegexTest extends TestCase
 {
 
     /**

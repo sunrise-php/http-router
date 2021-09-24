@@ -13,9 +13,9 @@ use PHPUnit\Framework\TestCase;
 use function Sunrise\Http\Router\path_match;
 
 /**
- * PathMatchTest
+ * FunctionPathMatchTest
  */
-class PathMatchTest extends TestCase
+class FunctionPathMatchTest extends TestCase
 {
 
     /**

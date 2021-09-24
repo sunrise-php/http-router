@@ -16,9 +16,9 @@ use function Sunrise\Http\Router\path_parse;
 use function chr;
 
 /**
- * PathParseTest
+ * FunctionPathParseTest
  */
-class PathParseTest extends TestCase
+class FunctionPathParseTest extends TestCase
 {
 
     /**

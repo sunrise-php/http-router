@@ -44,6 +44,10 @@ class RouteCollectorTest extends TestCase
         $collector->setContainer($container);
 
         $this->assertSame($container, $collector->getContainer());
+
+        $collector->setContainer(null);
+
+        $this->assertNull($collector->getContainer());
     }
 
     /**

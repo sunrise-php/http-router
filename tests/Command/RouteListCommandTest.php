@@ -9,8 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Command\RouteListCommand;
 use Sunrise\Http\Router\Router;
 use Sunrise\Http\Router\Tests\Fixture;
-use Symfony\Component\Console\Input\ArgvInput;
-use Symfony\Component\Console\Output\BufferedOutput;
+use Symfony\Component\Console\Tester\CommandTester;
 
 /**
  * RouteListCommandTest
@@ -33,10 +32,9 @@ class RouteListCommandTest extends TestCase
         $router->addRoute(...$routes);
 
         $command = new RouteListCommand($router);
+        $commandTester = new CommandTester($command);
 
-        $input = new ArgvInput();
-        $output = new BufferedOutput();
-        $exitCode = $command->execute($input, $output);
+        $exitCode = $commandTester->execute([]);
 
         $this->assertSame(0, $exitCode);
     }

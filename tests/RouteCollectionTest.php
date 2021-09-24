@@ -23,7 +23,7 @@ class RouteCollectionTest extends TestCase
     /**
      * @return void
      */
-    public function testConstructor() : void
+    public function testContracts() : void
     {
         $collection = new RouteCollection();
 
@@ -77,8 +77,7 @@ class RouteCollectionTest extends TestCase
             new Fixture\TestRoute(),
         ];
 
-        $collection = new RouteCollection();
-        $collection->add(...$routes);
+        $collection = new RouteCollection(...$routes);
         $collection->setHost('google.com');
 
         $this->assertSame('google.com', $routes[0]->getHost());
@@ -101,8 +100,7 @@ class RouteCollectionTest extends TestCase
         $routes[1]->setPath('/bar');
         $routes[2]->setPath('/baz');
 
-        $collection = new RouteCollection();
-        $collection->add(...$routes);
+        $collection = new RouteCollection(...$routes);
         $collection->addPrefix('/api');
 
         $this->assertSame('/api/foo', $routes[0]->getPath());
@@ -125,8 +123,7 @@ class RouteCollectionTest extends TestCase
         $routes[1]->setPath('/bar');
         $routes[2]->setPath('/baz');
 
-        $collection = new RouteCollection();
-        $collection->add(...$routes);
+        $collection = new RouteCollection(...$routes);
         $collection->addSuffix('.json');
 
         $this->assertSame('/foo.json', $routes[0]->getPath());
@@ -149,8 +146,7 @@ class RouteCollectionTest extends TestCase
         $routes[1]->setMethods('BAR');
         $routes[2]->setMethods('BAZ');
 
-        $collection = new RouteCollection();
-        $collection->add(...$routes);
+        $collection = new RouteCollection(...$routes);
         $collection->addMethod('QUX', 'QUUX');
 
         $this->assertSame(['FOO', 'QUX', 'QUUX'], $routes[0]->getMethods());
@@ -185,8 +181,7 @@ class RouteCollectionTest extends TestCase
         $routes[1]->setMiddlewares(...$newMiddlewares);
         $routes[2]->setMiddlewares(...$newMiddlewares);
 
-        $collection = new RouteCollection();
-        $collection->add(...$routes);
+        $collection = new RouteCollection(...$routes);
         $collection->addMiddleware(...$additionalMiddlewares);
 
         $this->assertSame(array_merge($newMiddlewares, $additionalMiddlewares), $routes[0]->getMiddlewares());
@@ -221,8 +216,7 @@ class RouteCollectionTest extends TestCase
         $routes[1]->setMiddlewares(...$newMiddlewares);
         $routes[2]->setMiddlewares(...$newMiddlewares);
 
-        $collection = new RouteCollection();
-        $collection->add(...$routes);
+        $collection = new RouteCollection(...$routes);
         $collection->unshiftMiddleware(...$additionalMiddlewares);
 
         $this->assertSame(array_merge($additionalMiddlewares, $newMiddlewares), $routes[0]->getMiddlewares());

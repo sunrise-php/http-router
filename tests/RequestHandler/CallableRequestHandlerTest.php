@@ -20,10 +20,10 @@ class CallableRequestHandlerTest extends TestCase
     /**
      * @return void
      */
-    public function testConstructor() : void
+    public function testContracts() : void
     {
-        $callback = new Fixture\BlankRequestHandler();
-        $requestHandler = new CallableRequestHandler($callback);
+        $requestHandler = new CallableRequestHandler(function () {
+        });
 
         $this->assertInstanceOf(RequestHandlerInterface::class, $requestHandler);
     }
@@ -31,7 +31,7 @@ class CallableRequestHandlerTest extends TestCase
     /**
      * @return void
      */
-    public function testHandle() : void
+    public function testRun() : void
     {
         $callback = new Fixture\BlankRequestHandler();
         $requestHandler = new CallableRequestHandler($callback);

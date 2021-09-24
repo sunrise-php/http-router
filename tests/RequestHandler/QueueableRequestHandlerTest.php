@@ -20,7 +20,7 @@ class QueueableRequestHandlerTest extends TestCase
     /**
      * @return void
      */
-    public function testConstructor() : void
+    public function testContracts() : void
     {
         $endpoint = new Fixture\BlankRequestHandler();
         $requestHandler = new QueueableRequestHandler($endpoint);
@@ -31,7 +31,7 @@ class QueueableRequestHandlerTest extends TestCase
     /**
      * @return void
      */
-    public function testHandle() : void
+    public function testRun() : void
     {
         $endpoint = new Fixture\BlankRequestHandler();
         $requestHandler = new QueueableRequestHandler($endpoint);
@@ -45,7 +45,7 @@ class QueueableRequestHandlerTest extends TestCase
     /**
      * @return void
      */
-    public function testHandleWithMiddlewares() : void
+    public function testRunWithMiddlewares() : void
     {
         $middlewares = [
             new Fixture\BlankMiddleware(),
@@ -69,7 +69,7 @@ class QueueableRequestHandlerTest extends TestCase
     /**
      * @return void
      */
-    public function testHandleWithBrokenMiddleware() : void
+    public function testRunWithBrokenMiddleware() : void
     {
         $middlewares = [
             new Fixture\BlankMiddleware(),

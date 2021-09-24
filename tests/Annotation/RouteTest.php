@@ -61,7 +61,7 @@ class RouteTest extends TestCase
             'summary' => 'foo summary',
             'description' => 'foo description',
             'tags' => ['foo', 'bar'],
-            'priority' => 100,
+            'priority' => 1,
         ];
 
         $route = new Route($params);
@@ -103,7 +103,7 @@ class RouteTest extends TestCase
     /**
      * @return void
      */
-    public function testConstructorParamsNotContainName() : void
+    public function testConstructorWithoutName() : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
         $this->expectExceptionMessage('@Route.name must contain a non-empty string.');
@@ -117,7 +117,7 @@ class RouteTest extends TestCase
     /**
      * @return void
      */
-    public function testConstructorParamsNotContainPath() : void
+    public function testConstructorWithoutPath() : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
         $this->expectExceptionMessage('@Route.path must contain a non-empty string.');
@@ -131,7 +131,7 @@ class RouteTest extends TestCase
     /**
      * @return void
      */
-    public function testConstructorParamsNotContainMethods() : void
+    public function testConstructorWithoutMethods() : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
         $this->expectExceptionMessage('@Route.methods must contain a non-empty array.');
@@ -145,7 +145,7 @@ class RouteTest extends TestCase
     /**
      * @return void
      */
-    public function testConstructorParamsContainEmptyName() : void
+    public function testConstructorWithEmptyName() : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
         $this->expectExceptionMessage('@Route.name must contain a non-empty string.');
@@ -160,7 +160,7 @@ class RouteTest extends TestCase
     /**
      * @return void
      */
-    public function testConstructorParamsContainEmptyHost() : void
+    public function testConstructorWithEmptyHost() : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
         $this->expectExceptionMessage('@Route.host must contain a non-empty string.');
@@ -176,7 +176,7 @@ class RouteTest extends TestCase
     /**
      * @return void
      */
-    public function testConstructorParamsContainEmptyPath() : void
+    public function testConstructorWithEmptyPath() : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
         $this->expectExceptionMessage('@Route.path must contain a non-empty string.');
@@ -191,7 +191,7 @@ class RouteTest extends TestCase
     /**
      * @return void
      */
-    public function testConstructorParamsContainEmptyMethods() : void
+    public function testConstructorWithEmptyMethods() : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
         $this->expectExceptionMessage('@Route.methods must contain a non-empty array.');
@@ -208,7 +208,7 @@ class RouteTest extends TestCase
      * @return void
      * @dataProvider invalidDataProviderIfStringExpected
      */
-    public function testConstructorParamsContainInvalidName($invalidName) : void
+    public function testConstructorWithInvalidName($invalidName) : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
         $this->expectExceptionMessage('@Route.name must contain a non-empty string.');
@@ -226,7 +226,7 @@ class RouteTest extends TestCase
      * @dataProvider invalidDataProviderIfStringExpected
      * @since 2.6.0
      */
-    public function testConstructorParamsContainInvalidHost($invalidHost) : void
+    public function testConstructorWithInvalidHost($invalidHost) : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
         $this->expectExceptionMessage('@Route.host must contain a non-empty string.');
@@ -244,7 +244,7 @@ class RouteTest extends TestCase
      * @return void
      * @dataProvider invalidDataProviderIfStringExpected
      */
-    public function testConstructorParamsContainInvalidPath($invalidPath) : void
+    public function testConstructorWithInvalidPath($invalidPath) : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
         $this->expectExceptionMessage('@Route.path must contain a non-empty string.');
@@ -261,7 +261,7 @@ class RouteTest extends TestCase
      * @return void
      * @dataProvider invalidDataProviderIfArrayExpected
      */
-    public function testConstructorParamsContainInvalidMethods($invalidMethods) : void
+    public function testConstructorWithInvalidMethods($invalidMethods) : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
         $this->expectExceptionMessage('@Route.methods must contain a non-empty array.');
@@ -278,7 +278,7 @@ class RouteTest extends TestCase
      * @return void
      * @dataProvider invalidDataProviderIfArrayExpected
      */
-    public function testConstructorParamsContainInvalidMiddlewares($invalidMiddlewares) : void
+    public function testConstructorWithInvalidMiddlewares($invalidMiddlewares) : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
         $this->expectExceptionMessage('@Route.middlewares must contain an array.');
@@ -296,7 +296,7 @@ class RouteTest extends TestCase
      * @return void
      * @dataProvider invalidDataProviderIfArrayExpected
      */
-    public function testConstructorParamsContainInvalidAttributes($invalidAttributes) : void
+    public function testConstructorWithInvalidAttributes($invalidAttributes) : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
         $this->expectExceptionMessage('@Route.attributes must contain an array.');
@@ -314,7 +314,7 @@ class RouteTest extends TestCase
      * @return void
      * @dataProvider invalidDataProviderIfStringExpected
      */
-    public function testConstructorParamsContainInvalidSummary($invalidSummary) : void
+    public function testConstructorWithInvalidSummary($invalidSummary) : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
         $this->expectExceptionMessage('@Route.summary must contain a string.');
@@ -332,7 +332,7 @@ class RouteTest extends TestCase
      * @return void
      * @dataProvider invalidDataProviderIfStringExpected
      */
-    public function testConstructorParamsContainInvalidDescription($invalidDescription) : void
+    public function testConstructorWithInvalidDescription($invalidDescription) : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
         $this->expectExceptionMessage('@Route.description must contain a string.');
@@ -350,7 +350,7 @@ class RouteTest extends TestCase
      * @return void
      * @dataProvider invalidDataProviderIfArrayExpected
      */
-    public function testConstructorParamsContainInvalidTags($invalidTags) : void
+    public function testConstructorWithInvalidTags($invalidTags) : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
         $this->expectExceptionMessage('@Route.tags must contain an array.');
@@ -368,7 +368,7 @@ class RouteTest extends TestCase
      * @return void
      * @dataProvider invalidDataProviderIfIntegerExpected
      */
-    public function testConstructorParamsContainInvalidPriority($invalidPriority) : void
+    public function testConstructorWithInvalidPriority($invalidPriority) : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
         $this->expectExceptionMessage('@Route.priority must contain an integer.');
@@ -386,7 +386,7 @@ class RouteTest extends TestCase
      * @return void
      * @dataProvider invalidDataProviderIfStringExpected
      */
-    public function testConstructorMethodsParamContainsInvalidValue($invalidMethod) : void
+    public function testConstructorWithInvalidMethod($invalidMethod) : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
         $this->expectExceptionMessage('@Route.methods must contain non-empty strings.');
@@ -403,7 +403,7 @@ class RouteTest extends TestCase
      * @return void
      * @dataProvider invalidDataProviderIfStringExpected
      */
-    public function testConstructorMiddlewaresParamContainsInvalidValue($invalidMiddleware) : void
+    public function testConstructorWithInvalidMiddleware($invalidMiddleware) : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
         $this->expectExceptionMessage('@Route.middlewares must contain middlewares.');
@@ -419,7 +419,7 @@ class RouteTest extends TestCase
     /**
      * @return void
      */
-    public function testConstructorMiddlewaresParamContainsNonexistentClass() : void
+    public function testConstructorWithNonexistentMiddleware() : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
         $this->expectExceptionMessage('@Route.middlewares must contain middlewares.');
@@ -435,7 +435,7 @@ class RouteTest extends TestCase
     /**
      * @return void
      */
-    public function testConstructorMiddlewaresParamContainsNonMiddlewareClass() : void
+    public function testConstructorWithNonMiddlewareMiddleware() : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
         $this->expectExceptionMessage('@Route.middlewares must contain middlewares.');
@@ -453,7 +453,7 @@ class RouteTest extends TestCase
      * @return void
      * @dataProvider invalidDataProviderIfStringExpected
      */
-    public function testConstructorTagsParamContainsInvalidValue($invalidTag) : void
+    public function testConstructorWithInvalidTag($invalidTag) : void
     {
         $this->expectException(InvalidDescriptorArgumentException::class);
         $this->expectExceptionMessage('@Route.tags must contain non-empty strings.');

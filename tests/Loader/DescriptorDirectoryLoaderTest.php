@@ -32,7 +32,7 @@ class DescriptorDirectoryLoaderTest extends TestCase
     /**
      * @return void
      */
-    public function testConstructor() : void
+    public function testContracts() : void
     {
         $loader = new DescriptorDirectoryLoader();
         $this->assertInstanceOf(LoaderInterface::class, $loader);
@@ -48,6 +48,8 @@ class DescriptorDirectoryLoaderTest extends TestCase
         $container = $this->createMock(ContainerInterface::class);
         $loader->setContainer($container);
         $this->assertSame($container, $loader->getContainer());
+        $loader->setContainer(null);
+        $this->assertNull($loader->getContainer());
     }
 
     /**
@@ -60,6 +62,8 @@ class DescriptorDirectoryLoaderTest extends TestCase
         $cache = $this->createMock(CacheInterface::class);
         $loader->setCache($cache);
         $this->assertSame($cache, $loader->getCache());
+        $loader->setCache(null);
+        $this->assertNull($loader->getCache());
     }
 
     /**

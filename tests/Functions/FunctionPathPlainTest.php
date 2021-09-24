@@ -13,9 +13,9 @@ use PHPUnit\Framework\TestCase;
 use function Sunrise\Http\Router\path_plain;
 
 /**
- * PathPlainTest
+ * FunctionPathPlainTest
  */
-class PathPlainTest extends TestCase
+class FunctionPathPlainTest extends TestCase
 {
 
     /**
