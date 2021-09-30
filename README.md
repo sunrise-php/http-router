@@ -12,7 +12,7 @@
 ## Installation
 
 ```bash
-composer require 'sunrise/http-router:^2.9'
+composer require 'sunrise/http-router:^2.10'
 ```
 
 ## QuickStart
@@ -450,7 +450,7 @@ $collector->get('api.entry.read', '/api/v1/entry/{id<@uuid>}');
 $collector->get('api.entry.read', '/api/v1/entry/{slug<@slug>}');
 
 // Custom patterns (available from version 2.9.0):
-\Sunrise\Http\Router\Route::$patterns['@id'] = '[1-9][0-9]*';
+\Sunrise\Http\Router\Router::$patterns['@id'] = '[1-9][0-9]*';
 
 // Just use the custom pattern...
 $collector->get('api.entry.read', '/api/v1/entry/{id<@id>}');
@@ -480,8 +480,10 @@ $collector->group(function ($collector) {
 
 ```php
 use Sunrise\Http\Router\Command\RouteListCommand;
+use Sunrise\Http\Router\Command\RouteMatchCommand;
 
 new RouteListCommand($router);
+new RouteMatchCommand($router);
 ```
 
 ---
