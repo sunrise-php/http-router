@@ -14,8 +14,8 @@ namespace Sunrise\Http\Router\Loader;
 /**
  * AnnotationDirectoryLoader
  *
- * @deprecated 2.6.0 Use the `DescriptorDirectoryLoader` class.
+ * @deprecated 2.6.0 Use the DescriptorLoader class.
  */
-class AnnotationDirectoryLoader extends DescriptorDirectoryLoader
+class AnnotationDirectoryLoader extends DescriptorLoader
 {
 }
