@@ -12,10 +12,10 @@
 namespace Sunrise\Http\Router\Exception;
 
 /**
- * InvalidArgumentException
+ * UnresolvableReferenceException
  *
- * @since 2.9.0
+ * @since 2.10.0
  */
-class InvalidArgumentException extends Exception
+class UnresolvableReferenceException extends Exception
 {
 }
