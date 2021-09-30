@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Tests;
+namespace Sunrise\Http\Router\Test;
 
 /**
  * Import classes
@@ -42,9 +42,9 @@ class RouteCollectionFactoryTest extends TestCase
     public function testCreateCollectionWithRoutes() : void
     {
         $routes = [
-            new Fixture\TestRoute(),
-            new Fixture\TestRoute(),
-            new Fixture\TestRoute(),
+            new Fixture\Route(),
+            new Fixture\Route(),
+            new Fixture\Route(),
         ];
 
         $collection = (new RouteCollectionFactory)->createCollection(...$routes);

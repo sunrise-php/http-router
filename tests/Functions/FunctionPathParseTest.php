@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Tests\Functions;
+namespace Sunrise\Http\Router\Test\Functions;
 
 /**
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Exception\InvalidPathException;
-use Sunrise\Http\Router\Route;
+use Sunrise\Http\Router\Router;
 
 /**
  * Import functions
@@ -73,7 +73,7 @@ class FunctionPathParseTest extends TestCase
                 'raw' => '{foo<@slug>}',
                 'withParentheses' => null,
                 'name' => 'foo',
-                'pattern' => Route::$patterns['@slug'],
+                'pattern' => Router::$patterns['@slug'],
                 'isOptional' => false,
                 'startPosition' => 1,
                 'endPosition' => 12,
@@ -82,7 +82,7 @@ class FunctionPathParseTest extends TestCase
                 'raw' => '{bar<@uuid>}',
                 'withParentheses' => null,
                 'name' => 'bar',
-                'pattern' => Route::$patterns['@uuid'],
+                'pattern' => Router::$patterns['@uuid'],
                 'isOptional' => false,
                 'startPosition' => 14,
                 'endPosition' => 25,

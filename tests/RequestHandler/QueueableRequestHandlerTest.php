@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Tests\RequestHandler;
+namespace Sunrise\Http\Router\Test\RequestHandler;
 
 /**
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
-use Sunrise\Http\Router\Tests\Fixture;
-use Sunrise\Http\ServerRequest\ServerRequestFactory;
+use Sunrise\Http\Router\Test\Fixture;
 
 /**
  * QueueableRequestHandlerTest
@@ -22,7 +22,7 @@ class QueueableRequestHandlerTest extends TestCase
      */
     public function testContracts() : void
     {
-        $endpoint = new Fixture\BlankRequestHandler();
+        $endpoint = new Fixture\Controllers\BlankController();
         $requestHandler = new QueueableRequestHandler($endpoint);
 
         $this->assertInstanceOf(RequestHandlerInterface::class, $requestHandler);
@@ -33,12 +33,10 @@ class QueueableRequestHandlerTest extends TestCase
      */
     public function testRun() : void
     {
-        $endpoint = new Fixture\BlankRequestHandler();
+        $request = $this->createMock(ServerRequestInterface::class);
+        $endpoint = new Fixture\Controllers\BlankController();
         $requestHandler = new QueueableRequestHandler($endpoint);
-
-        $request = (new ServerRequestFactory)->createServerRequest('GET', '/');
         $requestHandler->handle($request);
-
         $this->assertTrue($endpoint->isRunned());
     }
 
@@ -47,19 +45,19 @@ class QueueableRequestHandlerTest extends TestCase
      */
     public function testRunWithMiddlewares() : void
     {
+        $request = $this->createMock(ServerRequestInterface::class);
+        $endpoint = new Fixture\Controllers\BlankController();
+        $requestHandler = new QueueableRequestHandler($endpoint);
+
         $middlewares = [
-            new Fixture\BlankMiddleware(),
-            new Fixture\BlankMiddleware(),
-            new Fixture\BlankMiddleware(),
+            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixture\Middlewares\BlankMiddleware(),
         ];
 
-        $endpoint = new Fixture\BlankRequestHandler();
-        $requestHandler = new QueueableRequestHandler($endpoint);
         $requestHandler->add(...$middlewares);
 
-        $request = (new ServerRequestFactory)->createServerRequest('GET', '/');
         $requestHandler->handle($request);
-
         $this->assertTrue($middlewares[0]->isRunned());
         $this->assertTrue($middlewares[1]->isRunned());
         $this->assertTrue($middlewares[2]->isRunned());
@@ -71,19 +69,19 @@ class QueueableRequestHandlerTest extends TestCase
      */
     public function testRunWithBrokenMiddleware() : void
     {
+        $request = $this->createMock(ServerRequestInterface::class);
+        $endpoint = new Fixture\Controllers\BlankController();
+        $requestHandler = new QueueableRequestHandler($endpoint);
+
         $middlewares = [
-            new Fixture\BlankMiddleware(),
-            new Fixture\BlankMiddleware(true),
-            new Fixture\BlankMiddleware(),
+            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixture\Middlewares\BlankMiddleware(true),
+            new Fixture\Middlewares\BlankMiddleware(),
         ];
 
-        $endpoint = new Fixture\BlankRequestHandler();
-        $requestHandler = new QueueableRequestHandler($endpoint);
         $requestHandler->add(...$middlewares);
 
-        $request = (new ServerRequestFactory)->createServerRequest('GET', '/');
         $requestHandler->handle($request);
-
         $this->assertTrue($middlewares[0]->isRunned());
         $this->assertTrue($middlewares[1]->isRunned());
         $this->assertFalse($middlewares[2]->isRunned());

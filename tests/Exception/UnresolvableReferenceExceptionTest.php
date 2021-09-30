@@ -7,12 +7,12 @@ namespace Sunrise\Http\Router\Test\Exception;
  */
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Exception\Exception;
-use Sunrise\Http\Router\Exception\InvalidPathException;
+use Sunrise\Http\Router\Exception\UnresolvableReferenceException;
 
 /**
- * InvalidPathExceptionTest
+ * UnresolvableReferenceExceptionTest
  */
-class InvalidPathExceptionTest extends TestCase
+class UnresolvableReferenceExceptionTest extends TestCase
 {
 
     /**
@@ -20,7 +20,7 @@ class InvalidPathExceptionTest extends TestCase
      */
     public function testContracts() : void
     {
-        $exception = new InvalidPathException();
+        $exception = new UnresolvableReferenceException();
 
         $this->assertInstanceOf(Exception::class, $exception);
     }

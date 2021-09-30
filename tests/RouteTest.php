@@ -1,12 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Tests;
+namespace Sunrise\Http\Router\Test;
 
 /**
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Route;
 use Sunrise\Http\Router\RouteInterface;
 use Sunrise\Http\ServerRequest\ServerRequestFactory;
@@ -27,58 +26,32 @@ class RouteTest extends TestCase
      */
     public function testConstructor() : void
     {
-        $routeName = Fixture\TestRoute::getTestRouteName();
-        $routePath = Fixture\TestRoute::getTestRoutePath();
-        $routeMethods = Fixture\TestRoute::getTestRouteMethods();
-        $routeRequestHandler = Fixture\TestRoute::getTestRouteRequestHandler();
+        $name = 'foo';
+        $path = '/foo';
+        $methods = ['GET', 'POST'];
+        $handler = new Fixture\Controllers\BlankController();
+        $middlewares = [];
+        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
+        $attributes = ['foo' => 'bar'];
 
         $route = new Route(
-            $routeName,
-            $routePath,
-            $routeMethods,
-            $routeRequestHandler
+            $name,
+            $path,
+            $methods,
+            $handler,
+            $middlewares,
+            $attributes
         );
 
         $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertInstanceOf(RequestHandlerInterface::class, $route);
-
-        $this->assertSame($routeName, $route->getName());
-        $this->assertSame($routePath, $route->getPath());
-        $this->assertSame($routeMethods, $route->getMethods());
-        $this->assertSame($routeRequestHandler, $route->getRequestHandler());
-
-        // default property values...
-        $this->assertSame([], $route->getMiddlewares());
-        $this->assertSame([], $route->getAttributes());
-    }
-
-    /**
-     * @return void
-     */
-    public function testConstructorWithOptionalParams() : void
-    {
-        $routeName = Fixture\TestRoute::getTestRouteName();
-        $routePath = Fixture\TestRoute::getTestRoutePath();
-        $routeMethods = Fixture\TestRoute::getTestRouteMethods();
-        $routeRequestHandler = Fixture\TestRoute::getTestRouteRequestHandler();
-        $routeMiddlewares = Fixture\TestRoute::getTestRouteMiddlewares();
-        $routeAttributes = Fixture\TestRoute::getTestRouteAttributes();
-
-        $route = new Route(
-            $routeName,
-            $routePath,
-            $routeMethods,
-            $routeRequestHandler,
-            $routeMiddlewares,
-            $routeAttributes
-        );
-
-        $this->assertSame($routeName, $route->getName());
-        $this->assertSame($routePath, $route->getPath());
-        $this->assertSame($routeMethods, $route->getMethods());
-        $this->assertSame($routeRequestHandler, $route->getRequestHandler());
-        $this->assertSame($routeMiddlewares, $route->getMiddlewares());
-        $this->assertSame($routeAttributes, $route->getAttributes());
+        $this->assertSame($name, $route->getName());
+        $this->assertSame($path, $route->getPath());
+        $this->assertSame($methods, $route->getMethods());
+        $this->assertSame($handler, $route->getRequestHandler());
+        $this->assertSame($middlewares, $route->getMiddlewares());
+        $this->assertSame($attributes, $route->getAttributes());
     }
 
     /**
@@ -86,12 +59,23 @@ class RouteTest extends TestCase
      */
     public function testSetName() : void
     {
-        $route = new Fixture\TestRoute();
-        $newRouteName = Fixture\TestRoute::getTestRouteName();
+        $route = new Fixture\Route();
+        $name = 'foo';
+        $this->assertNotSame($route->getName(), $name);
+        $this->assertSame($route, $route->setName($name));
+        $this->assertSame($name, $route->getName());
+    }
 
-        $this->assertNotSame($route->getName(), $newRouteName);
-        $this->assertSame($route, $route->setName($newRouteName));
-        $this->assertSame($newRouteName, $route->getName());
+    /**
+     * @return void
+     */
+    public function testSetHost() : void
+    {
+        $route = new Fixture\Route();
+        $host = 'localhost';
+        $this->assertNull($route->getHost());
+        $this->assertSame($route, $route->setHost($host));
+        $this->assertSame($host, $route->getHost());
     }
 
     /**
@@ -99,12 +83,11 @@ class RouteTest extends TestCase
      */
     public function testSetPath() : void
     {
-        $route = new Fixture\TestRoute();
-        $newRoutePath = Fixture\TestRoute::getTestRoutePath();
-
-        $this->assertNotSame($route->getPath(), $newRoutePath);
-        $this->assertSame($route, $route->setPath($newRoutePath));
-        $this->assertSame($newRoutePath, $route->getPath());
+        $route = new Fixture\Route();
+        $path = '/foo';
+        $this->assertNotSame($route->getPath(), $path);
+        $this->assertSame($route, $route->setPath($path));
+        $this->assertSame($path, $route->getPath());
     }
 
     /**
@@ -112,12 +95,11 @@ class RouteTest extends TestCase
      */
     public function testSetMethods() : void
     {
-        $route = new Fixture\TestRoute();
-        $newRouteMethods = Fixture\TestRoute::getTestRouteMethods();
-
-        $this->assertNotSame($route->getMethods(), $newRouteMethods);
-        $this->assertSame($route, $route->setMethods(...$newRouteMethods));
-        $this->assertSame($newRouteMethods, $route->getMethods());
+        $route = new Fixture\Route();
+        $methods = ['GET', 'POST'];
+        $this->assertNotSame($route->getMethods(), $methods);
+        $this->assertSame($route, $route->setMethods(...$methods));
+        $this->assertSame($methods, $route->getMethods());
     }
 
     /**
@@ -125,12 +107,11 @@ class RouteTest extends TestCase
      */
     public function testSetRequestHandler() : void
     {
-        $route = new Fixture\TestRoute();
-        $newRouteRequestHandler = Fixture\TestRoute::getTestRouteRequestHandler();
-
-        $this->assertNotSame($route->getRequestHandler(), $newRouteRequestHandler);
-        $this->assertSame($route, $route->setRequestHandler($newRouteRequestHandler));
-        $this->assertSame($newRouteRequestHandler, $route->getRequestHandler());
+        $route = new Fixture\Route();
+        $handler = new Fixture\Controllers\BlankController();
+        $this->assertNotSame($route->getRequestHandler(), $handler);
+        $this->assertSame($route, $route->setRequestHandler($handler));
+        $this->assertSame($handler, $route->getRequestHandler());
     }
 
     /**
@@ -138,12 +119,14 @@ class RouteTest extends TestCase
      */
     public function testSetMiddlewares() : void
     {
-        $route = new Fixture\TestRoute();
-        $newRouteMiddlewares = Fixture\TestRoute::getTestRouteMiddlewares();
-
-        $this->assertNotSame($route->getMiddlewares(), $newRouteMiddlewares);
-        $this->assertSame($route, $route->setMiddlewares(...$newRouteMiddlewares));
-        $this->assertSame($newRouteMiddlewares, $route->getMiddlewares());
+        $route = new Fixture\Route();
+        $middlewares = [];
+        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
+        $this->assertNotSame($route->getMiddlewares(), $middlewares);
+        $this->assertSame($route, $route->setMiddlewares(...$middlewares));
+        $this->assertSame($middlewares, $route->getMiddlewares());
     }
 
     /**
@@ -151,12 +134,59 @@ class RouteTest extends TestCase
      */
     public function testSetAttributes() : void
     {
-        $route = new Fixture\TestRoute();
-        $newRouteAttributes = Fixture\TestRoute::getTestRouteAttributes();
+        $route = new Fixture\Route();
+        $attributes = ['foo' => 'bar'];
+        $this->assertSame([], $route->getAttributes());
+        $this->assertSame($route, $route->setAttributes($attributes));
+        $this->assertSame($attributes, $route->getAttributes());
+    }
 
-        $this->assertNotSame($route->getAttributes(), $newRouteAttributes);
-        $this->assertSame($route, $route->setAttributes($newRouteAttributes));
-        $this->assertSame($newRouteAttributes, $route->getAttributes());
+    /**
+     * @return void
+     */
+    public function testSetSummary() : void
+    {
+        $route = new Fixture\Route();
+        $summary = 'foo bar';
+        $this->assertSame('', $route->getSummary());
+        $this->assertSame($route, $route->setSummary($summary));
+        $this->assertSame($summary, $route->getSummary());
+    }
+
+    /**
+     * @return void
+     */
+    public function testSetDescription() : void
+    {
+        $route = new Fixture\Route();
+        $description = 'foo bar';
+        $this->assertSame('', $route->getDescription());
+        $this->assertSame($route, $route->setDescription($description));
+        $this->assertSame($description, $route->getDescription());
+    }
+
+    /**
+     * @return void
+     */
+    public function testSetTags() : void
+    {
+        $route = new Fixture\Route();
+        $tags = ['foo', 'bar'];
+        $this->assertSame([], $route->getTags());
+        $this->assertSame($route, $route->setTags(...$tags));
+        $this->assertSame($tags, $route->getTags());
+    }
+
+    /**
+     * @return void
+     */
+    public function testSetHolder() : void
+    {
+        $route = new Fixture\Route();
+        $holder = new \ReflectionClass(__CLASS__);
+        $this->assertNull($route->getHolder());
+        $this->assertSame($route, $route->setHolder($holder));
+        $this->assertSame($holder, $route->getHolder());
     }
 
     /**
@@ -164,12 +194,12 @@ class RouteTest extends TestCase
      */
     public function testAddPrefix() : void
     {
-        $route = new Fixture\TestRoute();
-        $pathPrefix = '/foo';
-        $expectedPath = $pathPrefix . $route->getPath();
-
-        $this->assertSame($route, $route->addPrefix($pathPrefix));
-        $this->assertSame($expectedPath, $route->getPath());
+        $route = new Fixture\Route();
+        $route->setPath('/bar');
+        $prefix = '/foo';
+        $expected = $prefix . $route->getPath();
+        $this->assertSame($route, $route->addPrefix($prefix));
+        $this->assertSame($expected, $route->getPath());
     }
 
     /**
@@ -177,12 +207,12 @@ class RouteTest extends TestCase
      */
     public function testAddSuffix() : void
     {
-        $route = new Fixture\TestRoute();
-        $pathSuffix = '.foo';
-        $expectedPath = $route->getPath() . $pathSuffix;
-
-        $this->assertSame($route, $route->addSuffix($pathSuffix));
-        $this->assertSame($expectedPath, $route->getPath());
+        $route = new Fixture\Route();
+        $route->setPath('/foo');
+        $suffix = '.bar';
+        $expected = $route->getPath() . $suffix;
+        $this->assertSame($route, $route->addSuffix($suffix));
+        $this->assertSame($expected, $route->getPath());
     }
 
     /**
@@ -190,12 +220,12 @@ class RouteTest extends TestCase
      */
     public function testAddMethod() : void
     {
-        $route = new Fixture\TestRoute();
-        $extraMethods = Fixture\TestRoute::getTestRouteMethods();
-        $expectedMethods = array_merge($route->getMethods(), $extraMethods);
-
-        $this->assertSame($route, $route->addMethod(...$extraMethods));
-        $this->assertSame($expectedMethods, $route->getMethods());
+        $route = new Fixture\Route();
+        $route->setMethods('FOO');
+        $methods = ['BAR', 'BAZ'];
+        $expected = array_merge($route->getMethods(), $methods);
+        $this->assertSame($route, $route->addMethod(...$methods));
+        $this->assertSame($expected, $route->getMethods());
     }
 
     /**
@@ -203,12 +233,14 @@ class RouteTest extends TestCase
      */
     public function testAddMiddleware() : void
     {
-        $route = new Fixture\TestRoute();
-        $extraMiddlewares = Fixture\TestRoute::getTestRouteMiddlewares();
-        $expectedMiddlewares = array_merge($route->getMiddlewares(), $extraMiddlewares);
-
-        $this->assertSame($route, $route->addMiddleware(...$extraMiddlewares));
-        $this->assertSame($expectedMiddlewares, $route->getMiddlewares());
+        $route = new Fixture\Route();
+        $route->setMiddlewares(new Fixture\Middlewares\BlankMiddleware());
+        $middlewares = [];
+        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
+        $expected = array_merge($route->getMiddlewares(), $middlewares);
+        $this->assertSame($route, $route->addMiddleware(...$middlewares));
+        $this->assertSame($expected, $route->getMiddlewares());
     }
 
     /**
@@ -216,26 +248,15 @@ class RouteTest extends TestCase
      */
     public function testWithAddedAttributes() : void
     {
-        $route = new Fixture\TestRoute();
-        $extraAttributes = Fixture\TestRoute::getTestRouteAttributes();
-        $expectedAttributes = $route->getAttributes() + $extraAttributes;
-        $routeClone = $route->withAddedAttributes($extraAttributes);
-
-        $this->assertInstanceOf(RouteInterface::class, $routeClone);
-        $this->assertNotSame($route, $routeClone);
-        $this->assertSame($expectedAttributes, $routeClone->getAttributes());
-    }
-
-    /**
-     * @return void
-     */
-    public function testSetLowercasedMethods() : void
-    {
-        $route = new Fixture\TestRoute();
-        $expectedMethods = ['FOO', 'BAR'];
-
-        $route->setMethods('foo', 'bar');
-        $this->assertSame($expectedMethods, $route->getMethods());
+        $route = new Fixture\Route();
+        $route->setAttributes(['foo' => 'bar']);
+        $attributes = ['bar' => 'baz'];
+        $expected = $route->getAttributes() + $attributes;
+        $clone = $route->withAddedAttributes($attributes);
+        $this->assertNotSame($expected, $route->getAttributes());
+        $this->assertInstanceOf(RouteInterface::class, $clone);
+        $this->assertSame($expected, $clone->getAttributes());
+        $this->assertNotSame($route, $clone);
     }
 
     /**
@@ -243,11 +264,20 @@ class RouteTest extends TestCase
      */
     public function testAddSlashEndingPrefix() : void
     {
-        $route = new Fixture\TestRoute();
-        $expectedPath = '/foo' . $route->getPath();
-
+        $route = new Fixture\Route();
+        $route->setPath('/bar');
         $route->addPrefix('/foo/');
-        $this->assertSame($expectedPath, $route->getPath());
+        $this->assertSame('/foo/bar', $route->getPath());
+    }
+
+    /**
+     * @return void
+     */
+    public function testSetLowercasedMethods() : void
+    {
+        $route = new Fixture\Route();
+        $route->setMethods('foo', 'bar');
+        $this->assertSame(['FOO', 'BAR'], $route->getMethods());
     }
 
     /**
@@ -255,21 +285,54 @@ class RouteTest extends TestCase
      */
     public function testAddLowercasedMethod() : void
     {
-        $route = new Fixture\TestRoute();
-        $expectedMethods = $route->getMethods();
-        $expectedMethods[] = 'GET';
-        $expectedMethods[] = 'POST';
-
-        $route->addMethod('get', 'post');
-        $this->assertSame($expectedMethods, $route->getMethods());
+        $route = new Fixture\Route();
+        $route->setMethods(...[]); // clear previous methods...
+        $route->addMethod('foo', 'bar');
+        $this->assertSame(['FOO', 'BAR'], $route->getMethods());
     }
 
     /**
      * @return void
      */
-    public function testHandle() : void
+    public function testRun() : void
     {
-        $route = new Fixture\TestRoute();
+        $route = new Fixture\Route();
+        $route->handle((new ServerRequestFactory)->createServerRequest('GET', '/'));
+
+        $this->assertTrue($route->getRequestHandler()->isRunned());
+
+        $this->assertSame([
+            Route::ATTR_NAME_FOR_ROUTE => $route,
+            Route::ATTR_NAME_FOR_ROUTE_NAME => $route->getName(),
+        ], $route->getRequestHandler()->getRequest()->getAttributes());
+    }
+
+    /**
+     * @return void
+     */
+    public function testRunWithAttributes() : void
+    {
+        $route = new Fixture\Route();
+        $route->setAttributes(['foo' => 'bar']);
+        $route->handle((new ServerRequestFactory)->createServerRequest('GET', '/'));
+
+        $this->assertTrue($route->getRequestHandler()->isRunned());
+
+        $this->assertSame([
+            Route::ATTR_NAME_FOR_ROUTE => $route,
+            Route::ATTR_NAME_FOR_ROUTE_NAME => $route->getName(),
+        ] + $route->getAttributes(), $route->getRequestHandler()->getRequest()->getAttributes());
+    }
+
+    /**
+     * @return void
+     */
+    public function testRunWithMiddlewares() : void
+    {
+        $route = new Fixture\Route();
+        $route->addMiddleware(new Fixture\Middlewares\BlankMiddleware());
+        $route->addMiddleware(new Fixture\Middlewares\BlankMiddleware());
+        $route->addMiddleware(new Fixture\Middlewares\BlankMiddleware());
         $route->handle((new ServerRequestFactory)->createServerRequest('GET', '/'));
 
         $this->assertTrue($route->getMiddlewares()[0]->isRunned());
@@ -277,105 +340,41 @@ class RouteTest extends TestCase
         $this->assertTrue($route->getMiddlewares()[2]->isRunned());
         $this->assertTrue($route->getRequestHandler()->isRunned());
 
-        $expectedAttributes = [
+        $attributes = [
             Route::ATTR_NAME_FOR_ROUTE => $route,
             Route::ATTR_NAME_FOR_ROUTE_NAME => $route->getName(),
         ];
 
-        $expectedAttributes += $route->getAttributes();
-
-        $this->assertSame($expectedAttributes, $route->getRequestHandler()->getAttributes());
+        $this->assertSame($attributes, $route->getMiddlewares()[0]->getRequest()->getAttributes());
+        $this->assertSame($attributes, $route->getMiddlewares()[1]->getRequest()->getAttributes());
+        $this->assertSame($attributes, $route->getMiddlewares()[2]->getRequest()->getAttributes());
+        $this->assertSame($attributes, $route->getRequestHandler()->getRequest()->getAttributes());
     }
 
     /**
      * @return void
      */
-    public function testHandleWithBrokenMiddleware() : void
+    public function testRunWithBrokenMiddleware() : void
     {
-        $route = new Fixture\TestRoute(Fixture\TestRoute::WITH_BROKEN_MIDDLEWARE);
+        $route = new Fixture\Route();
+        $route->addMiddleware(new Fixture\Middlewares\BlankMiddleware());
+        $route->addMiddleware(new Fixture\Middlewares\BlankMiddleware(true));
+        $route->addMiddleware(new Fixture\Middlewares\BlankMiddleware());
         $route->handle((new ServerRequestFactory)->createServerRequest('GET', '/'));
 
         $this->assertTrue($route->getMiddlewares()[0]->isRunned());
         $this->assertTrue($route->getMiddlewares()[1]->isRunned());
         $this->assertFalse($route->getMiddlewares()[2]->isRunned());
         $this->assertFalse($route->getRequestHandler()->isRunned());
-        $this->assertSame([], $route->getRequestHandler()->getAttributes());
-    }
 
-    /**
-     * @return void
-     */
-    public function testHandleWithoutMiddlewares() : void
-    {
-        $route = new Fixture\TestRoute(Fixture\TestRoute::WITHOUT_MIDDLEWARES);
-        $route->handle((new ServerRequestFactory)->createServerRequest('GET', '/'));
-
-        $this->assertTrue($route->getRequestHandler()->isRunned());
-
-        $expectedAttributes = [
+        $attributes = [
             Route::ATTR_NAME_FOR_ROUTE => $route,
             Route::ATTR_NAME_FOR_ROUTE_NAME => $route->getName(),
         ];
 
-        $expectedAttributes += $route->getAttributes();
-
-        $this->assertSame($expectedAttributes, $route->getRequestHandler()->getAttributes());
-    }
-
-    /**
-     * @return void
-     */
-    public function testSummary() : void
-    {
-        $route = new Fixture\TestRoute();
-        $expectedSummary = 'foo bar';
-
-        $this->assertSame('', $route->getSummary());
-        $this->assertSame($route, $route->setSummary($expectedSummary));
-        $this->assertSame($expectedSummary, $route->getSummary());
-    }
-
-    /**
-     * @return void
-     */
-    public function testDescription() : void
-    {
-        $route = new Fixture\TestRoute();
-        $expectedDescription = 'foo bar';
-
-        $this->assertSame('', $route->getDescription());
-        $this->assertSame($route, $route->setDescription($expectedDescription));
-        $this->assertSame($expectedDescription, $route->getDescription());
-    }
-
-    /**
-     * @return void
-     */
-    public function testTags() : void
-    {
-        $route = new Fixture\TestRoute();
-        $expectedTags = ['foo', 'bar'];
-
-        $this->assertSame([], $route->getTags());
-        $this->assertSame($route, $route->setTags(...$expectedTags));
-        $this->assertSame($expectedTags, $route->getTags());
-    }
-
-    /**
-     * @return void
-     *
-     * @since 2.6.0
-     */
-    public function testHost() : void
-    {
-        $route = new Fixture\TestRoute();
-
-        $this->assertSame(null, $route->getHost());
-
-        $this->assertSame($route, $route->setHost('localhost'));
-        $this->assertSame('localhost', $route->getHost());
-
-        $this->assertSame($route, $route->setHost(null));
-        $this->assertSame(null, $route->getHost());
+        $this->assertSame($attributes, $route->getMiddlewares()[0]->getRequest()->getAttributes());
+        $this->assertSame($attributes, $route->getMiddlewares()[1]->getRequest()->getAttributes());
+        $this->assertNull($route->getMiddlewares()[2]->getRequest());
+        $this->assertNull($route->getRequestHandler()->getRequest());
     }
 }

@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Tests\Middleware;
+namespace Sunrise\Http\Router\Test\Middleware;
 
 /**
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Sunrise\Http\Router\Middleware\CallableMiddleware;
-use Sunrise\Http\Router\Tests\Fixture;
-use Sunrise\Http\ServerRequest\ServerRequestFactory;
+use Sunrise\Http\Router\Test\Fixture;
 
 /**
  * CallableMiddlewareTest
@@ -33,14 +33,12 @@ class CallableMiddlewareTest extends TestCase
      */
     public function testRun() : void
     {
-        $middleware = new CallableMiddleware(function ($request, $handler) {
-            return $handler->handle($request);
-        });
-
-        $request = (new ServerRequestFactory)->createServerRequest('GET', '/');
-        $requestHandler = new Fixture\BlankRequestHandler();
+        $request = $this->createMock(ServerRequestInterface::class);
+        $callback = new Fixture\Middlewares\BlankMiddleware();
+        $middleware = new CallableMiddleware($callback);
+        $requestHandler = new Fixture\Controllers\BlankController();
         $middleware->process($request, $requestHandler);
-
+        $this->assertTrue($callback->isRunned());
         $this->assertTrue($requestHandler->isRunned());
     }
 }

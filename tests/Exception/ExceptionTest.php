@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Tests\Exception;
+namespace Sunrise\Http\Router\Test\Exception;
 
 /**
  * Import classes
@@ -30,14 +30,14 @@ class ExceptionTest extends TestCase
     /**
      * @return void
      */
-    public function testConstructor() : void
+    public function testConstructorWithoutParameters() : void
     {
         $exception = new Exception();
 
         $this->assertSame('', $exception->getMessage());
+        $this->assertSame([], $exception->getContext());
         $this->assertSame(0, $exception->getCode());
         $this->assertSame(null, $exception->getPrevious());
-        $this->assertSame([], $exception->getContext());
     }
 
     /**

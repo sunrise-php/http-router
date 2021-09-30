@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Tests\RequestHandler;
+namespace Sunrise\Http\Router\Test\RequestHandler;
 
 /**
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
-use Sunrise\Http\Router\Tests\Fixture;
-use Sunrise\Http\ServerRequest\ServerRequestFactory;
+use Sunrise\Http\Router\Test\Fixture;
 
 /**
  * CallableRequestHandlerTest
@@ -33,12 +33,10 @@ class CallableRequestHandlerTest extends TestCase
      */
     public function testRun() : void
     {
-        $callback = new Fixture\BlankRequestHandler();
+        $request = $this->createMock(ServerRequestInterface::class);
+        $callback = new Fixture\Controllers\BlankController();
         $requestHandler = new CallableRequestHandler($callback);
-
-        $request = (new ServerRequestFactory)->createServerRequest('GET', '/');
         $requestHandler->handle($request);
-
         $this->assertTrue($callback->isRunned());
     }
 }

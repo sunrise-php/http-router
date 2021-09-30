@@ -7,12 +7,12 @@ namespace Sunrise\Http\Router\Test\Exception;
  */
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Exception\Exception;
-use Sunrise\Http\Router\Exception\InvalidPathException;
+use Sunrise\Http\Router\Exception\InvalidDescriptorException;
 
 /**
- * InvalidPathExceptionTest
+ * InvalidDescriptorExceptionTest
  */
-class InvalidPathExceptionTest extends TestCase
+class InvalidDescriptorExceptionTest extends TestCase
 {
 
     /**
@@ -20,7 +20,7 @@ class InvalidPathExceptionTest extends TestCase
      */
     public function testContracts() : void
     {
-        $exception = new InvalidPathException();
+        $exception = new InvalidDescriptorException();
 
         $this->assertInstanceOf(Exception::class, $exception);
     }

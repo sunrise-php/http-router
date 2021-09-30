@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Tests\Exception;
+namespace Sunrise\Http\Router\Test\Exception;
 
 /**
  * Import classes
@@ -23,29 +23,5 @@ class InvalidArgumentExceptionTest extends TestCase
         $exception = new InvalidArgumentException();
 
         $this->assertInstanceOf(Exception::class, $exception);
-    }
-
-    /**
-     * @return void
-     */
-    public function testInvalidValue() : void
-    {
-        $expected = 'foo';
-
-        $exception = new InvalidArgumentException('blah', [
-            'invalidValue' => $expected,
-        ]);
-
-        $this->assertSame($expected, $exception->getInvalidValue());
-    }
-
-    /**
-     * @return void
-     */
-    public function testInvalidValueWithEmptyContext() : void
-    {
-        $exception = new InvalidArgumentException('blah');
-
-        $this->assertSame(null, $exception->getInvalidValue());
     }
 }
