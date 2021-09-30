@@ -92,7 +92,8 @@ class DescriptorLoaderTest extends TestCase
 
         // an expected route should be created from this descriptor...
         $cache->storage[$loader->getCacheKey()][0] = new Route('controller-from-cached-descriptor', null, '/');
-        $cache->storage[$loader->getCacheKey()][0]->holder = new ReflectionClass(Fixture\Controllers\BlankController::class);
+        $cache->storage[$loader->getCacheKey()][0]->holder =
+            new ReflectionClass(Fixture\Controllers\BlankController::class);
 
         $routes = $loader->load();
         $this->assertTrue($routes->has($cache->storage[$loader->getCacheKey()][0]->name));
