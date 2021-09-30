@@ -64,9 +64,6 @@
         "test": [
             "phpcs",
             "XDEBUG_MODE=coverage phpunit --colors=always --coverage-text"
-        ],
-        "bench": [
-            "phpbench run --report='generator: \"table\", cols: [\"groups\", \"subject\", \"mean\", \"diff\"], sort: {mean: \"asc\"}'"
         ]
     }
 }
