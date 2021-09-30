@@ -111,7 +111,7 @@ class DescriptorLoader implements LoaderInterface
 
         // the "doctrine/annotations" package must be installed manually
         if (class_exists(SimpleAnnotationReader::class)) {
-            $this->annotationReader = new SimpleAnnotationReader();
+            $this->annotationReader = /** @scrutinizer ignore-deprecated */ new SimpleAnnotationReader();
             $this->annotationReader->addNamespace('Sunrise\Http\Router\Annotation');
         }
     }
@@ -323,13 +323,10 @@ class DescriptorLoader implements LoaderInterface
         }
 
         foreach ($class->getMethods() as $method) {
-            // ignore non-callable methods...
-            if ($method->isAbstract() ||
-                $method->isConstructor() ||
-                $method->isDestructor() ||
+            // ignore non-available methods...
+            if ($method->isStatic() ||
                 $method->isPrivate() ||
-                $method->isProtected() ||
-                $method->isStatic()) {
+                $method->isProtected()) {
                 continue;
             }
 
