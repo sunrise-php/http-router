@@ -24,7 +24,7 @@ use function array_merge;
 /**
  * RouteCollection
  *
- * Use the factory to create this class.
+ * Use the {@see RouteCollectionFactory} factory to create this class.
  */
 class RouteCollection implements RouteCollectionInterface
 {
@@ -49,16 +49,6 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * {@inheritdoc}
      */
-    public function add(RouteInterface ...$routes) : void
-    {
-        foreach ($routes as $route) {
-            $this->routes[] = $route;
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function all() : array
     {
         return $this->routes;
@@ -66,8 +56,40 @@ class RouteCollection implements RouteCollectionInterface
 
     /**
      * {@inheritdoc}
-     *
-     * @since 2.9.0
+     */
+    public function get(string $name) : ?RouteInterface
+    {
+        foreach ($this->routes as $route) {
+            if ($name === $route->getName()) {
+                return $route;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function has(string $name) : bool
+    {
+        return $this->get($name) instanceof RouteInterface;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function add(RouteInterface ...$routes) : RouteCollectionInterface
+    {
+        foreach ($routes as $route) {
+            $this->routes[] = $route;
+        }
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function setHost(string $host) : RouteCollectionInterface
     {
@@ -80,8 +102,6 @@ class RouteCollection implements RouteCollectionInterface
 
     /**
      * {@inheritdoc}
-     *
-     * @since 2.9.0
      */
     public function addPrefix(string $prefix) : RouteCollectionInterface
     {
@@ -94,8 +114,6 @@ class RouteCollection implements RouteCollectionInterface
 
     /**
      * {@inheritdoc}
-     *
-     * @since 2.9.0
      */
     public function addSuffix(string $suffix) : RouteCollectionInterface
     {
@@ -108,8 +126,6 @@ class RouteCollection implements RouteCollectionInterface
 
     /**
      * {@inheritdoc}
-     *
-     * @since 2.9.0
      */
     public function addMethod(string ...$methods) : RouteCollectionInterface
     {
@@ -122,10 +138,8 @@ class RouteCollection implements RouteCollectionInterface
 
     /**
      * {@inheritdoc}
-     *
-     * @since 2.9.0
      */
-    public function appendMiddleware(MiddlewareInterface ...$middlewares) : RouteCollectionInterface
+    public function addMiddleware(MiddlewareInterface ...$middlewares) : RouteCollectionInterface
     {
         foreach ($this->routes as $route) {
             $route->addMiddleware(...$middlewares);
@@ -135,9 +149,19 @@ class RouteCollection implements RouteCollectionInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Alias to the addMiddleware method
      *
-     * @since 2.9.0
+     * @param MiddlewareInterface ...$middlewares
+     *
+     * @return RouteCollectionInterface
+     */
+    public function appendMiddleware(MiddlewareInterface ...$middlewares) : RouteCollectionInterface
+    {
+        return $this->addMiddleware(...$middlewares);
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function prependMiddleware(MiddlewareInterface ...$middlewares) : RouteCollectionInterface
     {
@@ -149,30 +173,10 @@ class RouteCollection implements RouteCollectionInterface
     }
 
     /**
-     * BC (backward compatibility) for version less than 2.9.0
-     *
-     * @see appendMiddleware
-     *
-     * @deprecated 2.9.0 Use the `appendMiddleware` method.
-     */
-    public function addMiddleware(MiddlewareInterface ...$middlewares) : RouteCollectionInterface
-    {
-        $this->appendMiddleware(...$middlewares);
-
-        return $this;
-    }
-
-    /**
-     * BC (backward compatibility) for version less than 2.9.0
-     *
-     * @see prependMiddleware
-     *
-     * @deprecated 2.9.0 Use the `prependMiddleware` method.
+     * @deprecated 2.10.0 Use the prependMiddleware method.
      */
     public function unshiftMiddleware(MiddlewareInterface ...$middlewares) : RouteCollectionInterface
     {
-        $this->prependMiddleware(...$middlewares);
-
-        return $this;
+        return $this->prependMiddleware(...$middlewares);
     }
 }

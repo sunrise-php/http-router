@@ -23,20 +23,42 @@ interface RouteCollectionInterface
 {
 
     /**
-     * Adds the given route(s) to the collection
-     *
-     * @param RouteInterface ...$routes
-     *
-     * @return void
-     */
-    public function add(RouteInterface ...$routes) : void;
-
-    /**
      * Gets all routes from the collection
      *
      * @return RouteInterface[]
      */
     public function all() : array;
+
+    /**
+     * Gets a route by the given name
+     *
+     * @param string $name
+     *
+     * @return RouteInterface|null
+     *
+     * @since 2.10.0
+     */
+    public function get(string $name) : ?RouteInterface;
+
+    /**
+     * Checks by the given name if a route exists in the collection
+     *
+     * @param string $name
+     *
+     * @return bool
+     *
+     * @since 2.10.0
+     */
+    public function has(string $name) : bool;
+
+    /**
+     * Adds the given route(s) to the collection
+     *
+     * @param RouteInterface ...$routes
+     *
+     * @return RouteCollectionInterface
+     */
+    public function add(RouteInterface ...$routes) : RouteCollectionInterface;
 
     /**
      * Sets the given host to all routes in the collection
@@ -83,7 +105,7 @@ interface RouteCollectionInterface
     public function addMethod(string ...$methods) : RouteCollectionInterface;
 
     /**
-     * Appends (to top) the given middleware(s) to all routes in the collection
+     * Adds the given middleware(s) to all routes in the collection
      *
      * @param MiddlewareInterface ...$middlewares
      *
@@ -91,10 +113,10 @@ interface RouteCollectionInterface
      *
      * @since 2.9.0
      */
-    public function appendMiddleware(MiddlewareInterface ...$middlewares) : RouteCollectionInterface;
+    public function addMiddleware(MiddlewareInterface ...$middlewares) : RouteCollectionInterface;
 
     /**
-     * Prepends (to end) the given middleware(s) to all routes in the collection
+     * Adds the given middleware(s) to the beginning of all routes in the collection
      *
      * @param MiddlewareInterface ...$middlewares
      *
