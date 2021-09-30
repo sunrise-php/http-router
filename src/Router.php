@@ -19,10 +19,9 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\MethodNotAllowedException;
-use Sunrise\Http\Router\Exception\MiddlewareAlreadyExistsException;
 use Sunrise\Http\Router\Exception\PageNotFoundException;
-use Sunrise\Http\Router\Exception\RouteAlreadyExistsException;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
 use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
@@ -34,6 +33,7 @@ use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
 use function array_flip;
 use function array_keys;
 use function array_values;
+use function get_class;
 use function spl_object_hash;
 use function sprintf;
 
@@ -49,6 +49,18 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      * @var string
      */
     public const ATTR_NAME_FOR_ROUTING_ERROR = '@routing-error';
+
+    /**
+     * Global patterns
+     *
+     * @var array<string, string>
+     *
+     * @since 2.9.0
+     */
+    public static $patterns = [
+        '@slug' => '[0-9a-z-]+',
+        '@uuid' => '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
+    ];
 
     /**
      * The router host table
@@ -125,17 +137,18 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *
      * @return void
      *
-     * @throws RouteAlreadyExistsException
+     * @throws InvalidArgumentException
+     *         if one of the given routes already exists.
      */
     public function addRoute(RouteInterface ...$routes) : void
     {
         foreach ($routes as $route) {
             $name = $route->getName();
-
             if (isset($this->routes[$name])) {
-                throw new RouteAlreadyExistsException(
-                    sprintf('A route with the name "%s" already exists.', $name)
-                );
+                throw new InvalidArgumentException(sprintf(
+                    'The route "%s" already exists.',
+                    $name
+                ));
             }
 
             $this->routes[$name] = $route;
@@ -149,17 +162,18 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *
      * @return void
      *
-     * @throws MiddlewareAlreadyExistsException
+     * @throws InvalidArgumentException
+     *         if one of the given middlewares already exists.
      */
     public function addMiddleware(MiddlewareInterface ...$middlewares) : void
     {
         foreach ($middlewares as $middleware) {
             $hash = spl_object_hash($middleware);
-
             if (isset($this->middlewares[$hash])) {
-                throw new MiddlewareAlreadyExistsException(
-                    sprintf('A middleware with the hash "%s" already exists.', $hash)
-                );
+                throw new InvalidArgumentException(sprintf(
+                    'The middleware "%s" already exists.',
+                    get_class($middleware)
+                ));
             }
 
             $this->middlewares[$hash] = $middleware;
@@ -195,9 +209,10 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     public function getRoute(string $name) : RouteInterface
     {
         if (!isset($this->routes[$name])) {
-            throw new RouteNotFoundException(
-                sprintf('No route found for the name "%s".', $name)
-            );
+            throw new RouteNotFoundException(sprintf(
+                'No route found for the name "%s".',
+                $name
+            ));
         }
 
         return $this->routes[$name];
@@ -354,22 +369,18 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     /**
      * Compares the given route host and the given request host
      *
-     * Returns `true` if the route host is `null`
-     * or if the route host is equal to the request host,
-     * otherwise returns `false`.
+     * Returns true if the route host is null or
+     * if the route host is equal to the request host,
+     * otherwise returns false.
      *
-     * @param null|string $routeHost
+     * @param string|null $routeHost
      * @param string $requestHost
      *
      * @return bool
      */
     private function compareHosts(?string $routeHost, string $requestHost) : bool
     {
-        if (null === $routeHost) {
-            return true;
-        }
-
-        if ($requestHost === $routeHost) {
+        if (null === $routeHost || $requestHost === $routeHost) {
             return true;
         }
 

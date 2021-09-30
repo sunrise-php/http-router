@@ -169,8 +169,8 @@ function path_parse(string $path) : array
                 );
             }
 
-            if (isset(Route::$patterns[$attributes[$attributeIndex]['pattern']])) {
-                $attributes[$attributeIndex]['pattern'] = Route::$patterns[$attributes[$attributeIndex]['pattern']];
+            if (isset(Router::$patterns[$attributes[$attributeIndex]['pattern']])) {
+                $attributes[$attributeIndex]['pattern'] = Router::$patterns[$attributes[$attributeIndex]['pattern']];
             }
 
             $cursorInPattern = false;
