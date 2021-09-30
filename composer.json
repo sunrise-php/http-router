@@ -57,7 +57,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Sunrise\\Http\\Router\\Tests\\": "tests/"
+            "Sunrise\\Http\\Router\\Test\\Fixture\\": "tests/fixtures/"
         }
     },
     "scripts": {
