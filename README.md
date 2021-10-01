@@ -34,6 +34,9 @@ use function Sunrise\Http\Router\emit;
 
 $collector = new RouteCollector();
 
+// set container if necessary...
+$collector->setContainer($container);
+
 $collector->get('home', '/', new CallableRequestHandler(function ($request) {
     return (new ResponseFactory)->createJsonResponse(200, [
         'status' => 'ok',
@@ -55,13 +58,20 @@ emit($response);
 
 Study [sunrise/awesome-skeleton](https://github.com/sunrise-php/awesome-skeleton) to understand how this can be used.
 
-#### Strategy loading routes from configs
+#### Strategy for loading routes from configs
+
+> Please note that since version 2.10.0 class `ConfigLoader` must be used.
 
 ```php
-use Sunrise\Http\Router\Loader\CollectableFileLoader;
+use Sunrise\Http\Router\Loader\ConfigLoader;
 use Sunrise\Http\Router\Router;
 
-$loader = new CollectableFileLoader();
+$loader = new ConfigLoader();
+
+// set container if necessary...
+$loader->setContainer($container);
+
+// attach configs...
 $loader->attach('routes/api.php');
 $loader->attach('routes/admin.php');
 $loader->attach('routes/public.php');
@@ -77,6 +87,9 @@ $loader->attachArray([
     'routes/admin.php',
     'routes/public.php',
 ]);
+
+// install container if necessary...
+$loader->setContainer($container);
 
 $router = new Router();
 $router->load($loader);
@@ -99,9 +112,32 @@ $response = $router->process($request, $handler);
 $this->get('home', '/', new CallableRequestHandler(function ($request) {
     return (new ResponseFactory)->createJsonResponse(200);
 }));
+
+// or using a direct reference to a request handler...
+$this->get('home', '/', new App\Http\Controller\HomeController());
 ```
 
-#### Strategy loading routes from descriptors (annotations or attributes)
+> Please note that since version 2.10.0 you can refer to the request handler in different ways.
+
+```php
+/** @var Sunrise\Http\Router\RouteCollector $this */
+
+$this->get('home', '/', function ($request) {
+    return (new ResponseFactory)->createJsonResponse(200);
+});
+
+$this->get('home', '/', App\Http\Controller\HomeController::class, [
+    App\Http\Middleware\FooMiddleware::class,
+    App\Http\Middleware\BarMiddleware::class,
+]);
+
+$this->get('home', '/', [App\Http\Controller\HomeController::class, 'index'], [
+    App\Http\Middleware\FooMiddleware::class,
+    App\Http\Middleware\BarMiddleware::class,
+]);
+```
+
+#### Strategy for loading routes from descriptors (annotations or attributes)
 
 Install the [doctrine/annotations](https://github.com/doctrine/annotations) package if you will be use annotations:
 
@@ -109,15 +145,24 @@ Install the [doctrine/annotations](https://github.com/doctrine/annotations) pack
 composer require doctrine/annotations
 ```
 
+> Please note that since version 2.10.0 class `DescriptorLoader` must be used.
+
+> Please note that since version 2.10.0 you can bind the @Rote() annotation to a class methods.
+
 ```php
 use Doctrine\Common\Annotations\AnnotationRegistry;
-use Sunrise\Http\Router\Loader\DescriptorDirectoryLoader;
+use Sunrise\Http\Router\Loader\DescriptorLoader;
 use Sunrise\Http\Router\Router;
 
 // necessary if you will use annotations (annotations isn't attributes)...
 AnnotationRegistry::registerLoader('class_exists');
 
-$loader = new DescriptorDirectoryLoader();
+$loader = new DescriptorLoader();
+
+// set container if necessary...
+$loader->setContainer($container);
+
+// attach a directory with controllers...
 $loader->attach('src/Controller');
 
 // or attach an array
@@ -126,6 +171,10 @@ $loader->attachArray([
     'src/Controller',
     'src/Bundle/BundleName/Controller',
 ]);
+
+// or attach a class only
+// [!] available from 2.10 version.
+$loader->attach(App\Http\Controller\FooController::class);
 
 $router = new Router();
 $router->load($loader);
@@ -150,6 +199,10 @@ use Sunrise\Http\Router\RouteCollector;
 use Sunrise\Http\Router\Router;
 
 $collector = new RouteCollector();
+
+// set container if necessary...
+$collector->setContainer($container);
+
 $collector->get('home', '/', new HomeController());
 
 $router = new Router();
@@ -227,7 +280,7 @@ $route = $collector->get('home', '/', HomeController::class, [
 ##### Config loader
 
 ```php
-$loader = new CollectableFileLoader();
+$loader = new ConfigLoader();
 
 /** @var \Psr\Container\ContainerInterface $container */
 
@@ -241,7 +294,7 @@ $routes = $loader->load();
 ##### Descriptor loader
 
 ```php
-$loader = new DescriptorDirectoryLoader();
+$loader = new DescriptorLoader();
 
 /** @var \Psr\Container\ContainerInterface $container */
 
@@ -255,7 +308,7 @@ $routes = $loader->load();
 #### Descriptors cache (PSR-16)
 
 ```php
-$loader = new DescriptorDirectoryLoader();
+$loader = new DescriptorLoader();
 
 /** @var \Psr\SimpleCache\CacheInterface $cache */
 
@@ -320,7 +373,7 @@ final class EntryUpdateRequestHandler implements RequestHandlerInterface
 ##### Minimal attribute view
 
 ```php
-use Sunrise\Http\Router\Attribute\Route;
+use Sunrise\Http\Router\Annotation\Route;
 
 #[Route(
     name: 'api_v1_entry_update',
@@ -333,7 +386,7 @@ final class EntryUpdateRequestHandler implements RequestHandlerInterface
 ##### Full attribute
 
 ```php
-use Sunrise\Http\Router\Attribute\Route;
+use Sunrise\Http\Router\Annotation\Route;
 
 #[Route(
     name: 'api_v1_entry_update',
@@ -426,10 +479,14 @@ $collector->group(function ($collector) {
         })
         ->addPrefix('/entry') // add the prefix to the group...
         ->prependMiddleware(...); // add the middleware(s) to the group...
-    })
+    }, [
+        App\Http\Middleware\Bar::class, // resolvable middlewares...
+    ])
     ->addPrefix('/v1') // add the prefix to the group...
     ->prependMiddleware(...); // add the middleware(s) to the group...
-})
+}, [
+    App\Http\Middleware\Foo::class, // resolvable middlewares...
+])
 ->addPrefix('/api') // add the prefix to the group...
 ->prependMiddleware(...); // add the middleware(s) to the group...
 ```
@@ -476,14 +533,26 @@ $collector->group(function ($collector) {
 ->setHost('admin.host');
 ```
 
+### The router builder
+
+```php
+$router = (new RouterBuilder)
+    ->setContainer(null) // null or PSR-11 container instance...
+    ->setCache(null) // null or PSR-16 cache instance... (only for descriptor loader)
+    ->setCacheKey(null) // null or string... (only for descriptor loader)
+    ->useConfigLoader([]) // array with files or directory with files...
+    ->useDescriptorLoader([]) // array with classes or directory with classes...
+    ->setHosts([]) //
+    ->setMiddlewares([]) // array with middlewares...
+    ->build();
+```
+
 ### CLI commands
 
 ```php
 use Sunrise\Http\Router\Command\RouteListCommand;
-use Sunrise\Http\Router\Command\RouteMatchCommand;
 
 new RouteListCommand($router);
-new RouteMatchCommand($router);
 ```
 
 ---
