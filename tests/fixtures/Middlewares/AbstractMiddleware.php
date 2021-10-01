@@ -26,9 +26,9 @@ abstract class AbstractMiddleware implements MiddlewareInterface
     private $isRunned = false;
 
     /**
-     * The processed request
+     * The request that was handled by the called method
      *
-     * @var ServerRequestInterface
+     * @var ServerRequestInterface|null
      */
     private $request = null;
 
@@ -53,7 +53,7 @@ abstract class AbstractMiddleware implements MiddlewareInterface
     }
 
     /**
-     * Gets the processed request
+     * Gets the request that was handled by the called method
      *
      * @return ServerRequestInterface|null
      */
@@ -71,7 +71,7 @@ abstract class AbstractMiddleware implements MiddlewareInterface
         $this->request = $request;
 
         if ($this->isBreakable) {
-            return (new ResponseFactory)->createResponse();
+            return (new ResponseFactory)->createResponse(200);
         }
 
         return $handler->handle($request);

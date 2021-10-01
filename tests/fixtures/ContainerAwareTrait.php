@@ -10,10 +10,10 @@ trait ContainerAwareTrait
     /**
      * @return ContainerInterface
      */
-    private function getContainer() : ContainerInterface
+    private function getContainer(array $definitions = []) : ContainerInterface
     {
         $container = $this->createMock(ContainerInterface::class);
-        $container->storage = [];
+        $container->storage = $definitions;
 
         $container->method('get')->will($this->returnCallback(function ($key) use ($container) {
             return $container->storage[$key] ?? null;

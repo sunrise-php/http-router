@@ -22,8 +22,8 @@ class CallableRequestHandlerTest extends TestCase
      */
     public function testContracts() : void
     {
-        $requestHandler = new CallableRequestHandler(function () {
-        });
+        $callback = new Fixture\Controllers\BlankController();
+        $requestHandler = new CallableRequestHandler($callback);
 
         $this->assertInstanceOf(RequestHandlerInterface::class, $requestHandler);
     }
@@ -33,10 +33,14 @@ class CallableRequestHandlerTest extends TestCase
      */
     public function testRun() : void
     {
-        $request = $this->createMock(ServerRequestInterface::class);
         $callback = new Fixture\Controllers\BlankController();
         $requestHandler = new CallableRequestHandler($callback);
+
+        $this->assertSame($callback, $requestHandler->getCallback());
+
+        $request = $this->createMock(ServerRequestInterface::class);
         $requestHandler->handle($request);
+
         $this->assertTrue($callback->isRunned());
     }
 }

@@ -19,6 +19,6 @@ final class BlankMiddleware extends AbstractMiddleware
      */
     public function __invoke(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
     {
-        return $this->process($request, $handler);
+        return $this->process($request, $handler)->withStatus(305);
     }
 }

@@ -22,8 +22,8 @@ class CallableMiddlewareTest extends TestCase
      */
     public function testContracts() : void
     {
-        $middleware = new CallableMiddleware(function () {
-        });
+        $callback = new Fixture\Middlewares\BlankMiddleware();
+        $middleware = new CallableMiddleware($callback);
 
         $this->assertInstanceOf(MiddlewareInterface::class, $middleware);
     }
@@ -33,12 +33,15 @@ class CallableMiddlewareTest extends TestCase
      */
     public function testRun() : void
     {
-        $request = $this->createMock(ServerRequestInterface::class);
         $callback = new Fixture\Middlewares\BlankMiddleware();
         $middleware = new CallableMiddleware($callback);
+
+        $this->assertSame($callback, $middleware->getCallback());
+
+        $request = $this->createMock(ServerRequestInterface::class);
         $requestHandler = new Fixture\Controllers\BlankController();
         $middleware->process($request, $requestHandler);
+
         $this->assertTrue($callback->isRunned());
-        $this->assertTrue($requestHandler->isRunned());
     }
 }

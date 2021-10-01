@@ -1,4 +1,7 @@
 <?php declare(strict_types=1);
 
-$this->get('bar', '/bar', function () {
-});
+use Sunrise\Http\Router\Test\Fixture\Controllers\BlankController;
+
+/** @var $this Sunrise\Http\Router\RouteCollector */
+
+$this->get('bar', '/bar', new BlankController());

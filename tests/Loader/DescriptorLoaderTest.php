@@ -79,6 +79,8 @@ class DescriptorLoaderTest extends TestCase
         $cache = $this->getCache();
 
         $loader = new DescriptorLoader();
+        $loader->attach(Fixture\Controllers\Annotated\CacheableAnnotatedController::class);
+
         $this->assertNull($loader->getCache());
         $this->assertNull($loader->getCacheKey());
 
@@ -88,12 +90,10 @@ class DescriptorLoaderTest extends TestCase
         $loader->setCacheKey('foo');
         $this->assertSame('foo', $loader->getCacheKey());
 
-        $loader->attach(Fixture\Controllers\Annotated\CacheableAnnotatedController::class);
+        $descriptor = new Route('controller-from-cached-descriptor', null, '/');
+        $descriptor->holder = new ReflectionClass(Fixture\Controllers\BlankController::class);
 
-        // an expected route should be created from this descriptor...
-        $cache->storage[$loader->getCacheKey()][0] = new Route('controller-from-cached-descriptor', null, '/');
-        $cache->storage[$loader->getCacheKey()][0]->holder =
-            new ReflectionClass(Fixture\Controllers\BlankController::class);
+        $cache->storage[$loader->getCacheKey()][0] = $descriptor;
 
         $routes = $loader->load();
         $this->assertTrue($routes->has($cache->storage[$loader->getCacheKey()][0]->name));
@@ -148,6 +148,7 @@ class DescriptorLoaderTest extends TestCase
         $this->assertSame('minimally-annotated-controller', $route->getName());
         $this->assertSame('/', $route->getPath());
         $this->assertSame(['GET'], $route->getMethods());
+        $this->assertNotNull($route->getHolder());
         $this->assertSame($class, $route->getHolder()->getName());
     }
 
@@ -173,6 +174,7 @@ class DescriptorLoaderTest extends TestCase
         $this->assertSame('minimally-attributed-controller', $route->getName());
         $this->assertSame('/', $route->getPath());
         $this->assertSame(['GET'], $route->getMethods());
+        $this->assertNotNull($route->getHolder());
         $this->assertSame($class, $route->getHolder()->getName());
     }
 

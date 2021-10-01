@@ -18,9 +18,9 @@ abstract class AbstractController implements RequestHandlerInterface
     private $isRunned = false;
 
     /**
-     * The handled request
+     * The request that was handled by the called method
      *
-     * @var ServerRequestInterface
+     * @var ServerRequestInterface|null
      */
     private $request = null;
 
@@ -35,7 +35,7 @@ abstract class AbstractController implements RequestHandlerInterface
     }
 
     /**
-     * Gets the handled request
+     * Gets the request that was handled by the called method
      *
      * @return ServerRequestInterface|null
      */
@@ -52,6 +52,6 @@ abstract class AbstractController implements RequestHandlerInterface
         $this->isRunned = true;
         $this->request = $request;
 
-        return (new ResponseFactory)->createResponse();
+        return (new ResponseFactory)->createResponse(200);
     }
 }

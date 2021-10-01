@@ -17,6 +17,6 @@ final class BlankController extends AbstractController
      */
     public function __invoke(ServerRequestInterface $request) : ResponseInterface
     {
-        return $this->handle($request);
+        return $this->handle($request)->withStatus(305);
     }
 }
