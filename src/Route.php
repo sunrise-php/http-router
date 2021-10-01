@@ -19,6 +19,9 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
+use ReflectionClass;
+use ReflectionMethod;
+use Reflector;
 
 /**
  * Import functions
@@ -29,7 +32,7 @@ use function strtoupper;
 /**
  * Route
  *
- * Use the factory to create this class.
+ * Use the {@see RouteFactory} factory to create this class.
  */
 class Route implements RouteInterface
 {
@@ -46,21 +49,9 @@ class Route implements RouteInterface
      *
      * @var string
      *
-     * @deprecated 2.9.0 Use the following construction: `$request->getAttribute('@route')->getName()`.
+     * @deprecated 2.9.0
      */
     public const ATTR_NAME_FOR_ROUTE_NAME = '@route-name';
-
-    /**
-     * Global patterns
-     *
-     * @var array<string, string>
-     *
-     * @since 2.9.0
-     */
-    public static $patterns = [
-        '@slug' => '[0-9a-z-]+',
-        '@uuid' => '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
-    ];
 
     /**
      * The route name
@@ -72,7 +63,7 @@ class Route implements RouteInterface
     /**
      * The route host
      *
-     * @var null|string
+     * @var string|null
      */
     private $host = null;
 
@@ -131,6 +122,13 @@ class Route implements RouteInterface
      * @var string[]
      */
     private $tags = [];
+
+    /**
+     * The route holder
+     *
+     * @var ReflectionClass|ReflectionMethod|null
+     */
+    private $holder = null;
 
     /**
      * Constructor of the class
@@ -241,6 +239,14 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
+    public function getHolder() : ?Reflector
+    {
+        return $this->holder;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function setName(string $name) : RouteInterface
     {
         $this->name = $name;
@@ -338,6 +344,16 @@ class Route implements RouteInterface
     public function setTags(string ...$tags) : RouteInterface
     {
         $this->tags = $tags;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setHolder(?Reflector $holder) : RouteInterface
+    {
+        $this->holder = $holder;
 
         return $this;
     }

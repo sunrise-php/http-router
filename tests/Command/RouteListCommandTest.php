@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Tests\Command;
+namespace Sunrise\Http\Router\Test\Command;
 
 /**
  * Import classes
@@ -8,9 +8,8 @@ namespace Sunrise\Http\Router\Tests\Command;
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Command\RouteListCommand;
 use Sunrise\Http\Router\Router;
-use Sunrise\Http\Router\Tests\Fixture;
-use Symfony\Component\Console\Input\ArgvInput;
-use Symfony\Component\Console\Output\BufferedOutput;
+use Sunrise\Http\Router\Test\Fixture;
+use Symfony\Component\Console\Tester\CommandTester;
 
 /**
  * RouteListCommandTest
@@ -21,22 +20,21 @@ class RouteListCommandTest extends TestCase
     /**
      * @return void
      */
-    public function testExecute() : void
+    public function testRun() : void
     {
         $routes = [
-            new Fixture\TestRoute(),
-            new Fixture\TestRoute(),
-            new Fixture\TestRoute(),
+            new Fixture\Route(),
+            new Fixture\Route(),
+            new Fixture\Route(),
         ];
 
         $router = new Router();
         $router->addRoute(...$routes);
 
         $command = new RouteListCommand($router);
+        $commandTester = new CommandTester($command);
 
-        $input = new ArgvInput();
-        $output = new BufferedOutput();
-        $exitCode = $command->execute($input, $output);
+        $exitCode = $commandTester->execute([]);
 
         $this->assertSame(0, $exitCode);
     }

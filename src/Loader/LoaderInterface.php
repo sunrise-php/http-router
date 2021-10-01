@@ -31,6 +31,7 @@ interface LoaderInterface
      * @return void
      *
      * @throws InvalidLoaderResourceException
+     *         If the given resource isn't valid.
      */
     public function attach($resource) : void;
 
@@ -42,6 +43,7 @@ interface LoaderInterface
      * @return void
      *
      * @throws InvalidLoaderResourceException
+     *         If one of the given resources isn't valid.
      */
     public function attachArray(array $resources) : void;
 

@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Tests\RequestHandler;
+namespace Sunrise\Http\Router\Test\RequestHandler;
 
 /**
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
-use Sunrise\Http\Router\Tests\Fixture;
-use Sunrise\Http\ServerRequest\ServerRequestFactory;
+use Sunrise\Http\Router\Test\Fixture;
 
 /**
  * CallableRequestHandlerTest
@@ -20,9 +20,9 @@ class CallableRequestHandlerTest extends TestCase
     /**
      * @return void
      */
-    public function testConstructor() : void
+    public function testContracts() : void
     {
-        $callback = new Fixture\BlankRequestHandler();
+        $callback = new Fixture\Controllers\BlankController();
         $requestHandler = new CallableRequestHandler($callback);
 
         $this->assertInstanceOf(RequestHandlerInterface::class, $requestHandler);
@@ -31,12 +31,14 @@ class CallableRequestHandlerTest extends TestCase
     /**
      * @return void
      */
-    public function testHandle() : void
+    public function testRun() : void
     {
-        $callback = new Fixture\BlankRequestHandler();
+        $callback = new Fixture\Controllers\BlankController();
         $requestHandler = new CallableRequestHandler($callback);
 
-        $request = (new ServerRequestFactory)->createServerRequest('GET', '/');
+        $this->assertSame($callback, $requestHandler->getCallback());
+
+        $request = $this->createMock(ServerRequestInterface::class);
         $requestHandler->handle($request);
 
         $this->assertTrue($callback->isRunned());

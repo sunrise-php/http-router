@@ -14,20 +14,8 @@ namespace Sunrise\Http\Router;
 /**
  * Import classes
  */
-use Closure;
 use Psr\Container\ContainerInterface;
-use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Exception\UnresolvableObjectException;
-use Sunrise\Http\Router\Middleware\CallableMiddleware;
-use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
-
-/**
- * Import functions
- */
-use function is_string;
-use function is_subclass_of;
-use function sprintf;
+use Sunrise\Http\Router\Exception\UnresolvableReferenceException;
 
 /**
  * RouteCollector
@@ -50,6 +38,13 @@ class RouteCollector
     private $routeFactory;
 
     /**
+     * Reference resolver of the collector
+     *
+     * @var ReferenceResolverInterface
+     */
+    private $referenceResolver;
+
+    /**
      * Route collection of the collector
      *
      * @var RouteCollectionInterface
@@ -57,24 +52,20 @@ class RouteCollector
     private $collection;
 
     /**
-     * The collector container
-     *
-     * @var null|ContainerInterface
-     */
-    private $container = null;
-
-    /**
      * Constructor of the class
      *
-     * @param null|RouteCollectionFactoryInterface $collectionFactory
-     * @param null|RouteFactoryInterface $routeFactory
+     * @param RouteCollectionFactoryInterface|null $collectionFactory
+     * @param RouteFactoryInterface|null $routeFactory
+     * @param ReferenceResolverInterface|null $referenceResolver
      */
     public function __construct(
         ?RouteCollectionFactoryInterface $collectionFactory = null,
-        ?RouteFactoryInterface $routeFactory = null
+        ?RouteFactoryInterface $routeFactory = null,
+        ?ReferenceResolverInterface $referenceResolver = null
     ) {
         $this->collectionFactory = $collectionFactory ?? new RouteCollectionFactory();
         $this->routeFactory = $routeFactory ?? new RouteFactory();
+        $this->referenceResolver = $referenceResolver ?? new ReferenceResolver();
 
         $this->collection = $this->collectionFactory->createCollection();
     }
@@ -92,19 +83,19 @@ class RouteCollector
     /**
      * Gets the collector container
      *
-     * @return null|ContainerInterface
+     * @return ContainerInterface|null
      *
      * @since 2.9.0
      */
     public function getContainer() : ?ContainerInterface
     {
-        return $this->container;
+        return $this->referenceResolver->getContainer();
     }
 
     /**
      * Sets the given container to the collector
      *
-     * @param null|ContainerInterface $container
+     * @param ContainerInterface|null $container
      *
      * @return void
      *
@@ -112,7 +103,7 @@ class RouteCollector
      */
     public function setContainer(?ContainerInterface $container) : void
     {
-        $this->container = $container;
+        $this->referenceResolver->setContainer($container);
     }
 
     /**
@@ -126,6 +117,9 @@ class RouteCollector
      * @param array $attributes
      *
      * @return RouteInterface
+     *
+     * @throws UnresolvableReferenceException
+     *         If the given request handler or one of the given middlewares cannot be resolved.
      */
     public function route(
         string $name,
@@ -135,12 +129,16 @@ class RouteCollector
         array $middlewares = [],
         array $attributes = []
     ) : RouteInterface {
+        foreach ($middlewares as &$middleware) {
+            $middleware = $this->referenceResolver->toMiddleware($middleware);
+        }
+
         $route = $this->routeFactory->createRoute(
             $name,
             $path,
             $methods,
-            $this->resolveRequestHandler($name, $requestHandler),
-            $this->resolveMiddlewares($name, $middlewares),
+            $this->referenceResolver->toRequestHandler($requestHandler),
+            $middlewares,
             $attributes
         );
 
@@ -159,6 +157,9 @@ class RouteCollector
      * @param array $attributes
      *
      * @return RouteInterface
+     *
+     * @throws UnresolvableReferenceException
+     *         If the given request handler or one of the given middlewares cannot be resolved.
      */
     public function head(
         string $name,
@@ -187,6 +188,9 @@ class RouteCollector
      * @param array $attributes
      *
      * @return RouteInterface
+     *
+     * @throws UnresolvableReferenceException
+     *         If the given request handler or one of the given middlewares cannot be resolved.
      */
     public function get(
         string $name,
@@ -215,6 +219,9 @@ class RouteCollector
      * @param array $attributes
      *
      * @return RouteInterface
+     *
+     * @throws UnresolvableReferenceException
+     *         If the given request handler or one of the given middlewares cannot be resolved.
      */
     public function post(
         string $name,
@@ -243,6 +250,9 @@ class RouteCollector
      * @param array $attributes
      *
      * @return RouteInterface
+     *
+     * @throws UnresolvableReferenceException
+     *         If the given request handler or one of the given middlewares cannot be resolved.
      */
     public function put(
         string $name,
@@ -271,6 +281,9 @@ class RouteCollector
      * @param array $attributes
      *
      * @return RouteInterface
+     *
+     * @throws UnresolvableReferenceException
+     *         If the given request handler or one of the given middlewares cannot be resolved.
      */
     public function patch(
         string $name,
@@ -299,6 +312,9 @@ class RouteCollector
      * @param array $attributes
      *
      * @return RouteInterface
+     *
+     * @throws UnresolvableReferenceException
+     *         If the given request handler or one of the given middlewares cannot be resolved.
      */
     public function delete(
         string $name,
@@ -327,6 +343,9 @@ class RouteCollector
      * @param array $attributes
      *
      * @return RouteInterface
+     *
+     * @throws UnresolvableReferenceException
+     *         If the given request handler or one of the given middlewares cannot be resolved.
      */
     public function purge(
         string $name,
@@ -349,119 +368,31 @@ class RouteCollector
      * Route grouping logic
      *
      * @param callable $callback
+     * @param array $middlewares
      *
      * @return RouteCollectionInterface
+     *
+     * @throws UnresolvableReferenceException
+     *         If one of the given middlewares cannot be resolved.
      */
-    public function group(callable $callback) : RouteCollectionInterface
+    public function group(callable $callback, array $middlewares = []) : RouteCollectionInterface
     {
+        foreach ($middlewares as &$middleware) {
+            $middleware = $this->referenceResolver->toMiddleware($middleware);
+        }
+
         $collector = new self(
             $this->collectionFactory,
-            $this->routeFactory
+            $this->routeFactory,
+            $this->referenceResolver
         );
 
-        $collector->setContainer($this->container);
-
         $callback($collector);
+
+        $collector->collection->prependMiddleware(...$middlewares);
 
         $this->collection->add(...$collector->collection->all());
 
         return $collector->collection;
-    }
-
-    /**
-     * Tries to resolve the given request handler
-     *
-     * @param string $routeName
-     * @param mixed $requestHandler
-     *
-     * @return RequestHandlerInterface
-     *
-     * @throws UnresolvableObjectException
-     *
-     * @since 2.9.0
-     *
-     * @todo Maybe move to a new abstract layer and think about deeper integration into the router...
-     */
-    private function resolveRequestHandler(string $routeName, $requestHandler) : RequestHandlerInterface
-    {
-        if ($requestHandler instanceof RequestHandlerInterface) {
-            return $requestHandler;
-        }
-
-        if ($requestHandler instanceof Closure) {
-            return new CallableRequestHandler($requestHandler);
-        }
-
-        if (!is_string($requestHandler) || !is_subclass_of($requestHandler, RequestHandlerInterface::class)) {
-            throw new UnresolvableObjectException(sprintf('Route %s refers to invalid request handler.', $routeName));
-        }
-
-        if ($this->container && $this->container->has($requestHandler)) {
-            return $this->container->get($requestHandler);
-        }
-
-        return new $requestHandler;
-    }
-
-    /**
-     * Tries to resolve the given middleware
-     *
-     * @param string $routeName
-     * @param mixed $middleware
-     *
-     * @return MiddlewareInterface
-     *
-     * @throws UnresolvableObjectException
-     *
-     * @since 2.9.0
-     *
-     * @todo Maybe move to a new abstract layer and think about deeper integration into the router...
-     */
-    private function resolveMiddleware(string $routeName, $middleware) : MiddlewareInterface
-    {
-        if ($middleware instanceof MiddlewareInterface) {
-            return $middleware;
-        }
-
-        if ($middleware instanceof Closure) {
-            return new CallableMiddleware($middleware);
-        }
-
-        if (!is_string($middleware) || !is_subclass_of($middleware, MiddlewareInterface::class)) {
-            throw new UnresolvableObjectException(sprintf('Route %s refers to invalid middleware.', $routeName));
-        }
-
-        if ($this->container && $this->container->has($middleware)) {
-            return $this->container->get($middleware);
-        }
-
-        return new $middleware;
-    }
-
-    /**
-     * Tries to resolve the given middlewares
-     *
-     * @param string $routeName
-     * @param array $middlewares
-     *
-     * @return MiddlewareInterface[]
-     *
-     * @throws UnresolvableObjectException
-     *
-     * @since 2.9.0
-     *
-     * @todo Maybe move to a new abstract layer and think about deeper integration into the router...
-     */
-    private function resolveMiddlewares(string $routeName, array $middlewares) : array
-    {
-        if (empty($middlewares)) {
-            return [];
-        }
-
-        foreach ($middlewares as &$middleware) {
-            $middleware = $this->resolveMiddleware($routeName, $middleware);
-        }
-
-        return $middlewares;
     }
 }

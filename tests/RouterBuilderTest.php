@@ -1,14 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Tests;
+namespace Sunrise\Http\Router\Test;
 
 /**
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
-use Psr\Container\ContainerInterface;
-use Psr\Http\Server\MiddlewareInterface;
-use Psr\SimpleCache\CacheInterface;
+use Sunrise\Http\Router\Exception\RouteNotFoundException;
 use Sunrise\Http\Router\Router;
 use Sunrise\Http\Router\RouterBuilder;
 
@@ -17,46 +15,53 @@ use Sunrise\Http\Router\RouterBuilder;
  */
 class RouterBuilderTest extends TestCase
 {
+    use Fixture\CacheAwareTrait;
+    use Fixture\ContainerAwareTrait;
 
     /**
      * @return void
+     *
+     * @runInSeparateProcess
      */
     public function testBuild() : void
     {
-        $container = $this->createMock(ContainerInterface::class);
-
-        $cache = $this->createMock(CacheInterface::class);
-        $cache->__storage = [];
-
-        $cache->method('set')->will($this->returnCallback(function ($key, $value) use ($cache) {
-            $cache->__storage[$key] = $value;
-        }));
-
-        $cache->method('get')->will($this->returnCallback(function ($key) use ($cache) {
-            return $cache->__storage[$key] ?? null;
-        }));
+        $container = $this->getContainer();
+        $cache = $this->getCache();
 
         $middlewares = [];
-        $middlewares[] = $this->createMock(MiddlewareInterface::class);
-        $middlewares[] = $this->createMock(MiddlewareInterface::class);
-        $middlewares[] = $this->createMock(MiddlewareInterface::class);
+        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
 
         $hosts = [];
         $hosts['foo'] = ['foo.net'];
         $hosts['bar'] = ['bar.net'];
         $hosts['baz'] = ['baz.net'];
 
-        $builder = (new RouterBuilder)
+        $router = (new RouterBuilder)
             ->setContainer($container)
             ->setCache($cache)
-            ->setMiddlewares($middlewares)
+            ->setCacheKey('foo')
+            ->useConfigLoader([
+                __DIR__ . '/fixtures/routes/foo.php',
+                __DIR__ . '/fixtures/routes/bar.php',
+            ])
+            ->useMetadataLoader([
+                Fixture\Controllers\Annotated\MinimallyAnnotatedController::class,
+                Fixture\Controllers\Annotated\MaximallyAnnotatedController::class,
+            ])
             ->setHosts($hosts)
-            ->useConfigLoader([__DIR__ . '/Fixture/routes'])
-            ->useMetadataLoader([__DIR__ . '/Fixture/Annotation/Route/Valid']);
+            ->setMiddlewares($middlewares)
+            ->build();
 
-        $router = $builder->build();
-
+        $this->assertInstanceOf(Router::class, $router);
         $this->assertSame($middlewares, $router->getMiddlewares());
         $this->assertSame($hosts, $router->getHosts());
+
+        $router->getRoutes('foo');
+        $router->getRoutes('bar');
+
+        $router->getRoutes('minimally-annotated-controller');
+        $router->getRoutes('maximally-annotated-controller');
     }
 }

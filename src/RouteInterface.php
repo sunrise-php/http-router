@@ -16,6 +16,9 @@ namespace Sunrise\Http\Router;
  */
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use ReflectionClass;
+use ReflectionMethod;
+use Reflector;
 
 /**
  * RouteInterface
@@ -33,7 +36,7 @@ interface RouteInterface extends RequestHandlerInterface
     /**
      * Gets the route host
      *
-     * @return null|string
+     * @return string|null
      *
      * @since 2.6.0
      */
@@ -102,6 +105,15 @@ interface RouteInterface extends RequestHandlerInterface
     public function getTags() : array;
 
     /**
+     * Gets the route holder
+     *
+     * @return ReflectionClass|ReflectionMethod|null
+     *
+     * @since 2.10.0
+     */
+    public function getHolder() : ?Reflector;
+
+    /**
      * Sets the given name to the route
      *
      * @param string $name
@@ -113,7 +125,7 @@ interface RouteInterface extends RequestHandlerInterface
     /**
      * Sets the given host to the route
      *
-     * @param null|string $host
+     * @param string|null $host
      *
      * @return RouteInterface
      *
@@ -198,6 +210,17 @@ interface RouteInterface extends RequestHandlerInterface
      * @since 2.4.0
      */
     public function setTags(string ...$tags) : RouteInterface;
+
+    /**
+     * Sets the given holder to the route
+     *
+     * @param ReflectionClass|ReflectionMethod|null $holder
+     *
+     * @return RouteInterface
+     *
+     * @since 2.10.0
+     */
+    public function setHolder(?Reflector $holder) : RouteInterface;
 
     /**
      * Adds the given prefix to the route path

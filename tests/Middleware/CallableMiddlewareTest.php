@@ -1,15 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Tests\Middleware;
+namespace Sunrise\Http\Router\Test\Middleware;
 
 /**
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Sunrise\Http\Router\Middleware\CallableMiddleware;
-use Sunrise\Http\Router\Tests\Fixture;
-use Sunrise\Http\ServerRequest\ServerRequestFactory;
+use Sunrise\Http\Router\Test\Fixture;
 
 /**
  * CallableMiddlewareTest
@@ -22,9 +22,8 @@ class CallableMiddlewareTest extends TestCase
      */
     public function testContracts() : void
     {
-        $middleware = new CallableMiddleware(function ($request, $handler) {
-            return $handler->handle($request);
-        });
+        $callback = new Fixture\Middlewares\BlankMiddleware();
+        $middleware = new CallableMiddleware($callback);
 
         $this->assertInstanceOf(MiddlewareInterface::class, $middleware);
     }
@@ -34,14 +33,15 @@ class CallableMiddlewareTest extends TestCase
      */
     public function testRun() : void
     {
-        $middleware = new CallableMiddleware(function ($request, $handler) {
-            return $handler->handle($request);
-        });
+        $callback = new Fixture\Middlewares\BlankMiddleware();
+        $middleware = new CallableMiddleware($callback);
 
-        $request = (new ServerRequestFactory)->createServerRequest('GET', '/');
-        $requestHandler = new Fixture\BlankRequestHandler();
+        $this->assertSame($callback, $middleware->getCallback());
+
+        $request = $this->createMock(ServerRequestInterface::class);
+        $requestHandler = new Fixture\Controllers\BlankController();
         $middleware->process($request, $requestHandler);
 
-        $this->assertTrue($requestHandler->isRunned());
+        $this->assertTrue($callback->isRunned());
     }
 }

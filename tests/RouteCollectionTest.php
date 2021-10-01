@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Tests;
+namespace Sunrise\Http\Router\Test;
 
 /**
  * Import classes
@@ -23,7 +23,7 @@ class RouteCollectionTest extends TestCase
     /**
      * @return void
      */
-    public function testConstructor() : void
+    public function testContracts() : void
     {
         $collection = new RouteCollection();
 
@@ -33,12 +33,22 @@ class RouteCollectionTest extends TestCase
     /**
      * @return void
      */
+    public function testConstructor() : void
+    {
+        $collection = new RouteCollection();
+
+        $this->assertSame([], $collection->all());
+    }
+
+    /**
+     * @return void
+     */
     public function testConstructorWithRoutes() : void
     {
         $routes = [
-            new Fixture\TestRoute(),
-            new Fixture\TestRoute(),
-            new Fixture\TestRoute(),
+            new Fixture\Route(),
+            new Fixture\Route(),
+            new Fixture\Route(),
         ];
 
         $collection = new RouteCollection(...$routes);
@@ -52,13 +62,12 @@ class RouteCollectionTest extends TestCase
     public function testAdd() : void
     {
         $routes = [
-            new Fixture\TestRoute(),
-            new Fixture\TestRoute(),
-            new Fixture\TestRoute(),
+            new Fixture\Route(),
+            new Fixture\Route(),
+            new Fixture\Route(),
         ];
 
         $collection = new RouteCollection();
-
         $collection->add(...$routes);
 
         $this->assertSame($routes, $collection->all());
@@ -66,19 +75,46 @@ class RouteCollectionTest extends TestCase
 
     /**
      * @return void
-     *
-     * @since 2.6.0
      */
-    public function testHost() : void
+    public function testGet() : void
+    {
+        $route = new Fixture\Route();
+        $collection = new RouteCollection();
+
+        $this->assertNull($collection->get($route->getName()));
+
+        $collection->add($route);
+
+        $this->assertSame($route, $collection->get($route->getName()));
+    }
+
+    /**
+     * @return void
+     */
+    public function testHas() : void
+    {
+        $route = new Fixture\Route();
+        $collection = new RouteCollection();
+
+        $this->assertFalse($collection->has($route->getName()));
+
+        $collection->add($route);
+
+        $this->assertTrue($collection->has($route->getName()));
+    }
+
+    /**
+     * @return void
+     */
+    public function testSetHost() : void
     {
         $routes = [
-            new Fixture\TestRoute(),
-            new Fixture\TestRoute(),
-            new Fixture\TestRoute(),
+            new Fixture\Route(),
+            new Fixture\Route(),
+            new Fixture\Route(),
         ];
 
-        $collection = new RouteCollection();
-        $collection->add(...$routes);
+        $collection = new RouteCollection(...$routes);
         $collection->setHost('google.com');
 
         $this->assertSame('google.com', $routes[0]->getHost());
@@ -92,17 +128,16 @@ class RouteCollectionTest extends TestCase
     public function testAddPrefix() : void
     {
         $routes = [
-            new Fixture\TestRoute(),
-            new Fixture\TestRoute(),
-            new Fixture\TestRoute(),
+            new Fixture\Route(),
+            new Fixture\Route(),
+            new Fixture\Route(),
         ];
 
         $routes[0]->setPath('/foo');
         $routes[1]->setPath('/bar');
         $routes[2]->setPath('/baz');
 
-        $collection = new RouteCollection();
-        $collection->add(...$routes);
+        $collection = new RouteCollection(...$routes);
         $collection->addPrefix('/api');
 
         $this->assertSame('/api/foo', $routes[0]->getPath());
@@ -116,17 +151,16 @@ class RouteCollectionTest extends TestCase
     public function testAddSuffix() : void
     {
         $routes = [
-            new Fixture\TestRoute(),
-            new Fixture\TestRoute(),
-            new Fixture\TestRoute(),
+            new Fixture\Route(),
+            new Fixture\Route(),
+            new Fixture\Route(),
         ];
 
         $routes[0]->setPath('/foo');
         $routes[1]->setPath('/bar');
         $routes[2]->setPath('/baz');
 
-        $collection = new RouteCollection();
-        $collection->add(...$routes);
+        $collection = new RouteCollection(...$routes);
         $collection->addSuffix('.json');
 
         $this->assertSame('/foo.json', $routes[0]->getPath());
@@ -140,17 +174,16 @@ class RouteCollectionTest extends TestCase
     public function testAddMethod() : void
     {
         $routes = [
-            new Fixture\TestRoute(),
-            new Fixture\TestRoute(),
-            new Fixture\TestRoute(),
+            new Fixture\Route(),
+            new Fixture\Route(),
+            new Fixture\Route(),
         ];
 
         $routes[0]->setMethods('FOO');
         $routes[1]->setMethods('BAR');
         $routes[2]->setMethods('BAZ');
 
-        $collection = new RouteCollection();
-        $collection->add(...$routes);
+        $collection = new RouteCollection(...$routes);
         $collection->addMethod('QUX', 'QUUX');
 
         $this->assertSame(['FOO', 'QUX', 'QUUX'], $routes[0]->getMethods());
@@ -164,34 +197,103 @@ class RouteCollectionTest extends TestCase
     public function testAddMiddleware() : void
     {
         $routes = [
-            new Fixture\TestRoute(),
-            new Fixture\TestRoute(),
-            new Fixture\TestRoute(),
+            new Fixture\Route(),
+            new Fixture\Route(),
+            new Fixture\Route(),
         ];
 
-        $newMiddlewares = [
-            new Fixture\NamedBlankMiddleware('foo'),
-            new Fixture\NamedBlankMiddleware('bar'),
-            new Fixture\NamedBlankMiddleware('baz'),
+        $middlewares = [
+            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixture\Middlewares\BlankMiddleware(),
         ];
 
-        $additionalMiddlewares = [
-            new Fixture\NamedBlankMiddleware('qux'),
-            new Fixture\NamedBlankMiddleware('quux'),
-            new Fixture\NamedBlankMiddleware('quuux'),
+        $additionals = [
+            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixture\Middlewares\BlankMiddleware(),
         ];
 
-        $routes[0]->setMiddlewares(...$newMiddlewares);
-        $routes[1]->setMiddlewares(...$newMiddlewares);
-        $routes[2]->setMiddlewares(...$newMiddlewares);
+        $routes[0]->setMiddlewares(...$middlewares);
+        $routes[1]->setMiddlewares(...$middlewares);
+        $routes[2]->setMiddlewares(...$middlewares);
 
-        $collection = new RouteCollection();
-        $collection->add(...$routes);
-        $collection->addMiddleware(...$additionalMiddlewares);
+        $collection = new RouteCollection(...$routes);
+        $collection->addMiddleware(...$additionals);
 
-        $this->assertSame(array_merge($newMiddlewares, $additionalMiddlewares), $routes[0]->getMiddlewares());
-        $this->assertSame(array_merge($newMiddlewares, $additionalMiddlewares), $routes[1]->getMiddlewares());
-        $this->assertSame(array_merge($newMiddlewares, $additionalMiddlewares), $routes[2]->getMiddlewares());
+        $this->assertSame(array_merge($middlewares, $additionals), $routes[0]->getMiddlewares());
+        $this->assertSame(array_merge($middlewares, $additionals), $routes[1]->getMiddlewares());
+        $this->assertSame(array_merge($middlewares, $additionals), $routes[2]->getMiddlewares());
+    }
+
+    /**
+     * @return void
+     */
+    public function testAppendMiddleware() : void
+    {
+        $routes = [
+            new Fixture\Route(),
+            new Fixture\Route(),
+            new Fixture\Route(),
+        ];
+
+        $middlewares = [
+            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixture\Middlewares\BlankMiddleware(),
+        ];
+
+        $additionals = [
+            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixture\Middlewares\BlankMiddleware(),
+        ];
+
+        $routes[0]->setMiddlewares(...$middlewares);
+        $routes[1]->setMiddlewares(...$middlewares);
+        $routes[2]->setMiddlewares(...$middlewares);
+
+        $collection = new RouteCollection(...$routes);
+        $collection->appendMiddleware(...$additionals);
+
+        $this->assertSame(array_merge($middlewares, $additionals), $routes[0]->getMiddlewares());
+        $this->assertSame(array_merge($middlewares, $additionals), $routes[1]->getMiddlewares());
+        $this->assertSame(array_merge($middlewares, $additionals), $routes[2]->getMiddlewares());
+    }
+
+    /**
+     * @return void
+     */
+    public function testPrependMiddleware() : void
+    {
+        $routes = [
+            new Fixture\Route(),
+            new Fixture\Route(),
+            new Fixture\Route(),
+        ];
+
+        $middlewares = [
+            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixture\Middlewares\BlankMiddleware(),
+        ];
+
+        $additionals = [
+            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixture\Middlewares\BlankMiddleware(),
+        ];
+
+        $routes[0]->setMiddlewares(...$middlewares);
+        $routes[1]->setMiddlewares(...$middlewares);
+        $routes[2]->setMiddlewares(...$middlewares);
+
+        $collection = new RouteCollection(...$routes);
+        $collection->prependMiddleware(...$additionals);
+
+        $this->assertSame(array_merge($additionals, $middlewares), $routes[0]->getMiddlewares());
+        $this->assertSame(array_merge($additionals, $middlewares), $routes[1]->getMiddlewares());
+        $this->assertSame(array_merge($additionals, $middlewares), $routes[2]->getMiddlewares());
     }
 
     /**
@@ -200,33 +302,32 @@ class RouteCollectionTest extends TestCase
     public function testUnshiftMiddleware() : void
     {
         $routes = [
-            new Fixture\TestRoute(),
-            new Fixture\TestRoute(),
-            new Fixture\TestRoute(),
+            new Fixture\Route(),
+            new Fixture\Route(),
+            new Fixture\Route(),
         ];
 
-        $newMiddlewares = [
-            new Fixture\NamedBlankMiddleware('foo'),
-            new Fixture\NamedBlankMiddleware('bar'),
-            new Fixture\NamedBlankMiddleware('baz'),
+        $middlewares = [
+            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixture\Middlewares\BlankMiddleware(),
         ];
 
-        $additionalMiddlewares = [
-            new Fixture\NamedBlankMiddleware('qux'),
-            new Fixture\NamedBlankMiddleware('quux'),
-            new Fixture\NamedBlankMiddleware('quuux'),
+        $additionals = [
+            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixture\Middlewares\BlankMiddleware(),
         ];
 
-        $routes[0]->setMiddlewares(...$newMiddlewares);
-        $routes[1]->setMiddlewares(...$newMiddlewares);
-        $routes[2]->setMiddlewares(...$newMiddlewares);
+        $routes[0]->setMiddlewares(...$middlewares);
+        $routes[1]->setMiddlewares(...$middlewares);
+        $routes[2]->setMiddlewares(...$middlewares);
 
-        $collection = new RouteCollection();
-        $collection->add(...$routes);
-        $collection->unshiftMiddleware(...$additionalMiddlewares);
+        $collection = new RouteCollection(...$routes);
+        $collection->unshiftMiddleware(...$additionals);
 
-        $this->assertSame(array_merge($additionalMiddlewares, $newMiddlewares), $routes[0]->getMiddlewares());
-        $this->assertSame(array_merge($additionalMiddlewares, $newMiddlewares), $routes[1]->getMiddlewares());
-        $this->assertSame(array_merge($additionalMiddlewares, $newMiddlewares), $routes[2]->getMiddlewares());
+        $this->assertSame(array_merge($additionals, $middlewares), $routes[0]->getMiddlewares());
+        $this->assertSame(array_merge($additionals, $middlewares), $routes[1]->getMiddlewares());
+        $this->assertSame(array_merge($additionals, $middlewares), $routes[2]->getMiddlewares());
     }
 }

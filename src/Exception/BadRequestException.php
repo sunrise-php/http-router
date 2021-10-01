@@ -34,7 +34,7 @@ class BadRequestException extends Exception
      *
      * @return mixed
      *
-     * @deprecated 2.9.0 Use the `getErrors` method.
+     * @deprecated 2.9.0 Use the getErrors method.
      */
     public function getViolations()
     {

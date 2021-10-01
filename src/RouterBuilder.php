@@ -27,37 +27,44 @@ final class RouterBuilder
 {
 
     /**
-     * @var null|ContainerInterface
+     * @var ContainerInterface|null
      */
     private $container = null;
 
     /**
-     * @var null|CacheInterface
+     * @var CacheInterface|null
      */
     private $cache = null;
 
     /**
-     * @var null|array<string, string[]>
+     * @var string|null
+     */
+    private $cacheKey = null;
+
+    /**
+     * @var array<string, string[]>|null
      */
     private $hosts = null;
 
     /**
-     * @var null|MiddlewareInterface[]
+     * @var MiddlewareInterface[]|null
      */
     private $middlewares = null;
 
     /**
-     * @var null|Loader\CollectableFileLoader
+     * @var Loader\ConfigLoader|null
      */
     private $configLoader = null;
 
     /**
-     * @var null|Loader\DescriptorDirectoryLoader
+     * @var Loader\DescriptorLoader|null
      */
-    private $metadataLoader = null;
+    private $descriptorLoader = null;
 
     /**
-     * @param null|ContainerInterface $container
+     * Sets the given container to the builder
+     *
+     * @param ContainerInterface|null $container
      *
      * @return self
      */
@@ -69,7 +76,9 @@ final class RouterBuilder
     }
 
     /**
-     * @param null|CacheInterface $cache
+     * Sets the given cache to the builder
+     *
+     * @param CacheInterface|null $cache
      *
      * @return self
      */
@@ -81,33 +90,71 @@ final class RouterBuilder
     }
 
     /**
+     * Sets the given cache key to the builder
+     *
+     * @param string|null $cacheKey
+     *
+     * @return self
+     *
+     * @since 2.10.0
+     */
+    public function setCacheKey(?string $cacheKey) : self
+    {
+        $this->cacheKey = $cacheKey;
+
+        return $this;
+    }
+
+    /**
+     * Uses the config loader when building
+     *
      * @param string[] $resources
      *
      * @return self
      */
     public function useConfigLoader(array $resources) : self
     {
-        $this->configLoader = new Loader\CollectableFileLoader();
+        $this->configLoader = new Loader\ConfigLoader();
         $this->configLoader->attachArray($resources);
 
         return $this;
     }
 
     /**
+     * Uses the descriptor loader when building
+     *
+     * @param string[] $resources
+     *
+     * @return self
+     */
+    public function useDescriptorLoader(array $resources) : self
+    {
+        $this->descriptorLoader = new Loader\DescriptorLoader();
+        $this->descriptorLoader->attachArray($resources);
+
+        return $this;
+    }
+
+    /**
+     * Uses the metadata loader when building
+     *
+     * Alias to the useDescriptorLoader method.
+     *
      * @param string[] $resources
      *
      * @return self
      */
     public function useMetadataLoader(array $resources) : self
     {
-        $this->metadataLoader = new Loader\DescriptorDirectoryLoader();
-        $this->metadataLoader->attachArray($resources);
+        $this->useDescriptorLoader($resources);
 
         return $this;
     }
 
     /**
-     * @param null|array<string, string[]> $hosts
+     * Sets the given hosts to the builder
+     *
+     * @param array<string, string[]>|null $hosts
      *
      * @return self
      */
@@ -119,7 +166,9 @@ final class RouterBuilder
     }
 
     /**
-     * @param null|MiddlewareInterface[] $middlewares
+     * Sets the given middlewares to the builder
+     *
+     * @param MiddlewareInterface[]|null $middlewares
      *
      * @return self
      */
@@ -131,6 +180,8 @@ final class RouterBuilder
     }
 
     /**
+     * Builds the router
+     *
      * @return Router
      */
     public function build() : Router
@@ -142,10 +193,11 @@ final class RouterBuilder
             $router->load($this->configLoader);
         }
 
-        if (isset($this->metadataLoader)) {
-            $this->metadataLoader->setContainer($this->container);
-            $this->metadataLoader->setCache($this->cache);
-            $router->load($this->metadataLoader);
+        if (isset($this->descriptorLoader)) {
+            $this->descriptorLoader->setContainer($this->container);
+            $this->descriptorLoader->setCache($this->cache);
+            $this->descriptorLoader->setCacheKey($this->cacheKey);
+            $router->load($this->descriptorLoader);
         }
 
         if (!empty($this->hosts)) {

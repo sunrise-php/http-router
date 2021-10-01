@@ -24,6 +24,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * Import functions
  */
 use function Sunrise\Http\Router\path_plain;
+use function join;
 
 /**
  * RouteListCommand
@@ -42,7 +43,7 @@ final class RouteListCommand extends Command
      * {@inheritdoc}
      *
      * @param Router $router
-     * @param null|string $name
+     * @param string|null $name
      */
     public function __construct(Router $router, ?string $name = null)
     {
@@ -57,21 +58,20 @@ final class RouteListCommand extends Command
     public function execute(InputInterface $input, OutputInterface $output) : int
     {
         $table = new Table($output);
-        $table->setStyle('box');
 
         $table->setHeaders([
             'Name',
             'Host',
-            'Verb',
             'Path',
+            'Verb',
         ]);
 
         foreach ($this->router->getRoutes() as $route) {
             $table->addRow([
                 $route->getName(),
                 $route->getHost() ?? 'ANY',
-                \implode(', ', $route->getMethods()),
                 path_plain($route->getPath()),
+                join(', ', $route->getMethods()),
             ]);
         }
 
