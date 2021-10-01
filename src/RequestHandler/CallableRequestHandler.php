@@ -42,6 +42,18 @@ class CallableRequestHandler implements RequestHandlerInterface
     }
 
     /**
+     * Gets the request handler callback
+     *
+     * @return callable
+     *
+     * @since 2.10.0
+     */
+    public function getCallback() : callable
+    {
+        return $this->callback;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function handle(ServerRequestInterface $request) : ResponseInterface
