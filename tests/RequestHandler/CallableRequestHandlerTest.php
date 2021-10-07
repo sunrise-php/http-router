@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Test\RequestHandler;
+namespace Sunrise\Http\Router\Tests\RequestHandler;
 
 /**
  * Import classes
@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
-use Sunrise\Http\Router\Test\Fixture;
+use Sunrise\Http\Router\Tests\Fixtures;
 
 /**
  * CallableRequestHandlerTest
@@ -22,7 +22,7 @@ class CallableRequestHandlerTest extends TestCase
      */
     public function testContracts() : void
     {
-        $callback = new Fixture\Controllers\BlankController();
+        $callback = new Fixtures\Controllers\BlankController();
         $requestHandler = new CallableRequestHandler($callback);
 
         $this->assertInstanceOf(RequestHandlerInterface::class, $requestHandler);
@@ -33,7 +33,7 @@ class CallableRequestHandlerTest extends TestCase
      */
     public function testRun() : void
     {
-        $callback = new Fixture\Controllers\BlankController();
+        $callback = new Fixtures\Controllers\BlankController();
         $requestHandler = new CallableRequestHandler($callback);
 
         $this->assertSame($callback, $requestHandler->getCallback());

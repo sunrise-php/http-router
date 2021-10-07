@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Test;
+namespace Sunrise\Http\Router\Tests;
 
 /**
  * Import classes
@@ -46,9 +46,9 @@ class RouteCollectionTest extends TestCase
     public function testConstructorWithRoutes() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $collection = new RouteCollection(...$routes);
@@ -62,9 +62,9 @@ class RouteCollectionTest extends TestCase
     public function testAdd() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $collection = new RouteCollection();
@@ -78,7 +78,7 @@ class RouteCollectionTest extends TestCase
      */
     public function testGet() : void
     {
-        $route = new Fixture\Route();
+        $route = new Fixtures\Route();
         $collection = new RouteCollection();
 
         $this->assertNull($collection->get($route->getName()));
@@ -93,7 +93,7 @@ class RouteCollectionTest extends TestCase
      */
     public function testHas() : void
     {
-        $route = new Fixture\Route();
+        $route = new Fixtures\Route();
         $collection = new RouteCollection();
 
         $this->assertFalse($collection->has($route->getName()));
@@ -109,9 +109,9 @@ class RouteCollectionTest extends TestCase
     public function testSetHost() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $collection = new RouteCollection(...$routes);
@@ -128,9 +128,9 @@ class RouteCollectionTest extends TestCase
     public function testAddPrefix() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $routes[0]->setPath('/foo');
@@ -151,9 +151,9 @@ class RouteCollectionTest extends TestCase
     public function testAddSuffix() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $routes[0]->setPath('/foo');
@@ -174,9 +174,9 @@ class RouteCollectionTest extends TestCase
     public function testAddMethod() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $routes[0]->setMethods('FOO');
@@ -197,21 +197,21 @@ class RouteCollectionTest extends TestCase
     public function testAddMiddleware() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $middlewares = [
-            new Fixture\Middlewares\BlankMiddleware(),
-            new Fixture\Middlewares\BlankMiddleware(),
-            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
         ];
 
         $additionals = [
-            new Fixture\Middlewares\BlankMiddleware(),
-            new Fixture\Middlewares\BlankMiddleware(),
-            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
         ];
 
         $routes[0]->setMiddlewares(...$middlewares);
@@ -232,21 +232,21 @@ class RouteCollectionTest extends TestCase
     public function testAppendMiddleware() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $middlewares = [
-            new Fixture\Middlewares\BlankMiddleware(),
-            new Fixture\Middlewares\BlankMiddleware(),
-            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
         ];
 
         $additionals = [
-            new Fixture\Middlewares\BlankMiddleware(),
-            new Fixture\Middlewares\BlankMiddleware(),
-            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
         ];
 
         $routes[0]->setMiddlewares(...$middlewares);
@@ -267,21 +267,21 @@ class RouteCollectionTest extends TestCase
     public function testPrependMiddleware() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $middlewares = [
-            new Fixture\Middlewares\BlankMiddleware(),
-            new Fixture\Middlewares\BlankMiddleware(),
-            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
         ];
 
         $additionals = [
-            new Fixture\Middlewares\BlankMiddleware(),
-            new Fixture\Middlewares\BlankMiddleware(),
-            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
         ];
 
         $routes[0]->setMiddlewares(...$middlewares);
@@ -302,21 +302,21 @@ class RouteCollectionTest extends TestCase
     public function testUnshiftMiddleware() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $middlewares = [
-            new Fixture\Middlewares\BlankMiddleware(),
-            new Fixture\Middlewares\BlankMiddleware(),
-            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
         ];
 
         $additionals = [
-            new Fixture\Middlewares\BlankMiddleware(),
-            new Fixture\Middlewares\BlankMiddleware(),
-            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
         ];
 
         $routes[0]->setMiddlewares(...$middlewares);

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Test;
+namespace Sunrise\Http\Router\Tests;
 
 /**
  * Import classes
@@ -29,11 +29,11 @@ class RouteTest extends TestCase
         $name = 'foo';
         $path = '/foo';
         $methods = ['GET', 'POST'];
-        $handler = new Fixture\Controllers\BlankController();
+        $handler = new Fixtures\Controllers\BlankController();
         $middlewares = [];
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
         $attributes = ['foo' => 'bar'];
 
         $route = new Route(
@@ -59,7 +59,7 @@ class RouteTest extends TestCase
      */
     public function testSetName() : void
     {
-        $route = new Fixture\Route();
+        $route = new Fixtures\Route();
         $name = 'foo';
         $this->assertNotSame($route->getName(), $name);
         $this->assertSame($route, $route->setName($name));
@@ -71,7 +71,7 @@ class RouteTest extends TestCase
      */
     public function testSetHost() : void
     {
-        $route = new Fixture\Route();
+        $route = new Fixtures\Route();
         $host = 'localhost';
         $this->assertNull($route->getHost());
         $this->assertSame($route, $route->setHost($host));
@@ -83,7 +83,7 @@ class RouteTest extends TestCase
      */
     public function testSetPath() : void
     {
-        $route = new Fixture\Route();
+        $route = new Fixtures\Route();
         $path = '/foo';
         $this->assertNotSame($route->getPath(), $path);
         $this->assertSame($route, $route->setPath($path));
@@ -95,7 +95,7 @@ class RouteTest extends TestCase
      */
     public function testSetMethods() : void
     {
-        $route = new Fixture\Route();
+        $route = new Fixtures\Route();
         $methods = ['GET', 'POST'];
         $this->assertNotSame($route->getMethods(), $methods);
         $this->assertSame($route, $route->setMethods(...$methods));
@@ -107,8 +107,8 @@ class RouteTest extends TestCase
      */
     public function testSetRequestHandler() : void
     {
-        $route = new Fixture\Route();
-        $handler = new Fixture\Controllers\BlankController();
+        $route = new Fixtures\Route();
+        $handler = new Fixtures\Controllers\BlankController();
         $this->assertNotSame($route->getRequestHandler(), $handler);
         $this->assertSame($route, $route->setRequestHandler($handler));
         $this->assertSame($handler, $route->getRequestHandler());
@@ -119,11 +119,11 @@ class RouteTest extends TestCase
      */
     public function testSetMiddlewares() : void
     {
-        $route = new Fixture\Route();
+        $route = new Fixtures\Route();
         $middlewares = [];
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
         $this->assertNotSame($route->getMiddlewares(), $middlewares);
         $this->assertSame($route, $route->setMiddlewares(...$middlewares));
         $this->assertSame($middlewares, $route->getMiddlewares());
@@ -134,7 +134,7 @@ class RouteTest extends TestCase
      */
     public function testSetAttributes() : void
     {
-        $route = new Fixture\Route();
+        $route = new Fixtures\Route();
         $attributes = ['foo' => 'bar'];
         $this->assertSame([], $route->getAttributes());
         $this->assertSame($route, $route->setAttributes($attributes));
@@ -146,7 +146,7 @@ class RouteTest extends TestCase
      */
     public function testSetSummary() : void
     {
-        $route = new Fixture\Route();
+        $route = new Fixtures\Route();
         $summary = 'foo bar';
         $this->assertSame('', $route->getSummary());
         $this->assertSame($route, $route->setSummary($summary));
@@ -158,7 +158,7 @@ class RouteTest extends TestCase
      */
     public function testSetDescription() : void
     {
-        $route = new Fixture\Route();
+        $route = new Fixtures\Route();
         $description = 'foo bar';
         $this->assertSame('', $route->getDescription());
         $this->assertSame($route, $route->setDescription($description));
@@ -170,7 +170,7 @@ class RouteTest extends TestCase
      */
     public function testSetTags() : void
     {
-        $route = new Fixture\Route();
+        $route = new Fixtures\Route();
         $tags = ['foo', 'bar'];
         $this->assertSame([], $route->getTags());
         $this->assertSame($route, $route->setTags(...$tags));
@@ -182,7 +182,7 @@ class RouteTest extends TestCase
      */
     public function testSetHolder() : void
     {
-        $route = new Fixture\Route();
+        $route = new Fixtures\Route();
         $holder = new \ReflectionClass(__CLASS__);
         $this->assertNull($route->getHolder());
         $this->assertSame($route, $route->setHolder($holder));
@@ -194,7 +194,7 @@ class RouteTest extends TestCase
      */
     public function testAddPrefix() : void
     {
-        $route = new Fixture\Route();
+        $route = new Fixtures\Route();
         $route->setPath('/bar');
         $prefix = '/foo';
         $expected = $prefix . $route->getPath();
@@ -207,7 +207,7 @@ class RouteTest extends TestCase
      */
     public function testAddSuffix() : void
     {
-        $route = new Fixture\Route();
+        $route = new Fixtures\Route();
         $route->setPath('/foo');
         $suffix = '.bar';
         $expected = $route->getPath() . $suffix;
@@ -220,7 +220,7 @@ class RouteTest extends TestCase
      */
     public function testAddMethod() : void
     {
-        $route = new Fixture\Route();
+        $route = new Fixtures\Route();
         $route->setMethods('FOO');
         $methods = ['BAR', 'BAZ'];
         $expected = array_merge($route->getMethods(), $methods);
@@ -233,11 +233,11 @@ class RouteTest extends TestCase
      */
     public function testAddMiddleware() : void
     {
-        $route = new Fixture\Route();
-        $route->setMiddlewares(new Fixture\Middlewares\BlankMiddleware());
+        $route = new Fixtures\Route();
+        $route->setMiddlewares(new Fixtures\Middlewares\BlankMiddleware());
         $middlewares = [];
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
         $expected = array_merge($route->getMiddlewares(), $middlewares);
         $this->assertSame($route, $route->addMiddleware(...$middlewares));
         $this->assertSame($expected, $route->getMiddlewares());
@@ -248,7 +248,7 @@ class RouteTest extends TestCase
      */
     public function testWithAddedAttributes() : void
     {
-        $route = new Fixture\Route();
+        $route = new Fixtures\Route();
         $route->setAttributes(['foo' => 'bar']);
         $attributes = ['bar' => 'baz'];
         $expected = $route->getAttributes() + $attributes;
@@ -264,7 +264,7 @@ class RouteTest extends TestCase
      */
     public function testAddSlashEndingPrefix() : void
     {
-        $route = new Fixture\Route();
+        $route = new Fixtures\Route();
         $route->setPath('/bar');
         $route->addPrefix('/foo/');
         $this->assertSame('/foo/bar', $route->getPath());
@@ -275,7 +275,7 @@ class RouteTest extends TestCase
      */
     public function testSetLowercasedMethods() : void
     {
-        $route = new Fixture\Route();
+        $route = new Fixtures\Route();
         $route->setMethods('foo', 'bar');
         $this->assertSame(['FOO', 'BAR'], $route->getMethods());
     }
@@ -285,7 +285,7 @@ class RouteTest extends TestCase
      */
     public function testAddLowercasedMethod() : void
     {
-        $route = new Fixture\Route();
+        $route = new Fixtures\Route();
         $route->setMethods(...[]); // clear previous methods...
         $route->addMethod('foo', 'bar');
         $this->assertSame(['FOO', 'BAR'], $route->getMethods());
@@ -296,7 +296,7 @@ class RouteTest extends TestCase
      */
     public function testRun() : void
     {
-        $route = new Fixture\Route();
+        $route = new Fixtures\Route();
         $route->handle((new ServerRequestFactory)->createServerRequest('GET', '/'));
 
         $this->assertTrue($route->getRequestHandler()->isRunned());
@@ -312,7 +312,7 @@ class RouteTest extends TestCase
      */
     public function testRunWithAttributes() : void
     {
-        $route = new Fixture\Route();
+        $route = new Fixtures\Route();
         $route->setAttributes(['foo' => 'bar']);
         $route->handle((new ServerRequestFactory)->createServerRequest('GET', '/'));
 
@@ -329,10 +329,10 @@ class RouteTest extends TestCase
      */
     public function testRunWithMiddlewares() : void
     {
-        $route = new Fixture\Route();
-        $route->addMiddleware(new Fixture\Middlewares\BlankMiddleware());
-        $route->addMiddleware(new Fixture\Middlewares\BlankMiddleware());
-        $route->addMiddleware(new Fixture\Middlewares\BlankMiddleware());
+        $route = new Fixtures\Route();
+        $route->addMiddleware(new Fixtures\Middlewares\BlankMiddleware());
+        $route->addMiddleware(new Fixtures\Middlewares\BlankMiddleware());
+        $route->addMiddleware(new Fixtures\Middlewares\BlankMiddleware());
         $route->handle((new ServerRequestFactory)->createServerRequest('GET', '/'));
 
         $this->assertTrue($route->getMiddlewares()[0]->isRunned());
@@ -356,10 +356,10 @@ class RouteTest extends TestCase
      */
     public function testRunWithBrokenMiddleware() : void
     {
-        $route = new Fixture\Route();
-        $route->addMiddleware(new Fixture\Middlewares\BlankMiddleware());
-        $route->addMiddleware(new Fixture\Middlewares\BlankMiddleware(true));
-        $route->addMiddleware(new Fixture\Middlewares\BlankMiddleware());
+        $route = new Fixtures\Route();
+        $route->addMiddleware(new Fixtures\Middlewares\BlankMiddleware());
+        $route->addMiddleware(new Fixtures\Middlewares\BlankMiddleware(true));
+        $route->addMiddleware(new Fixtures\Middlewares\BlankMiddleware());
         $route->handle((new ServerRequestFactory)->createServerRequest('GET', '/'));
 
         $this->assertTrue($route->getMiddlewares()[0]->isRunned());

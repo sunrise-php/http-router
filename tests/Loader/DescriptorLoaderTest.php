@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Test\Loader;
+namespace Sunrise\Http\Router\Tests\Loader;
 
 /**
  * Import classes
@@ -12,7 +12,7 @@ use Sunrise\Http\Router\Exception\InvalidDescriptorException;
 use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
 use Sunrise\Http\Router\Loader\DescriptorLoader;
 use Sunrise\Http\Router\Loader\LoaderInterface;
-use Sunrise\Http\Router\Test\Fixture;
+use Sunrise\Http\Router\Tests\Fixtures;
 use ReflectionClass;
 
 /**
@@ -31,8 +31,8 @@ use const PHP_MAJOR_VERSION;
  */
 class DescriptorLoaderTest extends TestCase
 {
-    use Fixture\CacheAwareTrait;
-    use Fixture\ContainerAwareTrait;
+    use Fixtures\CacheAwareTrait;
+    use Fixtures\ContainerAwareTrait;
 
     /**
      * {@inheritdoc}
@@ -79,7 +79,7 @@ class DescriptorLoaderTest extends TestCase
         $cache = $this->getCache();
 
         $loader = new DescriptorLoader();
-        $loader->attach(Fixture\Controllers\Annotated\CacheableAnnotatedController::class);
+        $loader->attach(Fixtures\Controllers\Annotated\CacheableAnnotatedController::class);
 
         $this->assertNull($loader->getCache());
         $this->assertNull($loader->getCacheKey());
@@ -91,7 +91,7 @@ class DescriptorLoaderTest extends TestCase
         $this->assertSame('foo', $loader->getCacheKey());
 
         $descriptor = new Route('controller-from-cached-descriptor', null, '/');
-        $descriptor->holder = new ReflectionClass(Fixture\Controllers\BlankController::class);
+        $descriptor->holder = new ReflectionClass(Fixtures\Controllers\BlankController::class);
 
         $cache->storage[$loader->getCacheKey()][0] = $descriptor;
 
@@ -136,7 +136,7 @@ class DescriptorLoaderTest extends TestCase
      */
     public function testLoadMinimallyAnnotatedClass() : void
     {
-        $class = Fixture\Controllers\Annotated\MinimallyAnnotatedController::class;
+        $class = Fixtures\Controllers\Annotated\MinimallyAnnotatedController::class;
 
         $loader = new DescriptorLoader();
         $loader->attach($class);
@@ -162,7 +162,7 @@ class DescriptorLoaderTest extends TestCase
             return;
         }
 
-        $class = Fixture\Controllers\Attributed\MinimallyAttributedController::class;
+        $class = Fixtures\Controllers\Attributed\MinimallyAttributedController::class;
 
         $loader = new DescriptorLoader();
         $loader->attach($class);
@@ -184,7 +184,7 @@ class DescriptorLoaderTest extends TestCase
     public function testLoadMaximallyAnnotatedClass() : void
     {
         $loader = new DescriptorLoader();
-        $loader->attach(Fixture\Controllers\Annotated\MaximallyAnnotatedController::class);
+        $loader->attach(Fixtures\Controllers\Annotated\MaximallyAnnotatedController::class);
 
         $routes = $loader->load();
         $this->assertTrue($routes->has('maximally-annotated-controller'));
@@ -195,7 +195,7 @@ class DescriptorLoaderTest extends TestCase
         $this->assertSame('/', $route->getPath());
         $this->assertSame(['HEAD', 'GET'], $route->getMethods());
         $this->assertCount(1, $route->getMiddlewares());
-        $this->assertInstanceOf(Fixture\Middlewares\BlankMiddleware::class, $route->getMiddlewares()[0]);
+        $this->assertInstanceOf(Fixtures\Middlewares\BlankMiddleware::class, $route->getMiddlewares()[0]);
         $this->assertSame(['foo' => 'bar'], $route->getAttributes());
         $this->assertSame('Lorem ipsum', $route->getSummary());
         $this->assertSame('Lorem ipsum dolor sit amet', $route->getDescription());
@@ -213,7 +213,7 @@ class DescriptorLoaderTest extends TestCase
         }
 
         $loader = new DescriptorLoader();
-        $loader->attach(Fixture\Controllers\Attributed\MaximallyAttributedController::class);
+        $loader->attach(Fixtures\Controllers\Attributed\MaximallyAttributedController::class);
 
         $routes = $loader->load();
         $this->assertTrue($routes->has('maximally-attributed-controller'));
@@ -224,7 +224,7 @@ class DescriptorLoaderTest extends TestCase
         $this->assertSame('/', $route->getPath());
         $this->assertSame(['HEAD', 'GET'], $route->getMethods());
         $this->assertCount(1, $route->getMiddlewares());
-        $this->assertInstanceOf(Fixture\Middlewares\BlankMiddleware::class, $route->getMiddlewares()[0]);
+        $this->assertInstanceOf(Fixtures\Middlewares\BlankMiddleware::class, $route->getMiddlewares()[0]);
         $this->assertSame(['foo' => 'bar'], $route->getAttributes());
         $this->assertSame('Lorem ipsum', $route->getSummary());
         $this->assertSame('Lorem ipsum dolor sit amet', $route->getDescription());
@@ -237,7 +237,7 @@ class DescriptorLoaderTest extends TestCase
     public function testLoadGroupedAnnotatedClass() : void
     {
         $loader = new DescriptorLoader();
-        $loader->attach(Fixture\Controllers\Annotated\GroupedAnnotatedController::class);
+        $loader->attach(Fixtures\Controllers\Annotated\GroupedAnnotatedController::class);
 
         $routes = $loader->load();
         $this->assertTrue($routes->has('first-from-grouped-annotated-controller'));
@@ -265,8 +265,8 @@ class DescriptorLoaderTest extends TestCase
     {
         $loader = new DescriptorLoader();
         $loader->attachArray([
-            Fixture\Controllers\Annotated\MinimallyAnnotatedController::class,
-            Fixture\Controllers\Annotated\MaximallyAnnotatedController::class,
+            Fixtures\Controllers\Annotated\MinimallyAnnotatedController::class,
+            Fixtures\Controllers\Annotated\MaximallyAnnotatedController::class,
         ]);
 
         $routes = $loader->load();
@@ -293,9 +293,9 @@ class DescriptorLoaderTest extends TestCase
     public function testLoadSortableAnnotatedClasses() : void
     {
         $loader = new DescriptorLoader();
-        $loader->attach(Fixture\Controllers\Annotated\Sortable\FirstSortableAnnotatedController::class);
-        $loader->attach(Fixture\Controllers\Annotated\Sortable\SecondSortableAnnotatedController::class);
-        $loader->attach(Fixture\Controllers\Annotated\Sortable\ThirdSortableAnnotatedController::class);
+        $loader->attach(Fixtures\Controllers\Annotated\Sortable\FirstSortableAnnotatedController::class);
+        $loader->attach(Fixtures\Controllers\Annotated\Sortable\SecondSortableAnnotatedController::class);
+        $loader->attach(Fixtures\Controllers\Annotated\Sortable\ThirdSortableAnnotatedController::class);
 
         $routes = $loader->load();
         $this->assertTrue($routes->has('first-sortable-annotated-controller'));
@@ -317,7 +317,7 @@ class DescriptorLoaderTest extends TestCase
     public function testLoadUnattributedAnnotatedClass() : void
     {
         $loader = new DescriptorLoader();
-        $loader->attach(Fixture\Controllers\Annotated\UnattributedAnnotatedController::class);
+        $loader->attach(Fixtures\Controllers\Annotated\UnattributedAnnotatedController::class);
 
         $this->expectException(InvalidDescriptorException::class);
 

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Test\Exception;
+namespace Sunrise\Http\Router\Tests\Exception;
 
 /**
  * Import classes

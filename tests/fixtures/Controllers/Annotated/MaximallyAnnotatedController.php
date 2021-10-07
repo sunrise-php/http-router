@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Test\Fixture\Controllers\Annotated;
+namespace Sunrise\Http\Router\Tests\Fixtures\Controllers\Annotated;
 
-use Sunrise\Http\Router\Test\Fixture\Controllers\AbstractController;
+use Sunrise\Http\Router\Tests\Fixtures\Controllers\AbstractController;
 
 /**
  * @Route(
@@ -12,7 +12,7 @@ use Sunrise\Http\Router\Test\Fixture\Controllers\AbstractController;
  *   method="GET",
  *   methods={"HEAD"},
  *   middlewares={
- *     Sunrise\Http\Router\Test\Fixture\Middlewares\BlankMiddleware::class,
+ *     Sunrise\Http\Router\Tests\Fixtures\Middlewares\BlankMiddleware::class,
  *   },
  *   attributes={
  *     "foo": "bar",

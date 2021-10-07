@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Test;
+namespace Sunrise\Http\Router\Tests;
 
 /**
  * Import classes
@@ -79,9 +79,9 @@ class RouterTest extends TestCase
     public function testAddRoute() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $router = new Router();
@@ -95,7 +95,7 @@ class RouterTest extends TestCase
      */
     public function testAddExistingRoute() : void
     {
-        $route = new Fixture\Route();
+        $route = new Fixtures\Route();
 
         $router = new Router();
         $router->addRoute($route);
@@ -115,9 +115,9 @@ class RouterTest extends TestCase
     public function testAddMiddleware() : void
     {
         $middlewares = [
-            new Fixture\Middlewares\BlankMiddleware(),
-            new Fixture\Middlewares\BlankMiddleware(),
-            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
         ];
 
         $router = new Router();
@@ -131,7 +131,7 @@ class RouterTest extends TestCase
      */
     public function testAddExistingMiddleware() : void
     {
-        $middleware = new Fixture\Middlewares\BlankMiddleware();
+        $middleware = new Fixtures\Middlewares\BlankMiddleware();
 
         $router = new Router();
         $router->addMiddleware($middleware);
@@ -151,9 +151,9 @@ class RouterTest extends TestCase
     public function testGetAllowedMethods() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $expected = array_unique(array_merge(
@@ -177,9 +177,9 @@ class RouterTest extends TestCase
     public function testGetRoute() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $router = new Router();
@@ -194,9 +194,9 @@ class RouterTest extends TestCase
     public function testGetUndefinedRoute() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $router = new Router();
@@ -219,7 +219,7 @@ class RouterTest extends TestCase
      */
     public function testGenerateUri() : void
     {
-        $route = new Fixture\Route();
+        $route = new Fixtures\Route();
 
         $router = new Router();
         $router->addRoute($route);
@@ -233,11 +233,11 @@ class RouterTest extends TestCase
     public function testMatch() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $router = new Router();
@@ -258,11 +258,11 @@ class RouterTest extends TestCase
     public function testMatchWithUnallowedMethod() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $routes[1]->setPath('/foo');
@@ -302,9 +302,9 @@ class RouterTest extends TestCase
     public function testMatchWithUndefinedRoute() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $router = new Router();
@@ -328,9 +328,9 @@ class RouterTest extends TestCase
     public function testRun() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $router = new Router();
@@ -351,9 +351,9 @@ class RouterTest extends TestCase
     public function testRunWithUnallowedMethod() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $router = new Router();
@@ -379,9 +379,9 @@ class RouterTest extends TestCase
     public function testRunWithUndefinedRoute() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $router = new Router();
@@ -407,11 +407,11 @@ class RouterTest extends TestCase
     public function testHandle() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $router = new Router();
@@ -431,12 +431,12 @@ class RouterTest extends TestCase
      */
     public function testHandleWithMiddlewares() : void
     {
-        $route = new Fixture\Route();
+        $route = new Fixtures\Route();
 
         $middlewares = [
-            new Fixture\Middlewares\BlankMiddleware(),
-            new Fixture\Middlewares\BlankMiddleware(),
-            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
         ];
 
         $router = new Router();
@@ -460,12 +460,12 @@ class RouterTest extends TestCase
      */
     public function testHandleWithBrokenMiddleware() : void
     {
-        $route = new Fixture\Route();
+        $route = new Fixtures\Route();
 
         $middlewares = [
-            new Fixture\Middlewares\BlankMiddleware(),
-            new Fixture\Middlewares\BlankMiddleware(true),
-            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(true),
+            new Fixtures\Middlewares\BlankMiddleware(),
         ];
 
         $router = new Router();
@@ -490,9 +490,9 @@ class RouterTest extends TestCase
     public function testHandleWithUnallowedMethod() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $router = new Router();
@@ -522,9 +522,9 @@ class RouterTest extends TestCase
     public function testHandleWithUndefinedRoute() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $router = new Router();
@@ -548,17 +548,17 @@ class RouterTest extends TestCase
     public function testProcess() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $router = new Router();
         $router->addRoute(...$routes);
 
-        $fallback = new Fixture\Controllers\BlankController();
+        $fallback = new Fixtures\Controllers\BlankController();
 
         $router->process((new ServerRequestFactory)
             ->createServerRequest(
@@ -576,9 +576,9 @@ class RouterTest extends TestCase
     public function testProcessWithUnallowedMethod() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $router = new Router();
@@ -587,7 +587,7 @@ class RouterTest extends TestCase
         $request = (new ServerRequestFactory)
             ->createServerRequest('GET', $routes[0]->getPath());
 
-        $fallback = new Fixture\Controllers\BlankController();
+        $fallback = new Fixtures\Controllers\BlankController();
 
         $router->process($request, $fallback);
 
@@ -605,9 +605,9 @@ class RouterTest extends TestCase
     public function testProcessWithUndefinedRoute() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $router = new Router();
@@ -616,7 +616,7 @@ class RouterTest extends TestCase
         $request = (new ServerRequestFactory)
             ->createServerRequest($routes[0]->getMethods()[0], '/');
 
-        $fallback = new Fixture\Controllers\BlankController();
+        $fallback = new Fixtures\Controllers\BlankController();
 
         $router->process($request, $fallback);
 
@@ -636,9 +636,9 @@ class RouterTest extends TestCase
         $router = new Router();
 
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $loader = $this->createMock(LoaderInterface::class);
@@ -658,9 +658,9 @@ class RouterTest extends TestCase
         $router = new Router();
 
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $loaders = [];
@@ -687,7 +687,7 @@ class RouterTest extends TestCase
      */
     public function testMatchWithHosts() : void
     {
-        $requestHandler = new Fixture\Controllers\BlankController();
+        $requestHandler = new Fixtures\Controllers\BlankController();
 
         $routes = [
             new Route('foo', '/ping', ['GET'], $requestHandler),

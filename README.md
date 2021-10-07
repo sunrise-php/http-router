@@ -1,4 +1,4 @@
-# HTTP router for PHP 7.1+ (incl. PHP 8 with attributes) based on PSR-7 and PSR-15 with support for annotations and OpenApi (Swagger)
+# HTTP router for PHP 7.1+ (incl. PHP 8 with attributes) based on PSR-7 and PSR-15 with support for annotations and OpenAPI (Swagger) Specification
 
 [![Build Status](https://circleci.com/gh/sunrise-php/http-router.svg?style=shield)](https://circleci.com/gh/sunrise-php/http-router)
 [![Code Coverage](https://scrutinizer-ci.com/g/sunrise-php/http-router/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/sunrise-php/http-router/?branch=master)
@@ -15,9 +15,17 @@
 composer require 'sunrise/http-router:^2.10'
 ```
 
+## Support for OpenAPI (Swagger) Specification (optional)
+
+```bash
+composer require 'sunrise/http-router-openapi:^2.0'
+```
+
+More details can be found here: [sunrise/http-router-openapi](https://github.com/sunrise-php/http-router-openapi).
+
 ## QuickStart
 
-The example uses other sunrise packages, but you can use, for example, `zend/diactoros` or any other.
+This example uses other sunrise packages, but you can use e.g. `zend/diactoros` or any other.
 
 ```bash
 composer require sunrise/http-message sunrise/http-server-request
@@ -25,7 +33,6 @@ composer require sunrise/http-message sunrise/http-server-request
 
 ```php
 use Sunrise\Http\Message\ResponseFactory;
-use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Sunrise\Http\Router\RouteCollector;
 use Sunrise\Http\Router\Router;
 use Sunrise\Http\ServerRequest\ServerRequestFactory;
@@ -34,14 +41,24 @@ use function Sunrise\Http\Router\emit;
 
 $collector = new RouteCollector();
 
-// set container if necessary...
-$collector->setContainer($container);
+// PSR-15 request handler (optimal performance):
+$collector->get('home', '/', new HomeRequestHandler());
 
-$collector->get('home', '/', new CallableRequestHandler(function ($request) {
-    return (new ResponseFactory)->createJsonResponse(200, [
-        'status' => 'ok',
-    ]);
-}));
+// or you can use an anonymous function as your request handler:
+$collector->get('home', '/', function ($request) {
+    return (new ResponseFactory)->createResponse(200);
+});
+
+// or you can use the name of a class that implements PSR-15:
+$collector->get('home', '/', HomeRequestHandler::class);
+
+// or you can use a class method name as your request handler:
+// (note that such a class mayn't implement PSR-15)
+$collector->get('home', '/', [HomeRequestHandler::class, 'index']);
+
+// most likely you will need to use PSR-11 container:
+// (note that only named classes will be pulled from such a container)
+$collector->setContainer($container);
 
 $router = new Router();
 $router->addRoute(...$collector->getCollection()->all());
@@ -411,48 +428,6 @@ final class EntryUpdateRequestHandler implements RequestHandlerInterface
 ---
 
 ## Useful to know
-
-### OpenApi (Swagger)
-
-```bash
-composer require 'sunrise/http-router-openapi:^1.1'
-```
-
-#### Generation documentation for Swagger (OAS)
-
-```php
-use Sunrise\Http\Router\OpenApi\Object\Info;
-use Sunrise\Http\Router\OpenApi\OpenApi;
-
-$openApi = new OpenApi(new Info('0.0.1', 'API'));
-
-$openApi->addRoute(...$router->getRoutes());
-
-$openApi->toArray();
-```
-
-#### Validation a request body via Swagger documentation
-
-```php
-use Sunrise\Http\Router\OpenApi\Middleware\RequestBodyValidationMiddleware;
-
-$route->addMiddleware(new RequestBodyValidationMiddleware());
-```
-
-or using annotations:
-
-```php
-/**
- * @Route(
- *   name="foo",
- *   path="/foo",
- *   methods={"post"},
- *   middlewares={
- *     "Sunrise\Http\Router\OpenApi\Middleware\RequestBodyValidationMiddleware",
- *   },
- * )
- */
-```
 
 ### Generation a route URI
 

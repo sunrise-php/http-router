@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Test;
+namespace Sunrise\Http\Router\Tests;
 
 /**
  * Import classes
@@ -16,7 +16,7 @@ use Sunrise\Http\Router\Router;
  */
 class RouteCollectorTest extends TestCase
 {
-    use Fixture\ContainerAwareTrait;
+    use Fixtures\ContainerAwareTrait;
 
     /**
      * @return void
@@ -43,10 +43,10 @@ class RouteCollectorTest extends TestCase
         $name = 'foo';
         $path = '/foo';
         $methods = ['GET', 'POST'];
-        $handler = new Fixture\Controllers\BlankController();
+        $handler = new Fixtures\Controllers\BlankController();
         $middlewares = [];
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
         $attributes = [];
         $attributes['foo'] = 'bar';
 
@@ -79,10 +79,10 @@ class RouteCollectorTest extends TestCase
     {
         $name = 'foo';
         $path = '/foo';
-        $handler = new Fixture\Controllers\BlankController();
+        $handler = new Fixtures\Controllers\BlankController();
         $middlewares = [];
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
         $attributes = [];
         $attributes['foo'] = 'bar';
 
@@ -114,10 +114,10 @@ class RouteCollectorTest extends TestCase
     {
         $name = 'foo';
         $path = '/foo';
-        $handler = new Fixture\Controllers\BlankController();
+        $handler = new Fixtures\Controllers\BlankController();
         $middlewares = [];
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
         $attributes = [];
         $attributes['foo'] = 'bar';
 
@@ -149,10 +149,10 @@ class RouteCollectorTest extends TestCase
     {
         $name = 'foo';
         $path = '/foo';
-        $handler = new Fixture\Controllers\BlankController();
+        $handler = new Fixtures\Controllers\BlankController();
         $middlewares = [];
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
         $attributes = [];
         $attributes['foo'] = 'bar';
 
@@ -184,10 +184,10 @@ class RouteCollectorTest extends TestCase
     {
         $name = 'foo';
         $path = '/foo';
-        $handler = new Fixture\Controllers\BlankController();
+        $handler = new Fixtures\Controllers\BlankController();
         $middlewares = [];
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
         $attributes = [];
         $attributes['foo'] = 'bar';
 
@@ -219,10 +219,10 @@ class RouteCollectorTest extends TestCase
     {
         $name = 'foo';
         $path = '/foo';
-        $handler = new Fixture\Controllers\BlankController();
+        $handler = new Fixtures\Controllers\BlankController();
         $middlewares = [];
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
         $attributes = [];
         $attributes['foo'] = 'bar';
 
@@ -254,10 +254,10 @@ class RouteCollectorTest extends TestCase
     {
         $name = 'foo';
         $path = '/foo';
-        $handler = new Fixture\Controllers\BlankController();
+        $handler = new Fixtures\Controllers\BlankController();
         $middlewares = [];
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
         $attributes = [];
         $attributes['foo'] = 'bar';
 
@@ -289,10 +289,10 @@ class RouteCollectorTest extends TestCase
     {
         $name = 'foo';
         $path = '/foo';
-        $handler = new Fixture\Controllers\BlankController();
+        $handler = new Fixtures\Controllers\BlankController();
         $middlewares = [];
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
         $attributes = [];
         $attributes['foo'] = 'bar';
 
@@ -325,19 +325,19 @@ class RouteCollectorTest extends TestCase
         $collector = new RouteCollector();
 
         $middlewares = [];
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
 
         $groupCollection = $collector->group(function ($group) use ($middlewares) {
             $this->assertInstanceOf(RouteCollector::class, $group);
 
-            $group->get('foo', '/foo', new Fixture\Controllers\BlankController());
+            $group->get('foo', '/foo', new Fixtures\Controllers\BlankController());
 
             $group->group(function ($subgroup) {
-                $subgroup->get('bar', '/bar', new Fixture\Controllers\BlankController());
+                $subgroup->get('bar', '/bar', new Fixtures\Controllers\BlankController());
 
                 $subgroup->group(function ($deepgroup) {
-                    $deepgroup->get('baz', '/baz', new Fixture\Controllers\BlankController());
+                    $deepgroup->get('baz', '/baz', new Fixtures\Controllers\BlankController());
                 });
             }, $middlewares);
         });
