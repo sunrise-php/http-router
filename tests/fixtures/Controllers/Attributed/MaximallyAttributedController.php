@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Test\Fixture\Controllers\Attributed;
+namespace Sunrise\Http\Router\Tests\Fixtures\Controllers\Attributed;
 
 use Sunrise\Http\Router\Annotation\Route;
-use Sunrise\Http\Router\Test\Fixture\Controllers\AbstractController;
-use Sunrise\Http\Router\Test\Fixture\Middlewares\BlankMiddleware;
+use Sunrise\Http\Router\Tests\Fixtures\Controllers\AbstractController;
+use Sunrise\Http\Router\Tests\Fixtures\Middlewares\BlankMiddleware;
 
 #[Route(
     name: 'maximally-attributed-controller',

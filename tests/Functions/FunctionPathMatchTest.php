@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Test\Functions;
+namespace Sunrise\Http\Router\Tests\Functions;
 
 /**
  * Import classes

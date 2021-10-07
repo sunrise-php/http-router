@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Test\RequestHandler;
+namespace Sunrise\Http\Router\Tests\RequestHandler;
 
 /**
  * Import classes
@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
-use Sunrise\Http\Router\Test\Fixture;
+use Sunrise\Http\Router\Tests\Fixtures;
 
 /**
  * QueueableRequestHandlerTest
@@ -22,7 +22,7 @@ class QueueableRequestHandlerTest extends TestCase
      */
     public function testContracts() : void
     {
-        $endpoint = new Fixture\Controllers\BlankController();
+        $endpoint = new Fixtures\Controllers\BlankController();
         $requestHandler = new QueueableRequestHandler($endpoint);
 
         $this->assertInstanceOf(RequestHandlerInterface::class, $requestHandler);
@@ -33,7 +33,7 @@ class QueueableRequestHandlerTest extends TestCase
      */
     public function testRun() : void
     {
-        $endpoint = new Fixture\Controllers\BlankController();
+        $endpoint = new Fixtures\Controllers\BlankController();
         $requestHandler = new QueueableRequestHandler($endpoint);
 
         $request = $this->createMock(ServerRequestInterface::class);
@@ -48,12 +48,12 @@ class QueueableRequestHandlerTest extends TestCase
     public function testRunWithMiddlewares() : void
     {
         $middlewares = [
-            new Fixture\Middlewares\BlankMiddleware(),
-            new Fixture\Middlewares\BlankMiddleware(),
-            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
         ];
 
-        $endpoint = new Fixture\Controllers\BlankController();
+        $endpoint = new Fixtures\Controllers\BlankController();
         $requestHandler = new QueueableRequestHandler($endpoint);
         $requestHandler->add(...$middlewares);
 
@@ -72,12 +72,12 @@ class QueueableRequestHandlerTest extends TestCase
     public function testRunWithBrokenMiddleware() : void
     {
         $middlewares = [
-            new Fixture\Middlewares\BlankMiddleware(),
-            new Fixture\Middlewares\BlankMiddleware(true),
-            new Fixture\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(),
+            new Fixtures\Middlewares\BlankMiddleware(true),
+            new Fixtures\Middlewares\BlankMiddleware(),
         ];
 
-        $endpoint = new Fixture\Controllers\BlankController();
+        $endpoint = new Fixtures\Controllers\BlankController();
         $requestHandler = new QueueableRequestHandler($endpoint);
         $requestHandler->add(...$middlewares);
 

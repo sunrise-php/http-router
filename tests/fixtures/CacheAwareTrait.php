@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Test\Fixture;
+namespace Sunrise\Http\Router\Tests\Fixtures;
 
 use Psr\SimpleCache\CacheInterface;
 

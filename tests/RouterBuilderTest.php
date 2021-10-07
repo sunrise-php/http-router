@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Test;
+namespace Sunrise\Http\Router\Tests;
 
 /**
  * Import classes
@@ -15,8 +15,8 @@ use Sunrise\Http\Router\RouterBuilder;
  */
 class RouterBuilderTest extends TestCase
 {
-    use Fixture\CacheAwareTrait;
-    use Fixture\ContainerAwareTrait;
+    use Fixtures\CacheAwareTrait;
+    use Fixtures\ContainerAwareTrait;
 
     /**
      * @return void
@@ -29,9 +29,9 @@ class RouterBuilderTest extends TestCase
         $cache = $this->getCache();
 
         $middlewares = [];
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
 
         $hosts = [];
         $hosts['foo'] = ['foo.net'];
@@ -47,8 +47,8 @@ class RouterBuilderTest extends TestCase
                 __DIR__ . '/fixtures/routes/bar.php',
             ])
             ->useMetadataLoader([
-                Fixture\Controllers\Annotated\MinimallyAnnotatedController::class,
-                Fixture\Controllers\Annotated\MaximallyAnnotatedController::class,
+                Fixtures\Controllers\Annotated\MinimallyAnnotatedController::class,
+                Fixtures\Controllers\Annotated\MaximallyAnnotatedController::class,
             ])
             ->setHosts($hosts)
             ->setMiddlewares($middlewares)

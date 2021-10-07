@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Test\Command;
+namespace Sunrise\Http\Router\Tests\Command;
 
 /**
  * Import classes
@@ -8,7 +8,7 @@ namespace Sunrise\Http\Router\Test\Command;
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Command\RouteListCommand;
 use Sunrise\Http\Router\Router;
-use Sunrise\Http\Router\Test\Fixture;
+use Sunrise\Http\Router\Tests\Fixtures;
 use Symfony\Component\Console\Tester\CommandTester;
 
 /**
@@ -23,9 +23,9 @@ class RouteListCommandTest extends TestCase
     public function testRun() : void
     {
         $routes = [
-            new Fixture\Route(),
-            new Fixture\Route(),
-            new Fixture\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
         ];
 
         $router = new Router();

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Test;
+namespace Sunrise\Http\Router\Tests;
 
 /**
  * Import classes
@@ -34,11 +34,11 @@ class RouteFactoryTest extends TestCase
         $name = 'foo';
         $path = '/foo';
         $methods = ['GET', 'POST'];
-        $handler = new Fixture\Controllers\BlankController();
+        $handler = new Fixtures\Controllers\BlankController();
         $middlewares = [];
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
-        $middlewares[] = new Fixture\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
+        $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
         $attributes = ['foo' => 'bar'];
 
         $route = (new RouteFactory)->createRoute(

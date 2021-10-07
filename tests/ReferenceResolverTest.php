@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Test;
+namespace Sunrise\Http\Router\Tests;
 
 /**
  * Import classes
@@ -17,7 +17,7 @@ use ReflectionMethod;
  */
 class ReferenceResolverTest extends TestCase
 {
-    use Fixture\ContainerAwareTrait;
+    use Fixtures\ContainerAwareTrait;
 
     /**
      * @return void
@@ -35,8 +35,8 @@ class ReferenceResolverTest extends TestCase
     public function testContainer() : void
     {
         $container = $this->getContainer([
-            Fixture\Controllers\BlankController::class => new Fixture\Controllers\BlankController(),
-            Fixture\Middlewares\BlankMiddleware::class => new Fixture\Middlewares\BlankMiddleware(),
+            Fixtures\Controllers\BlankController::class => new Fixtures\Controllers\BlankController(),
+            Fixtures\Middlewares\BlankMiddleware::class => new Fixtures\Middlewares\BlankMiddleware(),
         ]);
 
         $resolver = new ReferenceResolver();
@@ -44,29 +44,41 @@ class ReferenceResolverTest extends TestCase
 
         $this->assertSame($container, $resolver->getContainer());
 
-        $requestHandler = $resolver->toRequestHandler(new ReflectionClass(Fixture\Controllers\BlankController::class));
-        $this->assertSame($container->storage[Fixture\Controllers\BlankController::class], $requestHandler);
+        $reference = new ReflectionClass(Fixtures\Controllers\BlankController::class);
+        $requestHandler = $resolver->toRequestHandler($reference);
+        $this->assertSame($container->storage[Fixtures\Controllers\BlankController::class], $requestHandler);
 
-        $requestHandler = $resolver->toRequestHandler(new ReflectionMethod(Fixture\Controllers\BlankController::class, '__invoke'));
-        $this->assertSame($container->storage[Fixture\Controllers\BlankController::class], $requestHandler->getCallback()[0]);
+        $reference = new ReflectionMethod(Fixtures\Controllers\BlankController::class, '__invoke');
+        $requestHandler = $resolver->toRequestHandler($reference);
+        $requestHandlerCallback = $requestHandler->getCallback();
+        $this->assertSame($container->storage[Fixtures\Controllers\BlankController::class], $requestHandlerCallback[0]);
 
-        $requestHandler = $resolver->toRequestHandler(Fixture\Controllers\BlankController::class);
-        $this->assertSame($container->storage[Fixture\Controllers\BlankController::class], $requestHandler);
+        $reference = Fixtures\Controllers\BlankController::class;
+        $requestHandler = $resolver->toRequestHandler($reference);
+        $this->assertSame($container->storage[Fixtures\Controllers\BlankController::class], $requestHandler);
 
-        $requestHandler = $resolver->toRequestHandler([Fixture\Controllers\BlankController::class, '__invoke']);
-        $this->assertSame($container->storage[Fixture\Controllers\BlankController::class], $requestHandler->getCallback()[0]);
+        $reference = [Fixtures\Controllers\BlankController::class, '__invoke'];
+        $requestHandler = $resolver->toRequestHandler($reference);
+        $requestHandlerCallback = $requestHandler->getCallback();
+        $this->assertSame($container->storage[Fixtures\Controllers\BlankController::class], $requestHandlerCallback[0]);
 
-        $middleware = $resolver->toMiddleware(new ReflectionClass(Fixture\Middlewares\BlankMiddleware::class));
-        $this->assertSame($container->storage[Fixture\Middlewares\BlankMiddleware::class], $middleware);
+        $reference = new ReflectionClass(Fixtures\Middlewares\BlankMiddleware::class);
+        $middleware = $resolver->toMiddleware($reference);
+        $this->assertSame($container->storage[Fixtures\Middlewares\BlankMiddleware::class], $middleware);
 
-        $middleware = $resolver->toMiddleware(new ReflectionMethod(Fixture\Middlewares\BlankMiddleware::class, '__invoke'));
-        $this->assertSame($container->storage[Fixture\Middlewares\BlankMiddleware::class], $middleware->getCallback()[0]);
+        $reference = new ReflectionMethod(Fixtures\Middlewares\BlankMiddleware::class, '__invoke');
+        $middleware = $resolver->toMiddleware($reference);
+        $middlewareCallback = $middleware->getCallback();
+        $this->assertSame($container->storage[Fixtures\Middlewares\BlankMiddleware::class], $middlewareCallback[0]);
 
-        $middleware = $resolver->toMiddleware(Fixture\Middlewares\BlankMiddleware::class);
-        $this->assertSame($container->storage[Fixture\Middlewares\BlankMiddleware::class], $middleware);
+        $reference = Fixtures\Middlewares\BlankMiddleware::class;
+        $middleware = $resolver->toMiddleware($reference);
+        $this->assertSame($container->storage[Fixtures\Middlewares\BlankMiddleware::class], $middleware);
 
-        $middleware = $resolver->toMiddleware([Fixture\Middlewares\BlankMiddleware::class, '__invoke']);
-        $this->assertSame($container->storage[Fixture\Middlewares\BlankMiddleware::class], $middleware->getCallback()[0]);
+        $reference = [Fixtures\Middlewares\BlankMiddleware::class, '__invoke'];
+        $middleware = $resolver->toMiddleware($reference);
+        $middlewareCallback = $middleware->getCallback();
+        $this->assertSame($container->storage[Fixtures\Middlewares\BlankMiddleware::class], $middlewareCallback[0]);
     }
 
     /**
@@ -76,7 +88,7 @@ class ReferenceResolverTest extends TestCase
     {
         $resolver = new ReferenceResolver();
 
-        $reference = new Fixture\Controllers\BlankController();
+        $reference = new Fixtures\Controllers\BlankController();
         $requestHandler = $resolver->toRequestHandler($reference);
         $this->assertSame($reference, $requestHandler);
 
@@ -86,20 +98,20 @@ class ReferenceResolverTest extends TestCase
         $requestHandler = $resolver->toRequestHandler($reference);
         $this->assertSame($reference, $requestHandler->getCallback());
 
-        $reference = new ReflectionClass(Fixture\Controllers\BlankController::class);
+        $reference = new ReflectionClass(Fixtures\Controllers\BlankController::class);
         $requestHandler = $resolver->toRequestHandler($reference);
         $this->assertInstanceOf($reference->getName(), $requestHandler);
 
-        $reference = new ReflectionMethod(Fixture\Controllers\BlankController::class, '__invoke');
+        $reference = new ReflectionMethod(Fixtures\Controllers\BlankController::class, '__invoke');
         $requestHandler = $resolver->toRequestHandler($reference);
         $this->assertInstanceOf($reference->getDeclaringClass()->getName(), $requestHandler->getCallback()[0]);
         $this->assertSame($reference->getName(), $requestHandler->getCallback()[1]);
 
-        $reference = Fixture\Controllers\BlankController::class;
+        $reference = Fixtures\Controllers\BlankController::class;
         $requestHandler = $resolver->toRequestHandler($reference);
         $this->assertInstanceOf($reference, $requestHandler);
 
-        $reference = [Fixture\Controllers\BlankController::class, '__invoke'];
+        $reference = [Fixtures\Controllers\BlankController::class, '__invoke'];
         $requestHandler = $resolver->toRequestHandler($reference);
         $this->assertInstanceOf($reference[0], $requestHandler->getCallback()[0]);
         $this->assertSame($reference[1], $requestHandler->getCallback()[1]);
@@ -112,7 +124,7 @@ class ReferenceResolverTest extends TestCase
     {
         $resolver = new ReferenceResolver();
 
-        $reference = new Fixture\Middlewares\BlankMiddleware();
+        $reference = new Fixtures\Middlewares\BlankMiddleware();
         $requestHandler = $resolver->toMiddleware($reference);
         $this->assertSame($reference, $requestHandler);
 
@@ -122,20 +134,20 @@ class ReferenceResolverTest extends TestCase
         $requestHandler = $resolver->toMiddleware($reference);
         $this->assertSame($reference, $requestHandler->getCallback());
 
-        $reference = new ReflectionClass(Fixture\Middlewares\BlankMiddleware::class);
+        $reference = new ReflectionClass(Fixtures\Middlewares\BlankMiddleware::class);
         $requestHandler = $resolver->toMiddleware($reference);
         $this->assertInstanceOf($reference->getName(), $requestHandler);
 
-        $reference = new ReflectionMethod(Fixture\Middlewares\BlankMiddleware::class, '__invoke');
+        $reference = new ReflectionMethod(Fixtures\Middlewares\BlankMiddleware::class, '__invoke');
         $requestHandler = $resolver->toMiddleware($reference);
         $this->assertInstanceOf($reference->getDeclaringClass()->getName(), $requestHandler->getCallback()[0]);
         $this->assertSame($reference->getName(), $requestHandler->getCallback()[1]);
 
-        $reference = Fixture\Middlewares\BlankMiddleware::class;
+        $reference = Fixtures\Middlewares\BlankMiddleware::class;
         $requestHandler = $resolver->toMiddleware($reference);
         $this->assertInstanceOf($reference, $requestHandler);
 
-        $reference = [Fixture\Middlewares\BlankMiddleware::class, '__invoke'];
+        $reference = [Fixtures\Middlewares\BlankMiddleware::class, '__invoke'];
         $requestHandler = $resolver->toMiddleware($reference);
         $this->assertInstanceOf($reference[0], $requestHandler->getCallback()[0]);
         $this->assertSame($reference[1], $requestHandler->getCallback()[1]);
@@ -175,7 +187,7 @@ class ReferenceResolverTest extends TestCase
     public function unresolvableRequestHandlerReferenceDataProvider() : array
     {
         return [
-            [new ReflectionClass(Fixture\Middlewares\BlankMiddleware::class)],
+            [new ReflectionClass(Fixtures\Middlewares\BlankMiddleware::class)],
             [['unknownClass', 'unknownMethod']],
             ['unknownClass'],
             [null],
@@ -188,7 +200,7 @@ class ReferenceResolverTest extends TestCase
     public function unresolvableMiddlewareReferenceDataProvider() : array
     {
         return [
-            [new ReflectionClass(Fixture\Controllers\BlankController::class)],
+            [new ReflectionClass(Fixtures\Controllers\BlankController::class)],
             [['unknownClass', 'unknownMethod']],
             ['unknownClass'],
             [null],

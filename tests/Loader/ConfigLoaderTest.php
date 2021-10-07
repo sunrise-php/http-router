@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Test\Loader;
+namespace Sunrise\Http\Router\Tests\Loader;
 
 /**
  * Import classes
@@ -9,14 +9,14 @@ use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
 use Sunrise\Http\Router\Loader\ConfigLoader;
 use Sunrise\Http\Router\Loader\LoaderInterface;
-use Sunrise\Http\Router\Test\Fixture;
+use Sunrise\Http\Router\Tests\Fixtures;
 
 /**
  * ConfigLoaderTest
  */
 class ConfigLoaderTest extends TestCase
 {
-    use Fixture\ContainerAwareTrait;
+    use Fixtures\ContainerAwareTrait;
 
     /**
      * @return void
