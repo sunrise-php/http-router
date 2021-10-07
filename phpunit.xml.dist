@@ -6,7 +6,7 @@
         </include>
     </coverage>
     <testsuites>
-        <testsuite name="Sunrise HTTP Router Test Suite">
+        <testsuite name="sunrise.http.router.testSuite">
             <directory>./tests/</directory>
         </testsuite>
     </testsuites>
