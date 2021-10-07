@@ -11,7 +11,7 @@ jobs:
       - checkout
       - run: php -v
       - run: composer install --no-interaction --no-suggest --prefer-source
-      - run: php vendor/bin/phpunit --colors=always
+      - run: XDEBUG_MODE=coverage php vendor/bin/phpunit --coverage-text
   php72:
     docker:
       - image: circleci/php:7.2-cli-node-browsers
@@ -19,7 +19,7 @@ jobs:
       - checkout
       - run: php -v
       - run: composer install --no-interaction --no-suggest --prefer-source
-      - run: php vendor/bin/phpunit --colors=always
+      - run: XDEBUG_MODE=coverage php vendor/bin/phpunit --coverage-text
   php73:
     docker:
       - image: circleci/php:7.3-cli-node-browsers
@@ -27,7 +27,7 @@ jobs:
       - checkout
       - run: php -v
       - run: composer install --no-interaction --no-suggest --prefer-source
-      - run: php vendor/bin/phpunit --colors=always
+      - run: XDEBUG_MODE=coverage php vendor/bin/phpunit --coverage-text
   php74:
     docker:
       - image: circleci/php:7.4-cli-node-browsers
@@ -35,7 +35,7 @@ jobs:
       - checkout
       - run: php -v
       - run: composer install --no-interaction --no-suggest --prefer-source
-      - run: php vendor/bin/phpunit --colors=always
+      - run: XDEBUG_MODE=coverage php vendor/bin/phpunit --coverage-text
   php80:
     docker:
       - image: circleci/php:8.0-cli-node-browsers
@@ -43,7 +43,7 @@ jobs:
       - checkout
       - run: php -v
       - run: composer install --no-interaction --no-suggest --prefer-source
-      - run: php vendor/bin/phpunit --colors=always
+      - run: XDEBUG_MODE=coverage php vendor/bin/phpunit --coverage-text
 workflows:
   version: 2
   build:
