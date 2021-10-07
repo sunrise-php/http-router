@@ -1,8 +1,8 @@
-.php_cs.cache
-.phpunit.result.cache
-composer.lock
-coverage.xml
-phpbench.json
-phpcs.xml
-phpunit.xml
-vendor/
+/.php_cs.cache
+/.phpunit.result.cache
+/composer.lock
+/coverage.xml
+/phpbench.json
+/phpcs.xml
+/phpunit.xml
+/vendor/
