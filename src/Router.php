@@ -116,18 +116,50 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     }
 
     /**
+     * Adds the given patterns to the router
+     *
+     * @param array<string, string> $patterns
+     *
+     * @return void
+     *
+     * @since 2.11.0
+     */
+    public function addPatterns(array $patterns) : void
+    {
+        foreach ($patterns as $alias => $pattern) {
+            self::$patterns[$alias] = $pattern;
+        }
+    }
+
+    /**
+     * Adds the given host aliases to the router host table
+     *
+     * @param array<string, string[]> $hosts
+     *
+     * @return void
+     *
+     * @since 2.11.0
+     */
+    public function addHosts(array $hosts) : void
+    {
+        foreach ($hosts as $alias => $hostnames) {
+            $this->addHost($alias, ...$hostnames);
+        }
+    }
+
+    /**
      * Adds the given host alias to the router host table
      *
      * @param string $alias
-     * @param string ...$hostname
+     * @param string ...$hostnames
      *
      * @return void
      *
      * @since 2.6.0
      */
-    public function addHost(string $alias, string ...$hostname) : void
+    public function addHost(string $alias, string ...$hostnames) : void
     {
-        $this->hosts[$alias] = $hostname;
+        $this->hosts[$alias] = $hostnames;
     }
 
     /**
