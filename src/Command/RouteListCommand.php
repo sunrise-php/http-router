@@ -27,35 +27,32 @@ use function Sunrise\Http\Router\path_plain;
 use function join;
 
 /**
- * RouteListCommand
+ * This command displays a list of routes
  *
  * @since 2.9.0
  */
-final class RouteListCommand extends Command
+abstract class RouteListCommand extends Command
 {
 
     /**
-     * @var Router
-     */
-    private $router;
-
-    /**
      * {@inheritdoc}
-     *
-     * @param Router $router
-     * @param string|null $name
      */
-    public function __construct(Router $router, ?string $name = null)
+    public function __construct(?string $name = null)
     {
-        $this->router = $router;
-
         parent::__construct($name ?? 'router:route-list');
     }
 
     /**
+     * Gets the router filled with routes
+     *
+     * @return Router
+     */
+    abstract protected function getRouter() : Router;
+
+    /**
      * {@inheritdoc}
      */
-    public function execute(InputInterface $input, OutputInterface $output) : int
+    final protected function execute(InputInterface $input, OutputInterface $output) : int
     {
         $table = new Table($output);
 
@@ -66,7 +63,7 @@ final class RouteListCommand extends Command
             'Verb',
         ]);
 
-        foreach ($this->router->getRoutes() as $route) {
+        foreach ($this->getRouter()->getRoutes() as $route) {
             $table->addRow([
                 $route->getName(),
                 $route->getHost() ?? 'ANY',
