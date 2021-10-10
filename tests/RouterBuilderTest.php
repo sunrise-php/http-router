@@ -33,12 +33,16 @@ class RouterBuilderTest extends TestCase
         $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
         $middlewares[] = new Fixtures\Middlewares\BlankMiddleware();
 
+        $patterns = [];
+        $patterns['foo'] = 'bar';
+        $patterns['bar'] = 'baz';
+
         $hosts = [];
         $hosts['foo'] = ['foo.net'];
         $hosts['bar'] = ['bar.net'];
         $hosts['baz'] = ['baz.net'];
 
-        $router = (new RouterBuilder)
+        $builder = (new RouterBuilder)
             ->setContainer($container)
             ->setCache($cache)
             ->setCacheKey('foo')
@@ -50,13 +54,18 @@ class RouterBuilderTest extends TestCase
                 Fixtures\Controllers\Annotated\MinimallyAnnotatedController::class,
                 Fixtures\Controllers\Annotated\MaximallyAnnotatedController::class,
             ])
+            ->setPatterns($patterns)
             ->setHosts($hosts)
-            ->setMiddlewares($middlewares)
-            ->build();
+            ->setMiddlewares($middlewares);
+
+        Router::$patterns = [];
+
+        $router = $builder->build();
 
         $this->assertInstanceOf(Router::class, $router);
-        $this->assertSame($middlewares, $router->getMiddlewares());
+        $this->assertSame($patterns, Router::$patterns);
         $this->assertSame($hosts, $router->getHosts());
+        $this->assertSame($middlewares, $router->getMiddlewares());
 
         $router->getRoutes('foo');
         $router->getRoutes('bar');

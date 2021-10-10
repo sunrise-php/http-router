@@ -31,10 +31,23 @@ class RouteListCommandTest extends TestCase
         $router = new Router();
         $router->addRoute(...$routes);
 
-        $command = new RouteListCommand($router);
-        $commandTester = new CommandTester($command);
+        // @codingStandardsIgnoreStart
+        $command = new CommandTester(new class ($router) extends RouteListCommand {
+            private $router;
 
-        $exitCode = $commandTester->execute([]);
+            public function __construct(Router $router) {
+                parent::__construct();
+
+                $this->router = $router;
+            }
+
+            protected function getRouter() : Router {
+                return $this->router;
+            }
+        });
+        // @codingStandardsIgnoreEnd
+
+        $exitCode = $command->execute([]);
 
         $this->assertSame(0, $exitCode);
     }
