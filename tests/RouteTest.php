@@ -180,18 +180,6 @@ class RouteTest extends TestCase
     /**
      * @return void
      */
-    public function testSetHolder() : void
-    {
-        $route = new Fixtures\Route();
-        $holder = new \ReflectionClass(__CLASS__);
-        $this->assertNull($route->getHolder());
-        $this->assertSame($route, $route->setHolder($holder));
-        $this->assertSame($holder, $route->getHolder());
-    }
-
-    /**
-     * @return void
-     */
     public function testAddPrefix() : void
     {
         $route = new Fixtures\Route();

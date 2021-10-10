@@ -15,8 +15,6 @@ namespace Sunrise\Http\Router\Annotation;
  * Import classes
  */
 use Attribute;
-use ReflectionClass;
-use ReflectionMethod;
 
 /**
  * @Annotation
@@ -48,11 +46,11 @@ final class Route
      *
      * Don't use the property outside of the package.
      *
-     * @var ReflectionClass|ReflectionMethod|null
+     * @var mixed
      *
      * @internal
      */
-    public $holder = null;
+    public $holder;
 
     /**
      * A route name

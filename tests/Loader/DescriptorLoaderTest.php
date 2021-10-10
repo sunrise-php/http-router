@@ -91,7 +91,7 @@ class DescriptorLoaderTest extends TestCase
         $this->assertSame('foo', $loader->getCacheKey());
 
         $descriptor = new Route('controller-from-cached-descriptor', null, '/');
-        $descriptor->holder = new ReflectionClass(Fixtures\Controllers\BlankController::class);
+        $descriptor->holder = Fixtures\Controllers\BlankController::class;
 
         $cache->storage[$loader->getCacheKey()][0] = $descriptor;
 
@@ -148,8 +148,6 @@ class DescriptorLoaderTest extends TestCase
         $this->assertSame('minimally-annotated-controller', $route->getName());
         $this->assertSame('/', $route->getPath());
         $this->assertSame(['GET'], $route->getMethods());
-        $this->assertNotNull($route->getHolder());
-        $this->assertSame($class, $route->getHolder()->getName());
     }
 
     /**
@@ -174,8 +172,6 @@ class DescriptorLoaderTest extends TestCase
         $this->assertSame('minimally-attributed-controller', $route->getName());
         $this->assertSame('/', $route->getPath());
         $this->assertSame(['GET'], $route->getMethods());
-        $this->assertNotNull($route->getHolder());
-        $this->assertSame($class, $route->getHolder()->getName());
     }
 
     /**

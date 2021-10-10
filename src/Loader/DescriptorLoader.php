@@ -251,8 +251,7 @@ class DescriptorLoader implements LoaderInterface
             ->setHost($descriptor->host)
             ->setSummary($descriptor->summary)
             ->setDescription($descriptor->description)
-            ->setTags(...$descriptor->tags)
-            ->setHolder($descriptor->holder);
+            ->setTags(...$descriptor->tags);
         }
 
         return $this->collectionFactory->createCollection(...$routes);
@@ -317,7 +316,7 @@ class DescriptorLoader implements LoaderInterface
         if ($class->isSubclassOf(RequestHandlerInterface::class)) {
             $descriptor = $this->getDescriptorFromClassOrMethod($class);
             if (isset($descriptor)) {
-                $descriptor->holder = $class;
+                $descriptor->holder = $class->getName();
                 $result[] = $descriptor;
             }
         }
@@ -332,7 +331,7 @@ class DescriptorLoader implements LoaderInterface
 
             $descriptor = $this->getDescriptorFromClassOrMethod($method);
             if (isset($descriptor)) {
-                $descriptor->holder = $method;
+                $descriptor->holder = [$method->getDeclaringClass()->getName(), $method->getName()];
                 $result[] = $descriptor;
             }
         }
