@@ -17,7 +17,15 @@ namespace Sunrise\Http\Router\Annotation;
 use Attribute;
 
 /**
- * A route(s) prefix
+ * @Annotation
+ *
+ * @Target({"CLASS", "METHOD"})
+ *
+ * @NamedArgumentConstructor
+ *
+ * @Attributes({
+ *   @Attribute("value", type="string", required=true),
+ * })
  *
  * @since 2.11.0
  */
