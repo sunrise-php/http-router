@@ -21,8 +21,6 @@ use Sunrise\Http\Router\Exception\UnresolvableReferenceException;
 use Sunrise\Http\Router\Middleware\CallableMiddleware;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Closure;
-use ReflectionClass;
-use ReflectionMethod;
 
 /**
  * Import functions
@@ -84,7 +82,7 @@ class ReferenceResolver implements ReferenceResolverInterface
             return new CallableRequestHandler([$this->resolveClass($class), $method]);
         }
 
-        if (isset($class) && is_subclass_of($class, RequestHandlerInterface::class)) {
+        if (!isset($method) && isset($class) && is_subclass_of($class, RequestHandlerInterface::class)) {
             return $this->resolveClass($class);
         }
 
@@ -113,7 +111,7 @@ class ReferenceResolver implements ReferenceResolverInterface
             return new CallableMiddleware([$this->resolveClass($class), $method]);
         }
 
-        if (isset($class) && is_subclass_of($class, MiddlewareInterface::class)) {
+        if (!isset($method) && isset($class) && is_subclass_of($class, MiddlewareInterface::class)) {
             return $this->resolveClass($class);
         }
 
@@ -132,14 +130,6 @@ class ReferenceResolver implements ReferenceResolverInterface
      */
     private function normalizeReference($reference) : array
     {
-        if ($reference instanceof ReflectionClass) {
-            return [$reference->getName(), null];
-        }
-
-        if ($reference instanceof ReflectionMethod) {
-            return [$reference->getDeclaringClass()->getName(), $reference->getName()];
-        }
-
         if (is_array($reference) && is_callable($reference, true)) {
             return $reference;
         }
@@ -160,14 +150,6 @@ class ReferenceResolver implements ReferenceResolverInterface
      */
     private function stringifyReference($reference) : string
     {
-        if ($reference instanceof ReflectionClass) {
-            return $reference->getName();
-        }
-
-        // if ($reference instanceof ReflectionMethod) {
-        //     return $reference->getDeclaringClass()->getName() . '@' . $reference->getName();
-        // }
-
         if (is_array($reference) && is_callable($reference, true)) {
             return $reference[0] . '@' . $reference[1];
         }
