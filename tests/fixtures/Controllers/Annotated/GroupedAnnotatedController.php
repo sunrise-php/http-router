@@ -4,15 +4,22 @@ namespace Sunrise\Http\Router\Tests\Fixtures\Controllers\Annotated;
 
 use Sunrise\Http\Router\Tests\Fixtures\Controllers\AbstractController;
 
+/**
+ * @Host("host")
+ * @Prefix("/prefix")
+ * @Postfix(".json")
+ * @Middleware("Sunrise\Http\Router\Tests\Fixtures\Middlewares\BlankMiddleware")
+ * @Middleware("Sunrise\Http\Router\Tests\Fixtures\Middlewares\BlankMiddleware")
+ * @Middleware("Sunrise\Http\Router\Tests\Fixtures\Middlewares\BlankMiddleware")
+ */
 final class GroupedAnnotatedController extends AbstractController
 {
 
     /**
-     * @Route(
-     *   name="first-from-grouped-annotated-controller",
-     *   path="/",
-     *   method="GET",
-     * )
+     * @Route("first-from-grouped-annotated-controller", path="/first")
+     * @Middleware("Sunrise\Http\Router\Tests\Fixtures\Middlewares\BlankMiddleware")
+     * @Middleware("Sunrise\Http\Router\Tests\Fixtures\Middlewares\BlankMiddleware")
+     * @Middleware("Sunrise\Http\Router\Tests\Fixtures\Middlewares\BlankMiddleware")
      */
     public function first($request)
     {
@@ -20,11 +27,10 @@ final class GroupedAnnotatedController extends AbstractController
     }
 
     /**
-     * @Route(
-     *   name="second-from-grouped-annotated-controller",
-     *   path="/",
-     *   method="GET",
-     * )
+     * @Route("second-from-grouped-annotated-controller", path="/second")
+     * @Middleware("Sunrise\Http\Router\Tests\Fixtures\Middlewares\BlankMiddleware")
+     * @Middleware("Sunrise\Http\Router\Tests\Fixtures\Middlewares\BlankMiddleware")
+     * @Middleware("Sunrise\Http\Router\Tests\Fixtures\Middlewares\BlankMiddleware")
      */
     public function second($request)
     {
@@ -32,33 +38,32 @@ final class GroupedAnnotatedController extends AbstractController
     }
 
     /**
-     * @Route(
-     *   name="private-from-grouped-annotated-controller",
-     *   path="/",
-     *   method="GET",
-     * )
+     * @Route("third-from-grouped-annotated-controller", path="/third")
+     * @Middleware("Sunrise\Http\Router\Tests\Fixtures\Middlewares\BlankMiddleware")
+     * @Middleware("Sunrise\Http\Router\Tests\Fixtures\Middlewares\BlankMiddleware")
+     * @Middleware("Sunrise\Http\Router\Tests\Fixtures\Middlewares\BlankMiddleware")
+     */
+    public function third($request)
+    {
+        return $this->handle($request);
+    }
+
+    /**
+     * @Route("private-from-grouped-annotated-controller", path="/")
      */
     private function privateAction()
     {
     }
 
     /**
-     * @Route(
-     *   name="protected-from-grouped-annotated-controller",
-     *   path="/",
-     *   method="GET",
-     * )
+     * @Route("protected-from-grouped-annotated-controller", path="/")
      */
     protected function protectedAction()
     {
     }
 
     /**
-     * @Route(
-     *   name="static-from-grouped-annotated-controller",
-     *   path="/",
-     *   method="GET",
-     * )
+     * @Route("static-from-grouped-annotated-controller", path="/")
      */
     public static function staticAction()
     {

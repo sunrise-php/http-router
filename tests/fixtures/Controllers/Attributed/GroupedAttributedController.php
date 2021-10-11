@@ -8,6 +8,7 @@ use Sunrise\Http\Router\Tests\Fixtures\Middlewares\BlankMiddleware;
 
 #[Routing\Host('host')]
 #[Routing\Prefix('/prefix')]
+#[Routing\Postfix('.json')]
 #[Routing\Middleware(BlankMiddleware::class)]
 #[Routing\Middleware(BlankMiddleware::class)]
 #[Routing\Middleware(BlankMiddleware::class)]
