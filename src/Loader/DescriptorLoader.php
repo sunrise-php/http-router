@@ -19,6 +19,9 @@ use Doctrine\Common\Annotations\SimpleAnnotationReader;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\SimpleCache\CacheInterface;
+use Sunrise\Http\Router\Annotation\Host;
+use Sunrise\Http\Router\Annotation\Middleware;
+use Sunrise\Http\Router\Annotation\Prefix;
 use Sunrise\Http\Router\Annotation\Route;
 use Sunrise\Http\Router\Exception\InvalidDescriptorException;
 use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
@@ -258,7 +261,9 @@ class DescriptorLoader implements LoaderInterface
     }
 
     /**
-     * Gets descriptors from the loader resources (classes) through caching mechanism
+     * Gets descriptors from the cache if they are stored in it,
+     * otherwise gets them from the loader resources,
+     * and then tries to cache them
      *
      * @return Route[]
      */
@@ -280,7 +285,7 @@ class DescriptorLoader implements LoaderInterface
     }
 
     /**
-     * Gets descriptors from the loader resources (classes)
+     * Gets descriptors from the loader resources
      *
      * @return Route[]
      */
@@ -289,7 +294,7 @@ class DescriptorLoader implements LoaderInterface
         $result = [];
         foreach ($this->resources as $resource) {
             $class = new ReflectionClass($resource);
-            $descriptors = $this->getDescriptorsFromClass($class);
+            $descriptors = $this->getClassDescriptors($class);
             foreach ($descriptors as $descriptor) {
                 $result[] = $descriptor;
             }
@@ -309,13 +314,14 @@ class DescriptorLoader implements LoaderInterface
      *
      * @return Route[]
      */
-    private function getDescriptorsFromClass(ReflectionClass $class) : array
+    private function getClassDescriptors(ReflectionClass $class) : array
     {
         $result = [];
 
         if ($class->isSubclassOf(RequestHandlerInterface::class)) {
             $descriptor = $this->getDescriptorFromClassOrMethod($class);
             if (isset($descriptor)) {
+                $this->supplementDescriptorFromClassOrMethod($descriptor, $class);
                 $descriptor->holder = $class->getName();
                 $result[] = $descriptor;
             }
@@ -331,7 +337,9 @@ class DescriptorLoader implements LoaderInterface
 
             $descriptor = $this->getDescriptorFromClassOrMethod($method);
             if (isset($descriptor)) {
-                $descriptor->holder = [$method->getDeclaringClass()->getName(), $method->getName()];
+                $this->supplementDescriptorFromClassOrMethod($descriptor, $class);
+                $this->supplementDescriptorFromClassOrMethod($descriptor, $method);
+                $descriptor->holder = [$class->getName(), $method->getName()];
                 $result[] = $descriptor;
             }
         }
@@ -352,9 +360,9 @@ class DescriptorLoader implements LoaderInterface
     private function getDescriptorFromClassOrMethod(Reflector $classOrMethod) : ?Route
     {
         if (8 === PHP_MAJOR_VERSION) {
-            $attribute = $classOrMethod->getAttributes(Route::class)[0] ?? null;
-            if (isset($attribute)) {
-                return $attribute->newInstance();
+            $attributes = $classOrMethod->getAttributes(Route::class);
+            if (isset($attributes[0])) {
+                return $attributes[0]->newInstance();
             }
         }
 
@@ -371,6 +379,36 @@ class DescriptorLoader implements LoaderInterface
         // @codeCoverageIgnoreStart
         return null;
         // @codeCoverageIgnoreEnd
+    }
+
+    /**
+     * Supplements the given descriptor with a host and middlewares from the given class or method
+     *
+     * @param Route $descriptor
+     * @param ReflectionClass|ReflectionMethod $classOrMethod
+     *
+     * @return void
+     *
+     * @since 2.11.0
+     */
+    private function supplementDescriptorFromClassOrMethod(Route $descriptor, Reflector $classOrMethod) : void
+    {
+        if (8 === PHP_MAJOR_VERSION) {
+            $attributes = $classOrMethod->getAttributes(Host::class);
+            if (isset($attributes[0])) {
+                $descriptor->host = $attributes[0]->newInstance()->value;
+            }
+
+            $attributes = $classOrMethod->getAttributes(Middleware::class);
+            foreach ($attributes as $attribute) {
+                $descriptor->middlewares[] = $attribute->newInstance()->value;
+            }
+
+            $attributes = $classOrMethod->getAttributes(Prefix::class);
+            if (isset($attributes[0])) {
+                $descriptor->path = $attributes[0]->newInstance()->value . $descriptor->path;
+            }
+        }
     }
 
     /**
