@@ -86,7 +86,7 @@ class RouteListCommand extends Command
                 'The %2$s() method MUST return the %1$s class instance. ' .
                 'Pass the %1$s class instance to the constructor, or override the %2$s() method.',
                 Router::class,
-                __METHOD__,
+                __METHOD__
             ));
         }
 
