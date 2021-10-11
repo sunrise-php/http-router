@@ -118,6 +118,15 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     /**
      * Adds the given patterns to the router
      *
+     * ```php
+     * $router->addPatterns([
+     *   '@digit' => '\d+',
+     *   '@word' => '\w+',
+     * ]);
+     *
+     * $route->setPath('/{foo<@digit>}/{bar<@word>}');
+     * ```
+     *
      * @param array<string, string> $patterns
      *
      * @return void
@@ -132,7 +141,15 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     }
 
     /**
-     * Adds the given host aliases to the router host table
+     * Adds the given aliases for hostnames to the router's host table
+     *
+     * ```php
+     * $router->addHosts([
+     *   'local' => ['127.0.0.1', 'localhost'],
+     * ]);
+     *
+     * $route->setHost('local');
+     * ```
      *
      * @param array<string, string[]> $hosts
      *
@@ -148,7 +165,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     }
 
     /**
-     * Adds the given host alias to the router host table
+     * Adds the given alias for hostname(s) to the router's host table
      *
      * @param string $alias
      * @param string ...$hostnames
