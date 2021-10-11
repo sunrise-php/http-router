@@ -10,6 +10,7 @@ use Sunrise\Http\Router\Command\RouteListCommand;
 use Sunrise\Http\Router\Router;
 use Sunrise\Http\Router\Tests\Fixtures;
 use Symfony\Component\Console\Tester\CommandTester;
+use RuntimeException;
 
 /**
  * RouteListCommandTest
@@ -22,32 +23,51 @@ class RouteListCommandTest extends TestCase
      */
     public function testRun() : void
     {
-        $routes = [
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-        ];
-
         $router = new Router();
-        $router->addRoute(...$routes);
 
-        // @codingStandardsIgnoreStart
-        $command = new CommandTester(new class ($router) extends RouteListCommand {
-            private $router;
+        $router->addRoute(...[
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+        ]);
 
-            public function __construct(Router $router) {
-                parent::__construct();
+        $command = new RouteListCommand($router);
+        $commandTester = new CommandTester($command);
 
-                $this->router = $router;
+        $exitCode = $commandTester->execute([]);
+
+        $this->assertSame(0, $exitCode);
+    }
+
+    /**
+     * @return void
+     */
+    public function testRunWithoutRouter() : void
+    {
+        $command = new RouteListCommand();
+        $commandTester = new CommandTester($command);
+
+        $this->expectException(RuntimeException::class);
+
+        $commandTester->execute([]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testRunUserCommand() : void
+    {
+        $userCommand = new class extends RouteListCommand
+        {
+            protected function getRouter() : Router
+            {
+                return new Router();
             }
+        };
 
-            protected function getRouter() : Router {
-                return $this->router;
-            }
-        });
-        // @codingStandardsIgnoreEnd
+        $commandTester = new CommandTester($userCommand);
 
-        $exitCode = $command->execute([]);
+        $exitCode = $commandTester->execute([]);
 
         $this->assertSame(0, $exitCode);
     }

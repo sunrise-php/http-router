@@ -257,6 +257,43 @@ class DescriptorLoaderTest extends TestCase
     /**
      * @return void
      */
+    public function testLoadGroupedAttributedClass() : void
+    {
+        if (8 > PHP_MAJOR_VERSION) {
+            $this->markTestSkipped('PHP 8 is required...');
+            return;
+        }
+
+        $loader = new DescriptorLoader();
+        $loader->attach(Fixtures\Controllers\Attributed\GroupedAttributedController::class);
+
+        $routes = $loader->load();
+        $this->assertTrue($routes->has('first-from-grouped-attributed-controller'));
+        $this->assertTrue($routes->has('second-from-grouped-attributed-controller'));
+        $this->assertTrue($routes->has('third-from-grouped-attributed-controller'));
+
+        $route = $routes->get('first-from-grouped-attributed-controller');
+        $this->assertSame('host', $route->getHost());
+        $this->assertSame('/prefix/first', $route->getPath());
+        $this->assertSame(['GET'], $route->getMethods());
+        $this->assertCount(6, $route->getMiddlewares());
+
+        $route = $routes->get('second-from-grouped-attributed-controller');
+        $this->assertSame('host', $route->getHost());
+        $this->assertSame('/prefix/second', $route->getPath());
+        $this->assertSame(['GET'], $route->getMethods());
+        $this->assertCount(6, $route->getMiddlewares());
+
+        $route = $routes->get('third-from-grouped-attributed-controller');
+        $this->assertSame('host', $route->getHost());
+        $this->assertSame('/prefix/third', $route->getPath());
+        $this->assertSame(['GET'], $route->getMethods());
+        $this->assertCount(6, $route->getMiddlewares());
+    }
+
+    /**
+     * @return void
+     */
     public function testLoadSeveralAnnotatedClasses() : void
     {
         $loader = new DescriptorLoader();
