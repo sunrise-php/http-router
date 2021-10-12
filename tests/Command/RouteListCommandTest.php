@@ -10,6 +10,7 @@ use Sunrise\Http\Router\Command\RouteListCommand;
 use Sunrise\Http\Router\Router;
 use Sunrise\Http\Router\Tests\Fixtures;
 use Symfony\Component\Console\Tester\CommandTester;
+use RuntimeException;
 
 /**
  * RouteListCommandTest
@@ -22,17 +23,49 @@ class RouteListCommandTest extends TestCase
      */
     public function testRun() : void
     {
-        $routes = [
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-        ];
-
         $router = new Router();
-        $router->addRoute(...$routes);
+
+        $router->addRoute(...[
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+        ]);
 
         $command = new RouteListCommand($router);
         $commandTester = new CommandTester($command);
+
+        $exitCode = $commandTester->execute([]);
+
+        $this->assertSame(0, $exitCode);
+    }
+
+    /**
+     * @return void
+     */
+    public function testRunWithoutRouter() : void
+    {
+        $command = new RouteListCommand();
+        $commandTester = new CommandTester($command);
+
+        $this->expectException(RuntimeException::class);
+
+        $commandTester->execute([]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testRunInheritedCommand() : void
+    {
+        $userCommand = new class extends RouteListCommand
+        {
+            protected function getRouter() : Router
+            {
+                return new Router();
+            }
+        };
+
+        $commandTester = new CommandTester($userCommand);
 
         $exitCode = $commandTester->execute([]);
 

@@ -12,7 +12,7 @@
 ## Installation
 
 ```bash
-composer require 'sunrise/http-router:^2.10'
+composer require 'sunrise/http-router:^2.11'
 ```
 
 ## Support for OpenAPI (Swagger) Specification (optional)
@@ -206,6 +206,25 @@ $response = $router->handle($request);
 
 // if the router is used as middleware
 $response = $router->process($request, $handler);
+```
+
+```php
+use Sunrise\Http\Router\Annotation as Mapping;
+
+#[Mapping\Prefix('/api/v1')]
+#[Mapping\Middleware(SomeMiddleware::class)]
+class SomeController {
+
+    #[Mapping\Route('foo', path: '/foo')]
+    public function foo() {
+        // will be available at: /api/v1/foo
+    }
+
+    #[Mapping\Route('bar', path: '/bar')]
+    public function bar() {
+        // will be available at: /api/v1/bar
+    }
+}
 ```
 
 #### Without loading strategy

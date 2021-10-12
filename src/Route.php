@@ -38,8 +38,10 @@ class Route implements RouteInterface
      * Server Request attribute name for the route
      *
      * @var string
+     *
+     * @deprecated 2.11.0 Use the RouteInterface::ATTR_ROUTE constant.
      */
-    public const ATTR_NAME_FOR_ROUTE = '@route';
+    public const ATTR_NAME_FOR_ROUTE = self::ATTR_ROUTE;
 
     /**
      * Server Request attribute name for the route name
@@ -396,7 +398,7 @@ class Route implements RouteInterface
      */
     public function handle(ServerRequestInterface $request) : ResponseInterface
     {
-        $request = $request->withAttribute(self::ATTR_NAME_FOR_ROUTE, $this);
+        $request = $request->withAttribute(self::ATTR_ROUTE, $this);
 
         /** @todo Must be removed from the 3.0.0 version */
         $request = $request->withAttribute(self::ATTR_NAME_FOR_ROUTE_NAME, $this->name);

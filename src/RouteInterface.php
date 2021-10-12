@@ -24,6 +24,15 @@ interface RouteInterface extends RequestHandlerInterface
 {
 
     /**
+     * Request attribute name for the route instance
+     *
+     * @var string
+     *
+     * @since 2.11.0
+     */
+    public const ATTR_ROUTE = '@route';
+
+    /**
      * Gets the route name
      *
      * @return string

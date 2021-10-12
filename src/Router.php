@@ -116,18 +116,67 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     }
 
     /**
-     * Adds the given host alias to the router host table
+     * Adds the given patterns to the router
+     *
+     * ```php
+     * $router->addPatterns([
+     *   '@digit' => '\d+',
+     *   '@word' => '\w+',
+     * ]);
+     *
+     * $route->setPath('/{foo<@digit>}/{bar<@word>}');
+     * ```
+     *
+     * @param array<string, string> $patterns
+     *
+     * @return void
+     *
+     * @since 2.11.0
+     */
+    public function addPatterns(array $patterns) : void
+    {
+        foreach ($patterns as $alias => $pattern) {
+            self::$patterns[$alias] = $pattern;
+        }
+    }
+
+    /**
+     * Adds the given aliases for hostnames to the router's host table
+     *
+     * ```php
+     * $router->addHosts([
+     *   'local' => ['127.0.0.1', 'localhost'],
+     * ]);
+     *
+     * $route->setHost('local');
+     * ```
+     *
+     * @param array<string, string[]> $hosts
+     *
+     * @return void
+     *
+     * @since 2.11.0
+     */
+    public function addHosts(array $hosts) : void
+    {
+        foreach ($hosts as $alias => $hostnames) {
+            $this->addHost($alias, ...$hostnames);
+        }
+    }
+
+    /**
+     * Adds the given alias for hostname(s) to the router's host table
      *
      * @param string $alias
-     * @param string ...$hostname
+     * @param string ...$hostnames
      *
      * @return void
      *
      * @since 2.6.0
      */
-    public function addHost(string $alias, string ...$hostname) : void
+    public function addHost(string $alias, string ...$hostnames) : void
     {
-        $this->hosts[$alias] = $hostname;
+        $this->hosts[$alias] = $hostnames;
     }
 
     /**
@@ -368,10 +417,6 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
 
     /**
      * Compares the given route host and the given request host
-     *
-     * Returns true if the route host is null or
-     * if the route host is equal to the request host,
-     * otherwise returns false.
      *
      * @param string|null $routeHost
      * @param string $requestHost

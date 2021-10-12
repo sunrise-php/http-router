@@ -46,6 +46,92 @@ class RouterTest extends TestCase
     /**
      * @return void
      */
+    public function testAddPatterns() : void
+    {
+        $backup = Router::$patterns;
+
+        $router = new Router();
+
+        try {
+            Router::$patterns = [];
+
+            $router->addPatterns([
+                '@foo' => 'foo',
+                '@bar' => 'bar',
+            ]);
+
+            $this->assertSame([
+                '@foo' => 'foo',
+                '@bar' => 'bar',
+            ], Router::$patterns);
+
+            $router->addPatterns([
+                '@baz' => 'baz',
+            ]);
+
+            $this->assertSame([
+                '@foo' => 'foo',
+                '@bar' => 'bar',
+                '@baz' => 'baz',
+            ], Router::$patterns);
+
+            $router->addPatterns([
+                '@bar' => 'qux',
+            ]);
+
+            $this->assertSame([
+                '@foo' => 'foo',
+                '@bar' => 'qux',
+                '@baz' => 'baz',
+            ], Router::$patterns);
+        } finally {
+            Router::$patterns = $backup;
+        }
+    }
+
+    /**
+     * @return void
+     */
+    public function testAddHosts() : void
+    {
+        $router = new Router();
+
+        $this->assertSame([], $router->getHosts());
+
+        $router->addHosts([
+            'foo' => ['foo.com', 'www.foo.com'],
+            'bar' => ['bar.com', 'www.bar.com'],
+        ]);
+
+        $this->assertSame([
+            'foo' => ['foo.com', 'www.foo.com'],
+            'bar' => ['bar.com', 'www.bar.com'],
+        ], $router->getHosts());
+
+        $router->addHosts([
+            'baz' => ['baz.com', 'www.baz.com'],
+        ]);
+
+        $this->assertSame([
+            'foo' => ['foo.com', 'www.foo.com'],
+            'bar' => ['bar.com', 'www.bar.com'],
+            'baz' => ['baz.com', 'www.baz.com'],
+        ], $router->getHosts());
+
+        $router->addHosts([
+            'bar' => ['qux.com', 'www.qux.com'],
+        ]);
+
+        $this->assertSame([
+            'foo' => ['foo.com', 'www.foo.com'],
+            'bar' => ['qux.com', 'www.qux.com'],
+            'baz' => ['baz.com', 'www.baz.com'],
+        ], $router->getHosts());
+    }
+
+    /**
+     * @return void
+     */
     public function testAddHost() : void
     {
         $router = new Router();
@@ -55,7 +141,7 @@ class RouterTest extends TestCase
         $router->addHost('google', 'google.com', 'www.google.com');
 
         $this->assertSame([
-            'google' => ['google.com', 'www.google.com']
+            'google' => ['google.com', 'www.google.com'],
         ], $router->getHosts());
 
         $router->addHost('yahoo', 'yahoo.com');

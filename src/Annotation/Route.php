@@ -44,8 +44,6 @@ final class Route
     /**
      * The descriptor holder
      *
-     * Don't use the property outside of the package.
-     *
      * @var mixed
      *
      * @internal
@@ -152,6 +150,12 @@ final class Route
     ) {
         if (isset($method)) {
             $methods[] = $method;
+        }
+
+        // if no methods are specified,
+        // such a route is a GET route.
+        if (empty($methods)) {
+            $methods[] = 'GET';
         }
 
         $this->name = $name;

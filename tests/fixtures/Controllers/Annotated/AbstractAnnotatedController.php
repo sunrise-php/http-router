@@ -5,8 +5,8 @@ namespace Sunrise\Http\Router\Tests\Fixtures\Controllers\Annotated;
 use Sunrise\Http\Router\Tests\Fixtures\Controllers\AbstractController;
 
 /**
- * @Route()
+ * @Route("abstract-annotated-controller", path="/")
  */
-final class UnattributedAnnotatedController extends AbstractController
+abstract class AbstractAnnotatedController extends AbstractController
 {
 }

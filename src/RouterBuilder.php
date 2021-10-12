@@ -42,6 +42,11 @@ final class RouterBuilder
     private $cacheKey = null;
 
     /**
+     * @var array<string, string>|null
+     */
+    private $patterns = null;
+
+    /**
      * @var array<string, string[]>|null
      */
     private $hosts = null;
@@ -152,6 +157,22 @@ final class RouterBuilder
     }
 
     /**
+     * Sets the given patterns to the builder
+     *
+     * @param array<string, string>|null $patterns
+     *
+     * @return self
+     *
+     * @since 2.11.0
+     */
+    public function setPatterns(?array $patterns) : self
+    {
+        $this->patterns = $patterns;
+
+        return $this;
+    }
+
+    /**
      * Sets the given hosts to the builder
      *
      * @param array<string, string[]>|null $hosts
@@ -200,10 +221,12 @@ final class RouterBuilder
             $router->load($this->descriptorLoader);
         }
 
+        if (!empty($this->patterns)) {
+            $router->addPatterns($this->patterns);
+        }
+
         if (!empty($this->hosts)) {
-            foreach ($this->hosts as $alias => $hostnames) {
-                $router->addHost($alias, ...$hostnames);
-            }
+            $router->addHosts($this->hosts);
         }
 
         if (!empty($this->middlewares)) {

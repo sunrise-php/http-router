@@ -8,7 +8,6 @@ namespace Sunrise\Http\Router\Tests\Loader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Annotation\Route;
-use Sunrise\Http\Router\Exception\InvalidDescriptorException;
 use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
 use Sunrise\Http\Router\Loader\DescriptorLoader;
 use Sunrise\Http\Router\Loader\LoaderInterface;
@@ -238,20 +237,66 @@ class DescriptorLoaderTest extends TestCase
         $routes = $loader->load();
         $this->assertTrue($routes->has('first-from-grouped-annotated-controller'));
         $this->assertTrue($routes->has('second-from-grouped-annotated-controller'));
+        $this->assertTrue($routes->has('third-from-grouped-annotated-controller'));
 
         $route = $routes->get('first-from-grouped-annotated-controller');
-        $this->assertSame('first-from-grouped-annotated-controller', $route->getName());
-        $this->assertSame('/', $route->getPath());
+        $this->assertSame('host', $route->getHost());
+        $this->assertSame('/prefix/first.json', $route->getPath());
         $this->assertSame(['GET'], $route->getMethods());
+        $this->assertCount(6, $route->getMiddlewares());
 
         $route = $routes->get('second-from-grouped-annotated-controller');
-        $this->assertSame('second-from-grouped-annotated-controller', $route->getName());
-        $this->assertSame('/', $route->getPath());
+        $this->assertSame('host', $route->getHost());
+        $this->assertSame('/prefix/second.json', $route->getPath());
         $this->assertSame(['GET'], $route->getMethods());
+        $this->assertCount(6, $route->getMiddlewares());
+
+        $route = $routes->get('third-from-grouped-annotated-controller');
+        $this->assertSame('host', $route->getHost());
+        $this->assertSame('/prefix/third.json', $route->getPath());
+        $this->assertSame(['GET'], $route->getMethods());
+        $this->assertCount(6, $route->getMiddlewares());
 
         $this->assertFalse($routes->has('private-from-grouped-annotated-controller'));
         $this->assertFalse($routes->has('protected-from-grouped-annotated-controller'));
         $this->assertFalse($routes->has('static-from-grouped-annotated-controller'));
+    }
+
+    /**
+     * @return void
+     */
+    public function testLoadGroupedAttributedClass() : void
+    {
+        if (8 > PHP_MAJOR_VERSION) {
+            $this->markTestSkipped('PHP 8 is required...');
+            return;
+        }
+
+        $loader = new DescriptorLoader();
+        $loader->attach(Fixtures\Controllers\Attributed\GroupedAttributedController::class);
+
+        $routes = $loader->load();
+        $this->assertTrue($routes->has('first-from-grouped-attributed-controller'));
+        $this->assertTrue($routes->has('second-from-grouped-attributed-controller'));
+        $this->assertTrue($routes->has('third-from-grouped-attributed-controller'));
+
+        $route = $routes->get('first-from-grouped-attributed-controller');
+        $this->assertSame('host', $route->getHost());
+        $this->assertSame('/prefix/first.json', $route->getPath());
+        $this->assertSame(['GET'], $route->getMethods());
+        $this->assertCount(6, $route->getMiddlewares());
+
+        $route = $routes->get('second-from-grouped-attributed-controller');
+        $this->assertSame('host', $route->getHost());
+        $this->assertSame('/prefix/second.json', $route->getPath());
+        $this->assertSame(['GET'], $route->getMethods());
+        $this->assertCount(6, $route->getMiddlewares());
+
+        $route = $routes->get('third-from-grouped-attributed-controller');
+        $this->assertSame('host', $route->getHost());
+        $this->assertSame('/prefix/third.json', $route->getPath());
+        $this->assertSame(['GET'], $route->getMethods());
+        $this->assertCount(6, $route->getMiddlewares());
     }
 
     /**
@@ -310,13 +355,12 @@ class DescriptorLoaderTest extends TestCase
     /**
      * @return void
      */
-    public function testLoadUnattributedAnnotatedClass() : void
+    public function testLoadAbstractAnnotatedClass() : void
     {
         $loader = new DescriptorLoader();
-        $loader->attach(Fixtures\Controllers\Annotated\UnattributedAnnotatedController::class);
+        $loader->attach(Fixtures\Controllers\Annotated\AbstractAnnotatedController::class);
 
-        $this->expectException(InvalidDescriptorException::class);
-
-        $loader->load();
+        $routes = $loader->load();
+        $this->assertFalse($routes->has('abstract-annotated-controller'));
     }
 }
