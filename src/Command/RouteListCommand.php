@@ -66,6 +66,9 @@ class RouteListCommand extends Command
     {
         parent::__construct();
 
+        $this->setName(static::$defaultName);
+        $this->setDescription(static::$defaultDescription);
+
         $this->router = $router;
     }
 

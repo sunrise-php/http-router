@@ -32,11 +32,61 @@ class RouteListCommandTest extends TestCase
         ]);
 
         $command = new RouteListCommand($router);
+
+        $this->assertSame('router:route-list', $command->getName());
+
         $commandTester = new CommandTester($command);
 
-        $exitCode = $commandTester->execute([]);
+        $this->assertSame(0, $commandTester->execute([]));
+    }
 
-        $this->assertSame(0, $exitCode);
+    /**
+     * @return void
+     */
+    public function testRunInheritedCommand() : void
+    {
+        $command = new class extends RouteListCommand
+        {
+            public function __construct()
+            {
+                parent::__construct(null);
+            }
+
+            protected function getRouter() : Router
+            {
+                return new Router();
+            }
+        };
+
+        $this->assertSame('router:route-list', $command->getName());
+
+        $commandTester = new CommandTester($command);
+
+        $this->assertSame(0, $commandTester->execute([]));
+    }
+
+    /**
+     * @return void
+     */
+    public function testRunRenamedCommand() : void
+    {
+        $command = new class extends RouteListCommand
+        {
+            protected static $defaultName = 'foo';
+            protected static $defaultDescription = 'bar';
+
+            public function __construct()
+            {
+                parent::__construct(new Router());
+            }
+        };
+
+        $this->assertSame('foo', $command->getName());
+        $this->assertSame('bar', $command->getDescription());
+
+        $commandTester = new CommandTester($command);
+
+        $this->assertSame(0, $commandTester->execute([]));
     }
 
     /**
@@ -50,25 +100,5 @@ class RouteListCommandTest extends TestCase
         $this->expectException(RuntimeException::class);
 
         $commandTester->execute([]);
-    }
-
-    /**
-     * @return void
-     */
-    public function testRunInheritedCommand() : void
-    {
-        $userCommand = new class extends RouteListCommand
-        {
-            protected function getRouter() : Router
-            {
-                return new Router();
-            }
-        };
-
-        $commandTester = new CommandTester($userCommand);
-
-        $exitCode = $commandTester->execute([]);
-
-        $this->assertSame(0, $exitCode);
     }
 }
