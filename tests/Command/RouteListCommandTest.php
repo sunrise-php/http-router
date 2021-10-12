@@ -55,7 +55,7 @@ class RouteListCommandTest extends TestCase
     /**
      * @return void
      */
-    public function testRunUserCommand() : void
+    public function testRunInheritedCommand() : void
     {
         $userCommand = new class extends RouteListCommand
         {
