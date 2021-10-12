@@ -418,10 +418,6 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     /**
      * Compares the given route host and the given request host
      *
-     * Returns true if the route host is null or
-     * if the route host is equal to the request host,
-     * otherwise returns false.
-     *
      * @param string|null $routeHost
      * @param string $requestHost
      *
