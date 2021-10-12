@@ -78,7 +78,7 @@ class ReferenceResolver implements ReferenceResolverInterface
 
         list($class, $method) = $this->normalizeReference($reference);
 
-        if (isset($class, $method) && method_exists($class, $method)) {
+        if (isset($class) && isset($method) && method_exists($class, $method)) {
             return new CallableRequestHandler([$this->resolveClass($class), $method]);
         }
 
@@ -107,7 +107,7 @@ class ReferenceResolver implements ReferenceResolverInterface
 
         list($class, $method) = $this->normalizeReference($reference);
 
-        if (isset($class, $method) && method_exists($class, $method)) {
+        if (isset($class) && isset($method) && method_exists($class, $method)) {
             return new CallableMiddleware([$this->resolveClass($class), $method]);
         }
 
@@ -164,9 +164,11 @@ class ReferenceResolver implements ReferenceResolverInterface
     /**
      * Resolves the given class
      *
-     * @param string $class
+     * @param class-string<T> $class
      *
-     * @return object
+     * @return T
+     *
+     * @template T
      */
     private function resolveClass(string $class)
     {
