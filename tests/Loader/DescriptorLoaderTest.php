@@ -351,4 +351,16 @@ class DescriptorLoaderTest extends TestCase
             return $route->getName();
         }, $routes->all()));
     }
+
+    /**
+     * @return void
+     */
+    public function testLoadAbstractAnnotatedClass() : void
+    {
+        $loader = new DescriptorLoader();
+        $loader->attach(Fixtures\Controllers\Annotated\AbstractAnnotatedController::class);
+
+        $routes = $loader->load();
+        $this->assertFalse($routes->has('abstract-annotated-controller'));
+    }
 }
