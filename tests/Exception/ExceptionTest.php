@@ -37,7 +37,7 @@ class ExceptionTest extends TestCase
         $this->assertSame('', $exception->getMessage());
         $this->assertSame([], $exception->getContext());
         $this->assertSame(0, $exception->getCode());
-        $this->assertSame(null, $exception->getPrevious());
+        $this->assertNull($exception->getPrevious());
     }
 
     /**
@@ -69,8 +69,8 @@ class ExceptionTest extends TestCase
         $this->assertSame($context['foo'], $exception->fromContext('foo'));
         $this->assertSame($context['bar'], $exception->fromContext('bar'));
 
-        $this->assertSame(null, $exception->fromContext('baz'));
-        $this->assertSame(false, $exception->fromContext('baz', false));
+        $this->assertNull($exception->fromContext('baz'));
+        $this->assertFalse($exception->fromContext('baz', false));
     }
 
     /**
