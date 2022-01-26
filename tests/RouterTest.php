@@ -428,6 +428,8 @@ class RouterTest extends TestCase
                 $routes[1]->getPath()
             ));
 
+        $this->assertNotNull($router->getMatchedRoute());
+        $this->assertSame($routes[1]->getName(), $router->getMatchedRoute()->getName());
         $this->assertTrue($routes[1]->getRequestHandler()->isRunned());
     }
 
@@ -509,6 +511,8 @@ class RouterTest extends TestCase
                 $routes[2]->getPath()
             ));
 
+        $this->assertNotNull($router->getMatchedRoute());
+        $this->assertSame($routes[2]->getName(), $router->getMatchedRoute()->getName());
         $this->assertTrue($routes[2]->getRequestHandler()->isRunned());
     }
 

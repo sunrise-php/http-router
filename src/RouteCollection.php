@@ -149,18 +149,6 @@ class RouteCollection implements RouteCollectionInterface
     }
 
     /**
-     * Alias to the addMiddleware method
-     *
-     * @param MiddlewareInterface ...$middlewares
-     *
-     * @return RouteCollectionInterface
-     */
-    public function appendMiddleware(MiddlewareInterface ...$middlewares) : RouteCollectionInterface
-    {
-        return $this->addMiddleware(...$middlewares);
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function prependMiddleware(MiddlewareInterface ...$middlewares) : RouteCollectionInterface
@@ -170,6 +158,14 @@ class RouteCollection implements RouteCollectionInterface
         }
 
         return $this;
+    }
+
+    /**
+     * @deprecated 2.12.0 Use the addMiddleware method.
+     */
+    public function appendMiddleware(MiddlewareInterface ...$middlewares) : RouteCollectionInterface
+    {
+        return $this->addMiddleware(...$middlewares);
     }
 
     /**

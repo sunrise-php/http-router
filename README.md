@@ -448,6 +448,27 @@ final class EntryUpdateRequestHandler implements RequestHandlerInterface
 
 ## Useful to know
 
+### Get a current route
+
+#### Through Router
+
+> Available from version 2.12.
+
+```php
+$router->getMatchedRoute();
+```
+
+#### Through Request
+
+> Available from version 1.x, but wasn't documented before...
+
+```php
+$request->getAttribute('@route');
+
+// or
+$request->getAttribute(\Sunrise\Http\Router\RouteInterface::ATTR_ROUTE);
+```
+
 ### Generation a route URI
 
 ```php

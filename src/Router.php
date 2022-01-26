@@ -84,6 +84,13 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     private $middlewares = [];
 
     /**
+     * The router's matched route
+     *
+     * @var RouteInterface|null
+     */
+    private $matchedRoute = null;
+
+    /**
      * Gets the router host table
      *
      * @return array
@@ -113,6 +120,16 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     public function getMiddlewares() : array
     {
         return array_values($this->middlewares);
+    }
+
+    /**
+     * Gets the router's matched route
+     *
+     * @return RouteInterface|null
+     */
+    public function getMatchedRoute() : ?RouteInterface
+    {
+        return $this->matchedRoute;
     }
 
     /**
@@ -355,7 +372,9 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     {
         // lazy resolving of the given request...
         $routing = new CallableRequestHandler(function (ServerRequestInterface $request) : ResponseInterface {
-            return $this->match($request)->handle($request);
+            $route = $this->match($request);
+            $this->matchedRoute = $route;
+            return $route->handle($request);
         });
 
         $middlewares = $this->getMiddlewares();
@@ -375,6 +394,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     public function handle(ServerRequestInterface $request) : ResponseInterface
     {
         $route = $this->match($request);
+        $this->matchedRoute = $route;
 
         $middlewares = $this->getMiddlewares();
         if (empty($middlewares)) {

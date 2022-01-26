@@ -63,7 +63,7 @@
     "scripts": {
         "test": [
             "phpcs",
-            "XDEBUG_MODE=coverage phpunit --coverage-text"
+            "XDEBUG_MODE=coverage phpunit --coverage-text --colors=always"
         ],
         "build": [
             "phpdoc -d src/ -t phpdoc/",
