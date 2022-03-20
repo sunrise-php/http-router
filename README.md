@@ -570,6 +570,32 @@ use Sunrise\Http\Router\Command\RouteListCommand;
 new RouteListCommand($router);
 ```
 
+### Events
+
+> Available from version 2.13
+
+```bash
+composer require symfony/event-dispatcher
+```
+
+```php
+use Sunrise\Http\Router\Event\RouteEvent;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+
+$eventDispatcher = new EventDispatcher();
+
+$eventDispatcher->addListener(RouteEvent::NAME, function (RouteEvent $event) {
+    // gets the matched route:
+    $event->getRoute();
+    // gets the current request:
+    $event->getRequest();
+    // overrides the current request:
+    $event->setRequest(ServerRequestInterface $request);
+});
+
+$router->setEventDispatcher($eventDispatcher);
+```
+
 ---
 
 ## Test run
