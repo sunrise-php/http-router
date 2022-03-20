@@ -8,6 +8,7 @@ namespace Sunrise\Http\Router\Tests;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Router\Event\RouteEvent;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\MethodNotAllowedException;
 use Sunrise\Http\Router\Exception\PageNotFoundException;
@@ -19,6 +20,7 @@ use Sunrise\Http\Router\RouteCollection;
 use Sunrise\Http\Router\Router;
 use Sunrise\Http\Message\ResponseFactory;
 use Sunrise\Http\ServerRequest\ServerRequestFactory;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
  * Import functions
@@ -818,5 +820,75 @@ class RouterTest extends TestCase
         $this->expectException(RouteNotFoundException::class);
         $router->match((new ServerRequestFactory)
             ->createServerRequest('GET', 'http://localhost/ping'));
+    }
+
+    /**
+     * @return void
+     */
+    public function testEventDispatcher() : void
+    {
+        $router = new Router();
+        $this->assertNull($router->getEventDispatcher());
+
+        $eventDispatcher = new EventDispatcher();
+        $router->setEventDispatcher($eventDispatcher);
+        $this->assertSame($eventDispatcher, $router->getEventDispatcher());
+
+        $router->setEventDispatcher(null);
+        $this->assertNull($router->getEventDispatcher());
+    }
+
+    /**
+     * @return void
+     */
+    public function testRouteEvent() : void
+    {
+        $routes = [
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+        ];
+
+        $request = (new ServerRequestFactory)
+            ->createServerRequest(
+                $routes[1]->getMethods()[1],
+                $routes[1]->getPath()
+            );
+
+        $eventDispatcher = new EventDispatcher();
+        $eventDispatcher->addListener(RouteEvent::NAME, function (RouteEvent $event) use ($routes, $request) {
+            $this->assertSame($routes[1]->getName(), $event->getRoute()->getName());
+            $this->assertSame($request, $event->getRequest());
+        });
+
+        $router = new Router();
+        $router->addRoute(...$routes);
+        $router->setEventDispatcher($eventDispatcher);
+        $router->run($request);
+    }
+
+    /**
+     * @return void
+     */
+    public function testRouteEventOverrideRequest() : void
+    {
+        $route = new Fixtures\Route();
+
+        $request = (new ServerRequestFactory)
+            ->createServerRequest(
+                $route->getMethods()[0],
+                $route->getPath()
+            );
+
+        $eventDispatcher = new EventDispatcher();
+        $eventDispatcher->addListener(RouteEvent::NAME, function (RouteEvent $event) use ($request) {
+            $event->setRequest($request->withAttribute('foo', 'bar'));
+            $this->assertNotSame($request, $event->getRequest());
+        });
+
+        $router = new Router();
+        $router->addRoute($route);
+        $router->setEventDispatcher($eventDispatcher);
+        $router->handle($request);
     }
 }
