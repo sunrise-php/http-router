@@ -40,7 +40,8 @@
         "sunrise/coding-standard": "1.0.0",
         "sunrise/http-factory": "1.1.0",
         "doctrine/annotations": "^1.6",
-        "symfony/console": "^4.4"
+        "symfony/console": "^4.4",
+        "symfony/event-dispatcher": "^4.4"
     },
     "autoload": {
         "files": [
