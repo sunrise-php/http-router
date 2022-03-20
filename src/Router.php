@@ -19,6 +19,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Router\Event\RouteEvent;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\MethodNotAllowedException;
 use Sunrise\Http\Router\Exception\PageNotFoundException;
@@ -26,6 +27,7 @@ use Sunrise\Http\Router\Exception\RouteNotFoundException;
 use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Import functions
@@ -91,6 +93,15 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     private $matchedRoute = null;
 
     /**
+     * The router's event dispatcher
+     *
+     * @var EventDispatcherInterface|null
+     *
+     * @since 2.13.0
+     */
+    private $eventDispatcher = null;
+
+    /**
      * Gets the router host table
      *
      * @return array
@@ -130,6 +141,18 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     public function getMatchedRoute() : ?RouteInterface
     {
         return $this->matchedRoute;
+    }
+
+    /**
+     * Gets the router's event dispatcher
+     *
+     * @return EventDispatcherInterface|null
+     *
+     * @since 2.13.0
+     */
+    public function getEventDispatcher() : ?EventDispatcherInterface
+    {
+        return $this->eventDispatcher;
     }
 
     /**
@@ -244,6 +267,20 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
 
             $this->middlewares[$hash] = $middleware;
         }
+    }
+
+    /**
+     * Sets the given event dispatcher to the router
+     *
+     * @param EventDispatcherInterface|null $eventDispatcher
+     *
+     * @return void
+     *
+     * @since 2.13.0
+     */
+    public function setEventDispatcher(?EventDispatcherInterface $eventDispatcher) : void
+    {
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -374,6 +411,13 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
         $routing = new CallableRequestHandler(function (ServerRequestInterface $request) : ResponseInterface {
             $route = $this->match($request);
             $this->matchedRoute = $route;
+
+            if (isset($this->eventDispatcher)) {
+                $event = new RouteEvent($route, $request);
+                $this->eventDispatcher->dispatch($event, RouteEvent::NAME);
+                $request = $event->getRequest();
+            }
+
             return $route->handle($request);
         });
 
@@ -395,6 +439,12 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     {
         $route = $this->match($request);
         $this->matchedRoute = $route;
+
+        if (isset($this->eventDispatcher)) {
+            $event = new RouteEvent($route, $request);
+            $this->eventDispatcher->dispatch($event, RouteEvent::NAME);
+            $request = $event->getRequest();
+        }
 
         $middlewares = $this->getMiddlewares();
         if (empty($middlewares)) {
