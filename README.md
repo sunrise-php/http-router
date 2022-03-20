@@ -12,7 +12,7 @@
 ## Installation
 
 ```bash
-composer require 'sunrise/http-router:^2.11'
+composer require 'sunrise/http-router:^2.13'
 ```
 
 ## Support for OpenAPI (Swagger) Specification (optional)
