@@ -15,6 +15,7 @@ namespace Sunrise\Http\Router;
  * Import classes
  */
 use Fig\Http\Message\RequestMethodInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -27,7 +28,6 @@ use Sunrise\Http\Router\Exception\RouteNotFoundException;
 use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Import functions

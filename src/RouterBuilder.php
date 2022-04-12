@@ -15,9 +15,9 @@ namespace Sunrise\Http\Router;
  * Import classes
  */
 use Psr\Container\ContainerInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\SimpleCache\CacheInterface;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * RouterBuilder
