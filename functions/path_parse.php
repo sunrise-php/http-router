@@ -63,6 +63,8 @@ const CHARACTER_TABLE_FOR_SUBPATTERN_NAME = [
  */
 function path_parse(string $path) : array
 {
+    // This will be useful for a long-running application,
+    // for example if you use the RoadRunner server...
     static $cache = [];
 
     if (isset($cache[$path])) {

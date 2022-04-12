@@ -26,6 +26,14 @@ use function str_replace;
  */
 function path_regex(string $path) : string
 {
+    // This will be useful for a long-running application,
+    // for example if you use the RoadRunner server...
+    static $cache = [];
+
+    if (isset($cache[$path])) {
+        return $cache[$path];
+    }
+
     $matches = path_parse($path);
 
     foreach ($matches as $match) {
@@ -42,5 +50,7 @@ function path_regex(string $path) : string
         $path = str_replace('{' . $match['name'] . '}', $subpattern, $path);
     }
 
-    return '#^' . $path . '$#uD';
+    $cache[$path] = '#^' . $path . '$#uD';
+
+    return $cache[$path];
 }
