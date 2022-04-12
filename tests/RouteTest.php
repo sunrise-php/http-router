@@ -6,6 +6,7 @@ namespace Sunrise\Http\Router\Tests;
  * Import classes
  */
 use PHPUnit\Framework\TestCase;
+use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Sunrise\Http\Router\Route;
 use Sunrise\Http\Router\RouteInterface;
 use Sunrise\Http\ServerRequest\ServerRequestFactory;
@@ -364,5 +365,50 @@ class RouteTest extends TestCase
         $this->assertSame($attributes, $route->getMiddlewares()[1]->getRequest()->getAttributes());
         $this->assertNull($route->getMiddlewares()[2]->getRequest());
         $this->assertNull($route->getRequestHandler()->getRequest());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetClassHolder() : void
+    {
+        $class = new Fixtures\Controllers\BlankController();
+
+        $route = new Route('foo', '/foo', [], $class);
+        $holder = $route->getHolder();
+
+        $this->assertInstanceOf(\ReflectionClass::class, $holder);
+        $this->assertSame(\get_class($class), $holder->getName());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetClosureHolder() : void
+    {
+        $callback = function () {
+        };
+
+        $route = new Route('foo', '/foo', [], new CallableRequestHandler($callback));
+        $holder = $route->getHolder();
+
+        $this->assertInstanceOf(\ReflectionFunction::class, $holder);
+        $this->assertSame($callback, $holder->getClosure());
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetMethodHolder() : void
+    {
+        $class = new Fixtures\Controllers\BlankController();
+        $method = '__invoke';
+
+        $route = new Route('foo', '/foo', [], new CallableRequestHandler([$class, $method]));
+        $holder = $route->getHolder();
+
+        $this->assertInstanceOf(\ReflectionMethod::class, $holder);
+        $this->assertSame(\get_class($class), $holder->getDeclaringClass()->getName());
+        $this->assertSame($method, $holder->getName());
     }
 }

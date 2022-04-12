@@ -788,38 +788,35 @@ class RouterTest extends TestCase
             new Route('qux', '/ping', ['GET'], $requestHandler),
         ];
 
-        $routes[0]->setHost('foo.host');
-        $routes[1]->setHost('bar.host');
-        $routes[2]->setHost('baz.host');
+        $routes[0]->setHost('foo');
+        $routes[1]->setHost('bar');
+        $routes[2]->setHost('baz');
 
         $router = new Router();
-        $router->addHost('baz.host', 'example.com');
+        $router->addHost('foo', 'foo.net');
+        $router->addHost('bar', 'bar.net');
+        $router->addHost('baz', 'baz.net');
         $router->addRoute(...$routes);
 
+        // hosted route
         $foundRoute = $router->match((new ServerRequestFactory)
-            ->createServerRequest('GET', 'http://foo.host/ping'));
+            ->createServerRequest('GET', 'http://foo.net/ping'));
         $this->assertSame($routes[0]->getName(), $foundRoute->getName());
 
+        // hosted route
         $foundRoute = $router->match((new ServerRequestFactory)
-            ->createServerRequest('GET', 'http://bar.host/ping'));
+            ->createServerRequest('GET', 'http://bar.net/ping'));
         $this->assertSame($routes[1]->getName(), $foundRoute->getName());
 
+        // hosted route
         $foundRoute = $router->match((new ServerRequestFactory)
-            ->createServerRequest('GET', 'http://baz.host/ping'));
+            ->createServerRequest('GET', 'http://baz.net/ping'));
         $this->assertSame($routes[2]->getName(), $foundRoute->getName());
 
-        $foundRoute = $router->match((new ServerRequestFactory)
-            ->createServerRequest('GET', 'http://example.com/ping'));
-        $this->assertSame($routes[2]->getName(), $foundRoute->getName());
-
+        // non-hosted route
         $foundRoute = $router->match((new ServerRequestFactory)
             ->createServerRequest('GET', 'http://localhost/ping'));
         $this->assertSame($routes[3]->getName(), $foundRoute->getName());
-
-        $routes[3]->setHost('qux.host');
-        $this->expectException(RouteNotFoundException::class);
-        $router->match((new ServerRequestFactory)
-            ->createServerRequest('GET', 'http://localhost/ping'));
     }
 
     /**
@@ -890,5 +887,82 @@ class RouterTest extends TestCase
         $router->addRoute($route);
         $router->setEventDispatcher($eventDispatcher);
         $router->handle($request);
+    }
+
+    /**
+     * @return void
+     */
+    public function testResolveHost() : void
+    {
+        $router = new Router();
+        $router->addHost('foo', 'www1.foo.com', 'www2.foo.com');
+        $router->addHost('bar', 'www1.bar.com', 'www2.bar.com');
+
+        $this->assertSame('foo', $router->resolveHostname('www1.foo.com'));
+        $this->assertSame('foo', $router->resolveHostname('www2.foo.com'));
+        $this->assertSame('bar', $router->resolveHostname('www1.bar.com'));
+        $this->assertSame('bar', $router->resolveHostname('www2.bar.com'));
+        $this->assertNull($router->resolveHostname('example.com'));
+    }
+
+    /**
+     * @return void
+     */
+    public function testGetRoutesByHostname() : void
+    {
+        $router = new Router();
+        $router->addHost('foo', 'www1.foo.com', 'www2.foo.com');
+        $router->addHost('bar', 'www1.bar.com', 'www2.bar.com');
+
+        $routes = [
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+            new Fixtures\Route(),
+        ];
+
+        $routes[0]->setHost('foo');
+        $routes[2]->setHost('bar');
+        $routes[4]->setHost('bar');
+
+        $router->addRoute(...$routes);
+
+        $this->assertSame([
+            $routes[0],
+            $routes[1],
+            $routes[3],
+            $routes[5],
+        ], $router->getRoutesByHostname('www1.foo.com'));
+
+        $this->assertSame([
+            $routes[0],
+            $routes[1],
+            $routes[3],
+            $routes[5],
+        ], $router->getRoutesByHostname('www2.foo.com'));
+
+        $this->assertSame([
+            $routes[1],
+            $routes[2],
+            $routes[3],
+            $routes[4],
+            $routes[5],
+        ], $router->getRoutesByHostname('www1.bar.com'));
+
+        $this->assertSame([
+            $routes[1],
+            $routes[2],
+            $routes[3],
+            $routes[4],
+            $routes[5],
+        ], $router->getRoutesByHostname('www2.bar.com'));
+
+        $this->assertSame([
+            $routes[1],
+            $routes[3],
+            $routes[5],
+        ], $router->getRoutesByHostname('localhost'));
     }
 }
