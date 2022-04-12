@@ -16,6 +16,10 @@ namespace Sunrise\Http\Router;
  */
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use ReflectionClass;
+use ReflectionMethod;
+use ReflectionFunction;
+use Reflector;
 
 /**
  * RouteInterface
@@ -109,6 +113,15 @@ interface RouteInterface extends RequestHandlerInterface
      * @since 2.4.0
      */
     public function getTags() : array;
+
+    /**
+     * Gets the route holder
+     *
+     * @return ReflectionClass|ReflectionMethod|ReflectionFunction
+     *
+     * @since 2.14.0
+     */
+    public function getHolder() : Reflector;
 
     /**
      * Sets the given name to the route
