@@ -47,6 +47,8 @@ class RouteListCommand extends Command
 
     /**
      * {@inheritdoc}
+     *
+     * @var string
      */
     protected static $defaultDescription = 'Lists all routes in your application';
 
