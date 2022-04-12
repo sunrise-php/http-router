@@ -108,9 +108,9 @@ class ConfigLoader implements LoaderInterface
     public function attach($resource) : void
     {
         if (is_dir($resource)) {
-            $resources = glob($resource . '/*.php');
-            foreach ($resources as $resource) {
-                $this->resources[] = $resource;
+            $fileNames = glob($resource . '/*.php');
+            foreach ($fileNames as $fileName) {
+                $this->resources[] = $fileName;
             }
 
             return;

@@ -17,6 +17,7 @@ namespace Sunrise\Http\Router;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\SimpleCache\CacheInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * RouterBuilder
@@ -25,6 +26,13 @@ use Psr\SimpleCache\CacheInterface;
  */
 final class RouterBuilder
 {
+
+    /**
+     * @var EventDispatcherInterface|null
+     *
+     * @since 2.14.0
+     */
+    private $eventDispatcher = null;
 
     /**
      * @var ContainerInterface|null
@@ -65,6 +73,22 @@ final class RouterBuilder
      * @var Loader\DescriptorLoader|null
      */
     private $descriptorLoader = null;
+
+    /**
+     * Sets the given event dispatcher to the builder
+     *
+     * @param EventDispatcherInterface|null $eventDispatcher
+     *
+     * @return self
+     *
+     * @since 2.14.0
+     */
+    public function setEventDispatcher(?EventDispatcherInterface $eventDispatcher) : self
+    {
+        $this->eventDispatcher = $eventDispatcher;
+
+        return $this;
+    }
 
     /**
      * Sets the given container to the builder
@@ -208,6 +232,10 @@ final class RouterBuilder
     public function build() : Router
     {
         $router = new Router();
+
+        if (isset($this->eventDispatcher)) {
+            $router->setEventDispatcher($this->eventDispatcher);
+        }
 
         if (isset($this->configLoader)) {
             $this->configLoader->setContainer($this->container);

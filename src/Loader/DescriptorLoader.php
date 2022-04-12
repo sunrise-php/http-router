@@ -16,6 +16,7 @@ namespace Sunrise\Http\Router\Loader;
  */
 use Doctrine\Common\Annotations\SimpleAnnotationReader;
 use Psr\Container\ContainerInterface;
+use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\SimpleCache\CacheInterface;
 use Sunrise\Http\Router\Annotation\Host;
@@ -61,7 +62,7 @@ class DescriptorLoader implements LoaderInterface
 {
 
     /**
-     * @var string[]
+     * @var class-string[]
      */
     private $resources = [];
 
@@ -194,9 +195,9 @@ class DescriptorLoader implements LoaderInterface
     public function attach($resource) : void
     {
         if (is_dir($resource)) {
-            $resources = $this->scandir($resource);
-            foreach ($resources as $resource) {
-                $this->resources[] = $resource;
+            $classNames = $this->scandir($resource);
+            foreach ($classNames as $className) {
+                $this->resources[] = $className;
             }
 
             return;
@@ -234,9 +235,9 @@ class DescriptorLoader implements LoaderInterface
 
         $routes = [];
         foreach ($descriptors as $descriptor) {
-            $middlewares = $descriptor->middlewares;
-            foreach ($middlewares as &$middleware) {
-                $middleware = $this->referenceResolver->toMiddleware($middleware);
+            $middlewares = [];
+            foreach ($descriptor->middlewares as $className) {
+                $middlewares[] = $this->referenceResolver->toMiddleware($className);
             }
 
             $routes[] = $this->routeFactory->createRoute(
@@ -403,7 +404,7 @@ class DescriptorLoader implements LoaderInterface
      * @param ReflectionClass|ReflectionMethod $reflector
      * @param class-string<T> $annotationName
      *
-     * @return array<T>
+     * @return T[]
      *
      * @template T
      */
@@ -438,7 +439,7 @@ class DescriptorLoader implements LoaderInterface
      *
      * @param string $directory
      *
-     * @return string[]
+     * @return class-string[]
      */
     private function scandir(string $directory) : array
     {

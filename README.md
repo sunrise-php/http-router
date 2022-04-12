@@ -12,7 +12,7 @@
 ## Installation
 
 ```bash
-composer require 'sunrise/http-router:^2.13'
+composer require 'sunrise/http-router:^2.14'
 ```
 
 ## Support for OpenAPI (Swagger) Specification (optional)
@@ -444,6 +444,28 @@ use Sunrise\Http\Router\Annotation\Route;
 final class EntryUpdateRequestHandler implements RequestHandlerInterface
 ```
 
+##### Additional annotations
+
+```php
+use Sunrise\Http\Router\Annotation\Host;
+
+#[Host('admin')]
+#[Prefix('/api/v1')]
+#[Postfix('.json')]
+#[Middleware(SomeMiddleware::class)]
+final class SomeController
+{
+    #[Route('foo', '/foo')]
+    public function foo(ServerRequestInterface $request) : ResponseInterface
+    {
+        // this action will be available at:
+        // http://admin.host/api/v1/foo.json
+        //
+        // this can be handy to reduce code duplication...
+    }
+}
+```
+
 ---
 
 ## Useful to know
@@ -469,6 +491,16 @@ $request->getAttribute('@route');
 $request->getAttribute(\Sunrise\Http\Router\RouteInterface::ATTR_ROUTE);
 ```
 
+#### Through Event
+
+> Available from version 2.13.
+
+```php
+$eventDispatcher->addListener(RouteEvent::NAME, function (RouteEvent $event) {
+    $event->getRoute();
+});
+```
+
 ### Generation a route URI
 
 ```php
@@ -484,6 +516,8 @@ $response = $router->getRoute('route.name')->handle($request);
 ```
 
 ### Route grouping
+
+Example for annotations [here](#additional-annotations).
 
 ```php
 $collector->group(function ($collector) {
@@ -528,15 +562,39 @@ $collector->get('api.entry.read', '/api/v1/entry/{slug<@slug>}');
 $collector->get('api.entry.read', '/api/v1/entry/{id<@id>}');
 ```
 
+It is better to set patterns through the router:
+
+```php
+// available since version 2.11.0
+$router->addPatterns([
+    '@id' => '[1-9][0-9]*',
+]);
+```
+
+...or through the router's builder:
+
+```php
+// available since version 2.11.0
+$builder->setPatterns([
+    '@id' => '[1-9][0-9]*',
+]);
+```
+
 ### Hosts (available from version 2.6.0)
 
 > Note: if you don't assign a host for a route, it will be available on any hosts!
 
 ```php
 // move the hosts table into the settings...
-$router->addHost('public.host', 'www.example.com');
-$router->addHost('admin.host', 'secret.example.com');
-$router->addHost('api.host', 'api.example.com');
+$router->addHost('public.host', 'www.example.com', ...);
+$router->addHost('admin.host', 'secret.example.com', ...);
+$router->addHost('api.host', 'api.example.com', ...);
+
+// ...or:
+$router->addHosts([
+    'public.host' => ['www.example.com', ...],
+    ...
+]);
 
 // the route will available only on the `secret.example.com` host...
 $route->setHost('admin.host');
@@ -546,6 +604,28 @@ $collector->group(function ($collector) {
     // some code...
 })
 ->setHost('admin.host');
+```
+
+You can resolve the hostname since version 2.14.0 as follows:
+
+```php
+$router->addHost('admin', 'www1.admin.example.com', 'www2.admin.example.com');
+
+$router->resolveHostname('www1.admin.example.com'); // return "admin"
+$router->resolveHostname('www2.admin.example.com'); // return "admin"
+$router->resolveHostname('unknown'); // return null
+```
+
+Also you can get all routes by hostname:
+
+```php
+$router->getRoutesByHostname('www1.admin.example.com');
+```
+
+### Route Holder
+
+```php
+$route->getHolder(); // return Reflector (class, method or function)
 ```
 
 ### The router builder
@@ -559,6 +639,7 @@ $router = (new RouterBuilder)
     ->useDescriptorLoader([]) // array with classes or directory with classes...
     ->setHosts([]) //
     ->setMiddlewares([]) // array with middlewares...
+    ->setPatterns([]) // available since version 2.11.0
     ->build();
 ```
 

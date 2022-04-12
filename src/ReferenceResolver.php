@@ -126,15 +126,19 @@ class ReferenceResolver implements ReferenceResolverInterface
      *
      * @param mixed $reference
      *
-     * @return array
+     * @return array{0: ?class-string, 1: ?string}
      */
     private function normalizeReference($reference) : array
     {
         if (is_array($reference) && is_callable($reference, true)) {
+            /** @var array{0: class-string, 1: string} $reference */
+
             return $reference;
         }
 
         if (is_string($reference)) {
+            /** @var class-string $reference */
+
             return [$reference, null];
         }
 

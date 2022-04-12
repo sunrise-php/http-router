@@ -32,9 +32,9 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 /**
  * Import functions
  */
-use function array_flip;
+use function Sunrise\Http\Router\path_build;
+use function Sunrise\Http\Router\path_match;
 use function array_keys;
-use function array_values;
 use function get_class;
 use function spl_object_hash;
 use function sprintf;
@@ -65,23 +65,26 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     ];
 
     /**
-     * The router host table
+     * The router's host table
      *
      * @var array<string, string[]>
+     *      The key is a host alias and values are hostnames.
      */
     private $hosts = [];
 
     /**
-     * The router routes
+     * The router's routes
      *
-     * @var RouteInterface[]
+     * @var array<string, RouteInterface>
+     *      The key is a route name.
      */
     private $routes = [];
 
     /**
-     * The router middlewares
+     * The router's middlewares
      *
-     * @var MiddlewareInterface[]
+     * @var array<string, MiddlewareInterface>
+     *      The keys is an object hash.
      */
     private $middlewares = [];
 
@@ -102,9 +105,9 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     private $eventDispatcher = null;
 
     /**
-     * Gets the router host table
+     * Gets the router's host table
      *
-     * @return array
+     * @return array<string, string[]>
      *
      * @since 2.6.0
      */
@@ -114,23 +117,80 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     }
 
     /**
-     * Gets the router routes
+     * Resolves the given hostname
+     *
+     * @param string $hostname
+     *
+     * @return string|null
+     *
+     * @since 2.14.0
+     */
+    public function resolveHostname(string $hostname) : ?string
+    {
+        foreach ($this->hosts as $alias => $hostnames) {
+            foreach ($hostnames as $value) {
+                if ($hostname === $value) {
+                    return $alias;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets all routes
      *
      * @return RouteInterface[]
      */
     public function getRoutes() : array
     {
-        return array_values($this->routes);
+        $routes = [];
+        foreach ($this->routes as $route) {
+            $routes[] = $route;
+        }
+
+        return $routes;
     }
 
     /**
-     * Gets the router middlewares
+     * Gets routes by the given hostname
+     *
+     * @param string $hostname
+     *
+     * @return RouteInterface[]
+     *
+     * @since 2.14.0
+     */
+    public function getRoutesByHostname(string $hostname) : array
+    {
+        // the hostname's alias.
+        $alias = $this->resolveHostname($hostname);
+
+        $routes = [];
+        foreach ($this->routes as $route) {
+            $host = $route->getHost();
+            if ($host === null || $host === $alias) {
+                $routes[] = $route;
+            }
+        }
+
+        return $routes;
+    }
+
+    /**
+     * Gets the router's middlewares
      *
      * @return MiddlewareInterface[]
      */
     public function getMiddlewares() : array
     {
-        return array_values($this->middlewares);
+        $middlewares = [];
+        foreach ($this->middlewares as $middleware) {
+            $middlewares[] = $middleware;
+        }
+
+        return $middlewares;
     }
 
     /**
@@ -163,7 +223,9 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *   '@digit' => '\d+',
      *   '@word' => '\w+',
      * ]);
+     * ```
      *
+     * ```php
      * $route->setPath('/{foo<@digit>}/{bar<@word>}');
      * ```
      *
@@ -181,13 +243,16 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     }
 
     /**
-     * Adds the given aliases for hostnames to the router's host table
+     * Adds aliases for hostnames to the router's host table
      *
      * ```php
      * $router->addHosts([
      *   'local' => ['127.0.0.1', 'localhost'],
      * ]);
+     * ```
      *
+     * ```php
+     * // will be available at 127.0.0.1
      * $route->setHost('local');
      * ```
      *
@@ -205,7 +270,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     }
 
     /**
-     * Adds the given alias for hostname(s) to the router's host table
+     * Adds the given alias for the given hostname(s) to the router's host table
      *
      * @param string $alias
      * @param string ...$hostnames
@@ -360,26 +425,27 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      */
     public function match(ServerRequestInterface $request) : RouteInterface
     {
-        $requestHost = $request->getUri()->getHost();
-        $requestPath = $request->getUri()->getPath();
-        $requestMethod = $request->getMethod();
+        $currentHost = $request->getUri()->getHost();
+        $currentPath = $request->getUri()->getPath();
+        $currentMethod = $request->getMethod();
         $allowedMethods = [];
 
-        foreach ($this->routes as $route) {
-            if (!$this->compareHosts($route->getHost(), $requestHost)) {
-                continue;
-            }
+        $routes = $this->getRoutesByHostname($currentHost);
 
+        foreach ($routes as $route) {
             // https://github.com/sunrise-php/http-router/issues/50
             // https://tools.ietf.org/html/rfc7231#section-6.5.5
-            if (!path_match($route->getPath(), $requestPath, $attributes)) {
+            if (!path_match($route->getPath(), $currentPath, $attributes)) {
                 continue;
             }
 
-            $routeMethods = array_flip($route->getMethods());
-            $allowedMethods += $routeMethods;
+            $routeMethods = [];
+            foreach ($route->getMethods() as $routeMethod) {
+                $routeMethods[$routeMethod] = true;
+                $allowedMethods[$routeMethod] = true;
+            }
 
-            if (!isset($routeMethods[$requestMethod])) {
+            if (!isset($routeMethods[$currentMethod])) {
                 continue;
             }
 
@@ -388,7 +454,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
 
         if (!empty($allowedMethods)) {
             throw new MethodNotAllowedException('Method Not Allowed', [
-                'method' => $requestMethod,
+                'method' => $currentMethod,
                 'allowed' => array_keys($allowedMethods),
             ]);
         }
@@ -483,30 +549,5 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
         foreach ($loaders as $loader) {
             $this->addRoute(...$loader->load()->all());
         }
-    }
-
-    /**
-     * Compares the given route host and the given request host
-     *
-     * @param string|null $routeHost
-     * @param string $requestHost
-     *
-     * @return bool
-     */
-    private function compareHosts(?string $routeHost, string $requestHost) : bool
-    {
-        if (null === $routeHost || $requestHost === $routeHost) {
-            return true;
-        }
-
-        if (!empty($this->hosts[$routeHost])) {
-            foreach ($this->hosts[$routeHost] as $hostname) {
-                if ($hostname === $requestHost) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 }

@@ -18,7 +18,13 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
+use Closure;
+use ReflectionClass;
+use ReflectionMethod;
+use ReflectionFunction;
+use Reflector;
 
 /**
  * Import functions
@@ -226,6 +232,26 @@ class Route implements RouteInterface
     public function getTags() : array
     {
         return $this->tags;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getHolder() : Reflector
+    {
+        $handler = $this->requestHandler;
+        if ($handler instanceof CallableRequestHandler) {
+            $callback = $handler->getCallback();
+            if ($callback instanceof Closure) {
+                return new ReflectionFunction($callback);
+            }
+
+            /** @var array{0: class-string|object, 1: string} $callback */
+
+            return new ReflectionMethod(...$callback);
+        }
+
+        return new ReflectionClass($handler);
     }
 
     /**

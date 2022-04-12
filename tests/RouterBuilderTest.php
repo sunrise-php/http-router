@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
 use Sunrise\Http\Router\Router;
 use Sunrise\Http\Router\RouterBuilder;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
  * RouterBuilderTest
@@ -25,6 +26,7 @@ class RouterBuilderTest extends TestCase
      */
     public function testBuild() : void
     {
+        $eventDispatcher = new EventDispatcher();
         $container = $this->getContainer();
         $cache = $this->getCache();
 
@@ -43,6 +45,7 @@ class RouterBuilderTest extends TestCase
         $hosts['baz'] = ['baz.net'];
 
         $builder = (new RouterBuilder)
+            ->setEventDispatcher($eventDispatcher)
             ->setContainer($container)
             ->setCache($cache)
             ->setCacheKey('foo')
@@ -66,6 +69,7 @@ class RouterBuilderTest extends TestCase
         $this->assertSame($patterns, Router::$patterns);
         $this->assertSame($hosts, $router->getHosts());
         $this->assertSame($middlewares, $router->getMiddlewares());
+        $this->assertSame($eventDispatcher, $router->getEventDispatcher());
 
         $router->getRoutes('foo');
         $router->getRoutes('bar');
