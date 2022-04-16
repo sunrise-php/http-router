@@ -35,7 +35,6 @@ use function substr;
  */
 use const JSON_BIGINT_AS_STRING;
 use const JSON_ERROR_NONE;
-use const JSON_OBJECT_AS_ARRAY;
 
 /**
  * JsonPayloadDecodingMiddleware
