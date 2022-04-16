@@ -480,7 +480,12 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
 
             if (isset($this->eventDispatcher)) {
                 $event = new RouteEvent($route, $request);
+
+                /**
+                 * @psalm-suppress TooManyArguments
+                 */
                 $this->eventDispatcher->dispatch($event, RouteEvent::NAME);
+
                 $request = $event->getRequest();
             }
 
@@ -508,7 +513,12 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
 
         if (isset($this->eventDispatcher)) {
             $event = new RouteEvent($route, $request);
+
+            /**
+             * @psalm-suppress TooManyArguments
+             */
             $this->eventDispatcher->dispatch($event, RouteEvent::NAME);
+
             $request = $event->getRequest();
         }
 

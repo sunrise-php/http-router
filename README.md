@@ -12,7 +12,7 @@
 ## Installation
 
 ```bash
-composer require 'sunrise/http-router:^2.14'
+composer require 'sunrise/http-router:^2.15'
 ```
 
 ## Support for OpenAPI (Swagger) Specification (optional)
@@ -469,6 +469,14 @@ final class SomeController
 ---
 
 ## Useful to know
+
+### JSON-payload decoding
+
+```php
+use Sunrise\Http\Router\Middleware\JsonPayloadDecodingMiddleware;
+
+$router->addMiddleware(new JsonPayloadDecodingMiddleware());
+```
 
 ### Get a current route
 

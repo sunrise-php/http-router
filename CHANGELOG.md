@@ -4,7 +4,11 @@
 
 ## v2.14.0
 
-* New method added: `Route::getHolder():Reflector`;
-* New method added: `Router::resolveHostname(string):?string`;
-* New method added: `Router::getRoutesByHostname(string):array`;
-* New method added: `RouterBuilder::setEventDispatcher(?EventDispatcherInterface):void`.
+* New method: `Route::getHolder():Reflector`;
+* New method: `Router::resolveHostname(string):?string`;
+* New method: `Router::getRoutesByHostname(string):array`;
+* New method: `RouterBuilder::setEventDispatcher(?EventDispatcherInterface):void`.
+
+## v2.15.0
+
+* New middleware: `Sunrise\Http\Router\Middleware\JsonPayloadDecodingMiddleware`.
