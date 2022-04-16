@@ -149,6 +149,9 @@ class ConfigLoader implements LoaderInterface
 
         foreach ($this->resources as $resource) {
             (function () use ($resource) {
+                /**
+                 * @psalm-suppress UnresolvableInclude
+                 */
                 require $resource;
             })->call($collector);
         }

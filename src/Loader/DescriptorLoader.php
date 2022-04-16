@@ -451,6 +451,9 @@ class DescriptorLoader implements LoaderInterface
 
         foreach ($files as $file) {
             if ('php' === $file->getExtension()) {
+                /**
+                 * @psalm-suppress UnresolvableInclude
+                 */
                 require_once $file->getPathname();
             }
         }
