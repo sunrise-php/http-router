@@ -61,7 +61,7 @@ class JsonPayloadDecodingMiddleware implements MiddlewareInterface
      *
      * @link https://www.php.net/manual/ru/json.constants.php
      */
-    protected const JSON_DECODING_OPTIONS = JSON_BIGINT_AS_STRING|JSON_OBJECT_AS_ARRAY;
+    protected const JSON_DECODING_OPTIONS = JSON_BIGINT_AS_STRING;
 
     /**
      * {@inheritdoc}
@@ -128,7 +128,7 @@ class JsonPayloadDecodingMiddleware implements MiddlewareInterface
     private function decodeRequestJsonPayload(ServerRequestInterface $request)
     {
         json_decode('');
-        $result = json_decode($request->getBody()->__toString(), null, 512, static::JSON_DECODING_OPTIONS);
+        $result = json_decode($request->getBody()->__toString(), true, 512, static::JSON_DECODING_OPTIONS);
         if (JSON_ERROR_NONE === json_last_error()) {
             return $result;
         }
