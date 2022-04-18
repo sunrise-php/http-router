@@ -1,6 +1,10 @@
-## v2.13.0
+# v2.16.0
 
-* Supports for events using the `symfony/event-dispatcher`.
+* New method: `Router::hasRoute(string):bool`.
+
+## v2.15.0
+
+* New middleware: `Sunrise\Http\Router\Middleware\JsonPayloadDecodingMiddleware`.
 
 ## v2.14.0
 
@@ -9,6 +13,6 @@
 * New method: `Router::getRoutesByHostname(string):array`;
 * New method: `RouterBuilder::setEventDispatcher(?EventDispatcherInterface):void`.
 
-## v2.15.0
+## v2.13.0
 
-* New middleware: `Sunrise\Http\Router\Middleware\JsonPayloadDecodingMiddleware`.
+* Supports for events using the `symfony/event-dispatcher`.
