@@ -1,4 +1,6 @@
-# HTTP router for PHP 7.1+ (incl. PHP 8 with attributes) based on PSR-7 and PSR-15 with support for annotations and OpenAPI (Swagger) Specification
+# HTTP router for PHP 7.1+ based on PSR-7 and PSR-15 with support for annotations/attributes and OpenAPI (Swagger) Specification
+
+**psr router**, **router with annotations**, **router with attributes**, **php router**.
 
 [![Build Status](https://circleci.com/gh/sunrise-php/http-router.svg?style=shield)](https://circleci.com/gh/sunrise-php/http-router)
 [![Code Coverage](https://scrutinizer-ci.com/g/sunrise-php/http-router/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/sunrise-php/http-router/?branch=master)
@@ -692,8 +694,6 @@ $router->setEventDispatcher($eventDispatcher);
 ```bash
 composer test
 ```
-
----
 
 ## Useful links
 

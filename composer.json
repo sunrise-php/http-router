@@ -1,7 +1,7 @@
 {
     "name": "sunrise/http-router",
     "homepage": "https://github.com/sunrise-php/http-router",
-    "description": "Sunrise // HTTP router for PHP 7.1+ (incl. PHP 8 with attributes) based on PSR-7 and PSR-15 with support for annotations and OpenApi Specification",
+    "description": "Sunrise // HTTP router for PHP 7.1+ based on PSR-7 and PSR-15 with support for annotations/attributes and OpenAPI (Swagger) Specification",
     "license": "MIT",
     "keywords": [
         "fenric",
@@ -22,8 +22,8 @@
     "authors": [
         {
             "name": "Anatoly Fenric",
-            "email": "anatoly@fenric.ru",
-            "homepage": "https://anatoly.fenric.ru/"
+            "email": "afenric@gmail.com",
+            "homepage": "https://github.com/fenric"
         }
     ],
     "require": {
@@ -38,7 +38,7 @@
     "require-dev": {
         "phpunit/phpunit": "7.5.20|9.5.0",
         "sunrise/coding-standard": "1.0.0",
-        "sunrise/http-factory": "1.1.0",
+        "sunrise/http-factory": "2.0.0",
         "doctrine/annotations": "^1.6",
         "symfony/console": "^4.4",
         "symfony/event-dispatcher": "^4.4"
@@ -64,6 +64,7 @@
     "scripts": {
         "test": [
             "phpcs",
+            "psalm",
             "XDEBUG_MODE=coverage phpunit --coverage-text --colors=always"
         ],
         "build": [
