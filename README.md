@@ -480,6 +480,16 @@ use Sunrise\Http\Router\Middleware\JsonPayloadDecodingMiddleware;
 $router->addMiddleware(new JsonPayloadDecodingMiddleware());
 ```
 
+### Get a route by name
+
+```php
+// checks if a route is exists
+$router->hasRoute('foo');
+
+// gets a route by name
+$router->getRoute('foo');
+```
+
 ### Get a current route
 
 #### Through Router
@@ -642,9 +652,10 @@ $route->getHolder(); // return Reflector (class, method or function)
 
 ```php
 $router = (new RouterBuilder)
-    ->setContainer(null) // null or PSR-11 container instance...
-    ->setCache(null) // null or PSR-16 cache instance... (only for descriptor loader)
-    ->setCacheKey(null) // null or string... (only for descriptor loader)
+    ->setEventDispatcher(...) // null or use to symfony/event-dispatcher...
+    ->setContainer(...) // null or PSR-11 container instance...
+    ->setCache(...) // null or PSR-16 cache instance... (only for descriptor loader)
+    ->setCacheKey(...) // null or string... (only for descriptor loader)
     ->useConfigLoader([]) // array with files or directory with files...
     ->useDescriptorLoader([]) // array with classes or directory with classes...
     ->setHosts([]) //
