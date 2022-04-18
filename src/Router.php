@@ -366,6 +366,16 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     }
 
     /**
+     * Checks if a route exists by the given name
+     *
+     * @return bool
+     */
+    public function hasRoute(string $name) : bool
+    {
+        return isset($this->routes[$name]);
+    }
+
+    /**
      * Gets a route for the given name
      *
      * @param string $name
