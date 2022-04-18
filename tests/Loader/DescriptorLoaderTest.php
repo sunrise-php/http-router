@@ -321,7 +321,7 @@ class DescriptorLoaderTest extends TestCase
     public function testLoadDirectoryWithAnnotatedClasses() : void
     {
         $loader = new DescriptorLoader();
-        $loader->attach(__DIR__ . '/../fixtures/Controllers/Annotated/Loadable');
+        $loader->attach(__DIR__ . '/../Fixtures/Controllers/Annotated/Loadable');
 
         $routes = $loader->load();
         $this->assertTrue($routes->has('first-loadable-annotated-controller'));

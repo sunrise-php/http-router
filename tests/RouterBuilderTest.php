@@ -50,8 +50,8 @@ class RouterBuilderTest extends TestCase
             ->setCache($cache)
             ->setCacheKey('foo')
             ->useConfigLoader([
-                __DIR__ . '/fixtures/routes/foo.php',
-                __DIR__ . '/fixtures/routes/bar.php',
+                __DIR__ . '/Fixtures/routes/foo.php',
+                __DIR__ . '/Fixtures/routes/bar.php',
             ])
             ->useMetadataLoader([
                 Fixtures\Controllers\Annotated\MinimallyAnnotatedController::class,
@@ -70,11 +70,9 @@ class RouterBuilderTest extends TestCase
         $this->assertSame($hosts, $router->getHosts());
         $this->assertSame($middlewares, $router->getMiddlewares());
         $this->assertSame($eventDispatcher, $router->getEventDispatcher());
-
-        $router->getRoutes('foo');
-        $router->getRoutes('bar');
-
-        $router->getRoutes('minimally-annotated-controller');
-        $router->getRoutes('maximally-annotated-controller');
+        $this->assertTrue($router->hasRoute('foo'));
+        $this->assertTrue($router->hasRoute('bar'));
+        $this->assertTrue($router->hasRoute('minimally-annotated-controller'));
+        $this->assertTrue($router->hasRoute('maximally-annotated-controller'));
     }
 }

@@ -80,7 +80,7 @@ class ConfigLoaderTest extends TestCase
     {
         $loader = new ConfigLoader();
 
-        $loader->attach(__DIR__ . '/../fixtures/routes/foo.php');
+        $loader->attach(__DIR__ . '/../Fixtures/routes/foo.php');
 
         $routes = $loader->load();
 
@@ -97,8 +97,8 @@ class ConfigLoaderTest extends TestCase
         $loader = new ConfigLoader();
 
         $loader->attachArray([
-            __DIR__ . '/../fixtures/routes/foo.php',
-            __DIR__ . '/../fixtures/routes/bar.php',
+            __DIR__ . '/../Fixtures/routes/foo.php',
+            __DIR__ . '/../Fixtures/routes/bar.php',
         ]);
 
         $routes = $loader->load();
@@ -116,7 +116,7 @@ class ConfigLoaderTest extends TestCase
     {
         $loader = new ConfigLoader();
 
-        $loader->attach(__DIR__ . '/../fixtures/routes');
+        $loader->attach(__DIR__ . '/../Fixtures/routes');
 
         $routes = $loader->load();
 
