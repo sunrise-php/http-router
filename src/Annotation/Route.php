@@ -138,7 +138,7 @@ final class Route
     public function __construct(
         string $name,
         ?string $host = null,
-        string $path,
+        string $path = '/',
         ?string $method = null,
         array $methods = [],
         array $middlewares = [],
