@@ -44,6 +44,14 @@ jobs:
       - run: php -v
       - run: composer install --no-interaction
       - run: XDEBUG_MODE=coverage php vendor/bin/phpunit --coverage-text
+  php81:
+    docker:
+      - image: circleci/php:8.1-cli-node-browsers
+    steps:
+      - checkout
+      - run: php -v
+      - run: composer install --no-interaction
+      - run: XDEBUG_MODE=coverage php vendor/bin/phpunit --coverage-text
 workflows:
   version: 2
   build:
@@ -53,3 +61,4 @@ workflows:
       - php73
       - php74
       - php80
+      - php81
