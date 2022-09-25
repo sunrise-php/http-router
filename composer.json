@@ -39,7 +39,7 @@
         "phpunit/phpunit": "7.5.20|9.5.0",
         "sunrise/coding-standard": "1.0.0",
         "sunrise/http-factory": "2.0.0",
-        "doctrine/annotations": "^1.6",
+        "doctrine/annotations": "1.13.3",
         "symfony/console": "^4.4",
         "symfony/event-dispatcher": "^4.4"
     },
