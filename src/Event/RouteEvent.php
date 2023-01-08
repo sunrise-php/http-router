@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
+ * @author Anatoly Nekhay <afenric@gmail.com>
+ * @copyright Copyright (c) 2018, Anatoly Nekhay
  * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-router
  */
@@ -34,12 +34,12 @@ final class RouteEvent extends Event
     /**
      * @var RouteInterface
      */
-    private $route;
+    private RouteInterface $route;
 
     /**
      * @var ServerRequestInterface
      */
-    private $request;
+    private ServerRequestInterface $request;
 
     /**
      * Constructor of the class
@@ -56,7 +56,7 @@ final class RouteEvent extends Event
     /**
      * @return RouteInterface
      */
-    public function getRoute() : RouteInterface
+    public function getRoute(): RouteInterface
     {
         return $this->route;
     }
@@ -64,7 +64,7 @@ final class RouteEvent extends Event
     /**
      * @return ServerRequestInterface
      */
-    public function getRequest() : ServerRequestInterface
+    public function getRequest(): ServerRequestInterface
     {
         return $this->request;
     }
@@ -74,7 +74,7 @@ final class RouteEvent extends Event
      *
      * @return void
      */
-    public function setRequest(ServerRequestInterface $request) : void
+    public function setRequest(ServerRequestInterface $request): void
     {
         $this->request = $request;
     }
