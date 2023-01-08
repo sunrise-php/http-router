@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
+ * @author Anatoly Nekhay <afenric@gmail.com>
+ * @copyright Copyright (c) 2018, Anatoly Nekhay
  * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-router
  */
@@ -14,7 +14,8 @@ namespace Sunrise\Http\Router\Loader;
 /**
  * Import classes
  */
-use Doctrine\Common\Annotations\SimpleAnnotationReader;
+use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\Common\Annotations\Reader as AnnotationReaderInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -25,19 +26,23 @@ use Sunrise\Http\Router\Annotation\Postfix;
 use Sunrise\Http\Router\Annotation\Prefix;
 use Sunrise\Http\Router\Annotation\Route;
 use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
-use Sunrise\Http\Router\Exception\UnresolvableReferenceException;
+use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ReferenceResolver;
 use Sunrise\Http\Router\ReferenceResolverInterface;
+use Sunrise\Http\Router\ResponseResolverInterface;
 use Sunrise\Http\Router\RouteCollectionFactory;
 use Sunrise\Http\Router\RouteCollectionFactoryInterface;
 use Sunrise\Http\Router\RouteCollectionInterface;
 use Sunrise\Http\Router\RouteFactory;
 use Sunrise\Http\Router\RouteFactoryInterface;
+use Iterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
 use Reflector;
+use SplFileInfo;
 
 /**
  * Import functions
@@ -47,7 +52,7 @@ use function class_exists;
 use function get_declared_classes;
 use function hash;
 use function is_dir;
-use function sprintf;
+use function is_string;
 use function usort;
 
 /**
@@ -62,39 +67,39 @@ class DescriptorLoader implements LoaderInterface
 {
 
     /**
-     * @var class-string[]
+     * @var list<class-string>
      */
-    private $resources = [];
+    private array $resources = [];
 
     /**
      * @var RouteCollectionFactoryInterface
      */
-    private $collectionFactory;
+    private RouteCollectionFactoryInterface $collectionFactory;
 
     /**
      * @var RouteFactoryInterface
      */
-    private $routeFactory;
+    private RouteFactoryInterface $routeFactory;
 
     /**
      * @var ReferenceResolverInterface
      */
-    private $referenceResolver;
+    private ReferenceResolverInterface $referenceResolver;
 
     /**
-     * @var SimpleAnnotationReader|null
+     * @var AnnotationReaderInterface|null
      */
-    private $annotationReader = null;
+    private ?AnnotationReaderInterface $annotationReader = null;
 
     /**
      * @var CacheInterface|null
      */
-    private $cache = null;
+    private ?CacheInterface $cache = null;
 
     /**
      * @var string|null
      */
-    private $cacheKey = null;
+    private ?string $cacheKey = null;
 
     /**
      * Constructor of the class
@@ -112,10 +117,8 @@ class DescriptorLoader implements LoaderInterface
         $this->routeFactory = $routeFactory ?? new RouteFactory();
         $this->referenceResolver = $referenceResolver ?? new ReferenceResolver();
 
-        // the "doctrine/annotations" package must be installed manually
-        if (class_exists(SimpleAnnotationReader::class)) {
-            $this->annotationReader = /** @scrutinizer ignore-deprecated */ new SimpleAnnotationReader();
-            $this->annotationReader->addNamespace('Sunrise\Http\Router\Annotation');
+        if (8 > PHP_MAJOR_VERSION) {
+            $this->useDefaultAnnotationReader();
         }
     }
 
@@ -124,31 +127,9 @@ class DescriptorLoader implements LoaderInterface
      *
      * @return ContainerInterface|null
      */
-    public function getContainer() : ?ContainerInterface
+    public function getContainer(): ?ContainerInterface
     {
         return $this->referenceResolver->getContainer();
-    }
-
-    /**
-     * Gets the loader cache
-     *
-     * @return CacheInterface|null
-     */
-    public function getCache() : ?CacheInterface
-    {
-        return $this->cache;
-    }
-
-    /**
-     * Gets the loader cache key
-     *
-     * @return string|null
-     *
-     * @since 2.10.0
-     */
-    public function getCacheKey() : ?string
-    {
-        return $this->cacheKey;
     }
 
     /**
@@ -158,9 +139,71 @@ class DescriptorLoader implements LoaderInterface
      *
      * @return void
      */
-    public function setContainer(?ContainerInterface $container) : void
+    public function setContainer(?ContainerInterface $container): void
     {
         $this->referenceResolver->setContainer($container);
+    }
+
+    /**
+     * Gets the loader response resolver
+     *
+     * @return ResponseResolverInterface|null
+     *
+     * @since 3.0.0
+     */
+    public function getResponseResolver(): ?ResponseResolverInterface
+    {
+        return $this->referenceResolver->getResponseResolver();
+    }
+
+    /**
+     * Sets the given response resolver to the loader
+     *
+     * @param ResponseResolverInterface|null $responseResolver
+     *
+     * @return void
+     *
+     * @since 3.0.0
+     */
+    public function setResponseResolver(?ResponseResolverInterface $responseResolver): void
+    {
+        $this->referenceResolver->setResponseResolver($responseResolver);
+    }
+
+    /**
+     * Gets the loader annotation reader
+     *
+     * @return AnnotationReaderInterface|null
+     *
+     * @since 3.0.0
+     */
+    public function getAnnotationReader(): ?AnnotationReaderInterface
+    {
+        return $this->annotationReader;
+    }
+
+    /**
+     * Sets the given annotation reader to the loader
+     *
+     * @param AnnotationReaderInterface|null $annotationReader
+     *
+     * @return void
+     *
+     * @since 3.0.0
+     */
+    public function setAnnotationReader(?AnnotationReaderInterface $annotationReader): void
+    {
+        $this->annotationReader = $annotationReader;
+    }
+
+    /**
+     * Gets the loader cache
+     *
+     * @return CacheInterface|null
+     */
+    public function getCache(): ?CacheInterface
+    {
+        return $this->cache;
     }
 
     /**
@@ -170,9 +213,21 @@ class DescriptorLoader implements LoaderInterface
      *
      * @return void
      */
-    public function setCache(?CacheInterface $cache) : void
+    public function setCache(?CacheInterface $cache): void
     {
         $this->cache = $cache;
+    }
+
+    /**
+     * Gets the loader cache key
+     *
+     * @return string
+     *
+     * @since 2.10.0
+     */
+    public function getCacheKey(): string
+    {
+        return $this->cacheKey ??= hash('md5', 'router:descriptors');
     }
 
     /**
@@ -184,16 +239,49 @@ class DescriptorLoader implements LoaderInterface
      *
      * @since 2.10.0
      */
-    public function setCacheKey(?string $cacheKey) : void
+    public function setCacheKey(?string $cacheKey): void
     {
         $this->cacheKey = $cacheKey;
     }
 
     /**
+     * Uses the default annotation reader
+     *
+     * @return void
+     *
+     * @throws LogicException
+     *         If the doctrine/annotations package isn't installed.
+     *
+     * @since 3.0.0
+     */
+    public function useDefaultAnnotationReader(): void
+    {
+        if (!class_exists(AnnotationReader::class)) {
+            throw new LogicException(
+                'Loading routes from descriptors requires the "doctrine/annotations" package that is not installed, ' .
+                'run the command "composer install doctrine/annotations" and try again'
+            );
+        }
+
+        $this->setAnnotationReader(new AnnotationReader());
+    }
+
+    /**
      * {@inheritdoc}
      */
-    public function attach($resource) : void
+    public function attach($resource): void
     {
+        if (!is_string($resource)) {
+            throw new InvalidLoaderResourceException(
+                'Descriptor route loader only expects string resources'
+            );
+        }
+
+        if (class_exists($resource)) {
+            $this->resources[] = $resource;
+            return;
+        }
+
         if (is_dir($resource)) {
             $classNames = $this->scandir($resource);
             foreach ($classNames as $className) {
@@ -203,21 +291,19 @@ class DescriptorLoader implements LoaderInterface
             return;
         }
 
-        if (!class_exists($resource)) {
-            throw new InvalidLoaderResourceException(sprintf(
-                'The resource "%s" is not found.',
-                $resource
-            ));
-        }
-
-        $this->resources[] = $resource;
+        throw new InvalidLoaderResourceException(sprintf(
+            'Descriptor route loader only handles class names or directory paths, ' .
+            'however the given resource "%s" is not as expected',
+            $resource
+        ));
     }
 
     /**
      * {@inheritdoc}
      */
-    public function attachArray(array $resources) : void
+    public function attachArray(array $resources): void
     {
+        /** @psalm-suppress MixedAssignment */
         foreach ($resources as $resource) {
             $this->attach($resource);
         }
@@ -225,27 +311,19 @@ class DescriptorLoader implements LoaderInterface
 
     /**
      * {@inheritdoc}
-     *
-     * @throws UnresolvableReferenceException
-     *         If one of the found middlewares cannot be resolved.
      */
-    public function load() : RouteCollectionInterface
+    public function load(): RouteCollectionInterface
     {
-        $descriptors = $this->getCachedDescriptors();
+        $descriptors = $this->getDescriptors();
 
         $routes = [];
         foreach ($descriptors as $descriptor) {
-            $middlewares = [];
-            foreach ($descriptor->middlewares as $className) {
-                $middlewares[] = $this->referenceResolver->toMiddleware($className);
-            }
-
             $routes[] = $this->routeFactory->createRoute(
                 $descriptor->name,
                 $descriptor->path,
                 $descriptor->methods,
                 $this->referenceResolver->toRequestHandler($descriptor->holder),
-                $middlewares,
+                $this->referenceResolver->toMiddlewares($descriptor->middlewares),
                 $descriptor->attributes
             )
             ->setHost($descriptor->host)
@@ -260,33 +338,34 @@ class DescriptorLoader implements LoaderInterface
     /**
      * Gets descriptors from the cache if they are stored in it,
      * otherwise collects them from the loader resources,
-     * and then tries to cache them
+     * and then tries to cache and return them
      *
-     * @return Route[]
+     * @return list<Route>
      */
-    private function getCachedDescriptors() : array
+    private function getDescriptors(): array
     {
-        $key = $this->cacheKey ?? hash('md5', 'router:descriptors');
+        $cacheKey = $this->getCacheKey();
 
-        if ($this->cache && $this->cache->has($key)) {
-            return $this->cache->get($key);
+        if (isset($this->cache) && $this->cache->has($cacheKey)) {
+            /** @var list<Route> */
+            return $this->cache->get($cacheKey);
         }
 
-        $result = $this->collectDescriptors();
+        $descriptors = $this->collectDescriptors();
 
-        if ($this->cache) {
-            $this->cache->set($key, $result);
+        if (isset($this->cache)) {
+            $this->cache->set($cacheKey, $descriptors);
         }
 
-        return $result;
+        return $descriptors;
     }
 
     /**
-     * Collects descriptors from the loader resources
+     * Collects and returns descriptors from the loader resources
      *
-     * @return Route[]
+     * @return list<Route>
      */
-    private function collectDescriptors() : array
+    private function collectDescriptors(): array
     {
         $result = [];
         foreach ($this->resources as $resource) {
@@ -297,7 +376,7 @@ class DescriptorLoader implements LoaderInterface
             }
         }
 
-        usort($result, function (Route $a, Route $b) : int {
+        usort($result, function (Route $a, Route $b): int {
             return $b->priority <=> $a->priority;
         });
 
@@ -309,15 +388,17 @@ class DescriptorLoader implements LoaderInterface
      *
      * @param ReflectionClass $class
      *
-     * @return Route[]
+     * @return list<Route>
      */
-    private function getClassDescriptors(ReflectionClass $class) : array
+    private function getClassDescriptors(ReflectionClass $class): array
     {
-        if ($class->isAbstract()) {
+        // e.g., interfaces, traits, enums, abstract classes,
+        // classes with private constructor...
+        if (!$class->isInstantiable()) {
             return [];
         }
 
-        $result = [];
+        $descriptors = [];
 
         if ($class->isSubclassOf(RequestHandlerInterface::class)) {
             $annotations = $this->getAnnotations($class, Route::class);
@@ -325,15 +406,13 @@ class DescriptorLoader implements LoaderInterface
                 $descriptor = $annotations[0];
                 $this->supplementDescriptor($descriptor, $class);
                 $descriptor->holder = $class->getName();
-                $result[] = $descriptor;
+                $descriptors[] = $descriptor;
             }
         }
 
         foreach ($class->getMethods() as $method) {
             // ignore non-available methods...
-            if ($method->isStatic() ||
-                $method->isPrivate() ||
-                $method->isProtected()) {
+            if (!$method->isPublic() || $method->isStatic()) {
                 continue;
             }
 
@@ -343,16 +422,20 @@ class DescriptorLoader implements LoaderInterface
                 $this->supplementDescriptor($descriptor, $class);
                 $this->supplementDescriptor($descriptor, $method);
                 $descriptor->holder = [$class->getName(), $method->getName()];
-                $result[] = $descriptor;
+                $descriptors[] = $descriptor;
             }
         }
 
-        return $result;
+        return $descriptors;
     }
 
     /**
      * Supplements the given descriptor from the given class or method with data such as:
-     * host, path prefix, path postfix and middlewares
+     *
+     *  - host
+     *  - path prefix
+     *  - path postfix
+     *  - middlewares
      *
      * ```php
      * #[Prefix('/api/v1')]
@@ -375,7 +458,7 @@ class DescriptorLoader implements LoaderInterface
      *
      * @return void
      */
-    private function supplementDescriptor(Route $descriptor, Reflector $reflector) : void
+    private function supplementDescriptor(Route $descriptor, Reflector $reflector): void
     {
         $annotations = $this->getAnnotations($reflector, Host::class);
         if (isset($annotations[0])) {
@@ -404,22 +487,24 @@ class DescriptorLoader implements LoaderInterface
      * @param ReflectionClass|ReflectionMethod $reflector
      * @param class-string<T> $annotationName
      *
-     * @return T[]
+     * @return list<T>
      *
      * @template T
      */
-    private function getAnnotations(Reflector $reflector, string $annotationName) : array
+    private function getAnnotations(Reflector $reflector, string $annotationName): array
     {
         $result = [];
 
         if (8 === PHP_MAJOR_VERSION) {
+            /** @var ReflectionAttribute[] */
             $attributes = $reflector->getAttributes($annotationName);
             foreach ($attributes as $attribute) {
+                /** @var T */
                 $result[] = $attribute->newInstance();
             }
         }
 
-        if (empty($result) and isset($this->annotationReader)) {
+        if (isset($this->annotationReader) && empty($result)) {
             $annotations = ($reflector instanceof ReflectionClass) ?
                 $this->annotationReader->getClassAnnotations($reflector) :
                 $this->annotationReader->getMethodAnnotations($reflector);
@@ -441,8 +526,9 @@ class DescriptorLoader implements LoaderInterface
      *
      * @return class-string[]
      */
-    private function scandir(string $directory) : array
+    private function scandir(string $directory): array
     {
+        /** @var Iterator<SplFileInfo> */
         $files = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($directory)
         );
@@ -451,9 +537,7 @@ class DescriptorLoader implements LoaderInterface
 
         foreach ($files as $file) {
             if ('php' === $file->getExtension()) {
-                /**
-                 * @psalm-suppress UnresolvableInclude
-                 */
+                /** @psalm-suppress UnresolvableInclude */
                 require_once $file->getPathname();
             }
         }
