@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
+ * @author Anatoly Nekhay <afenric@gmail.com>
+ * @copyright Copyright (c) 2018, Anatoly Nekhay
  * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-router
  */
@@ -29,16 +29,16 @@ class QueueableRequestHandler implements RequestHandlerInterface
     /**
      * The request handler queue
      *
-     * @var SplQueue
+     * @var SplQueue<MiddlewareInterface>
      */
-    private $queue;
+    private SplQueue $queue;
 
     /**
      * The request handler endpoint
      *
      * @var RequestHandlerInterface
      */
-    private $endpoint;
+    private RequestHandlerInterface $endpoint;
 
     /**
      * Constructor of the class
@@ -47,7 +47,10 @@ class QueueableRequestHandler implements RequestHandlerInterface
      */
     public function __construct(RequestHandlerInterface $endpoint)
     {
-        $this->queue = new SplQueue();
+        /** @var SplQueue<MiddlewareInterface> */
+        $queue = new SplQueue();
+
+        $this->queue = $queue;
         $this->endpoint = $endpoint;
     }
 
@@ -58,7 +61,7 @@ class QueueableRequestHandler implements RequestHandlerInterface
      *
      * @return void
      */
-    public function add(MiddlewareInterface ...$middlewares) : void
+    public function add(MiddlewareInterface ...$middlewares): void
     {
         foreach ($middlewares as $middleware) {
             $this->queue->enqueue($middleware);
@@ -68,7 +71,7 @@ class QueueableRequestHandler implements RequestHandlerInterface
     /**
      * {@inheritdoc}
      */
-    public function handle(ServerRequestInterface $request) : ResponseInterface
+    public function handle(ServerRequestInterface $request): ResponseInterface
     {
         if (!$this->queue->isEmpty()) {
             return $this->queue->dequeue()->process($request, $this);
