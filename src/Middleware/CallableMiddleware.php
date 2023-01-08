@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
+ * @author Anatoly Nekhay <afenric@gmail.com>
+ * @copyright Copyright (c) 2018, Anatoly Nekhay
  * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-router
  */
@@ -51,7 +51,7 @@ class CallableMiddleware implements MiddlewareInterface
      *
      * @since 2.10.0
      */
-    public function getCallback() : callable
+    public function getCallback(): callable
     {
         return $this->callback;
     }
@@ -59,8 +59,11 @@ class CallableMiddleware implements MiddlewareInterface
     /**
      * {@inheritdoc}
      */
-    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        return ($this->callback)($request, $handler);
+        /** @var ResponseInterface */
+        $response = ($this->callback)($request, $handler);
+
+        return $response;
     }
 }
