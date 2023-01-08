@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
+ * @author Anatoly Nekhay <afenric@gmail.com>
+ * @copyright Copyright (c) 2018, Anatoly Nekhay
  * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-router
  */
@@ -20,10 +20,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
-use Closure;
 use ReflectionClass;
-use ReflectionMethod;
-use ReflectionFunction;
 use Reflector;
 
 /**
@@ -41,102 +38,84 @@ class Route implements RouteInterface
 {
 
     /**
-     * Server Request attribute name for the route
-     *
-     * @var string
-     *
-     * @deprecated 2.11.0 Use the RouteInterface::ATTR_ROUTE constant.
-     */
-    public const ATTR_NAME_FOR_ROUTE = self::ATTR_ROUTE;
-
-    /**
-     * Server Request attribute name for the route name
-     *
-     * @var string
-     *
-     * @deprecated 2.9.0
-     */
-    public const ATTR_NAME_FOR_ROUTE_NAME = '@route-name';
-
-    /**
      * The route name
      *
      * @var string
      */
-    private $name;
+    private string $name;
 
     /**
      * The route host
      *
      * @var string|null
      */
-    private $host = null;
+    private ?string $host = null;
 
     /**
      * The route path
      *
      * @var string
      */
-    private $path;
+    private string $path;
 
     /**
      * The route methods
      *
-     * @var string[]
+     * @var list<string>
      */
-    private $methods;
+    private array $methods = [];
 
     /**
      * The route request handler
      *
      * @var RequestHandlerInterface
      */
-    private $requestHandler;
+    private RequestHandlerInterface $requestHandler;
 
     /**
      * The route middlewares
      *
-     * @var MiddlewareInterface[]
+     * @var list<MiddlewareInterface>
      */
-    private $middlewares = [];
+    private array $middlewares = [];
 
     /**
      * The route attributes
      *
-     * @var array
+     * @var array<string, mixed>
      */
-    private $attributes = [];
+    private array $attributes = [];
 
     /**
      * The route summary
      *
      * @var string
      */
-    private $summary = '';
+    private string $summary = '';
 
     /**
      * The route description
      *
      * @var string
      */
-    private $description = '';
+    private string $description = '';
 
     /**
      * The route tags
      *
-     * @var string[]
+     * @var list<string>
      */
-    private $tags = [];
+    private array $tags = [];
 
     /**
      * Constructor of the class
      *
      * @param string $name
      * @param string $path
-     * @param string[] $methods
+     * @param list<string> $methods
      * @param RequestHandlerInterface $requestHandler
-     * @param MiddlewareInterface[] $middlewares
-     * @param array $attributes
+     * @param list<MiddlewareInterface> $middlewares
+     * @param array<string, mixed> $attributes
      */
     public function __construct(
         string $name,
@@ -146,18 +125,18 @@ class Route implements RouteInterface
         array $middlewares = [],
         array $attributes = []
     ) {
-        $this->setName($name);
-        $this->setPath($path);
+        $this->name = $name;
+        $this->path = $path;
         $this->setMethods(...$methods);
-        $this->setRequestHandler($requestHandler);
+        $this->requestHandler = $requestHandler;
         $this->setMiddlewares(...$middlewares);
-        $this->setAttributes($attributes);
+        $this->attributes = $attributes;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getName() : string
+    public function getName(): string
     {
         return $this->name;
     }
@@ -165,7 +144,7 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function getHost() : ?string
+    public function getHost(): ?string
     {
         return $this->host;
     }
@@ -173,7 +152,7 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function getPath() : string
+    public function getPath(): string
     {
         return $this->path;
     }
@@ -181,7 +160,7 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function getMethods() : array
+    public function getMethods(): array
     {
         return $this->methods;
     }
@@ -189,7 +168,7 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function getRequestHandler() : RequestHandlerInterface
+    public function getRequestHandler(): RequestHandlerInterface
     {
         return $this->requestHandler;
     }
@@ -197,7 +176,7 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function getMiddlewares() : array
+    public function getMiddlewares(): array
     {
         return $this->middlewares;
     }
@@ -205,7 +184,7 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function getAttributes() : array
+    public function getAttributes(): array
     {
         return $this->attributes;
     }
@@ -213,7 +192,7 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function getSummary() : string
+    public function getSummary(): string
     {
         return $this->summary;
     }
@@ -221,7 +200,7 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function getDescription() : string
+    public function getDescription(): string
     {
         return $this->description;
     }
@@ -229,7 +208,7 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function getTags() : array
+    public function getTags(): array
     {
         return $this->tags;
     }
@@ -237,27 +216,19 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function getHolder() : Reflector
+    public function getHolder(): Reflector
     {
-        $handler = $this->requestHandler;
-        if ($handler instanceof CallableRequestHandler) {
-            $callback = $handler->getCallback();
-            if ($callback instanceof Closure) {
-                return new ReflectionFunction($callback);
-            }
-
-            /** @var array{0: class-string|object, 1: string} $callback */
-
-            return new ReflectionMethod(...$callback);
+        if ($this->requestHandler instanceof CallableRequestHandler) {
+            return $this->requestHandler->getReflection();
         }
 
-        return new ReflectionClass($handler);
+        return new ReflectionClass($this->requestHandler);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function setName(string $name) : RouteInterface
+    public function setName(string $name): RouteInterface
     {
         $this->name = $name;
 
@@ -267,7 +238,7 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function setHost(?string $host) : RouteInterface
+    public function setHost(?string $host): RouteInterface
     {
         $this->host = $host;
 
@@ -277,7 +248,7 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function setPath(string $path) : RouteInterface
+    public function setPath(string $path): RouteInterface
     {
         $this->path = $path;
 
@@ -287,13 +258,12 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function setMethods(string ...$methods) : RouteInterface
+    public function setMethods(string ...$methods): RouteInterface
     {
-        foreach ($methods as &$method) {
-            $method = strtoupper($method);
+        $this->methods = [];
+        foreach ($methods as $method) {
+            $this->methods[] = strtoupper($method);
         }
-
-        $this->methods = $methods;
 
         return $this;
     }
@@ -301,7 +271,7 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function setRequestHandler(RequestHandlerInterface $requestHandler) : RouteInterface
+    public function setRequestHandler(RequestHandlerInterface $requestHandler): RouteInterface
     {
         $this->requestHandler = $requestHandler;
 
@@ -311,8 +281,10 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function setMiddlewares(MiddlewareInterface ...$middlewares) : RouteInterface
+    public function setMiddlewares(MiddlewareInterface ...$middlewares): RouteInterface
     {
+        /** @var list<MiddlewareInterface> $middlewares */
+
         $this->middlewares = $middlewares;
 
         return $this;
@@ -321,7 +293,7 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function setAttributes(array $attributes) : RouteInterface
+    public function setAttributes(array $attributes): RouteInterface
     {
         $this->attributes = $attributes;
 
@@ -331,7 +303,7 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function setSummary(string $summary) : RouteInterface
+    public function setSummary(string $summary): RouteInterface
     {
         $this->summary = $summary;
 
@@ -341,7 +313,7 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function setDescription(string $description) : RouteInterface
+    public function setDescription(string $description): RouteInterface
     {
         $this->description = $description;
 
@@ -351,8 +323,10 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function setTags(string ...$tags) : RouteInterface
+    public function setTags(string ...$tags): RouteInterface
     {
+        /** @var list<string> $tags */
+
         $this->tags = $tags;
 
         return $this;
@@ -361,7 +335,7 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function addPrefix(string $prefix) : RouteInterface
+    public function addPrefix(string $prefix): RouteInterface
     {
         // https://github.com/sunrise-php/http-router/issues/26
         $prefix = rtrim($prefix, '/');
@@ -374,7 +348,7 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function addSuffix(string $suffix) : RouteInterface
+    public function addSuffix(string $suffix): RouteInterface
     {
         $this->path .= $suffix;
 
@@ -384,7 +358,7 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function addMethod(string ...$methods) : RouteInterface
+    public function addMethod(string ...$methods): RouteInterface
     {
         foreach ($methods as $method) {
             $this->methods[] = strtoupper($method);
@@ -396,7 +370,7 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function addMiddleware(MiddlewareInterface ...$middlewares) : RouteInterface
+    public function addMiddleware(MiddlewareInterface ...$middlewares): RouteInterface
     {
         foreach ($middlewares as $middleware) {
             $this->middlewares[] = $middleware;
@@ -408,10 +382,11 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function withAddedAttributes(array $attributes) : RouteInterface
+    public function withAddedAttributes(array $attributes): RouteInterface
     {
         $clone = clone $this;
 
+        /** @psalm-suppress MixedAssignment */
         foreach ($attributes as $key => $value) {
             $clone->attributes[$key] = $value;
         }
@@ -422,13 +397,11 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function handle(ServerRequestInterface $request) : ResponseInterface
+    public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $request = $request->withAttribute(self::ATTR_ROUTE, $this);
 
-        /** @todo Must be removed from the 3.0.0 version */
-        $request = $request->withAttribute(self::ATTR_NAME_FOR_ROUTE_NAME, $this->name);
-
+        /** @psalm-suppress MixedAssignment */
         foreach ($this->attributes as $key => $value) {
             $request = $request->withAttribute($key, $value);
         }
