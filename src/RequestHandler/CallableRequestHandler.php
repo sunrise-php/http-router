@@ -48,8 +48,6 @@ class CallableRequestHandler implements RequestHandlerInterface
      *
      * @var list<mixed>
      *
-     * @since 3.0.0
-     *
      * @psalm-immutable
      */
     private array $arguments = [];
@@ -58,8 +56,6 @@ class CallableRequestHandler implements RequestHandlerInterface
      * The response resolver
      *
      * @var ResponseResolverInterface|null
-     *
-     * @since 3.0.0
      */
     private ?ResponseResolverInterface $responseResolver;
 
