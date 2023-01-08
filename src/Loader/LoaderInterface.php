@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
+ * @author Anatoly Nekhay <afenric@gmail.com>
+ * @copyright Copyright (c) 2018, Anatoly Nekhay
  * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-router
  */
@@ -33,24 +33,24 @@ interface LoaderInterface
      * @throws InvalidLoaderResourceException
      *         If the given resource isn't valid.
      */
-    public function attach($resource) : void;
+    public function attach($resource): void;
 
     /**
      * Attaches the given resources to the loader
      *
-     * @param array $resources
+     * @param array<array-key, mixed> $resources
      *
      * @return void
      *
      * @throws InvalidLoaderResourceException
      *         If one of the given resources isn't valid.
      */
-    public function attachArray(array $resources) : void;
+    public function attachArray(array $resources): void;
 
     /**
      * Loads routes from previously attached resources
      *
      * @return RouteCollectionInterface
      */
-    public function load() : RouteCollectionInterface;
+    public function load(): RouteCollectionInterface;
 }
