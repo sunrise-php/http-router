@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
+ * @author Anatoly Nekhay <afenric@gmail.com>
+ * @copyright Copyright (c) 2018, Anatoly Nekhay
  * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-router
  */
@@ -17,7 +17,7 @@ namespace Sunrise\Http\Router;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Exception\UnresolvableReferenceException;
+use Sunrise\Http\Router\Exception\InvalidReferenceException;
 use Sunrise\Http\Router\Middleware\CallableMiddleware;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Closure;
@@ -45,12 +45,19 @@ class ReferenceResolver implements ReferenceResolverInterface
      *
      * @var ContainerInterface|null
      */
-    private $container = null;
+    private ?ContainerInterface $container = null;
+
+    /**
+     * The reference resolver's response resolver
+     *
+     * @var ResponseResolverInterface|null
+     */
+    private ?ResponseResolverInterface $responseResolver = null;
 
     /**
      * {@inheritdoc}
      */
-    public function getContainer() : ?ContainerInterface
+    public function getContainer(): ?ContainerInterface
     {
         return $this->container;
     }
@@ -58,7 +65,7 @@ class ReferenceResolver implements ReferenceResolverInterface
     /**
      * {@inheritdoc}
      */
-    public function setContainer(?ContainerInterface $container) : void
+    public function setContainer(?ContainerInterface $container): void
     {
         $this->container = $container;
     }
@@ -66,27 +73,46 @@ class ReferenceResolver implements ReferenceResolverInterface
     /**
      * {@inheritdoc}
      */
-    public function toRequestHandler($reference) : RequestHandlerInterface
+    public function getResponseResolver(): ?ResponseResolverInterface
+    {
+        return $this->responseResolver;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setResponseResolver(?ResponseResolverInterface $responseResolver): void
+    {
+        $this->responseResolver = $responseResolver;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toRequestHandler($reference): RequestHandlerInterface
     {
         if ($reference instanceof RequestHandlerInterface) {
             return $reference;
         }
 
         if ($reference instanceof Closure) {
-            return new CallableRequestHandler($reference);
+            return new CallableRequestHandler($reference, $this->responseResolver);
         }
 
         list($class, $method) = $this->normalizeReference($reference);
 
         if (isset($class) && isset($method) && method_exists($class, $method)) {
-            return new CallableRequestHandler([$this->resolveClass($class), $method]);
+            /** @var callable */
+            $callback = [$this->resolveClass($class), $method];
+
+            return new CallableRequestHandler($callback, $this->responseResolver);
         }
 
         if (!isset($method) && isset($class) && is_subclass_of($class, RequestHandlerInterface::class)) {
             return $this->resolveClass($class);
         }
 
-        throw new UnresolvableReferenceException(sprintf(
+        throw new InvalidReferenceException(sprintf(
             'Unable to resolve the "%s" reference to a request handler.',
             $this->stringifyReference($reference)
         ));
@@ -95,7 +121,7 @@ class ReferenceResolver implements ReferenceResolverInterface
     /**
      * {@inheritdoc}
      */
-    public function toMiddleware($reference) : MiddlewareInterface
+    public function toMiddleware($reference): MiddlewareInterface
     {
         if ($reference instanceof MiddlewareInterface) {
             return $reference;
@@ -115,10 +141,24 @@ class ReferenceResolver implements ReferenceResolverInterface
             return $this->resolveClass($class);
         }
 
-        throw new UnresolvableReferenceException(sprintf(
+        throw new InvalidReferenceException(sprintf(
             'Unable to resolve the "%s" reference to a middleware.',
             $this->stringifyReference($reference)
         ));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function toMiddlewares(array $references): array
+    {
+        $middlewares = [];
+        /** @psalm-suppress MixedAssignment */
+        foreach ($references as $reference) {
+            $middlewares[] = $this->toMiddleware($reference);
+        }
+
+        return $middlewares;
     }
 
     /**
@@ -126,19 +166,17 @@ class ReferenceResolver implements ReferenceResolverInterface
      *
      * @param mixed $reference
      *
-     * @return array{0: ?class-string, 1: ?string}
+     * @return array{0: ?class-string, 1: ?non-empty-string}
      */
-    private function normalizeReference($reference) : array
+    private function normalizeReference($reference): array
     {
         if (is_array($reference) && is_callable($reference, true)) {
-            /** @var array{0: class-string, 1: string} $reference */
-
+            /** @var array{0: class-string, 1: non-empty-string} $reference */
             return $reference;
         }
 
         if (is_string($reference)) {
             /** @var class-string $reference */
-
             return [$reference, null];
         }
 
@@ -152,14 +190,16 @@ class ReferenceResolver implements ReferenceResolverInterface
      *
      * @return string
      */
-    private function stringifyReference($reference) : string
+    private function stringifyReference($reference): string
     {
-        if (is_array($reference) && is_callable($reference, true)) {
+        $reference = $this->normalizeReference($reference);
+
+        if (isset($reference[0], $reference[1])) {
             return $reference[0] . '@' . $reference[1];
         }
 
-        if (is_string($reference)) {
-            return $reference;
+        if (isset($reference[0])) {
+            return $reference[0];
         }
 
         return '';
@@ -168,18 +208,20 @@ class ReferenceResolver implements ReferenceResolverInterface
     /**
      * Resolves the given class
      *
-     * @param class-string<T> $class
+     * @param class-string<T> $className
      *
      * @return T
      *
      * @template T
      */
-    private function resolveClass(string $class)
+    private function resolveClass(string $className)
     {
-        if ($this->container && $this->container->has($class)) {
-            return $this->container->get($class);
+        if (isset($this->container) && $this->container->has($className)) {
+            /** @var T */
+            return $this->container->get($className);
         }
 
-        return new $class;
+        /** @psalm-suppress MixedMethodCall */
+        return new $className;
     }
 }
