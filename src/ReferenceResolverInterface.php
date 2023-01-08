@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
+ * @author Anatoly Nekhay <afenric@gmail.com>
+ * @copyright Copyright (c) 2018, Anatoly Nekhay
  * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-router
  */
@@ -17,7 +17,7 @@ namespace Sunrise\Http\Router;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Exception\UnresolvableReferenceException;
+use Sunrise\Http\Router\Exception\InvalidReferenceException;
 
 /**
  * ReferenceResolverInterface
@@ -32,7 +32,7 @@ interface ReferenceResolverInterface
      *
      * @return ContainerInterface|null
      */
-    public function getContainer() : ?ContainerInterface;
+    public function getContainer(): ?ContainerInterface;
 
     /**
      * Sets the given container to the reference resolver
@@ -41,7 +41,27 @@ interface ReferenceResolverInterface
      *
      * @return void
      */
-    public function setContainer(?ContainerInterface $container) : void;
+    public function setContainer(?ContainerInterface $container): void;
+
+    /**
+     * Gets the reference resolver's response resolver
+     *
+     * @return ResponseResolverInterface|null
+     *
+     * @since 3.0.0
+     */
+    public function getResponseResolver(): ?ResponseResolverInterface;
+
+    /**
+     * Sets the given response resolver to the reference resolver
+     *
+     * @param ResponseResolverInterface|null $responseResolver
+     *
+     * @return void
+     *
+     * @since 3.0.0
+     */
+    public function setResponseResolver(?ResponseResolverInterface $responseResolver): void;
 
     /**
      * Resolves the given reference to a request handler
@@ -50,10 +70,10 @@ interface ReferenceResolverInterface
      *
      * @return RequestHandlerInterface
      *
-     * @throws UnresolvableReferenceException
+     * @throws InvalidReferenceException
      *         If the given reference cannot be resolved to a request handler.
      */
-    public function toRequestHandler($reference) : RequestHandlerInterface;
+    public function toRequestHandler($reference): RequestHandlerInterface;
 
     /**
      * Resolves the given reference to a middleware
@@ -62,8 +82,22 @@ interface ReferenceResolverInterface
      *
      * @return MiddlewareInterface
      *
-     * @throws UnresolvableReferenceException
+     * @throws InvalidReferenceException
      *         If the given reference cannot be resolved to a middleware.
      */
-    public function toMiddleware($reference) : MiddlewareInterface;
+    public function toMiddleware($reference): MiddlewareInterface;
+
+    /**
+     * Resolves the given references to middlewares
+     *
+     * @param array<array-key, mixed> $references
+     *
+     * @return list<MiddlewareInterface>
+     *
+     * @throws InvalidReferenceException
+     *         If one of the given references cannot be resolved to a middleware.
+     *
+     * @since 3.0.0
+     */
+    public function toMiddlewares(array $references): array;
 }
