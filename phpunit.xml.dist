@@ -5,6 +5,7 @@
 >
     <coverage>
         <include>
+            <directory>./functions</directory>
             <directory>./src</directory>
         </include>
     </coverage>
