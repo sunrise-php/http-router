@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
+ * @author Anatoly Nekhay <afenric@gmail.com>
+ * @copyright Copyright (c) 2018, Anatoly Nekhay
  * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-router
  */
@@ -14,7 +14,7 @@ namespace Sunrise\Http\Router\Command;
 /**
  * Import classes
  */
-use RuntimeException;
+use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\Router;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
@@ -31,9 +31,9 @@ use function Sunrise\Http\Router\path_plain;
 /**
  * This command will list all routes in your application
  *
- * If you cannot pass the router to the constructor
+ * If you can't pass the router to the constructor,
  * or your architecture has problems with autowiring,
- * then just inherit this class and override the getRouter method.
+ * just inherit this class and override the getRouter method.
  *
  * @since 2.9.0
  */
@@ -41,23 +41,11 @@ class RouteListCommand extends Command
 {
 
     /**
-     * {@inheritdoc}
-     */
-    protected static $defaultName = 'router:route-list';
-
-    /**
-     * {@inheritdoc}
-     *
-     * @var string
-     */
-    protected static $defaultDescription = 'Lists all routes in your application';
-
-    /**
      * The router instance populated with routes
      *
      * @var Router|null
      */
-    private $router;
+    private ?Router $router;
 
     /**
      * Constructor of the class
@@ -68,10 +56,16 @@ class RouteListCommand extends Command
     {
         parent::__construct();
 
-        $this->setName(static::$defaultName);
-        $this->setDescription(static::$defaultDescription);
-
         $this->router = $router;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function configure(): void
+    {
+        $this->setName('router:route-list');
+        $this->setDescription('Lists all routes in your application');
     }
 
     /**
@@ -79,17 +73,18 @@ class RouteListCommand extends Command
      *
      * @return Router
      *
-     * @throws RuntimeException
+     * @throws LogicException
      *         If the command doesn't contain the router instance.
      *
      * @since 2.11.0
      */
-    protected function getRouter() : Router
+    protected function getRouter(): Router
     {
-        if (null === $this->router) {
-            throw new RuntimeException(sprintf(
+        if (!isset($this->router)) {
+            throw new LogicException(sprintf(
                 'The %2$s() method MUST return the %1$s class instance. ' .
-                'Pass the %1$s class instance to the constructor, or override the %2$s() method.',
+                'Pass the %1$s class instance to the constructor, ' .
+                'or override the %2$s() method.',
                 Router::class,
                 __METHOD__
             ));
@@ -101,7 +96,7 @@ class RouteListCommand extends Command
     /**
      * {@inheritdoc}
      */
-    final protected function execute(InputInterface $input, OutputInterface $output) : int
+    final protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $table = new Table($output);
 
