@@ -45,18 +45,6 @@ class CallableMiddleware implements MiddlewareInterface
     }
 
     /**
-     * Gets the middleware callback
-     *
-     * @return callable
-     *
-     * @since 2.10.0
-     */
-    public function getCallback(): callable
-    {
-        return $this->callback;
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
