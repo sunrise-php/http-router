@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
+ * @author Anatoly Nekhay <afenric@gmail.com>
+ * @copyright Copyright (c) 2018, Anatoly Nekhay
  * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-router
  */
@@ -18,6 +18,7 @@ use Psr\Container\ContainerInterface;
 use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
 use Sunrise\Http\Router\ReferenceResolver;
 use Sunrise\Http\Router\ReferenceResolverInterface;
+use Sunrise\Http\Router\ResponseResolverInterface;
 use Sunrise\Http\Router\RouteCollectionFactory;
 use Sunrise\Http\Router\RouteCollectionFactoryInterface;
 use Sunrise\Http\Router\RouteCollectionInterface;
@@ -31,7 +32,7 @@ use Sunrise\Http\Router\RouteFactoryInterface;
 use function glob;
 use function is_dir;
 use function is_file;
-use function sprintf;
+use function is_string;
 
 /**
  * ConfigLoader
@@ -40,24 +41,24 @@ class ConfigLoader implements LoaderInterface
 {
 
     /**
-     * @var string[]
+     * @var list<string>
      */
-    private $resources = [];
+    private array $resources = [];
 
     /**
      * @var RouteCollectionFactoryInterface
      */
-    private $collectionFactory;
+    private RouteCollectionFactoryInterface $collectionFactory;
 
     /**
      * @var RouteFactoryInterface
      */
-    private $routeFactory;
+    private RouteFactoryInterface $routeFactory;
 
     /**
      * @var ReferenceResolverInterface
      */
-    private $referenceResolver;
+    private ReferenceResolverInterface $referenceResolver;
 
     /**
      * Constructor of the class
@@ -83,7 +84,7 @@ class ConfigLoader implements LoaderInterface
      *
      * @since 2.9.0
      */
-    public function getContainer() : ?ContainerInterface
+    public function getContainer(): ?ContainerInterface
     {
         return $this->referenceResolver->getContainer();
     }
@@ -97,40 +98,75 @@ class ConfigLoader implements LoaderInterface
      *
      * @since 2.9.0
      */
-    public function setContainer(?ContainerInterface $container) : void
+    public function setContainer(?ContainerInterface $container): void
     {
         $this->referenceResolver->setContainer($container);
     }
 
     /**
-     * {@inheritdoc}
+     * Gets the loader response resolver
+     *
+     * @return ResponseResolverInterface|null
+     *
+     * @since 3.0.0
      */
-    public function attach($resource) : void
+    public function getResponseResolver(): ?ResponseResolverInterface
     {
-        if (is_dir($resource)) {
-            $fileNames = glob($resource . '/*.php');
-            foreach ($fileNames as $fileName) {
-                $this->resources[] = $fileName;
-            }
+        return $this->referenceResolver->getResponseResolver();
+    }
 
-            return;
-        }
-
-        if (!is_file($resource)) {
-            throw new InvalidLoaderResourceException(sprintf(
-                'The resource "%s" is not found.',
-                $resource
-            ));
-        }
-
-        $this->resources[] = $resource;
+    /**
+     * Sets the given response resolver to the loader
+     *
+     * @param ResponseResolverInterface|null $responseResolver
+     *
+     * @return void
+     *
+     * @since 3.0.0
+     */
+    public function setResponseResolver(?ResponseResolverInterface $responseResolver): void
+    {
+        $this->referenceResolver->setResponseResolver($responseResolver);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function attachArray(array $resources) : void
+    public function attach($resource): void
     {
+        if (!is_string($resource)) {
+            throw new InvalidLoaderResourceException(
+                'Config route loader only expects string resources'
+            );
+        }
+
+        if (is_file($resource)) {
+            $this->resources[] = $resource;
+            return;
+        }
+
+        if (is_dir($resource)) {
+            $filenames = glob($resource . '/*.php');
+            foreach ($filenames as $filename) {
+                $this->resources[] = $filename;
+            }
+
+            return;
+        }
+
+        throw new InvalidLoaderResourceException(sprintf(
+            'Config route loader only handles file or directory paths, ' .
+            'however the given resource "%s" is not as expected',
+            $resource
+        ));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function attachArray(array $resources): void
+    {
+        /** @psalm-suppress MixedAssignment */
         foreach ($resources as $resource) {
             $this->attach($resource);
         }
@@ -139,7 +175,7 @@ class ConfigLoader implements LoaderInterface
     /**
      * {@inheritdoc}
      */
-    public function load() : RouteCollectionInterface
+    public function load(): RouteCollectionInterface
     {
         $collector = new RouteCollector(
             $this->collectionFactory,
@@ -147,13 +183,11 @@ class ConfigLoader implements LoaderInterface
             $this->referenceResolver
         );
 
-        foreach ($this->resources as $resource) {
-            (function () use ($resource) {
-                /**
-                 * @psalm-suppress UnresolvableInclude
-                 */
-                require $resource;
-            })->call($collector);
+        foreach ($this->resources as $filename) {
+            (function (string $filename) {
+                /** @psalm-suppress UnresolvableInclude */
+                require $filename;
+            })->call($collector, $filename);
         }
 
         return $collector->getCollection();
