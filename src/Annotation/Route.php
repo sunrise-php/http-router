@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
+ * @author Anatoly Nekhay <afenric@gmail.com>
+ * @copyright Copyright (c) 2018, Anatoly Nekhay
  * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-router
  */
@@ -15,6 +15,8 @@ namespace Sunrise\Http\Router\Annotation;
  * Import classes
  */
 use Attribute;
+use Fig\Http\Message\RequestMethodInterface;
+use Psr\Http\Server\MiddlewareInterface;
 
 /**
  * @Annotation
@@ -38,102 +40,102 @@ use Attribute;
  * })
  */
 #[Attribute(Attribute::TARGET_CLASS|Attribute::TARGET_METHOD)]
-final class Route
+final class Route implements RequestMethodInterface
 {
 
     /**
      * The descriptor holder
      *
-     * @var mixed
+     * @var class-string|array{0: class-string, 1: string}|null
      *
      * @internal
      */
-    public $holder;
+    public $holder = null;
 
     /**
-     * A route name
+     * The route name
      *
      * @var string
      */
-    public $name;
+    public string $name;
 
     /**
-     * A route host
+     * The route host
      *
      * @var string|null
      */
-    public $host;
+    public ?string $host;
 
     /**
-     * A route path
+     * The route path
      *
      * @var string
      */
-    public $path;
+    public string $path;
 
     /**
-     * A route methods
+     * The route methods
      *
-     * @var string[]
+     * @var list<string>
      */
-    public $methods;
+    public array $methods;
 
     /**
-     * A route middlewares
+     * The route middlewares
      *
-     * @var string[]
+     * @var list<class-string<MiddlewareInterface>>
      */
-    public $middlewares;
+    public array $middlewares;
 
     /**
-     * A route attributes
+     * The route attributes
      *
-     * @var array
+     * @var array<string, mixed>
      */
-    public $attributes;
+    public array $attributes;
 
     /**
-     * A route summary
-     *
-     * @var string
-     */
-    public $summary;
-
-    /**
-     * A route description
+     * The route summary
      *
      * @var string
      */
-    public $description;
+    public string $summary;
 
     /**
-     * A route tags
+     * The route description
      *
-     * @var string[]
+     * @var string
      */
-    public $tags;
+    public string $description;
 
     /**
-     * A route priority
+     * The route tags
+     *
+     * @var list<string>
+     */
+    public array $tags;
+
+    /**
+     * The route priority
      *
      * @var int
      */
-    public $priority;
+    public int $priority;
 
     /**
      * Constructor of the class
      *
-     * @param  string       $name         The route name
-     * @param  string|null  $host         The route host
-     * @param  string       $path         The route path
-     * @param  string|null  $method       The route method
-     * @param  string[]     $methods      The route methods
-     * @param  string[]     $middlewares  The route middlewares
-     * @param  array        $attributes   The route attributes
-     * @param  string       $summary      The route summary
-     * @param  string       $description  The route description
-     * @param  string[]     $tags         The route tags
-     * @param  int          $priority     The route priority (default 0)
+     * @param  string                                   $name         The route name
+     * @param  string|null                              $host         The route host
+     * @param  string                                   $path         The route path
+     * @param  string|null                              $method       The route method
+     * @param  list<string>                             $methods      The route methods
+     * @param  list<class-string<MiddlewareInterface>>  $middlewares  The route middlewares
+     * @param  array<string, mixed>                     $attributes   The route attributes
+     * @param  string                                   $summary      The route summary
+     * @param  string                                   $description  The route description
+     * @param  list<string>                             $tags         The route tags
+     * @param  int                                      $priority     The route priority (default 0)
      */
     public function __construct(
         string $name,
@@ -155,7 +157,7 @@ final class Route
         // if no methods are specified,
         // such a route is a GET route.
         if (empty($methods)) {
-            $methods[] = 'GET';
+            $methods[] = self::METHOD_GET;
         }
 
         $this->name = $name;

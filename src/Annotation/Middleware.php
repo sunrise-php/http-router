@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
+ * @author Anatoly Nekhay <afenric@gmail.com>
+ * @copyright Copyright (c) 2018, Anatoly Nekhay
  * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-router
  */
@@ -15,6 +15,7 @@ namespace Sunrise\Http\Router\Annotation;
  * Import classes
  */
 use Attribute;
+use Psr\Http\Server\MiddlewareInterface;
 
 /**
  * @Annotation
@@ -36,14 +37,14 @@ final class Middleware
     /**
      * The attribute value
      *
-     * @var string
+     * @var class-string<MiddlewareInterface>
      */
-    public $value;
+    public string $value;
 
     /**
      * Constructor of the class
      *
-     * @param string $value
+     * @param class-string<MiddlewareInterface> $value
      */
     public function __construct(string $value)
     {
