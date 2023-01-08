@@ -60,15 +60,6 @@ class RouteListCommand extends Command
     }
 
     /**
-     * {@inheritdoc}
-     */
-    protected function configure(): void
-    {
-        $this->setName('router:route-list');
-        $this->setDescription('Lists all routes in your application');
-    }
-
-    /**
      * Gets the router instance populated with routes
      *
      * @return Router
@@ -91,6 +82,15 @@ class RouteListCommand extends Command
         }
 
         return $this->router;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function configure(): void
+    {
+        $this->setName('router:route-list');
+        $this->setDescription('Lists all routes in your application');
     }
 
     /**
