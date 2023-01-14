@@ -68,14 +68,4 @@ final class RouteEvent extends Event
     {
         return $this->request;
     }
-
-    /**
-     * @param ServerRequestInterface $request
-     *
-     * @return void
-     */
-    public function setRequest(ServerRequestInterface $request): void
-    {
-        $this->request = $request;
-    }
 }
