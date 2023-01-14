@@ -12,16 +12,28 @@
 namespace Sunrise\Http\Router;
 
 /**
- * RouteCollectionFactory
+ * Import classes
  */
-class RouteCollectionFactory implements RouteCollectionFactoryInterface
+use Psr\Http\Message\ResponseInterface;
+use Sunrise\Http\Router\Exception\LogicException;
+
+/**
+ * ResponseResolver
+ *
+ * @since 3.0.0
+ */
+final class ResponseResolver implements ResponseResolverInterface
 {
 
     /**
      * {@inheritdoc}
      */
-    public function createCollection(RouteInterface ...$routes): RouteCollectionInterface
+    public function resolveResponse($response): ResponseInterface
     {
-        return new RouteCollection(...$routes);
+        if ($response instanceof ResponseInterface) {
+            return $response;
+        }
+
+        throw new LogicException();
     }
 }

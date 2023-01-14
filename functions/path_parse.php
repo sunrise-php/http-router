@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
+ * @author Anatoly Nekhay <afenric@gmail.com>
+ * @copyright Copyright (c) 2018, Anatoly Nekhay
  * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-router
  */
@@ -14,7 +14,7 @@ namespace Sunrise\Http\Router;
 /**
  * Import classes
  */
-use Sunrise\Http\Router\Exception\InvalidPathException;
+use Sunrise\Http\Router\Exception\RoutePathParseException;
 
 /**
  * Import functions
@@ -59,7 +59,8 @@ const CHARACTER_TABLE_FOR_SUBPATTERN_NAME = [
  *
  * @return array
  *
- * @throws InvalidPathException If the given path syntax isn't valid.
+ * @throws RoutePathParseException
+ *         If the given path syntax isn't valid.
  */
 function path_parse(string $path) : array
 {
@@ -104,7 +105,7 @@ function path_parse(string $path) : array
 
         if ('(' === $char && !$cursorInAttribute) {
             if ($cursorInParentheses) {
-                throw new InvalidPathException(
+                throw new RoutePathParseException(
                     sprintf('[%s:%d] parentheses inside parentheses are not allowed.', $path, $cursorPosition)
                 );
             }
@@ -116,13 +117,13 @@ function path_parse(string $path) : array
 
         if ('{' === $char && !$cursorInPattern) {
             if ($cursorInAttribute) {
-                throw new InvalidPathException(
+                throw new RoutePathParseException(
                     sprintf('[%s:%d] braces inside attributes are not allowed.', $path, $cursorPosition)
                 );
             }
 
             if ($parenthesesBusy) {
-                throw new InvalidPathException(
+                throw new RoutePathParseException(
                     sprintf('[%s:%d] multiple attributes inside parentheses are not allowed.', $path, $cursorPosition)
                 );
             }
@@ -145,7 +146,7 @@ function path_parse(string $path) : array
 
         if ('<' === $char && $cursorInAttribute) {
             if ($cursorInPattern) {
-                throw new InvalidPathException(
+                throw new RoutePathParseException(
                     sprintf('[%s:%d] the char "<" inside patterns is not allowed.', $path, $cursorPosition)
                 );
             }
@@ -160,13 +161,13 @@ function path_parse(string $path) : array
 
         if ('>' === $char && $cursorInAttribute) {
             if (!$cursorInPattern) {
-                throw new InvalidPathException(
+                throw new RoutePathParseException(
                     sprintf('[%s:%d] at position %2$d an extra char ">" was found.', $path, $cursorPosition)
                 );
             }
 
             if (null === $attributes[$attributeIndex]['pattern']) {
-                throw new InvalidPathException(
+                throw new RoutePathParseException(
                     sprintf('[%s:%d] an attribute pattern is empty.', $path, $cursorPosition)
                 );
             }
@@ -184,13 +185,13 @@ function path_parse(string $path) : array
 
         if ('}' === $char && !$cursorInPattern) {
             if (!$cursorInAttribute) {
-                throw new InvalidPathException(
+                throw new RoutePathParseException(
                     sprintf('[%s:%d] at position %2$d an extra closing brace was found.', $path, $cursorPosition)
                 );
             }
 
             if (null === $attributes[$attributeIndex]['name']) {
-                throw new InvalidPathException(
+                throw new RoutePathParseException(
                     sprintf('[%s:%d] an attribute name is empty.', $path, $cursorPosition)
                 );
             }
@@ -206,7 +207,7 @@ function path_parse(string $path) : array
 
         if (')' === $char && !$cursorInAttribute) {
             if (!$cursorInParentheses) {
-                throw new InvalidPathException(
+                throw new RoutePathParseException(
                     sprintf('[%s:%d] at position %2$d an extra closing parenthesis was found.', $path, $cursorPosition)
                 );
             }
@@ -240,7 +241,7 @@ function path_parse(string $path) : array
         if ($cursorInAttributeName) {
             if (null === $attributes[$attributeIndex]['name']) {
                 if (!isset(CHARACTER_TABLE_FOR_FIRST_CHARACTER_OF_SUBPATTERN_NAME[$char])) {
-                    throw new InvalidPathException(
+                    throw new RoutePathParseException(
                         sprintf('[%s:%d] an attribute name must begin with "A-Za-z_".', $path, $cursorPosition)
                     );
                 }
@@ -248,7 +249,7 @@ function path_parse(string $path) : array
 
             if (null !== $attributes[$attributeIndex]['name']) {
                 if (!isset(CHARACTER_TABLE_FOR_SUBPATTERN_NAME[$char])) {
-                    throw new InvalidPathException(
+                    throw new RoutePathParseException(
                         sprintf('[%s:%d] an attribute name must contain only "0-9A-Za-z_".', $path, $cursorPosition)
                     );
                 }
@@ -259,7 +260,7 @@ function path_parse(string $path) : array
 
         if ($cursorInPattern) {
             if ('#' === $char) {
-                throw new InvalidPathException(
+                throw new RoutePathParseException(
                     sprintf('[%s:%d] unallowed character "#" in an attribute pattern.', $path, $cursorPosition)
                 );
             }
@@ -269,13 +270,13 @@ function path_parse(string $path) : array
     }
 
     if ($cursorInParentheses) {
-        throw new InvalidPathException(
+        throw new RoutePathParseException(
             sprintf('[%s] the route path contains non-closed parentheses.', $path)
         );
     }
 
     if ($cursorInAttribute) {
-        throw new InvalidPathException(
+        throw new RoutePathParseException(
             sprintf('[%s] the route path contains non-closed attribute.', $path)
         );
     }

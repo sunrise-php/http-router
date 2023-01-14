@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
+ * @author Anatoly Nekhay <afenric@gmail.com>
+ * @copyright Copyright (c) 2018, Anatoly Nekhay
  * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-router
  */
@@ -14,8 +14,7 @@ namespace Sunrise\Http\Router;
 /**
  * Import classes
  */
-use Sunrise\Http\Router\Exception\InvalidAttributeValueException;
-use Sunrise\Http\Router\Exception\MissingAttributeValueException;
+use Sunrise\Http\Router\Exception\RoutePathBuildException;
 
 /**
  * Import functions
@@ -27,7 +26,7 @@ use function str_replace;
 /**
  * Builds the given path using the given attributes
  *
- * If strict mode is enabled, each attribute value will be validated.
+ * If strict mode is enabled then each attribute value will be validated.
  *
  * @param string $path
  * @param array $attributes
@@ -35,8 +34,7 @@ use function str_replace;
  *
  * @return string
  *
- * @throws InvalidAttributeValueException
- * @throws MissingAttributeValueException
+ * @throws RoutePathBuildException
  */
 function path_build(string $path, array $attributes = [], bool $strict = false) : string
 {
@@ -49,7 +47,7 @@ function path_build(string $path, array $attributes = [], bool $strict = false) 
             if (!$match['isOptional']) {
                 $errmsg = '[%s] build error: no value given for the attribute "%s".';
 
-                throw new MissingAttributeValueException(sprintf($errmsg, $path, $match['name']), [
+                throw new RoutePathBuildException(sprintf($errmsg, $path, $match['name']), [
                     'path' => $path,
                     'match' => $match,
                 ]);
@@ -67,7 +65,7 @@ function path_build(string $path, array $attributes = [], bool $strict = false) 
             if (!preg_match('#^' . $match['pattern'] . '$#u', $replacement)) {
                 $errmsg = '[%s] build error: the given value for the attribute "%s" does not match its pattern.';
 
-                throw new InvalidAttributeValueException(sprintf($errmsg, $path, $match['name']), [
+                throw new RoutePathBuildException(sprintf($errmsg, $path, $match['name']), [
                     'path' => $path,
                     'value' => $replacement,
                     'match' => $match,

@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
+ * @author Anatoly Nekhay <afenric@gmail.com>
+ * @copyright Copyright (c) 2018, Anatoly Nekhay
  * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-router
  */
@@ -21,9 +21,9 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Event\RouteEvent;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
-use Sunrise\Http\Router\Exception\MethodNotAllowedException;
 use Sunrise\Http\Router\Exception\PageNotFoundException;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
+use Sunrise\Http\Router\Exception\MethodNotAllowedException;
 use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
@@ -400,7 +400,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      * Generates a URI for the given named route
      *
      * @param string $name
-     * @param array $attributes
+     * @param array<string, string> $attributes
      * @param bool $strict
      *
      * @return string
@@ -408,11 +408,9 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      * @throws RouteNotFoundException
      *         If the given named route wasn't found.
      *
-     * @throws Exception\InvalidAttributeValueException
-     *         It can be thrown in strict mode, if an attribute value is not valid.
-     *
-     * @throws Exception\MissingAttributeValueException
-     *         If a required attribute value is not given.
+     * @throws Exception\RoutePathBuildException
+     *         If a required attribute value is not given,
+     *         or if an attribute value is not valid in strict mode.
      */
     public function generateUri(string $name, array $attributes = [], bool $strict = false) : string
     {
@@ -430,19 +428,19 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *
      * @return RouteInterface
      *
-     * @throws MethodNotAllowedException
      * @throws PageNotFoundException
+     * @throws MethodNotAllowedException
      */
     public function match(ServerRequestInterface $request) : RouteInterface
     {
-        $currentHost = $request->getUri()->getHost();
-        $currentPath = $request->getUri()->getPath();
+        $currentUri = $request->getUri();
+        $currentHost = $currentUri->getHost();
+        $currentPath = $currentUri->getPath();
         $currentMethod = $request->getMethod();
         $allowedMethods = [];
+        $currentHostRoutes = $this->getRoutesByHostname($currentHost);
 
-        $routes = $this->getRoutesByHostname($currentHost);
-
-        foreach ($routes as $route) {
+        foreach ($currentHostRoutes as $route) {
             // https://github.com/sunrise-php/http-router/issues/50
             // https://tools.ietf.org/html/rfc7231#section-6.5.5
             if (!path_match($route->getPath(), $currentPath, $attributes)) {
@@ -452,24 +450,26 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
             $routeMethods = [];
             foreach ($route->getMethods() as $routeMethod) {
                 $routeMethods[$routeMethod] = true;
-                $allowedMethods[$routeMethod] = true;
+                $allowedMethods[$routeMethod] = $routeMethod;
             }
 
             if (!isset($routeMethods[$currentMethod])) {
                 continue;
             }
 
+            /** @var array<string, string> $attributes */
+
             return $route->withAddedAttributes($attributes);
         }
 
-        if (!empty($allowedMethods)) {
-            throw new MethodNotAllowedException('Method Not Allowed', [
-                'method' => $currentMethod,
-                'allowed' => array_keys($allowedMethods),
-            ]);
+        if (empty($allowedMethods)) {
+            throw new PageNotFoundException();
         }
 
-        throw new PageNotFoundException('Page Not Found');
+        throw new MethodNotAllowedException(
+            $currentMethod,
+            $allowedMethods
+        );
     }
 
     /**
@@ -491,9 +491,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
             if (isset($this->eventDispatcher)) {
                 $event = new RouteEvent($route, $request);
 
-                /**
-                 * @psalm-suppress TooManyArguments
-                 */
+                /** @psalm-suppress TooManyArguments */
                 $this->eventDispatcher->dispatch($event, RouteEvent::NAME);
 
                 $request = $event->getRequest();
@@ -524,9 +522,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
         if (isset($this->eventDispatcher)) {
             $event = new RouteEvent($route, $request);
 
-            /**
-             * @psalm-suppress TooManyArguments
-             */
+            /** @psalm-suppress TooManyArguments */
             $this->eventDispatcher->dispatch($event, RouteEvent::NAME);
 
             $request = $event->getRequest();
@@ -550,10 +546,8 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     {
         try {
             return $this->handle($request);
-        } catch (MethodNotAllowedException|PageNotFoundException $e) {
-            $request = $request->withAttribute(self::ATTR_NAME_FOR_ROUTING_ERROR, $e);
-
-            return $handler->handle($request);
+        } catch (PageNotFoundException|MethodNotAllowedException $e) {
+            return $handler->handle($request->withAttribute(self::ATTR_NAME_FOR_ROUTING_ERROR, $e));
         }
     }
 

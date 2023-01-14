@@ -26,14 +26,14 @@ interface ResponseResolverInterface
 {
 
     /**
-     * Resolves the given data to the response instance
+     * Resolves the given raw response to the response object
      *
-     * @param mixed $data
+     * @param mixed $response
      *
      * @return ResponseInterface
      *
      * @throws LogicException
-     *         If the data cannot be resolved to the response.
+     *         If the raw response cannot be resolved to the response object.
      */
-    public function resolveResponse($data): ResponseInterface;
+    public function resolveResponse($response): ResponseInterface;
 }

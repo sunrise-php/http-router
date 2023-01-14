@@ -1,4 +1,9 @@
-# v2.16.0
+# v3.0.0
+
+* Minimal PHP version **7.4**;
+* ...
+
+## v2.16.0
 
 * New method: `Router::hasRoute(string):bool`.
 

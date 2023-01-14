@@ -56,25 +56,18 @@ class JsonPayloadDecodingMiddleware implements MiddlewareInterface
     private const JSON_MEDIA_TYPE = 'application/json';
 
     /**
-     * JSON maximal depth
-     *
-     * @var int
-     */
-    protected const JSON_MAXIMAL_DEPTH = 512;
-
-    /**
      * JSON decoding options
      *
      * @var int
      *
-     * @link https://www.php.net/manual/ru/json.constants.php
+     * @link https://www.php.net/json.constants
      */
     protected const JSON_DECODING_OPTIONS = JSON_BIGINT_AS_STRING | JSON_OBJECT_AS_ARRAY;
 
     /**
      * {@inheritdoc}
      */
-    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    final public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         if ($this->isSupportedRequest($request)) {
             $data = $this->decodeRequestJsonPayload($request);
@@ -93,11 +86,13 @@ class JsonPayloadDecodingMiddleware implements MiddlewareInterface
      */
     private function isSupportedRequest(ServerRequestInterface $request): bool
     {
-        return self::JSON_MEDIA_TYPE === $this->getRequestMediaType($request);
+        return $this->getRequestMediaType($request) === self::JSON_MEDIA_TYPE;
     }
 
     /**
-     * Gets media type from the given request
+     * Gets a media type from the given request
+     *
+     * Returns null if a media type cannot be retrieved.
      *
      * @param ServerRequestInterface $request
      *
@@ -114,12 +109,12 @@ class JsonPayloadDecodingMiddleware implements MiddlewareInterface
         // type "/" subtype *( OWS ";" OWS parameter )
         $mediaType = $request->getHeaderLine('Content-Type');
 
-        $semicolonPosition = strpos($mediaType, ';');
-        if (false === $semicolonPosition) {
+        $semicolon = strpos($mediaType, ';');
+        if (false === $semicolon) {
             return $mediaType;
         }
 
-        return rtrim(substr($mediaType, 0, $semicolonPosition));
+        return rtrim(substr($mediaType, 0, $semicolon));
     }
 
     /**
@@ -130,27 +125,20 @@ class JsonPayloadDecodingMiddleware implements MiddlewareInterface
      * @return array|object|null
      *
      * @throws InvalidPayloadException
-     *         If the request's payload cannot be decoded.
+     *         If the request's JSON payload cannot be decoded.
      */
     private function decodeRequestJsonPayload(ServerRequestInterface $request)
     {
-        /** @var int */
-        $depth = static::JSON_MAXIMAL_DEPTH;
-
         /** @var int */
         $flags = static::JSON_DECODING_OPTIONS;
 
         try {
             /** @var mixed */
-            $result = json_decode($request->getBody()->__toString(), null, $depth, $flags | JSON_THROW_ON_ERROR);
+            $result = json_decode($request->getBody()->__toString(), null, 512, $flags | JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
             throw new InvalidPayloadException(sprintf('Invalid Payload: %s', $e->getMessage()), 0, $e);
         }
 
-        if (is_array($result) || is_object($result)) {
-            return $result;
-        }
-
-        return null;
+        return (is_array($result) || is_object($result)) ? $result : null;
     }
 }

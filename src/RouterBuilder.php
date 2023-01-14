@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
+ * @author Anatoly Nekhay <afenric@gmail.com>
+ * @copyright Copyright (c) 2018, Anatoly Nekhay
  * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-router
  */
@@ -38,6 +38,11 @@ final class RouterBuilder
      * @var ContainerInterface|null
      */
     private $container = null;
+
+    /**
+     * @var ResponseResolverInterface|null
+     */
+    private $responseResolver = null;
 
     /**
      * @var CacheInterface|null
@@ -100,6 +105,20 @@ final class RouterBuilder
     public function setContainer(?ContainerInterface $container) : self
     {
         $this->container = $container;
+
+        return $this;
+    }
+
+    /**
+     * Sets the given response resolver to the builder
+     *
+     * @param ResponseResolverInterface|null $responseResolver
+     *
+     * @return self
+     */
+    public function setResponseResolver(?ResponseResolverInterface $responseResolver) : self
+    {
+        $this->responseResolver = $responseResolver;
 
         return $this;
     }
@@ -239,11 +258,13 @@ final class RouterBuilder
 
         if (isset($this->configLoader)) {
             $this->configLoader->setContainer($this->container);
+            $this->configLoader->setResponseResolver($this->responseResolver);
             $router->load($this->configLoader);
         }
 
         if (isset($this->descriptorLoader)) {
             $this->descriptorLoader->setContainer($this->container);
+            $this->descriptorLoader->setResponseResolver($this->responseResolver);
             $this->descriptorLoader->setCache($this->cache);
             $this->descriptorLoader->setCacheKey($this->cacheKey);
             $router->load($this->descriptorLoader);

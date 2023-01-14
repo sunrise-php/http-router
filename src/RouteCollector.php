@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
+ * @author Anatoly Nekhay <afenric@gmail.com>
+ * @copyright Copyright (c) 2018, Anatoly Nekhay
  * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-router
  */
@@ -15,7 +15,7 @@ namespace Sunrise\Http\Router;
  * Import classes
  */
 use Psr\Container\ContainerInterface;
-use Sunrise\Http\Router\Exception\UnresolvableReferenceException;
+use Sunrise\Http\Router\Exception\InvalidReferenceException;
 
 /**
  * RouteCollector
@@ -107,6 +107,32 @@ class RouteCollector
     }
 
     /**
+     * Gets the collector response resolver
+     *
+     * @return ResponseResolverInterface|null
+     *
+     * @since 3.0.0
+     */
+    public function getResponseResolver(): ?ResponseResolverInterface
+    {
+        return $this->referenceResolver->getResponseResolver();
+    }
+
+    /**
+     * Sets the given response resolver to the collector
+     *
+     * @param ResponseResolverInterface|null $responseResolver
+     *
+     * @return void
+     *
+     * @since 3.0.0
+     */
+    public function setResponseResolver(?ResponseResolverInterface $responseResolver): void
+    {
+        $this->referenceResolver->setResponseResolver($responseResolver);
+    }
+
+    /**
      * Makes a new route from the given parameters
      *
      * @param string $name
@@ -114,11 +140,11 @@ class RouteCollector
      * @param string[] $methods
      * @param mixed $requestHandler
      * @param array $middlewares
-     * @param array $attributes
+     * @param array<string, mixed> $attributes
      *
      * @return RouteInterface
      *
-     * @throws UnresolvableReferenceException
+     * @throws InvalidReferenceException
      *         If the given request handler or one of the given middlewares cannot be resolved.
      */
     public function route(
@@ -129,16 +155,12 @@ class RouteCollector
         array $middlewares = [],
         array $attributes = []
     ) : RouteInterface {
-        foreach ($middlewares as &$middleware) {
-            $middleware = $this->referenceResolver->toMiddleware($middleware);
-        }
-
         $route = $this->routeFactory->createRoute(
             $name,
             $path,
             $methods,
             $this->referenceResolver->toRequestHandler($requestHandler),
-            $middlewares,
+            $this->referenceResolver->toMiddlewares($middlewares),
             $attributes
         );
 
@@ -154,11 +176,11 @@ class RouteCollector
      * @param string $path
      * @param mixed $requestHandler
      * @param array $middlewares
-     * @param array $attributes
+     * @param array<string, mixed> $attributes
      *
      * @return RouteInterface
      *
-     * @throws UnresolvableReferenceException
+     * @throws InvalidReferenceException
      *         If the given request handler or one of the given middlewares cannot be resolved.
      */
     public function head(
@@ -185,11 +207,11 @@ class RouteCollector
      * @param string $path
      * @param mixed $requestHandler
      * @param array $middlewares
-     * @param array $attributes
+     * @param array<string, mixed> $attributes
      *
      * @return RouteInterface
      *
-     * @throws UnresolvableReferenceException
+     * @throws InvalidReferenceException
      *         If the given request handler or one of the given middlewares cannot be resolved.
      */
     public function get(
@@ -216,11 +238,11 @@ class RouteCollector
      * @param string $path
      * @param mixed $requestHandler
      * @param array $middlewares
-     * @param array $attributes
+     * @param array<string, mixed> $attributes
      *
      * @return RouteInterface
      *
-     * @throws UnresolvableReferenceException
+     * @throws InvalidReferenceException
      *         If the given request handler or one of the given middlewares cannot be resolved.
      */
     public function post(
@@ -247,11 +269,11 @@ class RouteCollector
      * @param string $path
      * @param mixed $requestHandler
      * @param array $middlewares
-     * @param array $attributes
+     * @param array<string, mixed> $attributes
      *
      * @return RouteInterface
      *
-     * @throws UnresolvableReferenceException
+     * @throws InvalidReferenceException
      *         If the given request handler or one of the given middlewares cannot be resolved.
      */
     public function put(
@@ -278,11 +300,11 @@ class RouteCollector
      * @param string $path
      * @param mixed $requestHandler
      * @param array $middlewares
-     * @param array $attributes
+     * @param array<string, mixed> $attributes
      *
      * @return RouteInterface
      *
-     * @throws UnresolvableReferenceException
+     * @throws InvalidReferenceException
      *         If the given request handler or one of the given middlewares cannot be resolved.
      */
     public function patch(
@@ -309,11 +331,11 @@ class RouteCollector
      * @param string $path
      * @param mixed $requestHandler
      * @param array $middlewares
-     * @param array $attributes
+     * @param array<string, mixed> $attributes
      *
      * @return RouteInterface
      *
-     * @throws UnresolvableReferenceException
+     * @throws InvalidReferenceException
      *         If the given request handler or one of the given middlewares cannot be resolved.
      */
     public function delete(
@@ -340,11 +362,11 @@ class RouteCollector
      * @param string $path
      * @param mixed $requestHandler
      * @param array $middlewares
-     * @param array $attributes
+     * @param array<string, mixed> $attributes
      *
      * @return RouteInterface
      *
-     * @throws UnresolvableReferenceException
+     * @throws InvalidReferenceException
      *         If the given request handler or one of the given middlewares cannot be resolved.
      */
     public function purge(
@@ -372,15 +394,11 @@ class RouteCollector
      *
      * @return RouteCollectionInterface
      *
-     * @throws UnresolvableReferenceException
+     * @throws InvalidReferenceException
      *         If one of the given middlewares cannot be resolved.
      */
     public function group(callable $callback, array $middlewares = []) : RouteCollectionInterface
     {
-        foreach ($middlewares as &$middleware) {
-            $middleware = $this->referenceResolver->toMiddleware($middleware);
-        }
-
         $collector = new self(
             $this->collectionFactory,
             $this->routeFactory,
@@ -389,9 +407,13 @@ class RouteCollector
 
         $callback($collector);
 
-        $collector->collection->prependMiddleware(...$middlewares);
+        $collector->collection->prependMiddleware(
+            ...$this->referenceResolver->toMiddlewares($middlewares)
+        );
 
-        $this->collection->add(...$collector->collection->all());
+        $this->collection->add(
+            ...$collector->collection->all()
+        );
 
         return $collector->collection;
     }

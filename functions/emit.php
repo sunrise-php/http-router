@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
+ * @author Anatoly Nekhay <afenric@gmail.com>
+ * @copyright Copyright (c) 2018, Anatoly Nekhay
  * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-router
  */
@@ -25,14 +25,19 @@ use function sprintf;
 /**
  * Sends the given response
  *
- * Don't use the function in your production environment, it's only for tests!
- *
  * @param ResponseInterface $response
  *
  * @return void
  */
-function emit(ResponseInterface $response) : void
+function emit(ResponseInterface $response): void
 {
+    header(sprintf(
+        'HTTP/%s %d %s',
+        $response->getProtocolVersion(),
+        $response->getStatusCode(),
+        $response->getReasonPhrase()
+    ), true);
+
     foreach ($response->getHeaders() as $name => $values) {
         foreach ($values as $value) {
             header(sprintf(
@@ -42,13 +47,6 @@ function emit(ResponseInterface $response) : void
             ), false);
         }
     }
-
-    header(sprintf(
-        'HTTP/%s %d %s',
-        $response->getProtocolVersion(),
-        $response->getStatusCode(),
-        $response->getReasonPhrase()
-    ), true);
 
     echo $response->getBody();
 }

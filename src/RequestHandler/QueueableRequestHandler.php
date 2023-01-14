@@ -23,7 +23,7 @@ use SplQueue;
 /**
  * QueueableRequestHandler
  */
-class QueueableRequestHandler implements RequestHandlerInterface
+final class QueueableRequestHandler implements RequestHandlerInterface
 {
 
     /**

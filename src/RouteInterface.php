@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
+ * @author Anatoly Nekhay <afenric@gmail.com>
+ * @copyright Copyright (c) 2018, Anatoly Nekhay
  * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-router
  */
@@ -83,7 +83,7 @@ interface RouteInterface extends RequestHandlerInterface
     /**
      * Gets the route attributes
      *
-     * @return array
+     * @return array<string, mixed>
      */
     public function getAttributes() : array;
 
@@ -182,7 +182,7 @@ interface RouteInterface extends RequestHandlerInterface
     /**
      * Sets the given attributes to the route
      *
-     * @param array $attributes
+     * @param array<string, mixed> $attributes
      *
      * @return RouteInterface
      */
@@ -262,7 +262,7 @@ interface RouteInterface extends RequestHandlerInterface
      *
      * This method MUST NOT change the state of the object.
      *
-     * @param array $attributes
+     * @param array<string, mixed> $attributes
      *
      * @return RouteInterface
      */

@@ -14,13 +14,13 @@ namespace Sunrise\Http\Router\Exception;
 /**
  * Import classes
  */
-use InvalidArgumentException as BaseInvalidArgumentException;
+use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
 
 /**
- * InvalidArgumentException
+ * InvalidPayloadException
  *
- * @since 2.9.0
+ * @since 3.0.0
  */
-class InvalidArgumentException extends BaseInvalidArgumentException implements ExceptionInterface
+class InvalidPayloadException extends HttpBadRequestException
 {
 }

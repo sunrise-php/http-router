@@ -48,6 +48,13 @@ class ReferenceResolver implements ReferenceResolverInterface
     private ?ContainerInterface $container = null;
 
     /**
+     * The reference resolver's parameter resolver
+     *
+     * @var ParameterResolverInterface|null
+     */
+    private ?ParameterResolverInterface $parameterResolver = null;
+
+    /**
      * The reference resolver's response resolver
      *
      * @var ResponseResolverInterface|null

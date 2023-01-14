@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
+ * @author Anatoly Nekhay <afenric@gmail.com>
+ * @copyright Copyright (c) 2018, Anatoly Nekhay
  * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-router
  */
@@ -25,9 +25,9 @@ interface RouteCollectionInterface
     /**
      * Gets all routes from the collection
      *
-     * @return RouteInterface[]
+     * @return list<RouteInterface>
      */
-    public function all() : array;
+    public function all(): array;
 
     /**
      * Gets a route by the given name
@@ -38,7 +38,7 @@ interface RouteCollectionInterface
      *
      * @since 2.10.0
      */
-    public function get(string $name) : ?RouteInterface;
+    public function get(string $name): ?RouteInterface;
 
     /**
      * Checks by the given name if a route exists in the collection
@@ -49,7 +49,7 @@ interface RouteCollectionInterface
      *
      * @since 2.10.0
      */
-    public function has(string $name) : bool;
+    public function has(string $name): bool;
 
     /**
      * Adds the given route(s) to the collection
@@ -58,7 +58,7 @@ interface RouteCollectionInterface
      *
      * @return RouteCollectionInterface
      */
-    public function add(RouteInterface ...$routes) : RouteCollectionInterface;
+    public function add(RouteInterface ...$routes): RouteCollectionInterface;
 
     /**
      * Sets the given host to all routes in the collection
@@ -69,7 +69,7 @@ interface RouteCollectionInterface
      *
      * @since 2.9.0
      */
-    public function setHost(string $host) : RouteCollectionInterface;
+    public function setHost(string $host): RouteCollectionInterface;
 
     /**
      * Adds the given path prefix to all routes in the collection
@@ -80,7 +80,7 @@ interface RouteCollectionInterface
      *
      * @since 2.9.0
      */
-    public function addPrefix(string $prefix) : RouteCollectionInterface;
+    public function addPrefix(string $prefix): RouteCollectionInterface;
 
     /**
      * Adds the given path suffix to all routes in the collection
@@ -91,7 +91,7 @@ interface RouteCollectionInterface
      *
      * @since 2.9.0
      */
-    public function addSuffix(string $suffix) : RouteCollectionInterface;
+    public function addSuffix(string $suffix): RouteCollectionInterface;
 
     /**
      * Adds the given method(s) to all routes in the collection
@@ -102,7 +102,7 @@ interface RouteCollectionInterface
      *
      * @since 2.9.0
      */
-    public function addMethod(string ...$methods) : RouteCollectionInterface;
+    public function addMethod(string ...$methods): RouteCollectionInterface;
 
     /**
      * Adds the given middleware(s) to all routes in the collection
@@ -113,7 +113,7 @@ interface RouteCollectionInterface
      *
      * @since 2.9.0
      */
-    public function addMiddleware(MiddlewareInterface ...$middlewares) : RouteCollectionInterface;
+    public function addMiddleware(MiddlewareInterface ...$middlewares): RouteCollectionInterface;
 
     /**
      * Adds the given middleware(s) to the beginning of all routes in the collection
@@ -124,5 +124,5 @@ interface RouteCollectionInterface
      *
      * @since 2.9.0
      */
-    public function prependMiddleware(MiddlewareInterface ...$middlewares) : RouteCollectionInterface;
+    public function prependMiddleware(MiddlewareInterface ...$middlewares): RouteCollectionInterface;
 }

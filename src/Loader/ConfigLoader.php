@@ -16,6 +16,7 @@ namespace Sunrise\Http\Router\Loader;
  */
 use Psr\Container\ContainerInterface;
 use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
+use Sunrise\Http\Router\ParameterResolverInterface;
 use Sunrise\Http\Router\ReferenceResolver;
 use Sunrise\Http\Router\ReferenceResolverInterface;
 use Sunrise\Http\Router\ResponseResolverInterface;
@@ -101,6 +102,32 @@ class ConfigLoader implements LoaderInterface
     public function setContainer(?ContainerInterface $container): void
     {
         $this->referenceResolver->setContainer($container);
+    }
+
+    /**
+     * Gets the loader parameter resolver
+     *
+     * @return ParameterResolverInterface|null
+     *
+     * @since 3.0.0
+     */
+    public function getParameterResolver(): ?ParameterResolverInterface
+    {
+        return $this->referenceResolver->getParameterResolver();
+    }
+
+    /**
+     * Sets the given parameter resolver to the loader
+     *
+     * @param ParameterResolverInterface|null $parameterResolver
+     *
+     * @return void
+     *
+     * @since 3.0.0
+     */
+    public function setParameterResolver(?ParameterResolverInterface $parameterResolver): void
+    {
+        $this->referenceResolver->setParameterResolver($parameterResolver);
     }
 
     /**

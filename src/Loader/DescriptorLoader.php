@@ -27,6 +27,7 @@ use Sunrise\Http\Router\Annotation\Prefix;
 use Sunrise\Http\Router\Annotation\Route;
 use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
 use Sunrise\Http\Router\Exception\LogicException;
+use Sunrise\Http\Router\ParameterResolverInterface;
 use Sunrise\Http\Router\ReferenceResolver;
 use Sunrise\Http\Router\ReferenceResolverInterface;
 use Sunrise\Http\Router\ResponseResolverInterface;
@@ -117,7 +118,7 @@ class DescriptorLoader implements LoaderInterface
         $this->routeFactory = $routeFactory ?? new RouteFactory();
         $this->referenceResolver = $referenceResolver ?? new ReferenceResolver();
 
-        if (8 > PHP_MAJOR_VERSION) {
+        if (PHP_MAJOR_VERSION < 8) {
             $this->useDefaultAnnotationReader();
         }
     }
@@ -142,6 +143,32 @@ class DescriptorLoader implements LoaderInterface
     public function setContainer(?ContainerInterface $container): void
     {
         $this->referenceResolver->setContainer($container);
+    }
+
+    /**
+     * Gets the loader parameter resolver
+     *
+     * @return ParameterResolverInterface|null
+     *
+     * @since 3.0.0
+     */
+    public function getParameterResolver(): ?ParameterResolverInterface
+    {
+        return $this->referenceResolver->getParameterResolver();
+    }
+
+    /**
+     * Sets the given parameter resolver to the loader
+     *
+     * @param ParameterResolverInterface|null $parameterResolver
+     *
+     * @return void
+     *
+     * @since 3.0.0
+     */
+    public function setParameterResolver(?ParameterResolverInterface $parameterResolver): void
+    {
+        $this->referenceResolver->setParameterResolver($parameterResolver);
     }
 
     /**
@@ -495,7 +522,7 @@ class DescriptorLoader implements LoaderInterface
     {
         $result = [];
 
-        if (8 === PHP_MAJOR_VERSION) {
+        if (PHP_MAJOR_VERSION === 8) {
             /** @var ReflectionAttribute[] */
             $attributes = $reflector->getAttributes($annotationName);
             foreach ($attributes as $attribute) {

@@ -9,17 +9,13 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
-namespace Sunrise\Http\Router\Annotation;
+namespace Sunrise\Http\Router\Exception;
 
 /**
- * Import classes
- */
-use Attribute;
-
-/**
+ * InvalidReferenceException
+ *
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_PARAMETER)]
-final class Body
+class InvalidReferenceException extends LogicException
 {
 }
