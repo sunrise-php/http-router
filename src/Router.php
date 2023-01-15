@@ -489,12 +489,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
             $this->matchedRoute = $route;
 
             if (isset($this->eventDispatcher)) {
-                $event = new RouteEvent($route, $request);
-
-                /** @psalm-suppress TooManyArguments */
-                $this->eventDispatcher->dispatch($event, RouteEvent::NAME);
-
-                $request = $event->getRequest();
+                $this->eventDispatcher->dispatch(new RouteEvent($route, $request));
             }
 
             return $route->handle($request);
@@ -520,12 +515,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
         $this->matchedRoute = $route;
 
         if (isset($this->eventDispatcher)) {
-            $event = new RouteEvent($route, $request);
-
-            /** @psalm-suppress TooManyArguments */
-            $this->eventDispatcher->dispatch($event, RouteEvent::NAME);
-
-            $request = $event->getRequest();
+            $this->eventDispatcher->dispatch(new RouteEvent($route, $request));
         }
 
         $middlewares = $this->getMiddlewares();

@@ -27,11 +27,6 @@ final class RouteEvent extends Event
 {
 
     /**
-     * @var string
-     */
-    public const NAME = 'router.route';
-
-    /**
      * @var RouteInterface
      */
     private RouteInterface $route;

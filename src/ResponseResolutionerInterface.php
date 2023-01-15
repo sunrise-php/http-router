@@ -18,12 +18,23 @@ use Psr\Http\Message\ResponseInterface;
 use Sunrise\Http\Router\Exception\LogicException;
 
 /**
- * ResponseResolverInterface
+ * ResponseResolutionerInterface
  *
  * @since 3.0.0
  */
-interface ResponseResolverInterface
+interface ResponseResolutionerInterface
 {
+
+    /**
+     * Creates a new instance of the resolutioner with the given current context
+     *
+     * Please note that this method MUST NOT change the object state.
+     *
+     * @param mixed $context
+     *
+     * @return static
+     */
+    public function withContext($context): ResponseResolutionerInterface;
 
     /**
      * Resolves the given raw response to the response object

@@ -48,20 +48,6 @@ class ReferenceResolver implements ReferenceResolverInterface
     private ?ContainerInterface $container = null;
 
     /**
-     * The reference resolver's parameter resolver
-     *
-     * @var ParameterResolverInterface|null
-     */
-    private ?ParameterResolverInterface $parameterResolver = null;
-
-    /**
-     * The reference resolver's response resolver
-     *
-     * @var ResponseResolverInterface|null
-     */
-    private ?ResponseResolverInterface $responseResolver = null;
-
-    /**
      * {@inheritdoc}
      */
     public function getContainer(): ?ContainerInterface
@@ -80,22 +66,6 @@ class ReferenceResolver implements ReferenceResolverInterface
     /**
      * {@inheritdoc}
      */
-    public function getResponseResolver(): ?ResponseResolverInterface
-    {
-        return $this->responseResolver;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setResponseResolver(?ResponseResolverInterface $responseResolver): void
-    {
-        $this->responseResolver = $responseResolver;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function toRequestHandler($reference): RequestHandlerInterface
     {
         if ($reference instanceof RequestHandlerInterface) {
@@ -103,7 +73,7 @@ class ReferenceResolver implements ReferenceResolverInterface
         }
 
         if ($reference instanceof Closure) {
-            return new CallableRequestHandler($reference, $this->responseResolver);
+            // return new CallableRequestHandler($reference, $this->parameterResolver, $this->responseResolver);
         }
 
         list($class, $method) = $this->normalizeReference($reference);
@@ -112,7 +82,7 @@ class ReferenceResolver implements ReferenceResolverInterface
             /** @var callable */
             $callback = [$this->resolveClass($class), $method];
 
-            return new CallableRequestHandler($callback, $this->responseResolver);
+            // return new CallableRequestHandler($callback, $this->parameterResolver, $this->responseResolver);
         }
 
         if (!isset($method) && isset($class) && is_subclass_of($class, RequestHandlerInterface::class)) {
@@ -135,13 +105,16 @@ class ReferenceResolver implements ReferenceResolverInterface
         }
 
         if ($reference instanceof Closure) {
-            return new CallableMiddleware($reference);
+            // return new CallableMiddleware($reference, $this->parameterResolver, $this->responseResolver);
         }
 
         list($class, $method) = $this->normalizeReference($reference);
 
         if (isset($class) && isset($method) && method_exists($class, $method)) {
-            return new CallableMiddleware([$this->resolveClass($class), $method]);
+            /** @var callable */
+            $callback = [$this->resolveClass($class), $method];
+
+            // return new CallableMiddleware($callback, $this->parameterResolver, $this->responseResolver);
         }
 
         if (!isset($method) && isset($class) && is_subclass_of($class, MiddlewareInterface::class)) {

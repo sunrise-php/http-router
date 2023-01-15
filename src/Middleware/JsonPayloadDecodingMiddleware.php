@@ -28,6 +28,7 @@ use function is_array;
 use function is_object;
 use function json_decode;
 use function rtrim;
+use function sprintf;
 use function strpos;
 use function substr;
 
@@ -43,31 +44,22 @@ use const JSON_THROW_ON_ERROR;
  *
  * @since 2.15.0
  */
-class JsonPayloadDecodingMiddleware implements MiddlewareInterface
+final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
 {
 
     /**
      * JSON media type
      *
-     * @var string
-     *
      * @link https://datatracker.ietf.org/doc/html/rfc4627
+     *
+     * @var string
      */
     private const JSON_MEDIA_TYPE = 'application/json';
 
     /**
-     * JSON decoding options
-     *
-     * @var int
-     *
-     * @link https://www.php.net/json.constants
-     */
-    protected const JSON_DECODING_OPTIONS = JSON_BIGINT_AS_STRING | JSON_OBJECT_AS_ARRAY;
-
-    /**
      * {@inheritdoc}
      */
-    final public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         if ($this->isSupportedRequest($request)) {
             $data = $this->decodeRequestJsonPayload($request);
@@ -86,7 +78,7 @@ class JsonPayloadDecodingMiddleware implements MiddlewareInterface
      */
     private function isSupportedRequest(ServerRequestInterface $request): bool
     {
-        return $this->getRequestMediaType($request) === self::JSON_MEDIA_TYPE;
+        return self::JSON_MEDIA_TYPE === $this->getRequestMediaType($request);
     }
 
     /**
@@ -94,11 +86,11 @@ class JsonPayloadDecodingMiddleware implements MiddlewareInterface
      *
      * Returns null if a media type cannot be retrieved.
      *
+     * @link https://tools.ietf.org/html/rfc7231#section-3.1.1.1
+     *
      * @param ServerRequestInterface $request
      *
      * @return string|null
-     *
-     * @link https://tools.ietf.org/html/rfc7231#section-3.1.1.1
      */
     private function getRequestMediaType(ServerRequestInterface $request): ?string
     {
@@ -129,8 +121,8 @@ class JsonPayloadDecodingMiddleware implements MiddlewareInterface
      */
     private function decodeRequestJsonPayload(ServerRequestInterface $request)
     {
-        /** @var int */
-        $flags = static::JSON_DECODING_OPTIONS;
+        // https://www.php.net/json.constants
+        $flags = JSON_BIGINT_AS_STRING | JSON_OBJECT_AS_ARRAY;
 
         try {
             /** @var mixed */
@@ -139,6 +131,11 @@ class JsonPayloadDecodingMiddleware implements MiddlewareInterface
             throw new InvalidPayloadException(sprintf('Invalid Payload: %s', $e->getMessage()), 0, $e);
         }
 
-        return (is_array($result) || is_object($result)) ? $result : null;
+        if (is_array($result) ||
+            is_object($result)) {
+            return $result;
+        }
+
+        return null;
     }
 }

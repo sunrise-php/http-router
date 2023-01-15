@@ -40,11 +40,6 @@ final class RouterBuilder
     private $container = null;
 
     /**
-     * @var ResponseResolverInterface|null
-     */
-    private $responseResolver = null;
-
-    /**
      * @var CacheInterface|null
      */
     private $cache = null;
@@ -105,20 +100,6 @@ final class RouterBuilder
     public function setContainer(?ContainerInterface $container) : self
     {
         $this->container = $container;
-
-        return $this;
-    }
-
-    /**
-     * Sets the given response resolver to the builder
-     *
-     * @param ResponseResolverInterface|null $responseResolver
-     *
-     * @return self
-     */
-    public function setResponseResolver(?ResponseResolverInterface $responseResolver) : self
-    {
-        $this->responseResolver = $responseResolver;
 
         return $this;
     }
@@ -258,13 +239,11 @@ final class RouterBuilder
 
         if (isset($this->configLoader)) {
             $this->configLoader->setContainer($this->container);
-            $this->configLoader->setResponseResolver($this->responseResolver);
             $router->load($this->configLoader);
         }
 
         if (isset($this->descriptorLoader)) {
             $this->descriptorLoader->setContainer($this->container);
-            $this->descriptorLoader->setResponseResolver($this->responseResolver);
             $this->descriptorLoader->setCache($this->cache);
             $this->descriptorLoader->setCacheKey($this->cacheKey);
             $router->load($this->descriptorLoader);

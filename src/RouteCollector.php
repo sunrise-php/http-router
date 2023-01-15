@@ -107,32 +107,6 @@ class RouteCollector
     }
 
     /**
-     * Gets the collector response resolver
-     *
-     * @return ResponseResolverInterface|null
-     *
-     * @since 3.0.0
-     */
-    public function getResponseResolver(): ?ResponseResolverInterface
-    {
-        return $this->referenceResolver->getResponseResolver();
-    }
-
-    /**
-     * Sets the given response resolver to the collector
-     *
-     * @param ResponseResolverInterface|null $responseResolver
-     *
-     * @return void
-     *
-     * @since 3.0.0
-     */
-    public function setResponseResolver(?ResponseResolverInterface $responseResolver): void
-    {
-        $this->referenceResolver->setResponseResolver($responseResolver);
-    }
-
-    /**
      * Makes a new route from the given parameters
      *
      * @param string $name

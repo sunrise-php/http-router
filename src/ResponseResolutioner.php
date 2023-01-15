@@ -18,12 +18,30 @@ use Psr\Http\Message\ResponseInterface;
 use Sunrise\Http\Router\Exception\LogicException;
 
 /**
- * ResponseResolver
+ * ResponseResolutioner
  *
  * @since 3.0.0
  */
-final class ResponseResolver implements ResponseResolverInterface
+final class ResponseResolutioner implements ResponseResolutionerInterface
 {
+
+    /**
+     * The current context
+     *
+     * @var mixed
+     */
+    private $context = null;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function withContext($context): ResponseResolutionerInterface
+    {
+        $clone = clone $this;
+        $clone->context = $context;
+
+        return $clone;
+    }
 
     /**
      * {@inheritdoc}

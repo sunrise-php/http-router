@@ -44,26 +44,6 @@ interface ReferenceResolverInterface
     public function setContainer(?ContainerInterface $container): void;
 
     /**
-     * Gets the reference resolver's response resolver
-     *
-     * @return ResponseResolverInterface|null
-     *
-     * @since 3.0.0
-     */
-    public function getResponseResolver(): ?ResponseResolverInterface;
-
-    /**
-     * Sets the given response resolver to the reference resolver
-     *
-     * @param ResponseResolverInterface|null $responseResolver
-     *
-     * @return void
-     *
-     * @since 3.0.0
-     */
-    public function setResponseResolver(?ResponseResolverInterface $responseResolver): void;
-
-    /**
      * Resolves the given reference to a request handler
      *
      * @param mixed $reference

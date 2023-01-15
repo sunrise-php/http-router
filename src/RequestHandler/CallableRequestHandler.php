@@ -14,14 +14,14 @@ namespace Sunrise\Http\Router\RequestHandler;
 /**
  * Import classes
  */
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\ParameterResolverInterface;
-use Sunrise\Http\Router\ResponseResolverInterface;
 use ReflectionFunctionAbstract;
 use ReflectionFunction;
 use ReflectionMethod;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Router\ParameterResolutionerInterface;
+use Sunrise\Http\Router\ResponseResolutionerInterface;
 
 /**
  * Import functions
@@ -42,41 +42,34 @@ final class CallableRequestHandler implements RequestHandlerInterface
     private $callback;
 
     /**
-     * The callback's parameter resolver
+     * The callback's parameter resolutioner
      *
-     * @var ParameterResolverInterface
+     * @var ParameterResolutionerInterface
      */
-    private ParameterResolverInterface $parameterResolver;
+    private ParameterResolutionerInterface $parameterResolutioner;
 
     /**
-     * The callback's response resolver
+     * The callback's response resolutioner
      *
-     * @var ResponseResolverInterface
+     * @var ResponseResolutionerInterface
      */
-    private ResponseResolverInterface $responseResolver;
-
-    /**
-     * The callback's reflection
-     *
-     * @var ReflectionFunction|ReflectionMethod
-     */
-    private ?ReflectionFunctionAbstract $reflection = null;
+    private ResponseResolutionerInterface $responseResolutioner;
 
     /**
      * Constructor of the class
      *
      * @param callable $callback
-     * @param ParameterResolverInterface $parameterResolver
-     * @param ResponseResolverInterface $responseResolver
+     * @param ParameterResolutionerInterface $parameterResolutioner
+     * @param ResponseResolutionerInterface $responseResolutioner
      */
     public function __construct(
         callable $callback,
-        ParameterResolverInterface $parameterResolver,
-        ResponseResolverInterface $responseResolver
+        ParameterResolutionerInterface $parameterResolutioner,
+        ResponseResolutionerInterface $responseResolutioner
     ) {
         $this->callback = $callback;
-        $this->parameterResolver = $parameterResolver;
-        $this->responseResolver = $responseResolver;
+        $this->parameterResolutioner = $parameterResolutioner;
+        $this->responseResolutioner = $responseResolutioner;
     }
 
     /**
@@ -88,7 +81,7 @@ final class CallableRequestHandler implements RequestHandlerInterface
      */
     public function getReflection(): ReflectionFunctionAbstract
     {
-        return $this->reflection ??= reflect_callable($this->callback);
+        return reflect_callable($this->callback);
     }
 
     /**
@@ -96,11 +89,16 @@ final class CallableRequestHandler implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $arguments = $this->parameterResolver
-            ->withNames($request->getAttributes())
+        $arguments = $this->parameterResolutioner
+            ->withContext($request)
             ->withType(ServerRequestInterface::class, $request)
             ->resolveParameters(...$this->getReflection()->getParameters());
 
-        return $this->responseResolver->resolveResponse(($this->callback)(...$arguments));
+        /** @var mixed */
+        $response = ($this->callback)(...$arguments);
+
+        return $this->responseResolutioner
+            ->withContext($request)
+            ->resolveResponse($response);
     }
 }
