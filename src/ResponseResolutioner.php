@@ -15,7 +15,13 @@ namespace Sunrise\Http\Router;
  * Import classes
  */
 use Psr\Http\Message\ResponseInterface;
-use Sunrise\Http\Router\Exception\LogicException;
+use Sunrise\Http\Router\Exception\ResponseResolvingException;
+
+/**
+ * Import functions
+ */
+use function get_debug_type;
+use function sprintf;
 
 /**
  * ResponseResolutioner
@@ -33,6 +39,13 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
     private $context = null;
 
     /**
+     * The resolutioner's resolvers
+     *
+     * @var list<ResponseResolverInterface>
+     */
+    private array $resolvers = [];
+
+    /**
      * {@inheritdoc}
      */
     public function withContext($context): ResponseResolutionerInterface
@@ -46,12 +59,31 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
     /**
      * {@inheritdoc}
      */
+    public function addResolver(ResponseResolverInterface ...$resolvers): void
+    {
+        foreach ($resolvers as $resolver) {
+            $this->resolvers[] = $resolver;
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function resolveResponse($response): ResponseInterface
     {
         if ($response instanceof ResponseInterface) {
             return $response;
         }
 
-        throw new LogicException();
+        foreach ($this->resolvers as $resolver) {
+            if ($resolver->supportsResponse($response, $this->context)) {
+                return $resolver->resolveResponse($response, $this->context);
+            }
+        }
+
+        throw new ResponseResolvingException(sprintf(
+            'Unexpected response {%s}',
+            get_debug_type($response)
+        ));
     }
 }

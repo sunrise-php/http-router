@@ -16,7 +16,6 @@ namespace Sunrise\Http\Router\Annotation;
  */
 use Attribute;
 use Fig\Http\Message\RequestMethodInterface;
-use Psr\Http\Server\MiddlewareInterface;
 
 /**
  * @Annotation
@@ -83,7 +82,7 @@ final class Route implements RequestMethodInterface
     /**
      * The route middlewares
      *
-     * @var list<class-string<MiddlewareInterface>>
+     * @var list<class-string>
      */
     public array $middlewares;
 
@@ -125,17 +124,17 @@ final class Route implements RequestMethodInterface
     /**
      * Constructor of the class
      *
-     * @param  string                                   $name         The route name
-     * @param  string|null                              $host         The route host
-     * @param  string                                   $path         The route path
-     * @param  string|null                              $method       The route method
-     * @param  list<string>                             $methods      The route methods
-     * @param  list<class-string<MiddlewareInterface>>  $middlewares  The route middlewares
-     * @param  array<string, mixed>                     $attributes   The route attributes
-     * @param  string                                   $summary      The route summary
-     * @param  string                                   $description  The route description
-     * @param  list<string>                             $tags         The route tags
-     * @param  int                                      $priority     The route priority (default 0)
+     * @param  string                $name         The route name
+     * @param  string|null           $host         The route host
+     * @param  string                $path         The route path
+     * @param  string|null           $method       The route method
+     * @param  list<string>          $methods      The route methods
+     * @param  list<class-string>    $middlewares  The route middlewares
+     * @param  array<string, mixed>  $attributes   The route attributes
+     * @param  string                $summary      The route summary
+     * @param  string                $description  The route description
+     * @param  list<string>          $tags         The route tags
+     * @param  int                   $priority     The route priority (default 0)
      */
     public function __construct(
         string $name,

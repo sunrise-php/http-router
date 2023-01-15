@@ -17,7 +17,7 @@ namespace Sunrise\Http\Router;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Exception\InvalidReferenceException;
+use Sunrise\Http\Router\Exception\ReferenceResolvingException;
 
 /**
  * ReferenceResolverInterface
@@ -28,14 +28,7 @@ interface ReferenceResolverInterface
 {
 
     /**
-     * Gets the reference resolver container
-     *
-     * @return ContainerInterface|null
-     */
-    public function getContainer(): ?ContainerInterface;
-
-    /**
-     * Sets the given container to the reference resolver
+     * Sets the given container to the resolver
      *
      * @param ContainerInterface|null $container
      *
@@ -50,10 +43,10 @@ interface ReferenceResolverInterface
      *
      * @return RequestHandlerInterface
      *
-     * @throws InvalidReferenceException
-     *         If the given reference cannot be resolved to a request handler.
+     * @throws ReferenceResolvingException
+     *         If the reference cannot be resolved to a request handler.
      */
-    public function toRequestHandler($reference): RequestHandlerInterface;
+    public function resolveRequestHandler($reference): RequestHandlerInterface;
 
     /**
      * Resolves the given reference to a middleware
@@ -62,10 +55,10 @@ interface ReferenceResolverInterface
      *
      * @return MiddlewareInterface
      *
-     * @throws InvalidReferenceException
-     *         If the given reference cannot be resolved to a middleware.
+     * @throws ReferenceResolvingException
+     *         If the reference cannot be resolved to a middleware.
      */
-    public function toMiddleware($reference): MiddlewareInterface;
+    public function resolveMiddleware($reference): MiddlewareInterface;
 
     /**
      * Resolves the given references to middlewares
@@ -74,10 +67,10 @@ interface ReferenceResolverInterface
      *
      * @return list<MiddlewareInterface>
      *
-     * @throws InvalidReferenceException
-     *         If one of the given references cannot be resolved to a middleware.
+     * @throws ReferenceResolvingException
+     *         If one of the references cannot be resolved to a middleware.
      *
      * @since 3.0.0
      */
-    public function toMiddlewares(array $references): array;
+    public function resolveMiddlewares(array $references): array;
 }

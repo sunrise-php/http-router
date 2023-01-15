@@ -21,6 +21,7 @@ use Sunrise\Http\Router\Exception\InvalidReferenceException;
 use Sunrise\Http\Router\Middleware\CallableMiddleware;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Closure;
+use ReflectionClass;
 
 /**
  * Import functions
@@ -41,18 +42,37 @@ class ReferenceResolver implements ReferenceResolverInterface
 {
 
     /**
-     * The reference resolver container
+     * The resolver's parameter resolutioner
+     *
+     * @var ParameterResolutionerInterface
+     */
+    private ParameterResolutionerInterface $parameterResolutioner;
+    /**
+     * The resolver's response resolutioner
+     *
+     * @var ResponseResolutionerInterface
+     */
+    private ResponseResolutionerInterface $responseResolutioner;
+
+    /**
+     * The resolver's container
      *
      * @var ContainerInterface|null
      */
     private ?ContainerInterface $container = null;
 
     /**
-     * {@inheritdoc}
+     * Constructor of the class
+     *
+     * @param ParameterResolutionerInterface|null $parameterResolutioner
+     * @param ResponseResolutionerInterface|null $responseResolutioner
      */
-    public function getContainer(): ?ContainerInterface
-    {
-        return $this->container;
+    public function __construct(
+        ?ParameterResolutionerInterface $parameterResolutioner = null,
+        ?ResponseResolutionerInterface $responseResolutioner = null
+    ) {
+        $this->parameterResolutioner = $parameterResolutioner ?? new ParameterResolutioner();
+        $this->responseResolutioner = $responseResolutioner ?? new ResponseResolutioner();
     }
 
     /**
@@ -61,28 +81,34 @@ class ReferenceResolver implements ReferenceResolverInterface
     public function setContainer(?ContainerInterface $container): void
     {
         $this->container = $container;
+        $this->parameterResolutioner->setContainer($container);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function toRequestHandler($reference): RequestHandlerInterface
+    public function resolveRequestHandler($reference): RequestHandlerInterface
     {
         if ($reference instanceof RequestHandlerInterface) {
             return $reference;
         }
 
         if ($reference instanceof Closure) {
-            // return new CallableRequestHandler($reference, $this->parameterResolver, $this->responseResolver);
+            return new CallableRequestHandler(
+                $reference,
+                $this->parameterResolutioner,
+                $this->responseResolutioner
+            );
         }
 
         list($class, $method) = $this->normalizeReference($reference);
 
         if (isset($class) && isset($method) && method_exists($class, $method)) {
-            /** @var callable */
-            $callback = [$this->resolveClass($class), $method];
-
-            // return new CallableRequestHandler($callback, $this->parameterResolver, $this->responseResolver);
+            return new CallableRequestHandler(
+                [$this->resolveClass($class), $method],
+                $this->parameterResolutioner,
+                $this->responseResolutioner
+            );
         }
 
         if (!isset($method) && isset($class) && is_subclass_of($class, RequestHandlerInterface::class)) {
@@ -98,23 +124,28 @@ class ReferenceResolver implements ReferenceResolverInterface
     /**
      * {@inheritdoc}
      */
-    public function toMiddleware($reference): MiddlewareInterface
+    public function resolveMiddleware($reference): MiddlewareInterface
     {
         if ($reference instanceof MiddlewareInterface) {
             return $reference;
         }
 
         if ($reference instanceof Closure) {
-            // return new CallableMiddleware($reference, $this->parameterResolver, $this->responseResolver);
+            return new CallableMiddleware(
+                $reference,
+                $this->parameterResolutioner,
+                $this->responseResolutioner
+            );
         }
 
         list($class, $method) = $this->normalizeReference($reference);
 
         if (isset($class) && isset($method) && method_exists($class, $method)) {
-            /** @var callable */
-            $callback = [$this->resolveClass($class), $method];
-
-            // return new CallableMiddleware($callback, $this->parameterResolver, $this->responseResolver);
+            return new CallableMiddleware(
+                [$this->resolveClass($class), $method],
+                $this->parameterResolutioner,
+                $this->responseResolutioner
+            );
         }
 
         if (!isset($method) && isset($class) && is_subclass_of($class, MiddlewareInterface::class)) {
@@ -130,12 +161,12 @@ class ReferenceResolver implements ReferenceResolverInterface
     /**
      * {@inheritdoc}
      */
-    public function toMiddlewares(array $references): array
+    public function resolveMiddlewares(array $references): array
     {
         $middlewares = [];
         /** @psalm-suppress MixedAssignment */
         foreach ($references as $reference) {
-            $middlewares[] = $this->toMiddleware($reference);
+            $middlewares[] = $this->resolveMiddleware($reference);
         }
 
         return $middlewares;
@@ -201,7 +232,19 @@ class ReferenceResolver implements ReferenceResolverInterface
             return $this->container->get($className);
         }
 
-        /** @psalm-suppress MixedMethodCall */
-        return new $className;
+        $reflection = new ReflectionClass($className);
+        if (!$reflection->isInstantiable()) {
+            throw new ReferenceResolvingException();
+        }
+
+        $arguments = [];
+        $constructor = $reflection->getConstructor();
+        if (isset($constructor)) {
+            $arguments = $this->parameterResolutioner->resolveParameters(
+                ...$constructor->getParameters()
+            );
+        }
+
+        return new $className(...$arguments);
     }
 }

@@ -122,16 +122,6 @@ class DescriptorLoader implements LoaderInterface
     }
 
     /**
-     * Gets the loader container
-     *
-     * @return ContainerInterface|null
-     */
-    public function getContainer(): ?ContainerInterface
-    {
-        return $this->referenceResolver->getContainer();
-    }
-
-    /**
      * Sets the given container to the loader
      *
      * @param ContainerInterface|null $container
@@ -295,8 +285,8 @@ class DescriptorLoader implements LoaderInterface
                 $descriptor->name,
                 $descriptor->path,
                 $descriptor->methods,
-                $this->referenceResolver->toRequestHandler($descriptor->holder),
-                $this->referenceResolver->toMiddlewares($descriptor->middlewares),
+                $this->referenceResolver->resolveRequestHandler($descriptor->holder),
+                $this->referenceResolver->resolveMiddlewares($descriptor->middlewares),
                 $descriptor->attributes
             )
             ->setHost($descriptor->host)

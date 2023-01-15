@@ -15,7 +15,6 @@ namespace Sunrise\Http\Router\Annotation;
  * Import classes
  */
 use Attribute;
-use Psr\Http\Server\MiddlewareInterface;
 
 /**
  * @Annotation
@@ -37,14 +36,14 @@ final class Middleware
     /**
      * The attribute value
      *
-     * @var class-string<MiddlewareInterface>
+     * @var class-string
      */
     public string $value;
 
     /**
      * Constructor of the class
      *
-     * @param class-string<MiddlewareInterface> $value
+     * @param class-string $value
      */
     public function __construct(string $value)
     {

@@ -18,42 +18,33 @@ use Psr\Http\Message\ResponseInterface;
 use Sunrise\Http\Router\Exception\ResponseResolvingException;
 
 /**
- * ResponseResolutionerInterface
+ * ResponseResolverInterface
  *
  * @since 3.0.0
  */
-interface ResponseResolutionerInterface
+interface ResponseResolverInterface
 {
 
     /**
-     * Creates a new instance of the resolutioner with the given current context
+     * Checks if the given raw response is supported
      *
-     * Please note that this method MUST NOT change the object state.
-     *
+     * @param mixed $response
      * @param mixed $context
      *
-     * @return static
+     * @return bool
      */
-    public function withContext($context): ResponseResolutionerInterface;
-
-    /**
-     * Adds the given response resolver(s) to the resolutioner
-     *
-     * @param ResponseResolverInterface ...$resolvers
-     *
-     * @return void
-     */
-    public function addResolver(ResponseResolverInterface ...$resolvers): void;
+    public function supportsResponse($response, $context): bool;
 
     /**
      * Resolves the given raw response to the object
      *
      * @param mixed $response
+     * @param mixed $context
      *
      * @return ResponseInterface
      *
      * @throws ResponseResolvingException
      *         If the raw response cannot be resolved to the object.
      */
-    public function resolveResponse($response): ResponseInterface;
+    public function resolveResponse($response, $context): ResponseInterface;
 }

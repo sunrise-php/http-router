@@ -77,18 +77,6 @@ class ConfigLoader implements LoaderInterface
     }
 
     /**
-     * Gets the loader container
-     *
-     * @return ContainerInterface|null
-     *
-     * @since 2.9.0
-     */
-    public function getContainer(): ?ContainerInterface
-    {
-        return $this->referenceResolver->getContainer();
-    }
-
-    /**
      * Sets the given container to the loader
      *
      * @param ContainerInterface|null $container

@@ -20,6 +20,11 @@ use Psr\Container\ContainerInterface;
 use Sunrise\Http\Router\Exception\ParameterResolvingException;
 
 /**
+ * Import functions
+ */
+use function sprintf;
+
+/**
  * ParameterResolutioner
  *
  * @since 3.0.0
@@ -123,12 +128,11 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
     private function resolveParameter(ReflectionParameter $parameter)
     {
         $type = $parameter->getType();
-        if (!($type instanceof ReflectionNamedType)) {
-            throw ParameterResolvingException::unsupportedParameterTypeDeclaration($parameter);
-        }
 
-        if (isset($this->types[$type->getName()])) {
-            return $this->types[$type->getName()];
+        if (($type instanceof ReflectionNamedType) && !$type->isBuiltin()) {
+            if (isset($this->types[$type->getName()])) {
+                return $this->types[$type->getName()];
+            }
         }
 
         foreach ($this->resolvers as $resolver) {
@@ -137,14 +141,21 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
             }
         }
 
-        if (isset($this->container) && $this->container->has($type->getName())) {
-            return $this->container->get($type->getName());
+        if (($type instanceof ReflectionNamedType) && !$type->isBuiltin()) {
+            if (isset($this->container) && $this->container->has($type->getName())) {
+                return $this->container->get($type->getName());
+            }
         }
 
         if ($parameter->isDefaultValueAvailable()) {
             return $parameter->getDefaultValue();
         }
 
-        throw ParameterResolvingException::unknownParameter($parameter);
+        throw new ParameterResolvingException(sprintf(
+            'Unexpected parameter {%s($%s[%d])}',
+            $parameter->getDeclaringFunction()->getName(),
+            $parameter->getName(),
+            $parameter->getPosition()
+        ));
     }
 }

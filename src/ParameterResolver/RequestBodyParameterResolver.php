@@ -23,7 +23,6 @@ use Sunrise\Http\Router\RequestBodyInterface;
 use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
-use Sunrise\Hydrator\Hydrator;
 use ReflectionNamedType;
 use ReflectionParameter;
 
@@ -43,35 +42,16 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
 {
 
     /**
-     * @var HydratorInterface|null
+     * @var HydratorInterface
      */
-    private ?HydratorInterface $hydrator = null;
+    private HydratorInterface $hydrator;
 
     /**
-     * @param HydratorInterface|null $hydrator
+     * @param HydratorInterface $hydrator
      */
-    public function __construct(?HydratorInterface $hydrator = null)
+    public function __construct(HydratorInterface $hydrator)
     {
         $this->hydrator = $hydrator;
-    }
-
-    /**
-     * @return HydratorInterface
-     */
-    private function getHydrator(): HydratorInterface
-    {
-        if (isset($this->hydrator)) {
-            return $this->hydrator;
-        }
-
-        $this->hydrator = new Hydrator();
-
-        // auto-enable annotation support for php 7
-        if (7 === PHP_MAJOR_VERSION) {
-            $this->hydrator->useAnnotations();
-        }
-
-        return $this->hydrator;
     }
 
     /**
@@ -84,6 +64,10 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
         }
 
         if (!($parameter->getType() instanceof ReflectionNamedType)) {
+            return false;
+        }
+
+        if ($parameter->getType()->isBuiltin()) {
             return false;
         }
 
@@ -110,7 +94,7 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
         $parameterType = $parameter->getType();
 
         try {
-            return $this->getHydrator()->hydrate($parameterType->getName(), (array) $context->getParsedBody());
+            return $this->hydrator->hydrate($parameterType->getName(), (array) $context->getParsedBody());
         } catch (InvalidObjectException $e) {
             throw new ParameterResolvingException($e->getMessage(), 0, $e);
         } catch (InvalidValueException $e) {

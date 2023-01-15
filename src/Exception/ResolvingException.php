@@ -12,10 +12,10 @@
 namespace Sunrise\Http\Router\Exception;
 
 /**
- * ParameterResolvingException
+ * ResolvingException
  *
  * @since 3.0.0
  */
-class ParameterResolvingException extends ResolvingException
+class ResolvingException extends Exception
 {
 }

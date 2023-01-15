@@ -71,28 +71,6 @@ class RouteCollector
     }
 
     /**
-     * Gets the collector collection
-     *
-     * @return RouteCollectionInterface
-     */
-    public function getCollection() : RouteCollectionInterface
-    {
-        return $this->collection;
-    }
-
-    /**
-     * Gets the collector container
-     *
-     * @return ContainerInterface|null
-     *
-     * @since 2.9.0
-     */
-    public function getContainer() : ?ContainerInterface
-    {
-        return $this->referenceResolver->getContainer();
-    }
-
-    /**
      * Sets the given container to the collector
      *
      * @param ContainerInterface|null $container
@@ -104,6 +82,16 @@ class RouteCollector
     public function setContainer(?ContainerInterface $container) : void
     {
         $this->referenceResolver->setContainer($container);
+    }
+
+    /**
+     * Gets the collector collection
+     *
+     * @return RouteCollectionInterface
+     */
+    public function getCollection() : RouteCollectionInterface
+    {
+        return $this->collection;
     }
 
     /**
@@ -133,8 +121,8 @@ class RouteCollector
             $name,
             $path,
             $methods,
-            $this->referenceResolver->toRequestHandler($requestHandler),
-            $this->referenceResolver->toMiddlewares($middlewares),
+            $this->referenceResolver->resolveRequestHandler($requestHandler),
+            $this->referenceResolver->resolveMiddlewares($middlewares),
             $attributes
         );
 
@@ -382,7 +370,7 @@ class RouteCollector
         $callback($collector);
 
         $collector->collection->prependMiddleware(
-            ...$this->referenceResolver->toMiddlewares($middlewares)
+            ...$this->referenceResolver->resolveMiddlewares($middlewares)
         );
 
         $this->collection->add(

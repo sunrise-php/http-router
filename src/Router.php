@@ -484,16 +484,20 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     public function run(ServerRequestInterface $request) : ResponseInterface
     {
         // lazy resolving of the given request...
-        $routing = new CallableRequestHandler(function (ServerRequestInterface $request) : ResponseInterface {
-            $route = $this->match($request);
-            $this->matchedRoute = $route;
+        $routing = new class implements RequestHandlerInterface
+        {
+            public function handle(ServerRequestInterface $request): ResponseInterface
+            {
+                $route = $this->match($request);
+                $this->matchedRoute = $route;
 
-            if (isset($this->eventDispatcher)) {
-                $this->eventDispatcher->dispatch(new RouteEvent($route, $request));
+                if (isset($this->eventDispatcher)) {
+                    $this->eventDispatcher->dispatch(new RouteEvent($route, $request));
+                }
+
+                return $route->handle($request);
             }
-
-            return $route->handle($request);
-        });
+        };
 
         $middlewares = $this->getMiddlewares();
         if (empty($middlewares)) {
