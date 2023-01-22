@@ -19,7 +19,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
+use Sunrise\Http\Router\Exception\InvalidRequestPayloadException;
 
 /**
  * Import functions
@@ -107,7 +107,7 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
      *
      * @return array|null
      *
-     * @throws HttpBadRequestException
+     * @throws InvalidRequestPayloadException
      *         If the request's "JSON" payload cannot be decoded.
      */
     private function decodeRequestJsonPayload(ServerRequestInterface $request): ?array
@@ -119,7 +119,7 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
             /** @var mixed */
             $result = json_decode($request->getBody()->__toString(), null, 512, $flags);
         } catch (JsonException $e) {
-            throw new HttpBadRequestException(sprintf('Invalid Payload: %s', $e->getMessage()), 0, $e);
+            throw new InvalidRequestPayloadException(sprintf('Invalid Payload: %s', $e->getMessage()), 0, $e);
         }
 
         return is_array($result) ? $result : null;

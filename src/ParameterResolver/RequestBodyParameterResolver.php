@@ -16,8 +16,7 @@ namespace Sunrise\Http\Router\ParameterResolver;
  */
 use Psr\Http\Message\ServerRequestInterface;
 use Sunrise\Http\Router\Annotation\RequestBody;
-use Sunrise\Http\Router\Exception\Http\HttpUnprocessableEntityException;
-use Sunrise\Http\Router\Exception\ParameterResolvingException;
+use Sunrise\Http\Router\Exception\InvalidRequestBodyException;
 use Sunrise\Http\Router\ParameterResolverInterface;
 use Sunrise\Http\Router\RequestBodyInterface;
 use Sunrise\Hydrator\Exception\InvalidObjectException;
@@ -85,6 +84,12 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
 
     /**
      * {@inheritdoc}
+     *
+     * @throws InvalidObjectException
+     *         If the DTO isn't valid.
+     *
+     * @throws InvalidRequestBodyException
+     *         If the DTO cannot be hydrated with the request body.
      */
     public function resolveParameter(ReflectionParameter $parameter, $context)
     {
@@ -96,10 +101,8 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
 
         try {
             return $this->hydrator->hydrate($parameterType->getName(), (array) $context->getParsedBody());
-        } catch (InvalidObjectException $e) {
-            throw new ParameterResolvingException($e->getMessage(), 0, $e);
         } catch (InvalidValueException $e) {
-            throw new HttpUnprocessableEntityException($e->getMessage(), 0, $e);
+            throw new InvalidRequestBodyException($e->getMessage(), 0, $e);
         }
     }
 }
