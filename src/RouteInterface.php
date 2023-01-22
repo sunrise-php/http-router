@@ -41,7 +41,7 @@ interface RouteInterface extends RequestHandlerInterface
      *
      * @return string
      */
-    public function getName() : string;
+    public function getName(): string;
 
     /**
      * Gets the route host
@@ -50,42 +50,42 @@ interface RouteInterface extends RequestHandlerInterface
      *
      * @since 2.6.0
      */
-    public function getHost() : ?string;
+    public function getHost(): ?string;
 
     /**
      * Gets the route path
      *
      * @return string
      */
-    public function getPath() : string;
+    public function getPath(): string;
 
     /**
      * Gets the route methods
      *
      * @return string[]
      */
-    public function getMethods() : array;
+    public function getMethods(): array;
 
     /**
      * Gets the route request handler
      *
      * @return RequestHandlerInterface
      */
-    public function getRequestHandler() : RequestHandlerInterface;
+    public function getRequestHandler(): RequestHandlerInterface;
 
     /**
      * Gets the route middlewares
      *
      * @return MiddlewareInterface[]
      */
-    public function getMiddlewares() : array;
+    public function getMiddlewares(): array;
 
     /**
      * Gets the route attributes
      *
      * @return array<string, mixed>
      */
-    public function getAttributes() : array;
+    public function getAttributes(): array;
 
     /**
      * Gets the route summary
@@ -94,7 +94,7 @@ interface RouteInterface extends RequestHandlerInterface
      *
      * @since 2.4.0
      */
-    public function getSummary() : string;
+    public function getSummary(): string;
 
     /**
      * Gets the route description
@@ -103,7 +103,7 @@ interface RouteInterface extends RequestHandlerInterface
      *
      * @since 2.4.0
      */
-    public function getDescription() : string;
+    public function getDescription(): string;
 
     /**
      * Gets the route tags
@@ -112,7 +112,7 @@ interface RouteInterface extends RequestHandlerInterface
      *
      * @since 2.4.0
      */
-    public function getTags() : array;
+    public function getTags(): array;
 
     /**
      * Gets the route holder
@@ -121,7 +121,7 @@ interface RouteInterface extends RequestHandlerInterface
      *
      * @since 2.14.0
      */
-    public function getHolder() : Reflector;
+    public function getHolder(): Reflector;
 
     /**
      * Sets the given name to the route
@@ -130,7 +130,7 @@ interface RouteInterface extends RequestHandlerInterface
      *
      * @return RouteInterface
      */
-    public function setName(string $name) : RouteInterface;
+    public function setName(string $name): RouteInterface;
 
     /**
      * Sets the given host to the route
@@ -141,7 +141,7 @@ interface RouteInterface extends RequestHandlerInterface
      *
      * @since 2.6.0
      */
-    public function setHost(?string $host) : RouteInterface;
+    public function setHost(?string $host): RouteInterface;
 
     /**
      * Sets the given path to the route
@@ -150,7 +150,7 @@ interface RouteInterface extends RequestHandlerInterface
      *
      * @return RouteInterface
      */
-    public function setPath(string $path) : RouteInterface;
+    public function setPath(string $path): RouteInterface;
 
     /**
      * Sets the given method(s) to the route
@@ -159,7 +159,7 @@ interface RouteInterface extends RequestHandlerInterface
      *
      * @return RouteInterface
      */
-    public function setMethods(string ...$methods) : RouteInterface;
+    public function setMethods(string ...$methods): RouteInterface;
 
     /**
      * Sets the given request handler to the route
@@ -168,7 +168,7 @@ interface RouteInterface extends RequestHandlerInterface
      *
      * @return RouteInterface
      */
-    public function setRequestHandler(RequestHandlerInterface $requestHandler) : RouteInterface;
+    public function setRequestHandler(RequestHandlerInterface $requestHandler): RouteInterface;
 
     /**
      * Sets the given middleware(s) to the route
@@ -177,7 +177,7 @@ interface RouteInterface extends RequestHandlerInterface
      *
      * @return RouteInterface
      */
-    public function setMiddlewares(MiddlewareInterface ...$middlewares) : RouteInterface;
+    public function setMiddlewares(MiddlewareInterface ...$middlewares): RouteInterface;
 
     /**
      * Sets the given attributes to the route
@@ -186,7 +186,7 @@ interface RouteInterface extends RequestHandlerInterface
      *
      * @return RouteInterface
      */
-    public function setAttributes(array $attributes) : RouteInterface;
+    public function setAttributes(array $attributes): RouteInterface;
 
     /**
      * Sets the given summary to the route
@@ -197,7 +197,7 @@ interface RouteInterface extends RequestHandlerInterface
      *
      * @since 2.4.0
      */
-    public function setSummary(string $summary) : RouteInterface;
+    public function setSummary(string $summary): RouteInterface;
 
     /**
      * Sets the given description to the route
@@ -208,7 +208,7 @@ interface RouteInterface extends RequestHandlerInterface
      *
      * @since 2.4.0
      */
-    public function setDescription(string $description) : RouteInterface;
+    public function setDescription(string $description): RouteInterface;
 
     /**
      * Sets the given tag(s) to the route
@@ -219,7 +219,7 @@ interface RouteInterface extends RequestHandlerInterface
      *
      * @since 2.4.0
      */
-    public function setTags(string ...$tags) : RouteInterface;
+    public function setTags(string ...$tags): RouteInterface;
 
     /**
      * Adds the given prefix to the route path
@@ -228,7 +228,7 @@ interface RouteInterface extends RequestHandlerInterface
      *
      * @return RouteInterface
      */
-    public function addPrefix(string $prefix) : RouteInterface;
+    public function addPrefix(string $prefix): RouteInterface;
 
     /**
      * Adds the given suffix to the route path
@@ -237,7 +237,7 @@ interface RouteInterface extends RequestHandlerInterface
      *
      * @return RouteInterface
      */
-    public function addSuffix(string $suffix) : RouteInterface;
+    public function addSuffix(string $suffix): RouteInterface;
 
     /**
      * Adds the given method(s) to the route
@@ -246,7 +246,7 @@ interface RouteInterface extends RequestHandlerInterface
      *
      * @return RouteInterface
      */
-    public function addMethod(string ...$methods) : RouteInterface;
+    public function addMethod(string ...$methods): RouteInterface;
 
     /**
      * Adds the given middleware(s) to the route
@@ -255,7 +255,7 @@ interface RouteInterface extends RequestHandlerInterface
      *
      * @return RouteInterface
      */
-    public function addMiddleware(MiddlewareInterface ...$middlewares) : RouteInterface;
+    public function addMiddleware(MiddlewareInterface ...$middlewares): RouteInterface;
 
     /**
      * Returns the route clone with the given attributes
@@ -266,5 +266,5 @@ interface RouteInterface extends RequestHandlerInterface
      *
      * @return RouteInterface
      */
-    public function withAddedAttributes(array $attributes) : RouteInterface;
+    public function withAddedAttributes(array $attributes): RouteInterface;
 }

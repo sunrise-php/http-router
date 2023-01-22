@@ -27,32 +27,30 @@ use Sunrise\Http\Router\Annotation\Prefix;
 use Sunrise\Http\Router\Annotation\Route;
 use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
 use Sunrise\Http\Router\Exception\LogicException;
+use Sunrise\Http\Router\ParameterResolverInterface;
 use Sunrise\Http\Router\ReferenceResolver;
 use Sunrise\Http\Router\ReferenceResolverInterface;
+use Sunrise\Http\Router\ResponseResolverInterface;
 use Sunrise\Http\Router\RouteCollectionFactory;
 use Sunrise\Http\Router\RouteCollectionFactoryInterface;
 use Sunrise\Http\Router\RouteCollectionInterface;
 use Sunrise\Http\Router\RouteFactory;
 use Sunrise\Http\Router\RouteFactoryInterface;
-use Iterator;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
 use Reflector;
-use SplFileInfo;
 
 /**
  * Import functions
  */
-use function array_diff;
 use function class_exists;
-use function get_declared_classes;
+use function get_debug_type;
 use function hash;
 use function is_dir;
 use function is_string;
 use function usort;
+use Sunrise\Http\Router\find_classes;
 
 /**
  * Import constants
@@ -122,7 +120,7 @@ class DescriptorLoader implements LoaderInterface
     }
 
     /**
-     * Sets the given container to the loader
+     * Sets the given container to the reference resolver
      *
      * @param ContainerInterface|null $container
      *
@@ -134,15 +132,31 @@ class DescriptorLoader implements LoaderInterface
     }
 
     /**
-     * Gets the loader annotation reader
+     * Adds the given parameter resolver(s) to the reference resolver
      *
-     * @return AnnotationReaderInterface|null
+     * @param ParameterResolverInterface ...$resolvers
+     *
+     * @return void
      *
      * @since 3.0.0
      */
-    public function getAnnotationReader(): ?AnnotationReaderInterface
+    public function addParameterResolver(ParameterResolverInterface ...$resolvers): void
     {
-        return $this->annotationReader;
+        $this->referenceResolver->addParameterResolver(...$resolvers);
+    }
+
+    /**
+     * Adds the given response resolver(s) to the reference resolver
+     *
+     * @param ResponseResolverInterface ...$resolvers
+     *
+     * @return void
+     *
+     * @since 3.0.0
+     */
+    public function addResponseResolver(ResponseResolverInterface ...$resolvers): void
+    {
+        $this->referenceResolver->addResponseResolver(...$resolvers);
     }
 
     /**
@@ -234,21 +248,15 @@ class DescriptorLoader implements LoaderInterface
      */
     public function attach($resource): void
     {
-        if (!is_string($resource)) {
-            throw new InvalidLoaderResourceException(
-                'Descriptor route loader only expects string resources'
-            );
-        }
-
-        if (class_exists($resource)) {
+        if (is_string($resource) && class_exists($resource)) {
             $this->resources[] = $resource;
             return;
         }
 
-        if (is_dir($resource)) {
-            $classNames = $this->scandir($resource);
-            foreach ($classNames as $className) {
-                $this->resources[] = $className;
+        if (is_string($resource) && is_dir($resource)) {
+            $classnames = find_classes($resource);
+            foreach ($classnames as $classname) {
+                $this->resources[] = $classname;
             }
 
             return;
@@ -257,7 +265,7 @@ class DescriptorLoader implements LoaderInterface
         throw new InvalidLoaderResourceException(sprintf(
             'Descriptor route loader only handles class names or directory paths, ' .
             'however the given resource "%s" is not as expected',
-            $resource
+            is_string($resource) ? $resource : get_debug_type($resource)
         ));
     }
 
@@ -333,7 +341,7 @@ class DescriptorLoader implements LoaderInterface
         $result = [];
         foreach ($this->resources as $resource) {
             $class = new ReflectionClass($resource);
-            $descriptors = $this->getClassDescriptors($class);
+            $descriptors = $this->getDescriptorsFromClass($class);
             foreach ($descriptors as $descriptor) {
                 $result[] = $descriptor;
             }
@@ -353,7 +361,7 @@ class DescriptorLoader implements LoaderInterface
      *
      * @return list<Route>
      */
-    private function getClassDescriptors(ReflectionClass $class): array
+    private function getDescriptorsFromClass(ReflectionClass $class): array
     {
         // e.g., interfaces, traits, enums, abstract classes,
         // classes with private constructor...
@@ -364,26 +372,26 @@ class DescriptorLoader implements LoaderInterface
         $descriptors = [];
 
         if ($class->isSubclassOf(RequestHandlerInterface::class)) {
-            $annotations = $this->getAnnotations($class, Route::class);
+            $annotations = $this->getAnnotationsFromClassOrMethod($class, Route::class);
             if (isset($annotations[0])) {
                 $descriptor = $annotations[0];
-                $this->supplementDescriptor($descriptor, $class);
+                $this->supplementDescriptorFromClassOrMethod($descriptor, $class);
                 $descriptor->holder = $class->getName();
                 $descriptors[] = $descriptor;
             }
         }
 
         foreach ($class->getMethods() as $method) {
-            // ignore non-available methods...
-            if (!$method->isPublic() || $method->isStatic()) {
+            // ignore non-public methods...
+            if (!$method->isPublic()) {
                 continue;
             }
 
-            $annotations = $this->getAnnotations($method, Route::class);
+            $annotations = $this->getAnnotationsFromClassOrMethod($method, Route::class);
             if (isset($annotations[0])) {
                 $descriptor = $annotations[0];
-                $this->supplementDescriptor($descriptor, $class);
-                $this->supplementDescriptor($descriptor, $method);
+                $this->supplementDescriptorFromClassOrMethod($descriptor, $class);
+                $this->supplementDescriptorFromClassOrMethod($descriptor, $method);
                 $descriptor->holder = [$class->getName(), $method->getName()];
                 $descriptors[] = $descriptor;
             }
@@ -421,24 +429,24 @@ class DescriptorLoader implements LoaderInterface
      *
      * @return void
      */
-    private function supplementDescriptor(Route $descriptor, Reflector $reflector): void
+    private function supplementDescriptorFromClassOrMethod(Route $descriptor, Reflector $reflector): void
     {
-        $annotations = $this->getAnnotations($reflector, Host::class);
+        $annotations = $this->getAnnotationsFromClassOrMethod($reflector, Host::class);
         if (isset($annotations[0])) {
             $descriptor->host = $annotations[0]->value;
         }
 
-        $annotations = $this->getAnnotations($reflector, Prefix::class);
+        $annotations = $this->getAnnotationsFromClassOrMethod($reflector, Prefix::class);
         if (isset($annotations[0])) {
             $descriptor->path = $annotations[0]->value . $descriptor->path;
         }
 
-        $annotations = $this->getAnnotations($reflector, Postfix::class);
+        $annotations = $this->getAnnotationsFromClassOrMethod($reflector, Postfix::class);
         if (isset($annotations[0])) {
             $descriptor->path = $descriptor->path . $annotations[0]->value;
         }
 
-        $annotations = $this->getAnnotations($reflector, Middleware::class);
+        $annotations = $this->getAnnotationsFromClassOrMethod($reflector, Middleware::class);
         foreach ($annotations as $annotation) {
             $descriptor->middlewares[] = $annotation->value;
         }
@@ -454,7 +462,7 @@ class DescriptorLoader implements LoaderInterface
      *
      * @template T
      */
-    private function getAnnotations(Reflector $reflector, string $annotationName): array
+    private function getAnnotationsFromClassOrMethod(Reflector $reflector, string $annotationName): array
     {
         $result = [];
 
@@ -467,7 +475,7 @@ class DescriptorLoader implements LoaderInterface
             }
         }
 
-        if (isset($this->annotationReader) && empty($result)) {
+        if (isset($this->annotationReader)) {
             $annotations = ($reflector instanceof ReflectionClass) ?
                 $this->annotationReader->getClassAnnotations($reflector) :
                 $this->annotationReader->getMethodAnnotations($reflector);
@@ -480,31 +488,5 @@ class DescriptorLoader implements LoaderInterface
         }
 
         return $result;
-    }
-
-    /**
-     * Scans the given directory and returns the found classes
-     *
-     * @param string $directory
-     *
-     * @return class-string[]
-     */
-    private function scandir(string $directory): array
-    {
-        /** @var Iterator<SplFileInfo> */
-        $files = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($directory)
-        );
-
-        $declared = get_declared_classes();
-
-        foreach ($files as $file) {
-            if ('php' === $file->getExtension()) {
-                /** @psalm-suppress UnresolvableInclude */
-                require_once $file->getPathname();
-            }
-        }
-
-        return array_diff(get_declared_classes(), $declared);
     }
 }

@@ -17,7 +17,7 @@ namespace Sunrise\Http\Router;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Exception\InvalidReferenceException;
+use Sunrise\Http\Router\Exception\ReferenceResolvingException;
 use Sunrise\Http\Router\Middleware\CallableMiddleware;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Closure;
@@ -26,6 +26,7 @@ use ReflectionClass;
 /**
  * Import functions
  */
+use function get_debug_type;
 use function is_array;
 use function is_callable;
 use function is_string;
@@ -38,7 +39,7 @@ use function sprintf;
  *
  * @since 2.10.0
  */
-class ReferenceResolver implements ReferenceResolverInterface
+final class ReferenceResolver implements ReferenceResolverInterface
 {
 
     /**
@@ -81,7 +82,24 @@ class ReferenceResolver implements ReferenceResolverInterface
     public function setContainer(?ContainerInterface $container): void
     {
         $this->container = $container;
+
         $this->parameterResolutioner->setContainer($container);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function addParameterResolver(ParameterResolverInterface ...$resolvers): void
+    {
+        $this->parameterResolutioner->addResolver(...$resolvers);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function addResponseResolver(ResponseResolverInterface ...$resolvers): void
+    {
+        $this->responseResolutioner->addResolver(...$resolvers);
     }
 
     /**
@@ -94,29 +112,26 @@ class ReferenceResolver implements ReferenceResolverInterface
         }
 
         if ($reference instanceof Closure) {
-            return new CallableRequestHandler(
-                $reference,
-                $this->parameterResolutioner,
-                $this->responseResolutioner
-            );
+            return new CallableRequestHandler($reference, $this->parameterResolutioner, $this->responseResolutioner);
         }
 
-        list($class, $method) = $this->normalizeReference($reference);
+        // https://github.com/php/php-src/blob/3ed526441400060aa4e618b91b3352371fcd02a8/Zend/zend_API.c#L3884-L3932
+        /** @psalm-suppress MixedArgument */
+        if (is_array($reference) && is_callable($reference, true) && method_exists($reference[0], $reference[1])) {
+            /** @var array{0: object|class-string, 1: non-empty-string} $reference */
 
-        if (isset($class) && isset($method) && method_exists($class, $method)) {
-            return new CallableRequestHandler(
-                [$this->resolveClass($class), $method],
-                $this->parameterResolutioner,
-                $this->responseResolutioner
-            );
+            $callback = [is_string($reference[0]) ? $this->resolveClass($reference[0]) : $reference[0], $reference[1]];
+
+            return new CallableRequestHandler($callback, $this->parameterResolutioner, $this->responseResolutioner);
         }
 
-        if (!isset($method) && isset($class) && is_subclass_of($class, RequestHandlerInterface::class)) {
-            return $this->resolveClass($class);
+        if (is_string($reference) && is_subclass_of($reference, RequestHandlerInterface::class)) {
+            /** @var RequestHandlerInterface */
+            return $this->resolveClass($reference);
         }
 
-        throw new InvalidReferenceException(sprintf(
-            'Unable to resolve the "%s" reference to a request handler.',
+        throw new ReferenceResolvingException(sprintf(
+            'Unable to resolve the reference {%s} to a request handler.',
             $this->stringifyReference($reference)
         ));
     }
@@ -131,29 +146,26 @@ class ReferenceResolver implements ReferenceResolverInterface
         }
 
         if ($reference instanceof Closure) {
-            return new CallableMiddleware(
-                $reference,
-                $this->parameterResolutioner,
-                $this->responseResolutioner
-            );
+            return new CallableMiddleware($reference, $this->parameterResolutioner, $this->responseResolutioner);
         }
 
-        list($class, $method) = $this->normalizeReference($reference);
-
-        if (isset($class) && isset($method) && method_exists($class, $method)) {
-            return new CallableMiddleware(
-                [$this->resolveClass($class), $method],
-                $this->parameterResolutioner,
-                $this->responseResolutioner
-            );
+        if (is_string($reference) && is_subclass_of($reference, MiddlewareInterface::class)) {
+            /** @var MiddlewareInterface */
+            return $this->resolveClass($reference);
         }
 
-        if (!isset($method) && isset($class) && is_subclass_of($class, MiddlewareInterface::class)) {
-            return $this->resolveClass($class);
+        // https://github.com/php/php-src/blob/3ed526441400060aa4e618b91b3352371fcd02a8/Zend/zend_API.c#L3884-L3932
+        /** @psalm-suppress MixedArgument */
+        if (is_array($reference) && is_callable($reference, true) && method_exists($reference[0], $reference[1])) {
+            /** @var array{0: object|class-string, 1: non-empty-string} $reference */
+
+            $callback = [is_string($reference[0]) ? $this->resolveClass($reference[0]) : $reference[0], $reference[1]];
+
+            return new CallableMiddleware($callback, $this->parameterResolutioner, $this->responseResolutioner);
         }
 
-        throw new InvalidReferenceException(sprintf(
-            'Unable to resolve the "%s" reference to a middleware.',
+        throw new ReferenceResolvingException(sprintf(
+            'Unable to resolve the reference {%s} to a middleware.',
             $this->stringifyReference($reference)
         ));
     }
@@ -173,25 +185,31 @@ class ReferenceResolver implements ReferenceResolverInterface
     }
 
     /**
-     * Normalizes the given reference
+     * Resolves the given class
      *
-     * @param mixed $reference
+     * @param class-string<T> $class
      *
-     * @return array{0: ?class-string, 1: ?non-empty-string}
+     * @return T
+     *
+     * @template T
      */
-    private function normalizeReference($reference): array
+    private function resolveClass(string $class): object
     {
-        if (is_array($reference) && is_callable($reference, true)) {
-            /** @var array{0: class-string, 1: non-empty-string} $reference */
-            return $reference;
+        if (isset($this->container) && $this->container->has($class)) {
+            /** @var T */
+            return $this->container->get($class);
         }
 
-        if (is_string($reference)) {
-            /** @var class-string $reference */
-            return [$reference, null];
+        $arguments = [];
+        $reflection = new ReflectionClass($class);
+        $constructor = $reflection->getConstructor();
+        if (isset($constructor)) {
+            $arguments = $this->parameterResolutioner->resolveParameters(
+                ...$constructor->getParameters()
+            );
         }
 
-        return [null, null];
+        return $reflection->newInstance(...$arguments);
     }
 
     /**
@@ -203,48 +221,14 @@ class ReferenceResolver implements ReferenceResolverInterface
      */
     private function stringifyReference($reference): string
     {
-        $reference = $this->normalizeReference($reference);
-
-        if (isset($reference[0], $reference[1])) {
-            return $reference[0] . '@' . $reference[1];
+        if (is_array($reference) && is_callable($reference, true, $refString)) {
+            return $refString;
         }
 
-        if (isset($reference[0])) {
-            return $reference[0];
+        if (is_string($reference)) {
+            return $reference;
         }
 
-        return '';
-    }
-
-    /**
-     * Resolves the given class
-     *
-     * @param class-string<T> $className
-     *
-     * @return T
-     *
-     * @template T
-     */
-    private function resolveClass(string $className)
-    {
-        if (isset($this->container) && $this->container->has($className)) {
-            /** @var T */
-            return $this->container->get($className);
-        }
-
-        $reflection = new ReflectionClass($className);
-        if (!$reflection->isInstantiable()) {
-            throw new ReferenceResolvingException();
-        }
-
-        $arguments = [];
-        $constructor = $reflection->getConstructor();
-        if (isset($constructor)) {
-            $arguments = $this->parameterResolutioner->resolveParameters(
-                ...$constructor->getParameters()
-            );
-        }
-
-        return new $className(...$arguments);
+        return get_debug_type($reference);
     }
 }

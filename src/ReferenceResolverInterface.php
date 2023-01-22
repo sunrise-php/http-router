@@ -37,6 +37,28 @@ interface ReferenceResolverInterface
     public function setContainer(?ContainerInterface $container): void;
 
     /**
+     * Adds the given parameter resolver(s) to the parameter resolutioner
+     *
+     * @param ParameterResolverInterface ...$resolvers
+     *
+     * @return void
+     *
+     * @since 3.0.0
+     */
+    public function addParameterResolver(ParameterResolverInterface ...$resolvers): void;
+
+    /**
+     * Adds the given response resolver(s) to the response resolutioner
+     *
+     * @param ResponseResolverInterface ...$resolvers
+     *
+     * @return void
+     *
+     * @since 3.0.0
+     */
+    public function addResponseResolver(ResponseResolverInterface ...$resolvers): void;
+
+    /**
      * Resolves the given reference to a request handler
      *
      * @param mixed $reference

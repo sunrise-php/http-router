@@ -47,6 +47,7 @@
     "autoload": {
         "files": [
             "functions/emit.php",
+            "functions/find_classes.php",
             "functions/get_debug_type.php",
             "functions/path_build.php",
             "functions/path_match.php",

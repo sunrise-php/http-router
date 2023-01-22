@@ -32,7 +32,7 @@ use function Sunrise\Http\Router\path_plain;
  * This command will list all routes in your application
  *
  * If you can't pass the router to the constructor,
- * or your architecture has problems with autowiring,
+ * or your architecture has problems with the autowiring,
  * just inherit this class and override the getRouter method.
  *
  * @since 2.9.0

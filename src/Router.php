@@ -102,7 +102,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *
      * @since 2.13.0
      */
-    private $eventDispatcher = null;
+    private ?EventDispatcherInterface $eventDispatcher = null;
 
     /**
      * Gets the router's host table
@@ -111,7 +111,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *
      * @since 2.6.0
      */
-    public function getHosts() : array
+    public function getHosts(): array
     {
         return $this->hosts;
     }
@@ -125,7 +125,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *
      * @since 2.14.0
      */
-    public function resolveHostname(string $hostname) : ?string
+    public function resolveHostname(string $hostname): ?string
     {
         foreach ($this->hosts as $alias => $hostnames) {
             foreach ($hostnames as $value) {
@@ -143,7 +143,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *
      * @return RouteInterface[]
      */
-    public function getRoutes() : array
+    public function getRoutes(): array
     {
         $routes = [];
         foreach ($this->routes as $route) {
@@ -162,7 +162,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *
      * @since 2.14.0
      */
-    public function getRoutesByHostname(string $hostname) : array
+    public function getRoutesByHostname(string $hostname): array
     {
         // the hostname's alias.
         $alias = $this->resolveHostname($hostname);
@@ -183,7 +183,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *
      * @return MiddlewareInterface[]
      */
-    public function getMiddlewares() : array
+    public function getMiddlewares(): array
     {
         $middlewares = [];
         foreach ($this->middlewares as $middleware) {
@@ -198,7 +198,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *
      * @return RouteInterface|null
      */
-    public function getMatchedRoute() : ?RouteInterface
+    public function getMatchedRoute(): ?RouteInterface
     {
         return $this->matchedRoute;
     }
@@ -210,7 +210,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *
      * @since 2.13.0
      */
-    public function getEventDispatcher() : ?EventDispatcherInterface
+    public function getEventDispatcher(): ?EventDispatcherInterface
     {
         return $this->eventDispatcher;
     }
@@ -235,7 +235,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *
      * @since 2.11.0
      */
-    public function addPatterns(array $patterns) : void
+    public function addPatterns(array $patterns): void
     {
         foreach ($patterns as $alias => $pattern) {
             self::$patterns[$alias] = $pattern;
@@ -262,7 +262,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *
      * @since 2.11.0
      */
-    public function addHosts(array $hosts) : void
+    public function addHosts(array $hosts): void
     {
         foreach ($hosts as $alias => $hostnames) {
             $this->addHost($alias, ...$hostnames);
@@ -279,7 +279,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *
      * @since 2.6.0
      */
-    public function addHost(string $alias, string ...$hostnames) : void
+    public function addHost(string $alias, string ...$hostnames): void
     {
         $this->hosts[$alias] = $hostnames;
     }
@@ -294,7 +294,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      * @throws InvalidArgumentException
      *         if one of the given routes already exists.
      */
-    public function addRoute(RouteInterface ...$routes) : void
+    public function addRoute(RouteInterface ...$routes): void
     {
         foreach ($routes as $route) {
             $name = $route->getName();
@@ -319,7 +319,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      * @throws InvalidArgumentException
      *         if one of the given middlewares already exists.
      */
-    public function addMiddleware(MiddlewareInterface ...$middlewares) : void
+    public function addMiddleware(MiddlewareInterface ...$middlewares): void
     {
         foreach ($middlewares as $middleware) {
             $hash = spl_object_hash($middleware);
@@ -343,7 +343,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *
      * @since 2.13.0
      */
-    public function setEventDispatcher(?EventDispatcherInterface $eventDispatcher) : void
+    public function setEventDispatcher(?EventDispatcherInterface $eventDispatcher): void
     {
         $this->eventDispatcher = $eventDispatcher;
     }
@@ -353,7 +353,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *
      * @return string[]
      */
-    public function getAllowedMethods() : array
+    public function getAllowedMethods(): array
     {
         $methods = [];
         foreach ($this->routes as $route) {
@@ -370,7 +370,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *
      * @return bool
      */
-    public function hasRoute(string $name) : bool
+    public function hasRoute(string $name): bool
     {
         return isset($this->routes[$name]);
     }
@@ -384,7 +384,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *
      * @throws RouteNotFoundException
      */
-    public function getRoute(string $name) : RouteInterface
+    public function getRoute(string $name): RouteInterface
     {
         if (!isset($this->routes[$name])) {
             throw new RouteNotFoundException(sprintf(
@@ -412,7 +412,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *         If a required attribute value is not given,
      *         or if an attribute value is not valid in strict mode.
      */
-    public function generateUri(string $name, array $attributes = [], bool $strict = false) : string
+    public function generateUri(string $name, array $attributes = [], bool $strict = false): string
     {
         $route = $this->getRoute($name);
 
@@ -431,7 +431,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      * @throws PageNotFoundException
      * @throws MethodNotAllowedException
      */
-    public function match(ServerRequestInterface $request) : RouteInterface
+    public function match(ServerRequestInterface $request): RouteInterface
     {
         $currentUri = $request->getUri();
         $currentHost = $currentUri->getHost();
@@ -481,7 +481,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *
      * @since 2.8.0
      */
-    public function run(ServerRequestInterface $request) : ResponseInterface
+    public function run(ServerRequestInterface $request): ResponseInterface
     {
         // lazy resolving of the given request...
         $routing = new class implements RequestHandlerInterface
@@ -513,7 +513,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     /**
      * {@inheritdoc}
      */
-    public function handle(ServerRequestInterface $request) : ResponseInterface
+    public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $route = $this->match($request);
         $this->matchedRoute = $route;
@@ -536,7 +536,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     /**
      * {@inheritdoc}
      */
-    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         try {
             return $this->handle($request);
@@ -552,7 +552,7 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      *
      * @return void
      */
-    public function load(LoaderInterface ...$loaders) : void
+    public function load(LoaderInterface ...$loaders): void
     {
         foreach ($loaders as $loader) {
             $this->addRoute(...$loader->load()->all());

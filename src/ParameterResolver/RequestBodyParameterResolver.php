@@ -27,6 +27,11 @@ use ReflectionNamedType;
 use ReflectionParameter;
 
 /**
+ * Import functions
+ */
+use function is_subclass_of;
+
+/**
  * Import constants
  */
 use const PHP_MAJOR_VERSION;
@@ -63,19 +68,15 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
             return false;
         }
 
-        if (!($parameter->getType() instanceof ReflectionNamedType)) {
+        if (!($parameter->getType() instanceof ReflectionNamedType) || $parameter->getType()->isBuiltin()) {
             return false;
-        }
-
-        if ($parameter->getType()->isBuiltin()) {
-            return false;
-        }
-
-        if ($parameter->getType()->getName() instanceof RequestBodyInterface) {
-            return true;
         }
 
         if (8 === PHP_MAJOR_VERSION && $parameter->getAttributes(RequestBody::class)) {
+            return true;
+        }
+
+        if (is_subclass_of($parameter->getType()->getName(), RequestBodyInterface::class)) {
             return true;
         }
 

@@ -79,7 +79,7 @@ class RouteCollector
      *
      * @since 2.9.0
      */
-    public function setContainer(?ContainerInterface $container) : void
+    public function setContainer(?ContainerInterface $container): void
     {
         $this->referenceResolver->setContainer($container);
     }
@@ -89,7 +89,7 @@ class RouteCollector
      *
      * @return RouteCollectionInterface
      */
-    public function getCollection() : RouteCollectionInterface
+    public function getCollection(): RouteCollectionInterface
     {
         return $this->collection;
     }
@@ -359,7 +359,7 @@ class RouteCollector
      * @throws InvalidReferenceException
      *         If one of the given middlewares cannot be resolved.
      */
-    public function group(callable $callback, array $middlewares = []) : RouteCollectionInterface
+    public function group(callable $callback, array $middlewares = []): RouteCollectionInterface
     {
         $collector = new self(
             $this->collectionFactory,

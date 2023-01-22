@@ -83,7 +83,7 @@ final class RouterBuilder
      *
      * @since 2.14.0
      */
-    public function setEventDispatcher(?EventDispatcherInterface $eventDispatcher) : self
+    public function setEventDispatcher(?EventDispatcherInterface $eventDispatcher): self
     {
         $this->eventDispatcher = $eventDispatcher;
 
@@ -97,7 +97,7 @@ final class RouterBuilder
      *
      * @return self
      */
-    public function setContainer(?ContainerInterface $container) : self
+    public function setContainer(?ContainerInterface $container): self
     {
         $this->container = $container;
 
@@ -111,7 +111,7 @@ final class RouterBuilder
      *
      * @return self
      */
-    public function setCache(?CacheInterface $cache) : self
+    public function setCache(?CacheInterface $cache): self
     {
         $this->cache = $cache;
 
@@ -127,7 +127,7 @@ final class RouterBuilder
      *
      * @since 2.10.0
      */
-    public function setCacheKey(?string $cacheKey) : self
+    public function setCacheKey(?string $cacheKey): self
     {
         $this->cacheKey = $cacheKey;
 
@@ -141,7 +141,7 @@ final class RouterBuilder
      *
      * @return self
      */
-    public function useConfigLoader(array $resources) : self
+    public function useConfigLoader(array $resources): self
     {
         $this->configLoader = new Loader\ConfigLoader();
         $this->configLoader->attachArray($resources);
@@ -156,7 +156,7 @@ final class RouterBuilder
      *
      * @return self
      */
-    public function useDescriptorLoader(array $resources) : self
+    public function useDescriptorLoader(array $resources): self
     {
         $this->descriptorLoader = new Loader\DescriptorLoader();
         $this->descriptorLoader->attachArray($resources);
@@ -173,7 +173,7 @@ final class RouterBuilder
      *
      * @return self
      */
-    public function useMetadataLoader(array $resources) : self
+    public function useMetadataLoader(array $resources): self
     {
         $this->useDescriptorLoader($resources);
 
@@ -189,7 +189,7 @@ final class RouterBuilder
      *
      * @since 2.11.0
      */
-    public function setPatterns(?array $patterns) : self
+    public function setPatterns(?array $patterns): self
     {
         $this->patterns = $patterns;
 
@@ -203,7 +203,7 @@ final class RouterBuilder
      *
      * @return self
      */
-    public function setHosts(?array $hosts) : self
+    public function setHosts(?array $hosts): self
     {
         $this->hosts = $hosts;
 
@@ -217,7 +217,7 @@ final class RouterBuilder
      *
      * @return self
      */
-    public function setMiddlewares(?array $middlewares) : self
+    public function setMiddlewares(?array $middlewares): self
     {
         $this->middlewares = $middlewares;
 
@@ -229,7 +229,7 @@ final class RouterBuilder
      *
      * @return Router
      */
-    public function build() : Router
+    public function build(): Router
     {
         $router = new Router();
 

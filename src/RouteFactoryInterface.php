@@ -28,9 +28,9 @@ interface RouteFactoryInterface
      *
      * @param string $name
      * @param string $path
-     * @param string[] $methods
+     * @param list<string> $methods
      * @param RequestHandlerInterface $requestHandler
-     * @param MiddlewareInterface[] $middlewares
+     * @param list<MiddlewareInterface> $middlewares
      * @param array<string, mixed> $attributes
      *
      * @return RouteInterface

@@ -152,7 +152,7 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
         }
 
         throw new ParameterResolvingException(sprintf(
-            'Unexpected parameter {%s($%s[%d])}',
+            'Unable to resolve the parameter {%s($%s[%d])}',
             $parameter->getDeclaringFunction()->getName(),
             $parameter->getName(),
             $parameter->getPosition()

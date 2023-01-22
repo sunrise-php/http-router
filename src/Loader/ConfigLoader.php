@@ -16,8 +16,10 @@ namespace Sunrise\Http\Router\Loader;
  */
 use Psr\Container\ContainerInterface;
 use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
+use Sunrise\Http\Router\ParameterResolverInterface;
 use Sunrise\Http\Router\ReferenceResolver;
 use Sunrise\Http\Router\ReferenceResolverInterface;
+use Sunrise\Http\Router\ResponseResolverInterface;
 use Sunrise\Http\Router\RouteCollectionFactory;
 use Sunrise\Http\Router\RouteCollectionFactoryInterface;
 use Sunrise\Http\Router\RouteCollectionInterface;
@@ -28,6 +30,7 @@ use Sunrise\Http\Router\RouteFactoryInterface;
 /**
  * Import functions
  */
+use function get_debug_type;
 use function glob;
 use function is_dir;
 use function is_file;
@@ -36,7 +39,7 @@ use function is_string;
 /**
  * ConfigLoader
  */
-class ConfigLoader implements LoaderInterface
+final class ConfigLoader implements LoaderInterface
 {
 
     /**
@@ -77,7 +80,7 @@ class ConfigLoader implements LoaderInterface
     }
 
     /**
-     * Sets the given container to the loader
+     * Sets the given container to the reference resolver
      *
      * @param ContainerInterface|null $container
      *
@@ -91,22 +94,44 @@ class ConfigLoader implements LoaderInterface
     }
 
     /**
+     * Adds the given parameter resolver(s) to the reference resolver
+     *
+     * @param ParameterResolverInterface ...$resolvers
+     *
+     * @return void
+     *
+     * @since 3.0.0
+     */
+    public function addParameterResolver(ParameterResolverInterface ...$resolvers): void
+    {
+        $this->referenceResolver->addParameterResolver(...$resolvers);
+    }
+
+    /**
+     * Adds the given response resolver(s) to the reference resolver
+     *
+     * @param ResponseResolverInterface ...$resolvers
+     *
+     * @return void
+     *
+     * @since 3.0.0
+     */
+    public function addResponseResolver(ResponseResolverInterface ...$resolvers): void
+    {
+        $this->referenceResolver->addResponseResolver(...$resolvers);
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function attach($resource): void
     {
-        if (!is_string($resource)) {
-            throw new InvalidLoaderResourceException(
-                'Config route loader only expects string resources'
-            );
-        }
-
-        if (is_file($resource)) {
+        if (is_string($resource) && is_file($resource)) {
             $this->resources[] = $resource;
             return;
         }
 
-        if (is_dir($resource)) {
+        if (is_string($resource) && is_dir($resource)) {
             $filenames = glob($resource . '/*.php');
             foreach ($filenames as $filename) {
                 $this->resources[] = $filename;
@@ -118,7 +143,7 @@ class ConfigLoader implements LoaderInterface
         throw new InvalidLoaderResourceException(sprintf(
             'Config route loader only handles file or directory paths, ' .
             'however the given resource "%s" is not as expected',
-            $resource
+            is_string($resource) ? $resource : get_debug_type($resource)
         ));
     }
 

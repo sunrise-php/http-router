@@ -82,7 +82,7 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
         }
 
         throw new ResponseResolvingException(sprintf(
-            'Unexpected response {%s}',
+            'Unable to resolve the response {%s}',
             get_debug_type($response)
         ));
     }

@@ -48,20 +48,11 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
 {
 
     /**
-     * JSON media type
-     *
-     * @link https://datatracker.ietf.org/doc/html/rfc4627
-     *
-     * @var string
-     */
-    private const JSON_MEDIA_TYPE = 'application/json';
-
-    /**
      * {@inheritdoc}
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        if ($this->isSupportedRequest($request)) {
+        if ($this->supportsRequest($request)) {
             $data = $this->decodeRequestJsonPayload($request);
             $request = $request->withParsedBody($data);
         }
@@ -72,13 +63,15 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
     /**
      * Checks if the given request is supported
      *
+     * @link https://datatracker.ietf.org/doc/html/rfc4627
+     *
      * @param ServerRequestInterface $request
      *
      * @return bool
      */
-    private function isSupportedRequest(ServerRequestInterface $request): bool
+    private function supportsRequest(ServerRequestInterface $request): bool
     {
-        return self::JSON_MEDIA_TYPE === $this->getRequestMediaType($request);
+        return 'application/json' === $this->getRequestMediaType($request);
     }
 
     /**
@@ -99,14 +92,13 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
         }
 
         // type "/" subtype *( OWS ";" OWS parameter )
-        $mediaType = $request->getHeaderLine('Content-Type');
+        $mediatype = $request->getHeaderLine('Content-Type');
 
-        $semicolon = strpos($mediaType, ';');
-        if (false === $semicolon) {
-            return $mediaType;
+        if ($semicolon = strpos($mediatype, ';')) {
+            $mediatype = substr($mediatype, 0, $semicolon);
         }
 
-        return rtrim(substr($mediaType, 0, $semicolon));
+        return rtrim($mediatype);
     }
 
     /**
@@ -117,12 +109,12 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
      * @return array|object|null
      *
      * @throws InvalidPayloadException
-     *         If the request's JSON payload cannot be decoded.
+     *         If the request's "JSON" payload cannot be decoded.
      */
     private function decodeRequestJsonPayload(ServerRequestInterface $request)
     {
         // https://www.php.net/json.constants
-        $flags = JSON_BIGINT_AS_STRING | JSON_OBJECT_AS_ARRAY;
+        $flags = JSON_OBJECT_AS_ARRAY | JSON_BIGINT_AS_STRING;
 
         try {
             /** @var mixed */
