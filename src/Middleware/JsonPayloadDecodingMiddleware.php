@@ -25,7 +25,6 @@ use Sunrise\Http\Router\Exception\InvalidPayloadException;
  * Import functions
  */
 use function is_array;
-use function is_object;
 use function json_decode;
 use function rtrim;
 use function sprintf;
@@ -106,28 +105,23 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
      *
      * @param ServerRequestInterface $request
      *
-     * @return array|object|null
+     * @return array|null
      *
      * @throws InvalidPayloadException
      *         If the request's "JSON" payload cannot be decoded.
      */
-    private function decodeRequestJsonPayload(ServerRequestInterface $request)
+    private function decodeRequestJsonPayload(ServerRequestInterface $request): ?array
     {
         // https://www.php.net/json.constants
-        $flags = JSON_OBJECT_AS_ARRAY | JSON_BIGINT_AS_STRING;
+        $flags = JSON_OBJECT_AS_ARRAY | JSON_BIGINT_AS_STRING | JSON_THROW_ON_ERROR;
 
         try {
             /** @var mixed */
-            $result = json_decode($request->getBody()->__toString(), null, 512, $flags | JSON_THROW_ON_ERROR);
+            $result = json_decode($request->getBody()->__toString(), null, 512, $flags);
         } catch (JsonException $e) {
             throw new InvalidPayloadException(sprintf('Invalid Payload: %s', $e->getMessage()), 0, $e);
         }
 
-        if (is_array($result) ||
-            is_object($result)) {
-            return $result;
-        }
-
-        return null;
+        return is_array($result) ? $result : null;
     }
 }

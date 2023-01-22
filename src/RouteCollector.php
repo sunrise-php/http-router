@@ -99,7 +99,7 @@ class RouteCollector
      *
      * @param string $name
      * @param string $path
-     * @param string[] $methods
+     * @param list<string> $methods
      * @param mixed $requestHandler
      * @param array $middlewares
      * @param array<string, mixed> $attributes

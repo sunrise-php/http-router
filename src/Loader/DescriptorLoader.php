@@ -50,7 +50,7 @@ use function hash;
 use function is_dir;
 use function is_string;
 use function usort;
-use Sunrise\Http\Router\find_classes;
+use function Sunrise\Http\Router\find_classes;
 
 /**
  * Import constants
@@ -347,7 +347,7 @@ class DescriptorLoader implements LoaderInterface
             }
         }
 
-        usort($result, function (Route $a, Route $b): int {
+        usort($result, static function (Route $a, Route $b): int {
             return $b->priority <=> $a->priority;
         });
 

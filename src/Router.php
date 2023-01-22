@@ -25,8 +25,8 @@ use Sunrise\Http\Router\Exception\PageNotFoundException;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
 use Sunrise\Http\Router\Exception\MethodNotAllowedException;
 use Sunrise\Http\Router\Loader\LoaderInterface;
-use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
+use Sunrise\Http\Router\RequestHandler\UnsafeCallableRequestHandler;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -484,20 +484,17 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
     public function run(ServerRequestInterface $request): ResponseInterface
     {
         // lazy resolving of the given request...
-        $routing = new class implements RequestHandlerInterface
-        {
-            public function handle(ServerRequestInterface $request): ResponseInterface
-            {
-                $route = $this->match($request);
-                $this->matchedRoute = $route;
+        $routing = new UnsafeCallableRequestHandler(function (ServerRequestInterface $request): ResponseInterface {
+            $this->matchedRoute = $this->match($request);
 
-                if (isset($this->eventDispatcher)) {
-                    $this->eventDispatcher->dispatch(new RouteEvent($route, $request));
-                }
-
-                return $route->handle($request);
+            if (isset($this->eventDispatcher)) {
+                $this->eventDispatcher->dispatch(
+                    new RouteEvent($this->matchedRoute, $request)
+                );
             }
-        };
+
+            return $this->matchedRoute->handle($request);
+        });
 
         $middlewares = $this->getMiddlewares();
         if (empty($middlewares)) {
@@ -515,19 +512,20 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $route = $this->match($request);
-        $this->matchedRoute = $route;
+        $this->matchedRoute = $this->match($request);
 
         if (isset($this->eventDispatcher)) {
-            $this->eventDispatcher->dispatch(new RouteEvent($route, $request));
+            $this->eventDispatcher->dispatch(
+                new RouteEvent($this->matchedRoute, $request)
+            );
         }
 
         $middlewares = $this->getMiddlewares();
         if (empty($middlewares)) {
-            return $route->handle($request);
+            return $this->matchedRoute->handle($request);
         }
 
-        $handler = new QueueableRequestHandler($route);
+        $handler = new QueueableRequestHandler($this->matchedRoute);
         $handler->add(...$middlewares);
 
         return $handler->handle($request);
