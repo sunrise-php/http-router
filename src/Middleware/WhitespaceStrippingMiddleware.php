@@ -43,6 +43,7 @@ final class WhitespaceStrippingMiddleware implements MiddlewareInterface
         $parsedBody = $request->getParsedBody();
 
         if (!empty($parsedBody) && is_array($parsedBody)) {
+
             /** @psalm-suppress MissingClosureParamType, MixedAssignment */
             array_walk_recursive($parsedBody, static function (&$value): void {
                 $value = is_string($value) ? trim($value) : $value;

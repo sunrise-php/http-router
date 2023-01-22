@@ -253,17 +253,17 @@ class DescriptorLoader implements LoaderInterface
      */
     public function attach($resource): void
     {
-        if (is_string($resource) && class_exists($resource)) {
-            $this->resources[] = $resource;
+        if (is_string($resource) && is_dir($resource)) {
+            $classnames = $this->scandir($resource);
+            foreach ($classnames as $classname) {
+                $this->resources[] = $classname;
+            }
+
             return;
         }
 
-        if (is_string($resource) && is_dir($resource)) {
-            $classNames = $this->scandir($resource);
-            foreach ($classNames as $className) {
-                $this->resources[] = $className;
-            }
-
+        if (is_string($resource) && class_exists($resource)) {
+            $this->resources[] = $resource;
             return;
         }
 
@@ -290,9 +290,8 @@ class DescriptorLoader implements LoaderInterface
      */
     public function load(): RouteCollectionInterface
     {
-        $descriptors = $this->getDescriptors();
-
         $routes = [];
+        $descriptors = $this->getDescriptors();
         foreach ($descriptors as $descriptor) {
             $routes[] = $this->routeFactory->createRoute(
                 $descriptor->name,
@@ -314,7 +313,7 @@ class DescriptorLoader implements LoaderInterface
     /**
      * Gets descriptors from the cache if they are stored in it,
      * otherwise collects them from the loader resources,
-     * and then tries to cache and return them
+     * then tries to cache and return them
      *
      * @return list<Route>
      */
@@ -327,26 +326,13 @@ class DescriptorLoader implements LoaderInterface
             return $this->cache->get($cacheKey);
         }
 
-        $descriptors = $this->collectDescriptors();
-
-        if (isset($this->cache)) {
-            $this->cache->set($cacheKey, $descriptors);
-        }
-
-        return $descriptors;
-    }
-
-    /**
-     * Collects and returns descriptors from the loader resources
-     *
-     * @return list<Route>
-     */
-    private function collectDescriptors(): array
-    {
         $result = [];
+
         foreach ($this->resources as $resource) {
-            $class = new ReflectionClass($resource);
-            $descriptors = $this->getDescriptorsFromClass($class);
+            $descriptors = $this->getClassDescriptors(
+                new ReflectionClass($resource)
+            );
+
             foreach ($descriptors as $descriptor) {
                 $result[] = $descriptor;
             }
@@ -355,6 +341,10 @@ class DescriptorLoader implements LoaderInterface
         usort($result, static function (Route $a, Route $b): int {
             return $b->priority <=> $a->priority;
         });
+
+        if (isset($this->cache)) {
+            $this->cache->set($cacheKey, $result);
+        }
 
         return $result;
     }
@@ -366,7 +356,7 @@ class DescriptorLoader implements LoaderInterface
      *
      * @return list<Route>
      */
-    private function getDescriptorsFromClass(ReflectionClass $class): array
+    private function getClassDescriptors(ReflectionClass $class): array
     {
         // e.g., interfaces, traits, enums, abstract classes,
         // classes with private constructor...
@@ -377,11 +367,11 @@ class DescriptorLoader implements LoaderInterface
         $result = [];
 
         if ($class->isSubclassOf(RequestHandlerInterface::class)) {
-            $annotations = $this->getAnnotationsFromClassOrMethod($class, Route::class);
+            $annotations = $this->getClassOrMethodAnnotations($class, Route::class);
             if (isset($annotations[0])) {
                 $descriptor = $annotations[0];
-                $this->supplementDescriptorFromClassOrMethod($descriptor, $class);
                 $descriptor->holder = $class->getName();
+                $this->supplementDescriptorFromClassOrMethod($descriptor, $class);
                 $result[] = $descriptor;
             }
         }
@@ -392,12 +382,12 @@ class DescriptorLoader implements LoaderInterface
                 continue;
             }
 
-            $annotations = $this->getAnnotationsFromClassOrMethod($method, Route::class);
+            $annotations = $this->getClassOrMethodAnnotations($method, Route::class);
             if (isset($annotations[0])) {
                 $descriptor = $annotations[0];
+                $descriptor->holder = [$class->getName(), $method->getName()];
                 $this->supplementDescriptorFromClassOrMethod($descriptor, $class);
                 $this->supplementDescriptorFromClassOrMethod($descriptor, $method);
-                $descriptor->holder = [$class->getName(), $method->getName()];
                 $result[] = $descriptor;
             }
         }
@@ -406,53 +396,22 @@ class DescriptorLoader implements LoaderInterface
     }
 
     /**
-     * Supplements the given descriptor from the given class or method
+     * Gets annotations from the given class or method by the given name
      *
-     * @param Route $descriptor
-     * @param ReflectionClass|ReflectionMethod $reflector
-     *
-     * @return void
-     */
-    private function supplementDescriptorFromClassOrMethod(Route $descriptor, Reflector $reflector): void
-    {
-        $annotations = $this->getAnnotationsFromClassOrMethod($reflector, Host::class);
-        if (isset($annotations[0])) {
-            $descriptor->host = $annotations[0]->value;
-        }
-
-        $annotations = $this->getAnnotationsFromClassOrMethod($reflector, Prefix::class);
-        if (isset($annotations[0])) {
-            $descriptor->path = $annotations[0]->value . $descriptor->path;
-        }
-
-        $annotations = $this->getAnnotationsFromClassOrMethod($reflector, Postfix::class);
-        if (isset($annotations[0])) {
-            $descriptor->path = $descriptor->path . $annotations[0]->value;
-        }
-
-        $annotations = $this->getAnnotationsFromClassOrMethod($reflector, Middleware::class);
-        foreach ($annotations as $annotation) {
-            $descriptor->middlewares[] = $annotation->value;
-        }
-    }
-
-    /**
-     * Gets annotations from the given class or method
-     *
-     * @param ReflectionClass|ReflectionMethod $reflector
+     * @param ReflectionClass|ReflectionMethod $reflection
      * @param class-string<T> $annotationName
      *
      * @return list<T>
      *
      * @template T
      */
-    private function getAnnotationsFromClassOrMethod(Reflector $reflector, string $annotationName): array
+    private function getClassOrMethodAnnotations(Reflector $reflection, string $annotationName): array
     {
         $result = [];
 
         if (PHP_MAJOR_VERSION === 8) {
             /** @var ReflectionAttribute[] */
-            $attributes = $reflector->getAttributes($annotationName);
+            $attributes = $reflection->getAttributes($annotationName);
             foreach ($attributes as $attribute) {
                 /** @var T */
                 $result[] = $attribute->newInstance();
@@ -460,9 +419,9 @@ class DescriptorLoader implements LoaderInterface
         }
 
         if (isset($this->annotationReader)) {
-            $annotations = ($reflector instanceof ReflectionClass) ?
-                $this->annotationReader->getClassAnnotations($reflector) :
-                $this->annotationReader->getMethodAnnotations($reflector);
+            $annotations = ($reflection instanceof ReflectionClass) ?
+                $this->annotationReader->getClassAnnotations($reflection) :
+                $this->annotationReader->getMethodAnnotations($reflection);
 
             foreach ($annotations as $annotation) {
                 if ($annotation instanceof $annotationName) {
@@ -475,6 +434,37 @@ class DescriptorLoader implements LoaderInterface
     }
 
     /**
+     * Supplements the given descriptor from the given class or method
+     *
+     * @param Route $descriptor
+     * @param ReflectionClass|ReflectionMethod $reflection
+     *
+     * @return void
+     */
+    private function supplementDescriptorFromClassOrMethod(Route $descriptor, Reflector $reflection): void
+    {
+        $annotations = $this->getClassOrMethodAnnotations($reflection, Host::class);
+        if (isset($annotations[0])) {
+            $descriptor->host = $annotations[0]->value;
+        }
+
+        $annotations = $this->getClassOrMethodAnnotations($reflection, Prefix::class);
+        if (isset($annotations[0])) {
+            $descriptor->path = $annotations[0]->value . $descriptor->path;
+        }
+
+        $annotations = $this->getClassOrMethodAnnotations($reflection, Postfix::class);
+        if (isset($annotations[0])) {
+            $descriptor->path = $descriptor->path . $annotations[0]->value;
+        }
+
+        $annotations = $this->getClassOrMethodAnnotations($reflection, Middleware::class);
+        foreach ($annotations as $annotation) {
+            $descriptor->middlewares[] = $annotation->value;
+        }
+    }
+
+    /**
      * Scans the given directory and returns the found classes
      *
      * @param string $directory
@@ -483,13 +473,6 @@ class DescriptorLoader implements LoaderInterface
      */
     private function scandir(string $directory): array
     {
-        /** @var array<string, class-string[]> */
-        static $cache = [];
-
-        if (isset($cache[$directory])) {
-            return $cache[$directory];
-        }
-
         $known = get_declared_classes();
 
         /** @var Iterator<SplFileInfo> */
@@ -504,8 +487,6 @@ class DescriptorLoader implements LoaderInterface
             }
         }
 
-        $cache[$directory] = array_diff(get_declared_classes(), $known);
-
-        return $cache[$directory];
+        return array_diff(get_declared_classes(), $known);
     }
 }

@@ -126,17 +126,17 @@ final class ConfigLoader implements LoaderInterface
      */
     public function attach($resource): void
     {
-        if (is_string($resource) && is_file($resource)) {
-            $this->resources[] = $resource;
-            return;
-        }
-
         if (is_string($resource) && is_dir($resource)) {
             $filenames = glob($resource . '/*.php');
             foreach ($filenames as $filename) {
                 $this->resources[] = $filename;
             }
 
+            return;
+        }
+
+        if (is_string($resource) && is_file($resource)) {
+            $this->resources[] = $resource;
             return;
         }
 
