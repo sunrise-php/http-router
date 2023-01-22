@@ -113,7 +113,7 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
     private function decodeRequestJsonPayload(ServerRequestInterface $request): ?array
     {
         // https://www.php.net/json.constants
-        $flags = JSON_OBJECT_AS_ARRAY | JSON_BIGINT_AS_STRING | JSON_THROW_ON_ERROR;
+        $flags = JSON_BIGINT_AS_STRING | JSON_OBJECT_AS_ARRAY | JSON_THROW_ON_ERROR;
 
         try {
             /** @var mixed */

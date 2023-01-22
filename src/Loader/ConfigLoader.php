@@ -142,7 +142,7 @@ final class ConfigLoader implements LoaderInterface
 
         throw new InvalidLoaderResourceException(sprintf(
             'Config route loader only handles file or directory paths, ' .
-            'however the given resource "%s" is not as expected',
+            'however the given resource "%s" is not one of them',
             is_string($resource) ? $resource : get_debug_type($resource)
         ));
     }
@@ -170,7 +170,7 @@ final class ConfigLoader implements LoaderInterface
         );
 
         foreach ($this->resources as $filename) {
-            (function (string $filename) {
+            (function (string $filename): void {
                 /** @psalm-suppress UnresolvableInclude */
                 require $filename;
             })->call($collector, $filename);

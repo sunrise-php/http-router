@@ -36,21 +36,26 @@ use Sunrise\Http\Router\RouteCollectionFactoryInterface;
 use Sunrise\Http\Router\RouteCollectionInterface;
 use Sunrise\Http\Router\RouteFactory;
 use Sunrise\Http\Router\RouteFactoryInterface;
+use Iterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
 use Reflector;
+use SplFileInfo;
 
 /**
  * Import functions
  */
+use function array_diff;
 use function class_exists;
 use function get_debug_type;
+use function get_declared_classes;
 use function hash;
 use function is_dir;
 use function is_string;
 use function usort;
-use function Sunrise\Http\Router\find_classes;
 
 /**
  * Import constants
@@ -114,7 +119,7 @@ class DescriptorLoader implements LoaderInterface
         $this->routeFactory = $routeFactory ?? new RouteFactory();
         $this->referenceResolver = $referenceResolver ?? new ReferenceResolver();
 
-        if (PHP_MAJOR_VERSION < 8) {
+        if (PHP_MAJOR_VERSION === 7) {
             $this->useDefaultAnnotationReader();
         }
     }
@@ -227,7 +232,7 @@ class DescriptorLoader implements LoaderInterface
      * @return void
      *
      * @throws LogicException
-     *         If the doctrine/annotations package isn't installed.
+     *         If the "doctrine/annotations" package isn't installed.
      *
      * @since 3.0.0
      */
@@ -235,7 +240,7 @@ class DescriptorLoader implements LoaderInterface
     {
         if (!class_exists(AnnotationReader::class)) {
             throw new LogicException(
-                'Loading routes from descriptors requires the "doctrine/annotations" package that is not installed, ' .
+                'Loading routes from descriptors requires an uninstalled "doctrine/annotations" package, ' .
                 'run the command "composer install doctrine/annotations" and try again'
             );
         }
@@ -254,9 +259,9 @@ class DescriptorLoader implements LoaderInterface
         }
 
         if (is_string($resource) && is_dir($resource)) {
-            $classnames = find_classes($resource);
-            foreach ($classnames as $classname) {
-                $this->resources[] = $classname;
+            $classNames = $this->scandir($resource);
+            foreach ($classNames as $className) {
+                $this->resources[] = $className;
             }
 
             return;
@@ -264,7 +269,7 @@ class DescriptorLoader implements LoaderInterface
 
         throw new InvalidLoaderResourceException(sprintf(
             'Descriptor route loader only handles class names or directory paths, ' .
-            'however the given resource "%s" is not as expected',
+            'however the given resource "%s" is not one of them',
             is_string($resource) ? $resource : get_debug_type($resource)
         ));
     }
@@ -369,7 +374,7 @@ class DescriptorLoader implements LoaderInterface
             return [];
         }
 
-        $descriptors = [];
+        $result = [];
 
         if ($class->isSubclassOf(RequestHandlerInterface::class)) {
             $annotations = $this->getAnnotationsFromClassOrMethod($class, Route::class);
@@ -377,7 +382,7 @@ class DescriptorLoader implements LoaderInterface
                 $descriptor = $annotations[0];
                 $this->supplementDescriptorFromClassOrMethod($descriptor, $class);
                 $descriptor->holder = $class->getName();
-                $descriptors[] = $descriptor;
+                $result[] = $descriptor;
             }
         }
 
@@ -393,36 +398,15 @@ class DescriptorLoader implements LoaderInterface
                 $this->supplementDescriptorFromClassOrMethod($descriptor, $class);
                 $this->supplementDescriptorFromClassOrMethod($descriptor, $method);
                 $descriptor->holder = [$class->getName(), $method->getName()];
-                $descriptors[] = $descriptor;
+                $result[] = $descriptor;
             }
         }
 
-        return $descriptors;
+        return $result;
     }
 
     /**
-     * Supplements the given descriptor from the given class or method with data such as:
-     *
-     *  - host
-     *  - path prefix
-     *  - path postfix
-     *  - middlewares
-     *
-     * ```php
-     * #[Prefix('/api/v1')]
-     * class SomeController {
-     *
-     *   #[Route('foo', path: '/foo')]
-     *   public function foo() {
-     *     // will be available at: /api/v1/foo
-     *   }
-     *
-     *   #[Route('bar', path: '/bar')]
-     *   public function bar() {
-     *     // will be available at: /api/v1/bar
-     *   }
-     * }
-     * ```
+     * Supplements the given descriptor from the given class or method
      *
      * @param Route $descriptor
      * @param ReflectionClass|ReflectionMethod $reflector
@@ -488,5 +472,40 @@ class DescriptorLoader implements LoaderInterface
         }
 
         return $result;
+    }
+
+    /**
+     * Scans the given directory and returns the found classes
+     *
+     * @param string $directory
+     *
+     * @return class-string[]
+     */
+    private function scandir(string $directory): array
+    {
+        /** @var array<string, class-string[]> */
+        static $cache = [];
+
+        if (isset($cache[$directory])) {
+            return $cache[$directory];
+        }
+
+        $known = get_declared_classes();
+
+        /** @var Iterator<SplFileInfo> */
+        $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($directory)
+        );
+
+        foreach ($files as $file) {
+            if ('php' === $file->getExtension()) {
+                /** @psalm-suppress UnresolvableInclude */
+                require_once $file->getPathname();
+            }
+        }
+
+        $cache[$directory] = array_diff(get_declared_classes(), $known);
+
+        return $cache[$directory];
     }
 }
