@@ -15,7 +15,7 @@ namespace Sunrise\Http\Router\Loader;
  * Import classes
  */
 use Psr\Container\ContainerInterface;
-use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
+use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\ParameterResolverInterface;
 use Sunrise\Http\Router\ReferenceResolver;
 use Sunrise\Http\Router\ReferenceResolverInterface;
@@ -30,7 +30,6 @@ use Sunrise\Http\Router\RouteFactoryInterface;
 /**
  * Import functions
  */
-use function get_debug_type;
 use function glob;
 use function is_dir;
 use function is_file;
@@ -126,7 +125,13 @@ final class ConfigLoader implements LoaderInterface
      */
     public function attach($resource): void
     {
-        if (is_string($resource) && is_dir($resource)) {
+        if (!is_string($resource)) {
+            throw new InvalidArgumentException(
+                'Config route loader only handles string resources'
+            );
+        }
+
+        if (is_dir($resource)) {
             $filenames = glob($resource . '/*.php');
             foreach ($filenames as $filename) {
                 $this->resources[] = $filename;
@@ -135,15 +140,15 @@ final class ConfigLoader implements LoaderInterface
             return;
         }
 
-        if (is_string($resource) && is_file($resource)) {
+        if (is_file($resource)) {
             $this->resources[] = $resource;
             return;
         }
 
-        throw new InvalidLoaderResourceException(sprintf(
+        throw new InvalidArgumentException(sprintf(
             'Config route loader only handles file or directory paths, ' .
             'however the given resource "%s" is not one of them',
-            is_string($resource) ? $resource : get_debug_type($resource)
+            $resource
         ));
     }
 

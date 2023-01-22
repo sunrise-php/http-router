@@ -14,7 +14,7 @@ namespace Sunrise\Http\Router\Loader;
 /**
  * Import classes
  */
-use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
+use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\RouteCollectionInterface;
 
 /**
@@ -30,7 +30,7 @@ interface LoaderInterface
      *
      * @return void
      *
-     * @throws InvalidLoaderResourceException
+     * @throws InvalidArgumentException
      *         If the given resource isn't valid.
      */
     public function attach($resource): void;
@@ -42,7 +42,7 @@ interface LoaderInterface
      *
      * @return void
      *
-     * @throws InvalidLoaderResourceException
+     * @throws InvalidArgumentException
      *         If one of the given resources isn't valid.
      */
     public function attachArray(array $resources): void;

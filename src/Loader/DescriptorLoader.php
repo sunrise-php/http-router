@@ -25,7 +25,7 @@ use Sunrise\Http\Router\Annotation\Middleware;
 use Sunrise\Http\Router\Annotation\Postfix;
 use Sunrise\Http\Router\Annotation\Prefix;
 use Sunrise\Http\Router\Annotation\Route;
-use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
+use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ParameterResolverInterface;
 use Sunrise\Http\Router\ReferenceResolver;
@@ -50,7 +50,6 @@ use SplFileInfo;
  */
 use function array_diff;
 use function class_exists;
-use function get_debug_type;
 use function get_declared_classes;
 use function hash;
 use function is_dir;
@@ -253,7 +252,13 @@ class DescriptorLoader implements LoaderInterface
      */
     public function attach($resource): void
     {
-        if (is_string($resource) && is_dir($resource)) {
+        if (!is_string($resource)) {
+            throw new InvalidArgumentException(
+                'Descriptor route loader only handles string resources'
+            );
+        }
+
+        if (is_dir($resource)) {
             $classnames = $this->scandir($resource);
             foreach ($classnames as $classname) {
                 $this->resources[] = $classname;
@@ -262,15 +267,15 @@ class DescriptorLoader implements LoaderInterface
             return;
         }
 
-        if (is_string($resource) && class_exists($resource)) {
+        if (class_exists($resource)) {
             $this->resources[] = $resource;
             return;
         }
 
-        throw new InvalidLoaderResourceException(sprintf(
+        throw new InvalidArgumentException(sprintf(
             'Descriptor route loader only handles class names or directory paths, ' .
             'however the given resource "%s" is not one of them',
-            is_string($resource) ? $resource : get_debug_type($resource)
+            $resource
         ));
     }
 
@@ -319,11 +324,11 @@ class DescriptorLoader implements LoaderInterface
      */
     private function getDescriptors(): array
     {
-        $cacheKey = $this->getCacheKey();
+        $key = $this->getCacheKey();
 
-        if (isset($this->cache) && $this->cache->has($cacheKey)) {
+        if (isset($this->cache) && $this->cache->has($key)) {
             /** @var list<Route> */
-            return $this->cache->get($cacheKey);
+            return $this->cache->get($key);
         }
 
         $result = [];
@@ -343,7 +348,7 @@ class DescriptorLoader implements LoaderInterface
         });
 
         if (isset($this->cache)) {
-            $this->cache->set($cacheKey, $result);
+            $this->cache->set($key, $result);
         }
 
         return $result;
