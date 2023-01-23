@@ -17,6 +17,7 @@ namespace Sunrise\Http\Router\ParameterResolver;
 use Psr\Http\Message\ServerRequestInterface;
 use Sunrise\Http\Router\Annotation\RequestQuery;
 use Sunrise\Http\Router\Exception\InvalidRequestQueryException;
+use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ParameterResolverInterface;
 use Sunrise\Http\Router\RequestQueryInterface;
 use Sunrise\Hydrator\Exception\InvalidObjectException;
@@ -67,7 +68,11 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
             return false;
         }
 
-        if (!($parameter->getType() instanceof ReflectionNamedType) || $parameter->getType()->isBuiltin()) {
+        if (!($parameter->getType() instanceof ReflectionNamedType)) {
+            return false;
+        }
+
+        if ($parameter->getType()->isBuiltin()) {
             return false;
         }
 
@@ -85,11 +90,11 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
     /**
      * {@inheritdoc}
      *
-     * @throws InvalidObjectException
-     *         If the DTO isn't valid.
-     *
      * @throws InvalidRequestQueryException
-     *         If the DTO cannot be hydrated with the request query.
+     *         If the request query isn't valid.
+     *
+     * @throws LogicException
+     *         If the DTO isn't valid.
      */
     public function resolveParameter(ReflectionParameter $parameter, $context)
     {
@@ -103,6 +108,8 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
             return $this->hydrator->hydrate($parameterType->getName(), $context->getQueryParams());
         } catch (InvalidValueException $e) {
             throw new InvalidRequestQueryException($e->getMessage(), 0, $e);
+        } catch (InvalidObjectException $e) {
+            throw new LogicException($e->getMessage(), 0, $e);
         }
     }
 }

@@ -15,7 +15,7 @@ namespace Sunrise\Http\Router;
  * Import classes
  */
 use Psr\Http\Message\ResponseInterface;
-use Sunrise\Http\Router\Exception\ResponseResolvingException;
+use Sunrise\Http\Router\Exception\LogicException;
 
 /**
  * Import functions
@@ -81,7 +81,7 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
             }
         }
 
-        throw new ResponseResolvingException(sprintf(
+        throw new LogicException(sprintf(
             'Unable to resolve the response {%s}',
             get_debug_type($response)
         ));

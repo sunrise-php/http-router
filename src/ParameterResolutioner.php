@@ -14,10 +14,10 @@ namespace Sunrise\Http\Router;
 /**
  * Import classes
  */
-use ReflectionNamedType;
+use Sunrise\Http\Router\Exception\LogicException;
+use ReflectionFunctionAbstract;
+use ReflectionMethod;
 use ReflectionParameter;
-use Psr\Container\ContainerInterface;
-use Sunrise\Http\Router\Exception\ParameterResolvingException;
 
 /**
  * Import functions
@@ -40,25 +40,11 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
     private $context = null;
 
     /**
-     * Known types
-     *
-     * @var array<string, object>
-     */
-    private array $types = [];
-
-    /**
      * The resolutioner's resolvers
      *
      * @var list<ParameterResolverInterface>
      */
     private array $resolvers = [];
-
-    /**
-     * The resolutioner's container
-     *
-     * @var ContainerInterface|null
-     */
-    private ?ContainerInterface $container = null;
 
     /**
      * {@inheritdoc}
@@ -74,10 +60,16 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
     /**
      * {@inheritdoc}
      */
-    public function withType(string $type, object $value): ParameterResolutionerInterface
+    public function withPriorityResolver(ParameterResolverInterface ...$resolvers): ParameterResolutionerInterface
     {
+        /** @var list<ParameterResolverInterface> $resolvers */
+
+        foreach ($this->resolvers as $resolver) {
+            $resolvers[] = $resolver;
+        }
+
         $clone = clone $this;
-        $clone->types[$type] = $value;
+        $clone->resolvers = $resolvers;
 
         return $clone;
     }
@@ -90,14 +82,6 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
         foreach ($resolvers as $resolver) {
             $this->resolvers[] = $resolver;
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setContainer(?ContainerInterface $container): void
-    {
-        $this->container = $container;
     }
 
     /**
@@ -122,28 +106,14 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
      * @return mixed
      *         The ready-to-pass argument.
      *
-     * @throws ParameterResolvingException
+     * @throws LogicException
      *         If the parameter cannot be resolved to an argument.
      */
     private function resolveParameter(ReflectionParameter $parameter)
     {
-        $type = $parameter->getType();
-
-        if (($type instanceof ReflectionNamedType) && !$type->isBuiltin()) {
-            if (isset($this->types[$type->getName()])) {
-                return $this->types[$type->getName()];
-            }
-        }
-
         foreach ($this->resolvers as $resolver) {
             if ($resolver->supportsParameter($parameter, $this->context)) {
                 return $resolver->resolveParameter($parameter, $this->context);
-            }
-        }
-
-        if (($type instanceof ReflectionNamedType) && !$type->isBuiltin()) {
-            if (isset($this->container) && $this->container->has($type->getName())) {
-                return $this->container->get($type->getName());
             }
         }
 
@@ -151,11 +121,60 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
             return $parameter->getDefaultValue();
         }
 
-        throw new ParameterResolvingException(sprintf(
-            'Unable to resolve the parameter {%s($%s[%d])}',
-            $parameter->getDeclaringFunction()->getName(),
+        throw new LogicException(sprintf(
+            'Unable to resolve the parameter {%s}',
+            $this->stringifyParameter($parameter)
+        ));
+    }
+
+    /**
+     * Stringifies the given parameter
+     *
+     * @param ReflectionParameter $parameter
+     *
+     * @return string
+     */
+    private function stringifyParameter(ReflectionParameter $parameter): string
+    {
+        return ($parameter->getDeclaringFunction() instanceof ReflectionMethod) ?
+            $this->stringifyMethodParameter($parameter->getDeclaringFunction(), $parameter) :
+            $this->stringifyFunctionParameter($parameter->getDeclaringFunction(), $parameter);
+    }
+
+    /**
+     * Stringifies the given method parameter
+     *
+     * @param ReflectionMethod $method
+     * @param ReflectionParameter $parameter
+     *
+     * @return string
+     */
+    private function stringifyMethodParameter(ReflectionMethod $method, ReflectionParameter $parameter): string
+    {
+        return sprintf(
+            '%s::%s($%s[%d])',
+            $method->getDeclaringClass()->getName(),
+            $method->getName(),
             $parameter->getName(),
             $parameter->getPosition()
-        ));
+        );
+    }
+
+    /**
+     * Stringifies the given function parameter
+     *
+     * @param ReflectionFunctionAbstract $function
+     * @param ReflectionParameter $parameter
+     *
+     * @return string
+     */
+    private function stringifyFunctionParameter(ReflectionFunctionAbstract $function, ReflectionParameter $parameter): string
+    {
+        return sprintf(
+            '%s($%s[%d])',
+            $function->getName(),
+            $parameter->getName(),
+            $parameter->getPosition()
+        );
     }
 }

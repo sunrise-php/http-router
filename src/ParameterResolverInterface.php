@@ -14,8 +14,8 @@ namespace Sunrise\Http\Router;
 /**
  * Import classes
  */
+use Sunrise\Http\Router\Exception\LogicException;
 use ReflectionParameter;
-use Sunrise\Http\Router\Exception\ParameterResolvingException;
 
 /**
  * ParameterResolverInterface
@@ -44,7 +44,7 @@ interface ParameterResolverInterface
      * @return mixed
      *         The ready-to-pass argument.
      *
-     * @throws ParameterResolvingException
+     * @throws LogicException
      *         If the parameter cannot be resolved to an argument.
      */
     public function resolveParameter(ReflectionParameter $parameter, $context);

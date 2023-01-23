@@ -127,7 +127,7 @@ final class ConfigLoader implements LoaderInterface
     {
         if (!is_string($resource)) {
             throw new InvalidArgumentException(
-                'Config route loader only handles string resources'
+                'The config route loader only handles string resources'
             );
         }
 
@@ -146,7 +146,7 @@ final class ConfigLoader implements LoaderInterface
         }
 
         throw new InvalidArgumentException(sprintf(
-            'Config route loader only handles file or directory paths, ' .
+            'The config route loader only handles file or directory paths, ' .
             'however the given resource "%s" is not one of them',
             $resource
         ));

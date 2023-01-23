@@ -15,7 +15,7 @@ namespace Sunrise\Http\Router;
  * Import classes
  */
 use Psr\Http\Message\ResponseInterface;
-use Sunrise\Http\Router\Exception\ResponseResolvingException;
+use Sunrise\Http\Router\Exception\LogicException;
 
 /**
  * ResponseResolutionerInterface
@@ -52,7 +52,7 @@ interface ResponseResolutionerInterface
      *
      * @return ResponseInterface
      *
-     * @throws ResponseResolvingException
+     * @throws LogicException
      *         If the raw response cannot be resolved to the object.
      */
     public function resolveResponse($response): ResponseInterface;

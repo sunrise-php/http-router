@@ -14,14 +14,15 @@ namespace Sunrise\Http\Router\RequestHandler;
 /**
  * Import classes
  */
-use ReflectionFunctionAbstract;
-use ReflectionFunction;
-use ReflectionMethod;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Router\ParameterResolver\KnownTypeParameterResolver;
 use Sunrise\Http\Router\ParameterResolutionerInterface;
 use Sunrise\Http\Router\ResponseResolutionerInterface;
+use ReflectionFunctionAbstract;
+use ReflectionFunction;
+use ReflectionMethod;
 
 /**
  * Import functions
@@ -89,9 +90,13 @@ final class CallableRequestHandler implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
+        $resolvers = [
+            new KnownTypeParameterResolver(ServerRequestInterface::class, $request),
+        ];
+
         $arguments = $this->parameterResolutioner
             ->withContext($request)
-            ->withType(ServerRequestInterface::class, $request)
+            ->withPriorityResolver(...$resolvers)
             ->resolveParameters(...$this->getReflection()->getParameters());
 
         /** @var mixed */

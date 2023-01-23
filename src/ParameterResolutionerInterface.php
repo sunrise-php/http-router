@@ -14,9 +14,8 @@ namespace Sunrise\Http\Router;
 /**
  * Import classes
  */
+use Sunrise\Http\Router\Exception\LogicException;
 use ReflectionParameter;
-use Psr\Container\ContainerInterface;
-use Sunrise\Http\Router\Exception\ParameterResolvingException;
 
 /**
  * ParameterResolutionerInterface
@@ -38,18 +37,15 @@ interface ParameterResolutionerInterface
     public function withContext($context): ParameterResolutionerInterface;
 
     /**
-     * Creates a new instance of the resolutioner with the given data for resolve a non-built-in typed parameter
+     * Creates a new instance of the resolutioner with the given priority parameter resolver(s)
      *
      * Please note that this method MUST NOT change the object state.
      *
-     * @param class-string<T> $type
-     * @param T $value
+     * @param ParameterResolverInterface ...$resolvers
      *
      * @return static
-     *
-     * @template T
      */
-    public function withType(string $type, object $value): ParameterResolutionerInterface;
+    public function withPriorityResolver(ParameterResolverInterface ...$resolvers): ParameterResolutionerInterface;
 
     /**
      * Adds the given parameter resolver(s) to the resolutioner
@@ -61,15 +57,6 @@ interface ParameterResolutionerInterface
     public function addResolver(ParameterResolverInterface ...$resolvers): void;
 
     /**
-     * Sets the given container to the resolutioner for resolve non-built-in typed parameters
-     *
-     * @param ContainerInterface|null $container
-     *
-     * @return void
-     */
-    public function setContainer(?ContainerInterface $container): void;
-
-    /**
      * Resolves the given parameter(s) to arguments
      *
      * @param ReflectionParameter ...$parameters
@@ -77,7 +64,7 @@ interface ParameterResolutionerInterface
      * @return list<mixed>
      *         List of ready-to-pass arguments.
      *
-     * @throws ParameterResolvingException
+     * @throws LogicException
      *         If one of the parameters cannot be resolved to an argument.
      */
     public function resolveParameters(ReflectionParameter ...$parameters): array;

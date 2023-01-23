@@ -16,6 +16,6 @@ namespace Sunrise\Http\Router\Exception;
  *
  * @since 3.0.0
  */
-class ResolvingException extends Exception
+class ResolvingException extends LogicException
 {
 }

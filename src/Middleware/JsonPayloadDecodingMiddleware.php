@@ -14,12 +14,12 @@ namespace Sunrise\Http\Router\Middleware;
 /**
  * Import classes
  */
-use JsonException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Exception\InvalidRequestPayloadException;
+use JsonException;
 
 /**
  * Import functions

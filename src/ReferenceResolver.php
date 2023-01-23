@@ -82,8 +82,6 @@ final class ReferenceResolver implements ReferenceResolverInterface
     public function setContainer(?ContainerInterface $container): void
     {
         $this->container = $container;
-
-        $this->parameterResolutioner->setContainer($container);
     }
 
     /**
