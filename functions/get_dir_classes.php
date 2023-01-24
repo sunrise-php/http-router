@@ -20,35 +20,34 @@ use RecursiveIteratorIterator;
 use SplFileInfo;
 
 /**
- * Import functions
- */
-use function array_diff;
-use function get_declared_classes;
-
-/**
  * Scans the given directory and returns the found classes
  *
- * @param string $directory
+ * @param string $dirname
  *
  * @return class-string[]
  *
  * @since 3.0.0
  */
-function get_directory_classes(string $directory): array
+function get_dir_classes(string $dirname): array
 {
-    $known = get_declared_classes();
-
     /** @var Iterator<SplFileInfo> */
     $files = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator($directory)
+        new RecursiveDirectoryIterator($dirname)
     );
 
+    $result = [];
+
     foreach ($files as $file) {
-        if ('php' === $file->getExtension()) {
-            /** @psalm-suppress UnresolvableInclude */
-            require_once $file->getPathname();
+        // only php files...
+        if ($file->getExtension() !== 'php') {
+            continue;
+        }
+
+        $classnames = get_file_classes($file->getPathname());
+        foreach ($classnames as $classname) {
+            $result[] = $classname;
         }
     }
 
-    return array_diff(get_declared_classes(), $known);
+    return $result;
 }

@@ -48,7 +48,8 @@
         "files": [
             "functions/emit.php",
             "functions/get_debug_type.php",
-            "functions/get_directory_classes.php",
+            "functions/get_dir_classes.php",
+            "functions/get_file_classes.php",
             "functions/path_build.php",
             "functions/path_match.php",
             "functions/path_parse.php",

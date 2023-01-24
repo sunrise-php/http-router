@@ -45,7 +45,7 @@ use function hash;
 use function is_dir;
 use function is_string;
 use function usort;
-use function Sunrise\Http\Router\get_directory_classes;
+use function Sunrise\Http\Router\get_dir_classes;
 
 /**
  * Import constants
@@ -242,7 +242,7 @@ final class DescriptorLoader implements LoaderInterface
         }
 
         if (is_dir($resource)) {
-            $classnames = get_directory_classes($resource);
+            $classnames = get_dir_classes($resource);
             foreach ($classnames as $classname) {
                 $this->resources[] = $classname;
             }
