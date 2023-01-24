@@ -393,28 +393,28 @@ final class DescriptorLoader implements LoaderInterface
      * Supplements the given descriptor from the given class or method
      *
      * @param Route $descriptor
-     * @param ReflectionClass|ReflectionMethod $source
+     * @param ReflectionClass|ReflectionMethod $classOrMethod
      *
      * @return void
      */
-    private function supplementDescriptor(Route $descriptor, Reflector $source): void
+    private function supplementDescriptor(Route $descriptor, Reflector $classOrMethod): void
     {
-        $annotations = $this->annotationReader->getAnnotations($source, Host::class);
+        $annotations = $this->annotationReader->getAnnotations($classOrMethod, Host::class);
         if (isset($annotations[0])) {
             $descriptor->host = $annotations[0]->value;
         }
 
-        $annotations = $this->annotationReader->getAnnotations($source, Prefix::class);
+        $annotations = $this->annotationReader->getAnnotations($classOrMethod, Prefix::class);
         if (isset($annotations[0])) {
             $descriptor->path = $annotations[0]->value . $descriptor->path;
         }
 
-        $annotations = $this->annotationReader->getAnnotations($source, Postfix::class);
+        $annotations = $this->annotationReader->getAnnotations($classOrMethod, Postfix::class);
         if (isset($annotations[0])) {
             $descriptor->path = $descriptor->path . $annotations[0]->value;
         }
 
-        $annotations = $this->annotationReader->getAnnotations($source, Middleware::class);
+        $annotations = $this->annotationReader->getAnnotations($classOrMethod, Middleware::class);
         foreach ($annotations as $annotation) {
             $descriptor->middlewares[] = $annotation->value;
         }

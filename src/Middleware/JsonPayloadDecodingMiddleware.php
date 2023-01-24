@@ -26,10 +26,10 @@ use JsonException;
  */
 use function is_array;
 use function json_decode;
-use function rtrim;
 use function sprintf;
 use function strpos;
-use function substr;
+use function strstr;
+use function trim;
 
 /**
  * Import constants
@@ -91,13 +91,13 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
         }
 
         // type "/" subtype *( OWS ";" OWS parameter )
-        $mediatype = $request->getHeaderLine('Content-Type');
+        $mediaType = $request->getHeaderLine('Content-Type');
 
-        if ($semicolon = strpos($mediatype, ';')) {
-            $mediatype = substr($mediatype, 0, $semicolon);
+        if (false !== strpos($mediaType, ';')) {
+            $mediaType = strstr($mediaType, ';', true);
         }
 
-        return rtrim($mediatype);
+        return trim($mediaType);
     }
 
     /**

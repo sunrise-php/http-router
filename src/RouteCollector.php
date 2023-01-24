@@ -15,7 +15,6 @@ namespace Sunrise\Http\Router;
  * Import classes
  */
 use Psr\Container\ContainerInterface;
-use Sunrise\Http\Router\Exception\InvalidReferenceException;
 
 /**
  * RouteCollector
@@ -105,9 +104,6 @@ class RouteCollector
      * @param array<string, mixed> $attributes
      *
      * @return RouteInterface
-     *
-     * @throws InvalidReferenceException
-     *         If the given request handler or one of the given middlewares cannot be resolved.
      */
     public function route(
         string $name,
@@ -141,9 +137,6 @@ class RouteCollector
      * @param array<string, mixed> $attributes
      *
      * @return RouteInterface
-     *
-     * @throws InvalidReferenceException
-     *         If the given request handler or one of the given middlewares cannot be resolved.
      */
     public function head(
         string $name,
@@ -172,9 +165,6 @@ class RouteCollector
      * @param array<string, mixed> $attributes
      *
      * @return RouteInterface
-     *
-     * @throws InvalidReferenceException
-     *         If the given request handler or one of the given middlewares cannot be resolved.
      */
     public function get(
         string $name,
@@ -203,9 +193,6 @@ class RouteCollector
      * @param array<string, mixed> $attributes
      *
      * @return RouteInterface
-     *
-     * @throws InvalidReferenceException
-     *         If the given request handler or one of the given middlewares cannot be resolved.
      */
     public function post(
         string $name,
@@ -234,9 +221,6 @@ class RouteCollector
      * @param array<string, mixed> $attributes
      *
      * @return RouteInterface
-     *
-     * @throws InvalidReferenceException
-     *         If the given request handler or one of the given middlewares cannot be resolved.
      */
     public function put(
         string $name,
@@ -265,9 +249,6 @@ class RouteCollector
      * @param array<string, mixed> $attributes
      *
      * @return RouteInterface
-     *
-     * @throws InvalidReferenceException
-     *         If the given request handler or one of the given middlewares cannot be resolved.
      */
     public function patch(
         string $name,
@@ -296,9 +277,6 @@ class RouteCollector
      * @param array<string, mixed> $attributes
      *
      * @return RouteInterface
-     *
-     * @throws InvalidReferenceException
-     *         If the given request handler or one of the given middlewares cannot be resolved.
      */
     public function delete(
         string $name,
@@ -327,9 +305,6 @@ class RouteCollector
      * @param array<string, mixed> $attributes
      *
      * @return RouteInterface
-     *
-     * @throws InvalidReferenceException
-     *         If the given request handler or one of the given middlewares cannot be resolved.
      */
     public function purge(
         string $name,
@@ -355,9 +330,6 @@ class RouteCollector
      * @param array $middlewares
      *
      * @return RouteCollectionInterface
-     *
-     * @throws InvalidReferenceException
-     *         If one of the given middlewares cannot be resolved.
      */
     public function group(callable $callback, array $middlewares = []): RouteCollectionInterface
     {

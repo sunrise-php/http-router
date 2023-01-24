@@ -14,7 +14,7 @@ namespace Sunrise\Http\Router;
 /**
  * Import classes
  */
-use Sunrise\Http\Router\Exception\LogicException;
+use Sunrise\Http\Router\Exception\ResolvingParameterException;
 use ReflectionFunctionAbstract;
 use ReflectionMethod;
 use ReflectionParameter;
@@ -106,7 +106,7 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
      * @return mixed
      *         The ready-to-pass argument.
      *
-     * @throws LogicException
+     * @throws ResolvingParameterException
      *         If the parameter cannot be resolved to an argument.
      */
     private function resolveParameter(ReflectionParameter $parameter)
@@ -121,7 +121,7 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
             return $parameter->getDefaultValue();
         }
 
-        throw new LogicException(sprintf(
+        throw new ResolvingParameterException(sprintf(
             'Unable to resolve the parameter {%s}',
             $this->stringifyParameter($parameter)
         ));

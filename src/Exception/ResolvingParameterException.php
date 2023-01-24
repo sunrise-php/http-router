@@ -12,10 +12,10 @@
 namespace Sunrise\Http\Router\Exception;
 
 /**
- * InvalidReferenceException
+ * ResolvingParameterException
  *
  * @since 3.0.0
  */
-class InvalidReferenceException extends LogicException
+class ResolvingParameterException extends ResolvingException
 {
 }

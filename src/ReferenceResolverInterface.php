@@ -17,7 +17,7 @@ namespace Sunrise\Http\Router;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Exception\ReferenceResolvingException;
+use Sunrise\Http\Router\Exception\ResolvingReferenceException;
 
 /**
  * ReferenceResolverInterface
@@ -37,7 +37,7 @@ interface ReferenceResolverInterface
     public function setContainer(?ContainerInterface $container): void;
 
     /**
-     * Adds the given parameter resolver(s) to the parameter resolutioner
+     * Adds the given parameter resolver(s) to the resolver
      *
      * @param ParameterResolverInterface ...$resolvers
      *
@@ -48,7 +48,7 @@ interface ReferenceResolverInterface
     public function addParameterResolver(ParameterResolverInterface ...$resolvers): void;
 
     /**
-     * Adds the given response resolver(s) to the response resolutioner
+     * Adds the given response resolver(s) to the resolver
      *
      * @param ResponseResolverInterface ...$resolvers
      *
@@ -65,7 +65,7 @@ interface ReferenceResolverInterface
      *
      * @return RequestHandlerInterface
      *
-     * @throws ReferenceResolvingException
+     * @throws ResolvingReferenceException
      *         If the reference cannot be resolved to a request handler.
      */
     public function resolveRequestHandler($reference): RequestHandlerInterface;
@@ -77,7 +77,7 @@ interface ReferenceResolverInterface
      *
      * @return MiddlewareInterface
      *
-     * @throws ReferenceResolvingException
+     * @throws ResolvingReferenceException
      *         If the reference cannot be resolved to a middleware.
      */
     public function resolveMiddleware($reference): MiddlewareInterface;
@@ -89,7 +89,7 @@ interface ReferenceResolverInterface
      *
      * @return list<MiddlewareInterface>
      *
-     * @throws ReferenceResolvingException
+     * @throws ResolvingReferenceException
      *         If one of the references cannot be resolved to a middleware.
      *
      * @since 3.0.0
