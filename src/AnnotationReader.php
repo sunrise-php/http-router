@@ -14,8 +14,6 @@ namespace Sunrise\Http\Router;
 /**
  * Import classes
  */
-use Doctrine\Common\Annotations\AnnotationReader as DoctrineAnnotationReader;
-use Doctrine\Common\Annotations\Reader as DoctrineAnnotationReaderInterface;
 use Sunrise\Http\Router\Exception\LogicException;
 use ReflectionAttribute;
 use ReflectionClass;
@@ -26,6 +24,7 @@ use Reflector;
  * Import functions
  */
 use function class_exists;
+use function sprintf;
 
 /**
  * Import constants
@@ -41,24 +40,24 @@ final class AnnotationReader
 {
 
     /**
-     * @var DoctrineAnnotationReaderInterface|null
+     * @var \Doctrine\Common\Annotations\Reader|null
      */
-    private ?DoctrineAnnotationReaderInterface $annotationReader = null;
+    private ?\Doctrine\Common\Annotations\Reader $annotationReader = null;
 
     /**
      * Sets the given annotation reader to the reader
      *
-     * @param DoctrineAnnotationReaderInterface|null $annotationReader
+     * @param \Doctrine\Common\Annotations\Reader|null $annotationReader
      *
      * @return void
      */
-    public function setAnnotationReader(?DoctrineAnnotationReaderInterface $annotationReader): void
+    public function setAnnotationReader(?\Doctrine\Common\Annotations\Reader $annotationReader): void
     {
         $this->annotationReader = $annotationReader;
     }
 
     /**
-     * Sets the default annotation reader to the reader
+     * Uses the default annotation reader
      *
      * @return void
      *
@@ -67,33 +66,64 @@ final class AnnotationReader
      */
     public function useDefaultAnnotationReader(): void
     {
-        if (!class_exists(DoctrineAnnotationReader::class)) {
+        if (!class_exists(\Doctrine\Common\Annotations\AnnotationReader::class)) {
             throw new LogicException(
                 'The annotations reading logic requires an uninstalled "doctrine/annotations" package, ' .
                 'run the command "composer install doctrine/annotations" and try again'
             );
         }
 
-        $this->setAnnotationReader(new DoctrineAnnotationReader());
+        $this->setAnnotationReader(new \Doctrine\Common\Annotations\AnnotationReader());
     }
 
     /**
-     * Gets annotations by the given name from the given class or method
+     * Gets annotations from the given class or method by the given annotation name
      *
      * @param ReflectionClass|ReflectionMethod $classOrMethod
      * @param class-string<T> $annotationName
      *
      * @return list<T>
      *
+     * @throws LogicException
+     *         If the given reflection isn't supported.
+     *
+     * @psalm-suppress RedundantConditionGivenDocblockType
+     *
      * @template T
      */
-    public function getAnnotations(Reflector $classOrMethod, string $annotationName): array
+    public function getClassOrMethodAnnotations(Reflector $classOrMethod, string $annotationName): array
+    {
+        if ($classOrMethod instanceof ReflectionClass) {
+            return $this->getClassAnnotations($classOrMethod, $annotationName);
+        }
+
+        if ($classOrMethod instanceof ReflectionMethod) {
+            return $this->getMethodAnnotations($classOrMethod, $annotationName);
+        }
+
+        throw new LogicException(sprintf(
+            'The %s method only handles class or method reflection',
+            __METHOD__
+        ));
+    }
+
+    /**
+     * Gets annotations from the given class by the given annotation name
+     *
+     * @param ReflectionClass $class
+     * @param class-string<T> $annotationName
+     *
+     * @return list<T>
+     *
+     * @template T
+     */
+    public function getClassAnnotations(ReflectionClass $class, string $annotationName): array
     {
         $result = [];
 
         if (PHP_MAJOR_VERSION === 8) {
             /** @var ReflectionAttribute[] */
-            $attributes = $classOrMethod->getAttributes($annotationName);
+            $attributes = $class->getAttributes($annotationName);
             foreach ($attributes as $attribute) {
                 /** @var T */
                 $result[] = $attribute->newInstance();
@@ -101,10 +131,42 @@ final class AnnotationReader
         }
 
         if (isset($this->annotationReader)) {
-            $annotations = ($classOrMethod instanceof ReflectionClass) ?
-                $this->annotationReader->getClassAnnotations($classOrMethod) :
-                $this->annotationReader->getMethodAnnotations($classOrMethod);
+            $annotations = $this->annotationReader->getClassAnnotations($class);
+            foreach ($annotations as $annotation) {
+                if ($annotation instanceof $annotationName) {
+                    $result[] = $annotation;
+                }
+            }
+        }
 
+        return $result;
+    }
+
+    /**
+     * Gets annotations from the given method by the given annotation name
+     *
+     * @param ReflectionMethod $method
+     * @param class-string<T> $annotationName
+     *
+     * @return list<T>
+     *
+     * @template T
+     */
+    public function getMethodAnnotations(ReflectionMethod $method, string $annotationName): array
+    {
+        $result = [];
+
+        if (PHP_MAJOR_VERSION === 8) {
+            /** @var ReflectionAttribute[] */
+            $attributes = $method->getAttributes($annotationName);
+            foreach ($attributes as $attribute) {
+                /** @var T */
+                $result[] = $attribute->newInstance();
+            }
+        }
+
+        if (isset($this->annotationReader)) {
+            $annotations = $this->annotationReader->getMethodAnnotations($method);
             foreach ($annotations as $annotation) {
                 if ($annotation instanceof $annotationName) {
                     $result[] = $annotation;

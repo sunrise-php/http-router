@@ -14,7 +14,6 @@ namespace Sunrise\Http\Router\Loader;
 /**
  * Import classes
  */
-use Doctrine\Common\Annotations\Reader as AnnotationReaderInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\SimpleCache\CacheInterface;
@@ -34,24 +33,19 @@ use Sunrise\Http\Router\RouteCollectionFactoryInterface;
 use Sunrise\Http\Router\RouteCollectionInterface;
 use Sunrise\Http\Router\RouteFactory;
 use Sunrise\Http\Router\RouteFactoryInterface;
-use Iterator;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 use ReflectionClass;
 use ReflectionMethod;
 use Reflector;
-use SplFileInfo;
 
 /**
  * Import functions
  */
-use function array_diff;
 use function class_exists;
-use function get_declared_classes;
 use function hash;
 use function is_dir;
 use function is_string;
 use function usort;
+use function Sunrise\Http\Router\get_directory_classes;
 
 /**
  * Import constants
@@ -165,13 +159,13 @@ final class DescriptorLoader implements LoaderInterface
     /**
      * Sets the given annotation reader to the descriptor loader
      *
-     * @param AnnotationReaderInterface|null $annotationReader
+     * @param \Doctrine\Common\Annotations\Reader|null $annotationReader
      *
      * @return void
      *
      * @since 3.0.0
      */
-    public function setAnnotationReader(?AnnotationReaderInterface $annotationReader): void
+    public function setAnnotationReader(?\Doctrine\Common\Annotations\Reader $annotationReader): void
     {
         $this->annotationReader->setAnnotationReader($annotationReader);
     }
@@ -248,7 +242,7 @@ final class DescriptorLoader implements LoaderInterface
         }
 
         if (is_dir($resource)) {
-            $classnames = $this->scandir($resource);
+            $classnames = get_directory_classes($resource);
             foreach ($classnames as $classname) {
                 $this->resources[] = $classname;
             }
@@ -361,7 +355,7 @@ final class DescriptorLoader implements LoaderInterface
         $result = [];
 
         if ($class->isSubclassOf(RequestHandlerInterface::class)) {
-            $annotations = $this->annotationReader->getAnnotations($class, Route::class);
+            $annotations = $this->annotationReader->getClassAnnotations($class, Route::class);
             if (isset($annotations[0])) {
                 $descriptor = $annotations[0];
                 $descriptor->holder = $class->getName();
@@ -376,7 +370,7 @@ final class DescriptorLoader implements LoaderInterface
                 continue;
             }
 
-            $annotations = $this->annotationReader->getAnnotations($method, Route::class);
+            $annotations = $this->annotationReader->getMethodAnnotations($method, Route::class);
             if (isset($annotations[0])) {
                 $descriptor = $annotations[0];
                 $descriptor->holder = [$class->getName(), $method->getName()];
@@ -399,50 +393,24 @@ final class DescriptorLoader implements LoaderInterface
      */
     private function supplementDescriptor(Route $descriptor, Reflector $classOrMethod): void
     {
-        $annotations = $this->annotationReader->getAnnotations($classOrMethod, Host::class);
+        $annotations = $this->annotationReader->getClassOrMethodAnnotations($classOrMethod, Host::class);
         if (isset($annotations[0])) {
             $descriptor->host = $annotations[0]->value;
         }
 
-        $annotations = $this->annotationReader->getAnnotations($classOrMethod, Prefix::class);
+        $annotations = $this->annotationReader->getClassOrMethodAnnotations($classOrMethod, Prefix::class);
         if (isset($annotations[0])) {
             $descriptor->path = $annotations[0]->value . $descriptor->path;
         }
 
-        $annotations = $this->annotationReader->getAnnotations($classOrMethod, Postfix::class);
+        $annotations = $this->annotationReader->getClassOrMethodAnnotations($classOrMethod, Postfix::class);
         if (isset($annotations[0])) {
             $descriptor->path = $descriptor->path . $annotations[0]->value;
         }
 
-        $annotations = $this->annotationReader->getAnnotations($classOrMethod, Middleware::class);
+        $annotations = $this->annotationReader->getClassOrMethodAnnotations($classOrMethod, Middleware::class);
         foreach ($annotations as $annotation) {
             $descriptor->middlewares[] = $annotation->value;
         }
-    }
-
-    /**
-     * Scans the given directory and returns the found classes
-     *
-     * @param string $directory
-     *
-     * @return class-string[]
-     */
-    private function scandir(string $directory): array
-    {
-        $known = get_declared_classes();
-
-        /** @var Iterator<SplFileInfo> */
-        $files = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($directory)
-        );
-
-        foreach ($files as $file) {
-            if ('php' === $file->getExtension()) {
-                /** @psalm-suppress UnresolvableInclude */
-                require_once $file->getPathname();
-            }
-        }
-
-        return array_diff(get_declared_classes(), $known);
     }
 }

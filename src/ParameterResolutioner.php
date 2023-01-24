@@ -149,8 +149,10 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
      *
      * @return string
      */
-    private function stringifyMethodParameter(ReflectionMethod $method, ReflectionParameter $parameter): string
-    {
+    private function stringifyMethodParameter(
+        ReflectionMethod $method,
+        ReflectionParameter $parameter
+    ) : string {
         return sprintf(
             '%s::%s($%s[%d])',
             $method->getDeclaringClass()->getName(),
@@ -168,8 +170,10 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
      *
      * @return string
      */
-    private function stringifyFunctionParameter(ReflectionFunctionAbstract $function, ReflectionParameter $parameter): string
-    {
+    private function stringifyFunctionParameter(
+        ReflectionFunctionAbstract $function,
+        ReflectionParameter $parameter
+    ) : string {
         return sprintf(
             '%s($%s[%d])',
             $function->getName(),
