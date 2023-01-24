@@ -83,7 +83,21 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
 
         throw new ResolvingResponseException(sprintf(
             'Unable to resolve the response {%s}',
-            get_debug_type($response)
+            $this->stringifyResponse($response)
         ));
+    }
+
+    /**
+     * Stringifies the given raw response
+     *
+     * @param mixed $response
+     *
+     * @return string
+     *
+     * @todo Think about how to display the responder...
+     */
+    private function stringifyResponse($response): string
+    {
+        return get_debug_type($response);
     }
 }
