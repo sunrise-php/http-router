@@ -27,28 +27,28 @@ class RouteCollector
      *
      * @var RouteCollectionFactoryInterface
      */
-    private $collectionFactory;
+    private RouteCollectionFactoryInterface $collectionFactory;
 
     /**
      * Route factory of the collector
      *
      * @var RouteFactoryInterface
      */
-    private $routeFactory;
+    private RouteFactoryInterface $routeFactory;
 
     /**
      * Reference resolver of the collector
      *
      * @var ReferenceResolverInterface
      */
-    private $referenceResolver;
+    private ReferenceResolverInterface $referenceResolver;
 
     /**
      * Route collection of the collector
      *
      * @var RouteCollectionInterface
      */
-    private $collection;
+    private RouteCollectionInterface $collection;
 
     /**
      * Constructor of the class
@@ -84,7 +84,35 @@ class RouteCollector
     }
 
     /**
-     * Gets the collector collection
+     * Adds the given parameter resolver(s) to the collector
+     *
+     * @param ParameterResolverInterface ...$resolvers
+     *
+     * @return void
+     *
+     * @since 3.0.0
+     */
+    public function addParameterResolver(ParameterResolverInterface ...$resolvers): void
+    {
+        $this->referenceResolver->addParameterResolver(...$resolvers);
+    }
+
+    /**
+     * Adds the given response resolver(s) to the collector
+     *
+     * @param ResponseResolverInterface ...$resolvers
+     *
+     * @return void
+     *
+     * @since 3.0.0
+     */
+    public function addResponseResolver(ResponseResolverInterface ...$resolvers): void
+    {
+        $this->referenceResolver->addResponseResolver(...$resolvers);
+    }
+
+    /**
+     * Gets the collector's route collection
      *
      * @return RouteCollectionInterface
      */
@@ -100,7 +128,7 @@ class RouteCollector
      * @param string $path
      * @param list<string> $methods
      * @param mixed $requestHandler
-     * @param array $middlewares
+     * @param array<array-key, mixed> $middlewares
      * @param array<string, mixed> $attributes
      *
      * @return RouteInterface
@@ -133,7 +161,7 @@ class RouteCollector
      * @param string $name
      * @param string $path
      * @param mixed $requestHandler
-     * @param array $middlewares
+     * @param array<array-key, mixed> $middlewares
      * @param array<string, mixed> $attributes
      *
      * @return RouteInterface
@@ -161,7 +189,7 @@ class RouteCollector
      * @param string $name
      * @param string $path
      * @param mixed $requestHandler
-     * @param array $middlewares
+     * @param array<array-key, mixed> $middlewares
      * @param array<string, mixed> $attributes
      *
      * @return RouteInterface
@@ -189,7 +217,7 @@ class RouteCollector
      * @param string $name
      * @param string $path
      * @param mixed $requestHandler
-     * @param array $middlewares
+     * @param array<array-key, mixed> $middlewares
      * @param array<string, mixed> $attributes
      *
      * @return RouteInterface
@@ -217,7 +245,7 @@ class RouteCollector
      * @param string $name
      * @param string $path
      * @param mixed $requestHandler
-     * @param array $middlewares
+     * @param array<array-key, mixed> $middlewares
      * @param array<string, mixed> $attributes
      *
      * @return RouteInterface
@@ -245,7 +273,7 @@ class RouteCollector
      * @param string $name
      * @param string $path
      * @param mixed $requestHandler
-     * @param array $middlewares
+     * @param array<array-key, mixed> $middlewares
      * @param array<string, mixed> $attributes
      *
      * @return RouteInterface
@@ -273,7 +301,7 @@ class RouteCollector
      * @param string $name
      * @param string $path
      * @param mixed $requestHandler
-     * @param array $middlewares
+     * @param array<array-key, mixed> $middlewares
      * @param array<string, mixed> $attributes
      *
      * @return RouteInterface
@@ -301,7 +329,7 @@ class RouteCollector
      * @param string $name
      * @param string $path
      * @param mixed $requestHandler
-     * @param array $middlewares
+     * @param array<array-key, mixed> $middlewares
      * @param array<string, mixed> $attributes
      *
      * @return RouteInterface
@@ -327,7 +355,7 @@ class RouteCollector
      * Route grouping logic
      *
      * @param callable $callback
-     * @param array $middlewares
+     * @param array<array-key, mixed> $middlewares
      *
      * @return RouteCollectionInterface
      */

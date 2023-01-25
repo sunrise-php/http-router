@@ -32,11 +32,11 @@ final class RouteResponseResolver implements ResponseResolverInterface
      */
     public function supportsResponse($response, $context): bool
     {
-        if (!($response instanceof RouteInterface)) {
+        if (!($context instanceof ServerRequestInterface)) {
             return false;
         }
 
-        if (!($context instanceof ServerRequestInterface)) {
+        if (!($response instanceof RouteInterface)) {
             return false;
         }
 
