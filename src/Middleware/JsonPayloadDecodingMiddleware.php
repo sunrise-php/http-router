@@ -52,8 +52,11 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         if ($this->supportsRequest($request)) {
-            $data = $this->decodeRequestJsonPayload($request);
-            $request = $request->withParsedBody($data);
+            return $handler->handle(
+                $request->withParsedBody(
+                    $this->decodeRequestPayload($request)
+                )
+            );
         }
 
         return $handler->handle($request);
@@ -70,7 +73,7 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
      */
     private function supportsRequest(ServerRequestInterface $request): bool
     {
-        return 'application/json' === $this->getRequestMediaType($request);
+        return $this->getRequestMediaType($request) === 'application/json';
     }
 
     /**
@@ -101,16 +104,16 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
     }
 
     /**
-     * Tries to decode the given request's JSON payload
+     * Tries to decode the given request's payload
      *
      * @param ServerRequestInterface $request
      *
      * @return array|null
      *
      * @throws InvalidRequestPayloadException
-     *         If the request's "JSON" payload cannot be decoded.
+     *         If the request's payload cannot be decoded.
      */
-    private function decodeRequestJsonPayload(ServerRequestInterface $request): ?array
+    private function decodeRequestPayload(ServerRequestInterface $request): ?array
     {
         // https://www.php.net/json.constants
         $flags = JSON_BIGINT_AS_STRING | JSON_OBJECT_AS_ARRAY | JSON_THROW_ON_ERROR;

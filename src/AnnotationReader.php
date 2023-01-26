@@ -14,6 +14,7 @@ namespace Sunrise\Http\Router;
 /**
  * Import classes
  */
+use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\LogicException;
 use ReflectionAttribute;
 use ReflectionClass;
@@ -84,7 +85,7 @@ final class AnnotationReader
      *
      * @return list<T>
      *
-     * @throws LogicException
+     * @throws InvalidArgumentException
      *         If the given reflection isn't supported.
      *
      * @psalm-suppress RedundantConditionGivenDocblockType
@@ -101,7 +102,7 @@ final class AnnotationReader
             return $this->getMethodAnnotations($classOrMethod, $annotationName);
         }
 
-        throw new LogicException(sprintf(
+        throw new InvalidArgumentException(sprintf(
             'The %s method only handles class or method reflection',
             __METHOD__
         ));

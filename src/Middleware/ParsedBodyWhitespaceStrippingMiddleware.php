@@ -28,11 +28,11 @@ use function is_string;
 use function trim;
 
 /**
- * WhitespaceStrippingMiddleware
+ * ParsedBodyWhitespaceStrippingMiddleware
  *
  * @since 3.0.0
  */
-final class WhitespaceStrippingMiddleware implements MiddlewareInterface
+final class ParsedBodyWhitespaceStrippingMiddleware implements MiddlewareInterface
 {
 
     /**
@@ -42,20 +42,21 @@ final class WhitespaceStrippingMiddleware implements MiddlewareInterface
     {
         $parsedBody = $request->getParsedBody();
 
-        if (!empty($parsedBody) && is_array($parsedBody)) {
-
-            /** @psalm-suppress MissingClosureParamType, MixedAssignment */
-            $walker = static function (&$value): void {
-                if (is_string($value)) {
-                    $value = trim($value);
-                }
-            };
-
-            array_walk_recursive($parsedBody, $walker);
-
-            $request = $request->withParsedBody($parsedBody);
+        if (empty($parsedBody) || !is_array($parsedBody)) {
+            return $handler->handle($request);
         }
 
-        return $handler->handle($request);
+        /** @psalm-suppress MissingClosureParamType, MixedAssignment */
+        $walker = static function (&$value): void {
+            if (is_string($value)) {
+                $value = trim($value);
+            }
+        };
+
+        array_walk_recursive($parsedBody, $walker);
+
+        return $handler->handle(
+            $request->withParsedBody($parsedBody)
+        );
     }
 }

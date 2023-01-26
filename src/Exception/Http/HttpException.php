@@ -14,7 +14,7 @@ namespace Sunrise\Http\Router\Exception\Http;
 /**
  * Import classes
  */
-use Exception;
+use RuntimeException;
 use Throwable;
 
 /**
@@ -22,7 +22,7 @@ use Throwable;
  *
  * @since 3.0.0
  */
-class HttpException extends Exception implements HttpExceptionInterface
+class HttpException extends RuntimeException implements HttpExceptionInterface
 {
 
     /**

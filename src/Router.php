@@ -42,15 +42,8 @@ use function sprintf;
 /**
  * Router
  */
-class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMethodInterface
+class Router implements RequestHandlerInterface, RequestMethodInterface
 {
-
-    /**
-     * Server Request attribute name for routing error instance
-     *
-     * @var string
-     */
-    public const ATTR_NAME_FOR_ROUTING_ERROR = '@routing-error';
 
     /**
      * Global patterns
@@ -529,18 +522,6 @@ class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMet
         $handler->add(...$middlewares);
 
         return $handler->handle($request);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
-    {
-        try {
-            return $this->handle($request);
-        } catch (PageNotFoundException|MethodNotAllowedException $e) {
-            return $handler->handle($request->withAttribute(self::ATTR_NAME_FOR_ROUTING_ERROR, $e));
-        }
     }
 
     /**

@@ -14,7 +14,6 @@ namespace Sunrise\Http\Router;
 /**
  * Import classes
  */
-use Psr\Container\ContainerInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Exception\ResolvingReferenceException;
@@ -26,37 +25,6 @@ use Sunrise\Http\Router\Exception\ResolvingReferenceException;
  */
 interface ReferenceResolverInterface
 {
-
-    /**
-     * Sets the given container to the resolver
-     *
-     * @param ContainerInterface|null $container
-     *
-     * @return void
-     */
-    public function setContainer(?ContainerInterface $container): void;
-
-    /**
-     * Adds the given parameter resolver(s) to the resolver
-     *
-     * @param ParameterResolverInterface ...$resolvers
-     *
-     * @return void
-     *
-     * @since 3.0.0
-     */
-    public function addParameterResolver(ParameterResolverInterface ...$resolvers): void;
-
-    /**
-     * Adds the given response resolver(s) to the resolver
-     *
-     * @param ResponseResolverInterface ...$resolvers
-     *
-     * @return void
-     *
-     * @since 3.0.0
-     */
-    public function addResponseResolver(ResponseResolverInterface ...$resolvers): void;
 
     /**
      * Resolves the given reference to a request handler

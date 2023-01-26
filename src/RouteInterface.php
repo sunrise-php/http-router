@@ -14,6 +14,7 @@ namespace Sunrise\Http\Router;
 /**
  * Import classes
  */
+use Fig\Http\Message\RequestMethodInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use ReflectionClass;
@@ -24,7 +25,7 @@ use Reflector;
 /**
  * RouteInterface
  */
-interface RouteInterface extends RequestHandlerInterface
+interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
 {
 
     /**

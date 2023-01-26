@@ -23,10 +23,16 @@ use Sunrise\Http\Router\Annotation\Postfix;
 use Sunrise\Http\Router\Annotation\Prefix;
 use Sunrise\Http\Router\Annotation\Route;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
+use Sunrise\Http\Router\Exception\LogicException;
+use Sunrise\Http\Router\ParameterResolver\DependencyInjectionParameterResolver;
 use Sunrise\Http\Router\AnnotationReader;
+use Sunrise\Http\Router\ParameterResolutioner;
+use Sunrise\Http\Router\ParameterResolutionerInterface;
 use Sunrise\Http\Router\ParameterResolverInterface;
 use Sunrise\Http\Router\ReferenceResolver;
 use Sunrise\Http\Router\ReferenceResolverInterface;
+use Sunrise\Http\Router\ResponseResolutioner;
+use Sunrise\Http\Router\ResponseResolutionerInterface;
 use Sunrise\Http\Router\ResponseResolverInterface;
 use Sunrise\Http\Router\RouteCollectionFactory;
 use Sunrise\Http\Router\RouteCollectionFactoryInterface;
@@ -79,6 +85,16 @@ final class DescriptorLoader implements LoaderInterface
     private ReferenceResolverInterface $referenceResolver;
 
     /**
+     * @var ParameterResolutionerInterface|null
+     */
+    private ?ParameterResolutionerInterface $parameterResolutioner = null;
+
+    /**
+     * @var ResponseResolutionerInterface|null
+     */
+    private ?ResponseResolutionerInterface $responseResolutioner = null;
+
+    /**
      * @var AnnotationReader
      */
     private AnnotationReader $annotationReader;
@@ -99,15 +115,26 @@ final class DescriptorLoader implements LoaderInterface
      * @param RouteCollectionFactoryInterface|null $collectionFactory
      * @param RouteFactoryInterface|null $routeFactory
      * @param ReferenceResolverInterface|null $referenceResolver
+     * @param ParameterResolutionerInterface|null $parameterResolutioner
+     * @param ResponseResolutionerInterface|null $responseResolutioner
      */
     public function __construct(
         ?RouteCollectionFactoryInterface $collectionFactory = null,
         ?RouteFactoryInterface $routeFactory = null,
-        ?ReferenceResolverInterface $referenceResolver = null
+        ?ReferenceResolverInterface $referenceResolver = null,
+        ?ParameterResolutionerInterface $parameterResolutioner = null,
+        ?ResponseResolutionerInterface $responseResolutioner = null
     ) {
         $this->collectionFactory = $collectionFactory ?? new RouteCollectionFactory();
         $this->routeFactory = $routeFactory ?? new RouteFactory();
-        $this->referenceResolver = $referenceResolver ?? new ReferenceResolver();
+
+        $this->parameterResolutioner = $parameterResolutioner;
+        $this->responseResolutioner = $responseResolutioner;
+
+        $this->referenceResolver = $referenceResolver ?? new ReferenceResolver(
+            $this->parameterResolutioner ??= new ParameterResolutioner(),
+            $this->responseResolutioner ??= new ResponseResolutioner()
+        );
 
         $this->annotationReader = new AnnotationReader();
 
@@ -117,43 +144,75 @@ final class DescriptorLoader implements LoaderInterface
     }
 
     /**
-     * Sets the given container to the reference resolver
+     * Sets the given container to the parameter resolutioner
      *
-     * @param ContainerInterface|null $container
+     * @param ContainerInterface $container
      *
      * @return void
+     *
+     * @throws LogicException
+     *         If a custom reference resolver was setted.
      */
-    public function setContainer(?ContainerInterface $container): void
+    public function setContainer(ContainerInterface $container): void
     {
-        $this->referenceResolver->setContainer($container);
+        if (!isset($this->parameterResolutioner)) {
+            throw new LogicException(
+                'The descriptor route loader cannot accept the container ' .
+                'because a custom reference resolver was setted'
+            );
+        }
+
+        $this->parameterResolutioner->addResolver(
+            new DependencyInjectionParameterResolver($container)
+        );
     }
 
     /**
-     * Adds the given parameter resolver(s) to the reference resolver
+     * Adds the given parameter resolver(s) to the parameter resolutioner
      *
      * @param ParameterResolverInterface ...$resolvers
      *
      * @return void
      *
+     * @throws LogicException
+     *         If a custom reference resolver was setted.
+     *
      * @since 3.0.0
      */
     public function addParameterResolver(ParameterResolverInterface ...$resolvers): void
     {
-        $this->referenceResolver->addParameterResolver(...$resolvers);
+        if (!isset($this->parameterResolutioner)) {
+            throw new LogicException(
+                'The descriptor route loader cannot accept the parameter resolver ' .
+                'because a custom reference resolver was setted'
+            );
+        }
+
+        $this->parameterResolutioner->addResolver(...$resolvers);
     }
 
     /**
-     * Adds the given response resolver(s) to the reference resolver
+     * Adds the given response resolver(s) to the response resolutioner
      *
      * @param ResponseResolverInterface ...$resolvers
      *
      * @return void
      *
+     * @throws LogicException
+     *         If a custom reference resolver was setted.
+     *
      * @since 3.0.0
      */
     public function addResponseResolver(ResponseResolverInterface ...$resolvers): void
     {
-        $this->referenceResolver->addResponseResolver(...$resolvers);
+        if (!isset($this->responseResolutioner)) {
+            throw new LogicException(
+                'The descriptor route loader cannot accept the response resolver ' .
+                'because a custom reference resolver was setted'
+            );
+        }
+
+        $this->responseResolutioner->addResolver(...$resolvers);
     }
 
     /**

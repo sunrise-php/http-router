@@ -14,15 +14,12 @@ namespace Sunrise\Http\Router;
 /**
  * Import classes
  */
-use Psr\Container\ContainerInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\Exception\ResolvingReferenceException;
 use Sunrise\Http\Router\Middleware\CallableMiddleware;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Closure;
-use ReflectionClass;
 
 /**
  * Import functions
@@ -57,48 +54,29 @@ final class ReferenceResolver implements ReferenceResolverInterface
     private ResponseResolutionerInterface $responseResolutioner;
 
     /**
-     * The resolver's container
+     * The resolver's class resolver
      *
-     * @var ContainerInterface|null
+     * @var ClassResolverInterface
      */
-    private ?ContainerInterface $container = null;
+    private ClassResolverInterface $classResolver;
 
     /**
      * Constructor of the class
      *
-     * @param ParameterResolutionerInterface|null $parameterResolutioner
-     * @param ResponseResolutionerInterface|null $responseResolutioner
+     * @param ParameterResolutionerInterface $parameterResolutioner
+     * @param ResponseResolutionerInterface $responseResolutioner
+     * @param ClassResolverInterface|null $classResolver
      */
     public function __construct(
-        ?ParameterResolutionerInterface $parameterResolutioner = null,
-        ?ResponseResolutionerInterface $responseResolutioner = null
+        ParameterResolutionerInterface $parameterResolutioner,
+        ResponseResolutionerInterface $responseResolutioner,
+        ?ClassResolverInterface $classResolver = null
     ) {
-        $this->parameterResolutioner = $parameterResolutioner ?? new ParameterResolutioner();
-        $this->responseResolutioner = $responseResolutioner ?? new ResponseResolutioner();
-    }
+        $classResolver ??= new ClassResolver($parameterResolutioner);
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setContainer(?ContainerInterface $container): void
-    {
-        $this->container = $container;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function addParameterResolver(ParameterResolverInterface ...$resolvers): void
-    {
-        $this->parameterResolutioner->addResolver(...$resolvers);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function addResponseResolver(ResponseResolverInterface ...$resolvers): void
-    {
-        $this->responseResolutioner->addResolver(...$resolvers);
+        $this->parameterResolutioner = $parameterResolutioner;
+        $this->responseResolutioner = $responseResolutioner;
+        $this->classResolver = $classResolver;
     }
 
     /**
@@ -119,14 +97,18 @@ final class ReferenceResolver implements ReferenceResolverInterface
         if (is_array($reference) && is_callable($reference, true) && method_exists($reference[0], $reference[1])) {
             /** @var array{0: class-string|object, 1: non-empty-string} $reference */
 
-            $callback = [is_string($reference[0]) ? $this->resolveClass($reference[0]) : $reference[0], $reference[1]];
+            $object = is_string($reference[0]) ? $this->classResolver->resolveClass($reference[0]) : $reference[0];
 
-            return new CallableRequestHandler($callback, $this->parameterResolutioner, $this->responseResolutioner);
+            return new CallableRequestHandler(
+                [$object, $reference[1]],
+                $this->parameterResolutioner,
+                $this->responseResolutioner
+            );
         }
 
         if (is_string($reference) && is_subclass_of($reference, RequestHandlerInterface::class)) {
             /** @var RequestHandlerInterface */
-            return $this->resolveClass($reference);
+            return $this->classResolver->resolveClass($reference);
         }
 
         throw new ResolvingReferenceException(sprintf(
@@ -153,14 +135,18 @@ final class ReferenceResolver implements ReferenceResolverInterface
         if (is_array($reference) && is_callable($reference, true) && method_exists($reference[0], $reference[1])) {
             /** @var array{0: class-string|object, 1: non-empty-string} $reference */
 
-            $callback = [is_string($reference[0]) ? $this->resolveClass($reference[0]) : $reference[0], $reference[1]];
+            $object = is_string($reference[0]) ? $this->classResolver->resolveClass($reference[0]) : $reference[0];
 
-            return new CallableMiddleware($callback, $this->parameterResolutioner, $this->responseResolutioner);
+            return new CallableMiddleware(
+                [$object, $reference[1]],
+                $this->parameterResolutioner,
+                $this->responseResolutioner
+            );
         }
 
         if (is_string($reference) && is_subclass_of($reference, MiddlewareInterface::class)) {
             /** @var MiddlewareInterface */
-            return $this->resolveClass($reference);
+            return $this->classResolver->resolveClass($reference);
         }
 
         throw new ResolvingReferenceException(sprintf(
@@ -181,43 +167,6 @@ final class ReferenceResolver implements ReferenceResolverInterface
         }
 
         return $middlewares;
-    }
-
-    /**
-     * Resolves the given class
-     *
-     * @param class-string<T> $class
-     *
-     * @return T
-     *
-     * @throws LogicException
-     *         If the class cannot be directly initialized.
-     *
-     * @template T
-     */
-    private function resolveClass(string $class): object
-    {
-        if (isset($this->container) && $this->container->has($class)) {
-            /** @var T */
-            return $this->container->get($class);
-        }
-
-        $reflection = new ReflectionClass($class);
-        if (!$reflection->isInstantiable()) {
-            throw new LogicException(sprintf(
-                'The class %s cannot be initialized',
-                $class
-            ));
-        }
-
-        $arguments = [];
-        $constructor = $reflection->getConstructor();
-        if (isset($constructor)) {
-            $arguments = $this->parameterResolutioner
-                ->resolveParameters(...$constructor->getParameters());
-        }
-
-        return $reflection->newInstance(...$arguments);
     }
 
     /**

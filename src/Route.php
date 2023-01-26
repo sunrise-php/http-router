@@ -218,11 +218,9 @@ class Route implements RouteInterface
      */
     public function getHolder(): Reflector
     {
-        if ($this->requestHandler instanceof CallableRequestHandler) {
-            return $this->requestHandler->getReflection();
-        }
-
-        return new ReflectionClass($this->requestHandler);
+        return ($this->requestHandler instanceof CallableRequestHandler) ?
+            $this->requestHandler->getReflection() :
+            new ReflectionClass($this->requestHandler);
     }
 
     /**
