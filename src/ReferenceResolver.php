@@ -46,6 +46,7 @@ final class ReferenceResolver implements ReferenceResolverInterface
      * @var ParameterResolutionerInterface
      */
     private ParameterResolutionerInterface $parameterResolutioner;
+
     /**
      * The resolver's response resolutioner
      *
