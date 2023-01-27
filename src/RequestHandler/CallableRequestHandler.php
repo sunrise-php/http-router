@@ -90,13 +90,11 @@ final class CallableRequestHandler implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $resolvers = [
-            new KnownTypeParameterResolver(ServerRequestInterface::class, $request),
-        ];
-
         $arguments = $this->parameterResolutioner
             ->withContext($request)
-            ->withPriorityResolver(...$resolvers)
+            ->withPriorityResolver(
+                new KnownTypeParameterResolver(ServerRequestInterface::class, $request)
+            )
             ->resolveParameters(...$this->getReflection()->getParameters());
 
         /** @var mixed */

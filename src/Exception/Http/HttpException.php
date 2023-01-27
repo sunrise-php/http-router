@@ -30,7 +30,7 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
      *
      * @var int
      */
-    private $statusCode;
+    private int $statusCode;
 
     /**
      * Constructor of the class

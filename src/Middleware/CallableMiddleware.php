@@ -93,14 +93,12 @@ final class CallableMiddleware implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $resolvers = [
-            new KnownTypeParameterResolver(ServerRequestInterface::class, $request),
-            new KnownTypeParameterResolver(RequestHandlerInterface::class, $handler),
-        ];
-
         $arguments = $this->parameterResolutioner
             ->withContext($request)
-            ->withPriorityResolver(...$resolvers)
+            ->withPriorityResolver(
+                new KnownTypeParameterResolver(ServerRequestInterface::class, $request),
+                new KnownTypeParameterResolver(RequestHandlerInterface::class, $handler)
+            )
             ->resolveParameters(...$this->getReflection()->getParameters());
 
         /** @var mixed */

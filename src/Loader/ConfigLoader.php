@@ -113,14 +113,16 @@ final class ConfigLoader implements LoaderInterface
      * @return void
      *
      * @throws LogicException
-     *         If a custom reference resolver was setted.
+     *         If a custom reference resolver was setted
+     *         and a parameter resolutioner was not passed.
      */
     public function setContainer(ContainerInterface $container): void
     {
         if (!isset($this->parameterResolutioner)) {
             throw new LogicException(
                 'The config route loader cannot accept the container ' .
-                'because a custom reference resolver was setted'
+                'because a custom reference resolver was setted ' .
+                'and a parameter resolutioner was not passed'
             );
         }
 
@@ -137,7 +139,8 @@ final class ConfigLoader implements LoaderInterface
      * @return void
      *
      * @throws LogicException
-     *         If a custom reference resolver was setted.
+     *         If a custom reference resolver was setted
+     *         and a parameter resolutioner was not passed.
      *
      * @since 3.0.0
      */
@@ -146,7 +149,8 @@ final class ConfigLoader implements LoaderInterface
         if (!isset($this->parameterResolutioner)) {
             throw new LogicException(
                 'The config route loader cannot accept the parameter resolver ' .
-                'because a custom reference resolver was setted'
+                'because a custom reference resolver was setted' .
+                'and a parameter resolutioner was not passed'
             );
         }
 
@@ -161,7 +165,8 @@ final class ConfigLoader implements LoaderInterface
      * @return void
      *
      * @throws LogicException
-     *         If a custom reference resolver was setted.
+     *         If a custom reference resolver was setted
+     *         and a response resolutioner was not passed.
      *
      * @since 3.0.0
      */
@@ -170,7 +175,8 @@ final class ConfigLoader implements LoaderInterface
         if (!isset($this->responseResolutioner)) {
             throw new LogicException(
                 'The config route loader cannot accept the response resolver ' .
-                'because a custom reference resolver was setted'
+                'because a custom reference resolver was setted' .
+                'and a response resolutioner was not passed'
             );
         }
 

@@ -29,7 +29,7 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
 {
 
     /**
-     * Request attribute name for the route instance
+     * Request attribute name for a route instance
      *
      * @var string
      *
@@ -63,7 +63,7 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
     /**
      * Gets the route methods
      *
-     * @return string[]
+     * @return list<string>
      */
     public function getMethods(): array;
 

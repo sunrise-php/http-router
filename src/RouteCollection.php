@@ -20,6 +20,7 @@ use Psr\Http\Server\MiddlewareInterface;
  * Import functions
  */
 use function array_merge;
+use function count;
 
 /**
  * RouteCollection
@@ -32,9 +33,9 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * The collection routes
      *
-     * @var list<RouteInterface>
+     * @var array<string, RouteInterface>
      */
-    private $routes = [];
+    private array $routes = [];
 
     /**
      * Constructor of the class
@@ -43,9 +44,7 @@ class RouteCollection implements RouteCollectionInterface
      */
     public function __construct(RouteInterface ...$routes)
     {
-        /** @var list<RouteInterface> $routes */
-
-        $this->routes = $routes;
+        $this->add(...$routes);
     }
 
     /**
@@ -53,7 +52,12 @@ class RouteCollection implements RouteCollectionInterface
      */
     public function all(): array
     {
-        return $this->routes;
+        $routes = [];
+        foreach ($this->routes as $route) {
+            $routes[] = $route;
+        }
+
+        return $routes;
     }
 
     /**
@@ -61,13 +65,7 @@ class RouteCollection implements RouteCollectionInterface
      */
     public function get(string $name): ?RouteInterface
     {
-        foreach ($this->routes as $route) {
-            if ($name === $route->getName()) {
-                return $route;
-            }
-        }
-
-        return null;
+        return $this->routes[$name] ?? null;
     }
 
     /**
@@ -75,7 +73,7 @@ class RouteCollection implements RouteCollectionInterface
      */
     public function has(string $name): bool
     {
-        return $this->get($name) instanceof RouteInterface;
+        return isset($this->routes[$name]);
     }
 
     /**
@@ -84,7 +82,7 @@ class RouteCollection implements RouteCollectionInterface
     public function add(RouteInterface ...$routes): RouteCollectionInterface
     {
         foreach ($routes as $route) {
-            $this->routes[] = $route;
+            $this->routes[$route->getName()] = $route;
         }
 
         return $this;
@@ -153,12 +151,32 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * {@inheritdoc}
      */
-    public function prependMiddleware(MiddlewareInterface ...$middlewares): RouteCollectionInterface
+    public function addPriorityMiddleware(MiddlewareInterface ...$middlewares): RouteCollectionInterface
     {
         foreach ($this->routes as $route) {
             $route->setMiddlewares(...array_merge($middlewares, $route->getMiddlewares()));
         }
 
         return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function addTag(string ...$tags): RouteCollectionInterface
+    {
+        foreach ($this->routes as $route) {
+            $route->addTag(...$tags);
+        }
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function count(): int
+    {
+        return count($this->routes);
     }
 }

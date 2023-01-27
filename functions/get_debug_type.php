@@ -9,7 +9,7 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
-if (PHP_MAJOR_VERSION < 8) {
+if (!function_exists('get_debug_type')) {
 
     /**
      * Polyfill for the get_debug_type function

@@ -477,17 +477,19 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     public function run(ServerRequestInterface $request): ResponseInterface
     {
         // lazy resolving of the given request...
-        $routing = new UnsafeCallableRequestHandler(function (ServerRequestInterface $request): ResponseInterface {
-            $this->matchedRoute = $this->match($request);
+        $routing = new UnsafeCallableRequestHandler(
+            function (ServerRequestInterface $request): ResponseInterface {
+                $this->matchedRoute = $this->match($request);
 
-            if (isset($this->eventDispatcher)) {
-                $this->eventDispatcher->dispatch(
-                    new RouteEvent($this->matchedRoute, $request)
-                );
+                if (isset($this->eventDispatcher)) {
+                    $this->eventDispatcher->dispatch(
+                        new RouteEvent($this->matchedRoute, $request)
+                    );
+                }
+
+                return $this->matchedRoute->handle($request);
             }
-
-            return $this->matchedRoute->handle($request);
-        });
+        );
 
         $middlewares = $this->getMiddlewares();
         if (empty($middlewares)) {

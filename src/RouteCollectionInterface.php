@@ -15,11 +15,12 @@ namespace Sunrise\Http\Router;
  * Import classes
  */
 use Psr\Http\Server\MiddlewareInterface;
+use Countable;
 
 /**
  * RouteCollectionInterface
  */
-interface RouteCollectionInterface
+interface RouteCollectionInterface extends Countable
 {
 
     /**
@@ -116,13 +117,24 @@ interface RouteCollectionInterface
     public function addMiddleware(MiddlewareInterface ...$middlewares): RouteCollectionInterface;
 
     /**
-     * Adds the given middleware(s) to the beginning of all routes in the collection
+     * Adds the given priority middleware(s) to all routes in the collection
      *
      * @param MiddlewareInterface ...$middlewares
      *
      * @return RouteCollectionInterface
      *
-     * @since 2.9.0
+     * @since 3.0.0
      */
-    public function prependMiddleware(MiddlewareInterface ...$middlewares): RouteCollectionInterface;
+    public function addPriorityMiddleware(MiddlewareInterface ...$middlewares): RouteCollectionInterface;
+
+    /**
+     * Adds the given tag(s) to all routes in the collection
+     *
+     * @param string ...$tags
+     *
+     * @return RouteCollectionInterface
+     *
+     * @since 3.0.0
+     */
+    public function addTag(string ...$tags): RouteCollectionInterface;
 }

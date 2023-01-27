@@ -103,6 +103,16 @@ class RouteCollector
     }
 
     /**
+     * Gets the collector's routes
+     *
+     * @return list<RouteInterface>
+     */
+    public function getRoutes(): array
+    {
+        return $this->collection->all();
+    }
+
+    /**
      * Sets the given container to the parameter resolutioner
      *
      * @param ContainerInterface $container
@@ -110,14 +120,16 @@ class RouteCollector
      * @return void
      *
      * @throws LogicException
-     *         If a custom reference resolver was setted.
+     *         If a custom reference resolver was setted
+     *         and a parameter resolutioner was not passed.
      */
     public function setContainer(ContainerInterface $container): void
     {
         if (!isset($this->parameterResolutioner)) {
             throw new LogicException(
                 'The route collector cannot accept the container ' .
-                'because a custom reference resolver was setted'
+                'because a custom reference resolver was setted ' .
+                'and a parameter resolutioner was not passed'
             );
         }
 
@@ -134,7 +146,8 @@ class RouteCollector
      * @return void
      *
      * @throws LogicException
-     *         If a custom reference resolver was setted.
+     *         If a custom reference resolver was setted
+     *         and a parameter resolutioner was not passed.
      *
      * @since 3.0.0
      */
@@ -143,7 +156,8 @@ class RouteCollector
         if (!isset($this->parameterResolutioner)) {
             throw new LogicException(
                 'The route collector cannot accept the parameter resolver ' .
-                'because a custom reference resolver was setted'
+                'because a custom reference resolver was setted ' .
+                'and a parameter resolutioner was not passed'
             );
         }
 
@@ -158,7 +172,8 @@ class RouteCollector
      * @return void
      *
      * @throws LogicException
-     *         If a custom reference resolver was setted.
+     *         If a custom reference resolver was setted
+     *         and a response resolutioner was not passed.
      *
      * @since 3.0.0
      */
@@ -167,7 +182,8 @@ class RouteCollector
         if (!isset($this->responseResolutioner)) {
             throw new LogicException(
                 'The route collector cannot accept the response resolver ' .
-                'because a custom reference resolver was setted'
+                'because a custom reference resolver was setted ' .
+                'and a response resolutioner was not passed'
             );
         }
 
@@ -424,13 +440,11 @@ class RouteCollector
 
         $callback($collector);
 
-        $collector->collection->prependMiddleware(
+        $collector->collection->addPriorityMiddleware(
             ...$this->referenceResolver->resolveMiddlewares($middlewares)
         );
 
-        $this->collection->add(
-            ...$collector->collection->all()
-        );
+        $this->collection->add(...$collector->collection->all());
 
         return $collector->collection;
     }
