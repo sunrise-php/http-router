@@ -149,7 +149,7 @@ final class ConfigLoader implements LoaderInterface
         if (!isset($this->parameterResolutioner)) {
             throw new LogicException(
                 'The config route loader cannot accept the parameter resolver ' .
-                'because a custom reference resolver was setted' .
+                'because a custom reference resolver was setted ' .
                 'and a parameter resolutioner was not passed'
             );
         }
@@ -175,7 +175,7 @@ final class ConfigLoader implements LoaderInterface
         if (!isset($this->responseResolutioner)) {
             throw new LogicException(
                 'The config route loader cannot accept the response resolver ' .
-                'because a custom reference resolver was setted' .
+                'because a custom reference resolver was setted ' .
                 'and a response resolutioner was not passed'
             );
         }
