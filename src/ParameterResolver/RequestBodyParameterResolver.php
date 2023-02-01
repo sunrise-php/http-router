@@ -18,11 +18,13 @@ use Psr\Http\Message\ServerRequestInterface;
 use Sunrise\Http\Router\Annotation\RequestBody;
 use Sunrise\Http\Router\Exception\InvalidRequestBodyException;
 use Sunrise\Http\Router\Exception\ResolvingParameterException;
+use Sunrise\Http\Router\Exception\UnprocessableRequestBodyException;
 use Sunrise\Http\Router\ParameterResolverInterface;
 use Sunrise\Http\Router\RequestBodyInterface;
 use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use ReflectionNamedType;
 use ReflectionParameter;
 
@@ -52,11 +54,18 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
     private HydratorInterface $hydrator;
 
     /**
-     * @param HydratorInterface $hydrator
+     * @var ValidatorInterface|null
      */
-    public function __construct(HydratorInterface $hydrator)
+    private ?ValidatorInterface $validator;
+
+    /**
+     * @param HydratorInterface $hydrator
+     * @param ValidatorInterface|null $validator
+     */
+    public function __construct(HydratorInterface $hydrator, ?ValidatorInterface $validator = null)
     {
         $this->hydrator = $hydrator;
+        $this->validator = $validator;
     }
 
     /**
@@ -94,7 +103,10 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
      *         If the object cannot be hydrated.
      *
      * @throws InvalidRequestBodyException
-     *         If the request body isn't valid.
+     *         If the request body structure isn't valid.
+     *
+     * @throws UnprocessableRequestBodyException
+     *         If the request body data isn't valid.
      */
     public function resolveParameter(ReflectionParameter $parameter, $context)
     {
@@ -105,11 +117,20 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
         $parameterType = $parameter->getType();
 
         try {
-            return $this->hydrator->hydrate($parameterType->getName(), (array) $context->getParsedBody());
+            $object = $this->hydrator->hydrate($parameterType->getName(), (array) $context->getParsedBody());
         } catch (InvalidObjectException $e) {
             throw new ResolvingParameterException($e->getMessage(), 0, $e);
         } catch (InvalidValueException $e) {
             throw new InvalidRequestBodyException($e->getMessage(), 0, $e);
         }
+
+        if (isset($this->validator)) {
+            $violations = $this->validator->validate($object);
+            if ($violations->count() > 0) {
+                throw new UnprocessableRequestBodyException($violations);
+            }
+        }
+
+        return $object;
     }
 }

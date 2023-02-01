@@ -42,7 +42,6 @@ interface ParameterResolverInterface
      * @param mixed $context
      *
      * @return mixed
-     *         The ready-to-pass argument.
      *
      * @throws ResolvingParameterException
      *         If the parameter cannot be resolved to an argument.

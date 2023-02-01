@@ -15,7 +15,6 @@ namespace Sunrise\Http\Router;
  * Import classes
  */
 use Sunrise\Http\Router\Exception\ResolvingParameterException;
-use ReflectionFunctionAbstract;
 use ReflectionMethod;
 use ReflectionParameter;
 
@@ -104,7 +103,6 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
      * @param ReflectionParameter $parameter
      *
      * @return mixed
-     *         The ready-to-pass argument.
      *
      * @throws ResolvingParameterException
      *         If the parameter cannot be resolved to an argument.
@@ -136,47 +134,19 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
      */
     private function stringifyParameter(ReflectionParameter $parameter): string
     {
-        return ($parameter->getDeclaringFunction() instanceof ReflectionMethod) ?
-            $this->stringifyMethodParameter($parameter->getDeclaringFunction(), $parameter) :
-            $this->stringifyFunctionParameter($parameter->getDeclaringFunction(), $parameter);
-    }
+        if ($parameter->getDeclaringFunction() instanceof ReflectionMethod) {
+            return sprintf(
+                '%s::%s($%s[%d])',
+                $parameter->getDeclaringFunction()->getDeclaringClass()->getName(),
+                $parameter->getDeclaringFunction()->getName(),
+                $parameter->getName(),
+                $parameter->getPosition()
+            );
+        }
 
-    /**
-     * Stringifies the given method parameter
-     *
-     * @param ReflectionMethod $method
-     * @param ReflectionParameter $parameter
-     *
-     * @return string
-     */
-    private function stringifyMethodParameter(
-        ReflectionMethod $method,
-        ReflectionParameter $parameter
-    ) : string {
-        return sprintf(
-            '%s::%s($%s[%d])',
-            $method->getDeclaringClass()->getName(),
-            $method->getName(),
-            $parameter->getName(),
-            $parameter->getPosition()
-        );
-    }
-
-    /**
-     * Stringifies the given function parameter
-     *
-     * @param ReflectionFunctionAbstract $function
-     * @param ReflectionParameter $parameter
-     *
-     * @return string
-     */
-    private function stringifyFunctionParameter(
-        ReflectionFunctionAbstract $function,
-        ReflectionParameter $parameter
-    ) : string {
         return sprintf(
             '%s($%s[%d])',
-            $function->getName(),
+            $parameter->getDeclaringFunction()->getName(),
             $parameter->getName(),
             $parameter->getPosition()
         );

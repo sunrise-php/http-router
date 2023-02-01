@@ -73,6 +73,18 @@ interface RouteCollectionInterface extends Countable
     public function setHost(string $host): RouteCollectionInterface;
 
     /**
+     * Sets the given attribute to all routes in the collection
+     *
+     * @param string $name
+     * @param mixed $value
+     *
+     * @return RouteCollectionInterface
+     *
+     * @since 3.0.0
+     */
+    public function setAttribute(string $name, $value): RouteCollectionInterface;
+
+    /**
      * Adds the given path prefix to all routes in the collection
      *
      * @param string $prefix

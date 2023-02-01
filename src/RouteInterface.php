@@ -77,7 +77,7 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
     /**
      * Gets the route middlewares
      *
-     * @return MiddlewareInterface[]
+     * @return list<MiddlewareInterface>
      */
     public function getMiddlewares(): array;
 
@@ -109,7 +109,7 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
     /**
      * Gets the route tags
      *
-     * @return string[]
+     * @return list<string>
      *
      * @since 2.4.0
      */
@@ -190,6 +190,18 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
     public function setAttributes(array $attributes): RouteInterface;
 
     /**
+     * Sets the given attribute to the route
+     *
+     * @param string $name
+     * @param mixed $value
+     *
+     * @return RouteInterface
+     *
+     * @since 3.0.0
+     */
+    public function setAttribute(string $name, $value): RouteInterface;
+
+    /**
      * Sets the given summary to the route
      *
      * @param string $summary
@@ -259,13 +271,24 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
     public function addMiddleware(MiddlewareInterface ...$middlewares): RouteInterface;
 
     /**
+     * Adds the given tag(s) to the route
+     *
+     * @param string ...$tags
+     *
+     * @return RouteInterface
+     *
+     * @since 3.0.0
+     */
+    public function addTag(string ...$tags): RouteInterface;
+
+    /**
      * Returns the route clone with the given attributes
      *
-     * This method MUST NOT change the state of the object.
+     * This method MUST NOT change the object state.
      *
      * @param array<string, mixed> $attributes
      *
-     * @return RouteInterface
+     * @return static
      */
     public function withAddedAttributes(array $attributes): RouteInterface;
 }

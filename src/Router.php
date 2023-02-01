@@ -15,6 +15,7 @@ namespace Sunrise\Http\Router;
  * Import classes
  */
 use Fig\Http\Message\RequestMethodInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -27,7 +28,6 @@ use Sunrise\Http\Router\Exception\MethodNotAllowedException;
 use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
 use Sunrise\Http\Router\RequestHandler\UnsafeCallableRequestHandler;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Import functions
@@ -36,7 +36,6 @@ use function Sunrise\Http\Router\path_build;
 use function Sunrise\Http\Router\path_match;
 use function array_keys;
 use function get_class;
-use function spl_object_hash;
 use function sprintf;
 
 /**
@@ -178,12 +177,7 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
      */
     public function getMiddlewares(): array
     {
-        $middlewares = [];
-        foreach ($this->middlewares as $middleware) {
-            $middlewares[] = $middleware;
-        }
-
-        return $middlewares;
+        return $this->middlewares;
     }
 
     /**
@@ -308,22 +302,11 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
      * @param MiddlewareInterface ...$middlewares
      *
      * @return void
-     *
-     * @throws InvalidArgumentException
-     *         if one of the given middlewares already exists.
      */
     public function addMiddleware(MiddlewareInterface ...$middlewares): void
     {
         foreach ($middlewares as $middleware) {
-            $hash = spl_object_hash($middleware);
-            if (isset($this->middlewares[$hash])) {
-                throw new InvalidArgumentException(sprintf(
-                    'The middleware "%s" already exists.',
-                    get_class($middleware)
-                ));
-            }
-
-            $this->middlewares[$hash] = $middleware;
+            $this->middlewares[] = $middleware;
         }
     }
 
@@ -421,8 +404,8 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
      *
      * @return RouteInterface
      *
-     * @throws PageNotFoundException
      * @throws MethodNotAllowedException
+     * @throws PageNotFoundException
      */
     public function match(ServerRequestInterface $request): RouteInterface
     {
@@ -455,14 +438,11 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
             return $route->withAddedAttributes($attributes);
         }
 
-        if (empty($allowedMethods)) {
-            throw new PageNotFoundException();
+        if (!empty($allowedMethods)) {
+            throw new MethodNotAllowedException($currentMethod, $allowedMethods);
         }
 
-        throw new MethodNotAllowedException(
-            $currentMethod,
-            $allowedMethods
-        );
+        throw new PageNotFoundException();
     }
 
     /**
@@ -491,13 +471,12 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
             }
         );
 
-        $middlewares = $this->getMiddlewares();
-        if (empty($middlewares)) {
+        if (empty($this->middlewares)) {
             return $routing->handle($request);
         }
 
         $handler = new QueueableRequestHandler($routing);
-        $handler->add(...$middlewares);
+        $handler->add(...$this->middlewares);
 
         return $handler->handle($request);
     }
@@ -515,13 +494,12 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
             );
         }
 
-        $middlewares = $this->getMiddlewares();
-        if (empty($middlewares)) {
+        if (empty($this->middlewares)) {
             return $this->matchedRoute->handle($request);
         }
 
         $handler = new QueueableRequestHandler($this->matchedRoute);
-        $handler->add(...$middlewares);
+        $handler->add(...$this->middlewares);
 
         return $handler->handle($request);
     }

@@ -28,26 +28,24 @@ use function sprintf;
 /**
  * KnownTypeParameterResolver
  *
- * @template T as object
- *
  * @since 3.0.0
  */
 final class KnownTypeParameterResolver implements ParameterResolverInterface
 {
 
     /**
-     * @var class-string<T>
+     * @var class-string
      */
     private string $type;
 
     /**
-     * @var T
+     * @var object
      */
     private object $value;
 
     /**
-     * @param class-string<T> $type
-     * @param T $value
+     * @param class-string $type
+     * @param object $value
      *
      * @throws InvalidArgumentException
      *         If the given value is not an instance of the given type.

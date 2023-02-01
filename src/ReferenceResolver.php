@@ -41,6 +41,13 @@ final class ReferenceResolver implements ReferenceResolverInterface
 {
 
     /**
+     * The resolver's class resolver
+     *
+     * @var ClassResolverInterface
+     */
+    private ClassResolverInterface $classResolver;
+
+    /**
      * The resolver's parameter resolutioner
      *
      * @var ParameterResolutionerInterface
@@ -53,13 +60,6 @@ final class ReferenceResolver implements ReferenceResolverInterface
      * @var ResponseResolutionerInterface
      */
     private ResponseResolutionerInterface $responseResolutioner;
-
-    /**
-     * The resolver's class resolver
-     *
-     * @var ClassResolverInterface
-     */
-    private ClassResolverInterface $classResolver;
 
     /**
      * Constructor of the class
@@ -75,9 +75,9 @@ final class ReferenceResolver implements ReferenceResolverInterface
     ) {
         $classResolver ??= new ClassResolver($parameterResolutioner);
 
+        $this->classResolver = $classResolver;
         $this->parameterResolutioner = $parameterResolutioner;
         $this->responseResolutioner = $responseResolutioner;
-        $this->classResolver = $classResolver;
     }
 
     /**
@@ -93,23 +93,25 @@ final class ReferenceResolver implements ReferenceResolverInterface
             return new CallableRequestHandler($reference, $this->parameterResolutioner, $this->responseResolutioner);
         }
 
+        if (is_string($reference) && is_subclass_of($reference, RequestHandlerInterface::class)) {
+            /** @var RequestHandlerInterface */
+            return $this->classResolver->resolveClass($reference);
+        }
+
         // https://github.com/php/php-src/blob/3ed526441400060aa4e618b91b3352371fcd02a8/Zend/zend_API.c#L3884-L3932
         /** @psalm-suppress MixedArgument */
         if (is_array($reference) && is_callable($reference, true) && method_exists($reference[0], $reference[1])) {
             /** @var array{0: class-string|object, 1: non-empty-string} $reference */
 
-            $object = is_string($reference[0]) ? $this->classResolver->resolveClass($reference[0]) : $reference[0];
+            if (is_string($reference[0])) {
+                $reference[0] = $this->classResolver->resolveClass($reference[0]);
+            }
 
             return new CallableRequestHandler(
-                [$object, $reference[1]],
+                [$reference[0], $reference[1]],
                 $this->parameterResolutioner,
                 $this->responseResolutioner
             );
-        }
-
-        if (is_string($reference) && is_subclass_of($reference, RequestHandlerInterface::class)) {
-            /** @var RequestHandlerInterface */
-            return $this->classResolver->resolveClass($reference);
         }
 
         throw new ResolvingReferenceException(sprintf(
@@ -131,23 +133,25 @@ final class ReferenceResolver implements ReferenceResolverInterface
             return new CallableMiddleware($reference, $this->parameterResolutioner, $this->responseResolutioner);
         }
 
+        if (is_string($reference) && is_subclass_of($reference, MiddlewareInterface::class)) {
+            /** @var MiddlewareInterface */
+            return $this->classResolver->resolveClass($reference);
+        }
+
         // https://github.com/php/php-src/blob/3ed526441400060aa4e618b91b3352371fcd02a8/Zend/zend_API.c#L3884-L3932
         /** @psalm-suppress MixedArgument */
         if (is_array($reference) && is_callable($reference, true) && method_exists($reference[0], $reference[1])) {
             /** @var array{0: class-string|object, 1: non-empty-string} $reference */
 
-            $object = is_string($reference[0]) ? $this->classResolver->resolveClass($reference[0]) : $reference[0];
+            if (is_string($reference[0])) {
+                $reference[0] = $this->classResolver->resolveClass($reference[0]);
+            }
 
             return new CallableMiddleware(
-                [$object, $reference[1]],
+                [$reference[0], $reference[1]],
                 $this->parameterResolutioner,
                 $this->responseResolutioner
             );
-        }
-
-        if (is_string($reference) && is_subclass_of($reference, MiddlewareInterface::class)) {
-            /** @var MiddlewareInterface */
-            return $this->classResolver->resolveClass($reference);
         }
 
         throw new ResolvingReferenceException(sprintf(
@@ -179,8 +183,8 @@ final class ReferenceResolver implements ReferenceResolverInterface
      */
     private function stringifyReference($reference): string
     {
-        if (is_array($reference) && is_callable($reference, true, $refString)) {
-            return $refString;
+        if (is_array($reference) && is_callable($reference, true, $stringReference)) {
+            return $stringReference;
         }
 
         if (is_string($reference)) {

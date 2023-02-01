@@ -103,6 +103,18 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * {@inheritdoc}
      */
+    public function setAttribute(string $name, $value): RouteCollectionInterface
+    {
+        foreach ($this->routes as $route) {
+            $route->setAttribute($name, $value);
+        }
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function addPrefix(string $prefix): RouteCollectionInterface
     {
         foreach ($this->routes as $route) {

@@ -28,6 +28,10 @@ use function sprintf;
  * ClassResolver
  *
  * @since 3.0.0
+ *
+ * @template T of object
+ *
+ * @implements ClassResolverInterface<T>
  */
 final class ClassResolver implements ClassResolverInterface
 {
@@ -35,7 +39,7 @@ final class ClassResolver implements ClassResolverInterface
     /**
      * Map of classes that are already resolved
      *
-     * @var array<class-string, object>
+     * @var array<class-string<T>, T>
      */
     private array $resolvedClasses = [];
 
@@ -59,24 +63,24 @@ final class ClassResolver implements ClassResolverInterface
     /**
      * {@inheritdoc}
      */
-    public function resolveClass(string $classname): object
+    public function resolveClass(string $className): object
     {
-        if (isset($this->resolvedClasses[$classname])) {
-            return $this->resolvedClasses[$classname];
+        if (isset($this->resolvedClasses[$className])) {
+            return $this->resolvedClasses[$className];
         }
 
-        if (!class_exists($classname)) {
+        if (!class_exists($className)) {
             throw new InvalidArgumentException(sprintf(
-                'The class %s was not found',
-                $classname
+                'Class %s does not exist',
+                $className
             ));
         }
 
-        $reflection = new ReflectionClass($classname);
+        $reflection = new ReflectionClass($className);
         if (!$reflection->isInstantiable()) {
             throw new LogicException(sprintf(
-                'The class %s cannot be initialized directly',
-                $classname
+                'Class %s cannot be initialized',
+                $className
             ));
         }
 
@@ -88,6 +92,9 @@ final class ClassResolver implements ClassResolverInterface
             );
         }
 
-        return $this->resolvedClasses[$classname] = $reflection->newInstance(...$arguments);
+        /** @var T */
+        $this->resolvedClasses[$className] = $reflection->newInstance(...$arguments);
+
+        return $this->resolvedClasses[$className];
     }
 }

@@ -21,22 +21,24 @@ use Sunrise\Http\Router\Exception\LogicException;
  * ClassResolverInterface
  *
  * @since 3.0.0
+ *
+ * @template T of object
  */
 interface ClassResolverInterface
 {
 
     /**
-     * Resolves the given class by its name
+     * Resolves the given named class
      *
-     * @param class-string $classname
+     * @param class-string<T> $className
      *
-     * @return object
+     * @return T
      *
      * @throws InvalidArgumentException
      *         If the class doesn't exist.
      *
      * @throws LogicException
-     *         If the class cannot be initialized directly.
+     *         If the class cannot be resolved.
      */
-    public function resolveClass(string $classname): object;
+    public function resolveClass(string $className): object;
 }

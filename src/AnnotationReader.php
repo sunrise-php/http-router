@@ -80,15 +80,13 @@ final class AnnotationReader
     /**
      * Gets annotations from the given class or method by the given annotation name
      *
-     * @param ReflectionClass|ReflectionMethod $classOrMethod
+     * @param Reflector $classOrMethod
      * @param class-string<T> $annotationName
      *
      * @return list<T>
      *
      * @throws InvalidArgumentException
      *         If the given reflection isn't supported.
-     *
-     * @psalm-suppress RedundantConditionGivenDocblockType
      *
      * @template T
      */

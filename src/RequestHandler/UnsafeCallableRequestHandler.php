@@ -22,6 +22,8 @@ use Psr\Http\Server\RequestHandlerInterface;
  * UnsafeCallableRequestHandler
  *
  * @since 3.0.0
+ *
+ * @template T as callable(ServerRequestInterface=): ResponseInterface
  */
 final class UnsafeCallableRequestHandler implements RequestHandlerInterface
 {
@@ -29,14 +31,14 @@ final class UnsafeCallableRequestHandler implements RequestHandlerInterface
     /**
      * The handler callback
      *
-     * @var callable
+     * @var T
      */
     private $callback;
 
     /**
      * Constructor of the class
      *
-     * @param callable $callback
+     * @param T $callback
      */
     public function __construct(callable $callback)
     {
@@ -48,7 +50,6 @@ final class UnsafeCallableRequestHandler implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        /** @var ResponseInterface */
         return ($this->callback)($request);
     }
 }

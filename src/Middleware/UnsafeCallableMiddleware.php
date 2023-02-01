@@ -23,6 +23,8 @@ use Psr\Http\Server\RequestHandlerInterface;
  * UnsafeCallableMiddleware
  *
  * @since 3.0.0
+ *
+ * @template T as callable(ServerRequestInterface=, RequestHandlerInterface=): ResponseInterface
  */
 final class UnsafeCallableMiddleware implements MiddlewareInterface
 {
@@ -30,14 +32,14 @@ final class UnsafeCallableMiddleware implements MiddlewareInterface
     /**
      * The middleware callback
      *
-     * @var callable
+     * @var T
      */
     private $callback;
 
     /**
      * Constructor of the class
      *
-     * @param callable $callback
+     * @param T $callback
      */
     public function __construct(callable $callback)
     {
@@ -49,7 +51,6 @@ final class UnsafeCallableMiddleware implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        /** @var ResponseInterface */
         return ($this->callback)($request, $handler);
     }
 }

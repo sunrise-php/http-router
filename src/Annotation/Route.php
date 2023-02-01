@@ -46,7 +46,7 @@ final class Route implements RequestMethodInterface
     /**
      * The descriptor holder
      *
-     * @var class-string|array{0: class-string, 1: string}|null
+     * @var class-string|array{0: class-string, 1: non-empty-string}|null
      *
      * @internal
      */

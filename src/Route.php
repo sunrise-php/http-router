@@ -218,9 +218,11 @@ class Route implements RouteInterface
      */
     public function getHolder(): Reflector
     {
-        return ($this->requestHandler instanceof CallableRequestHandler) ?
-            $this->requestHandler->getReflection() :
-            new ReflectionClass($this->requestHandler);
+        if ($this->requestHandler instanceof CallableRequestHandler) {
+            return $this->requestHandler->getReflection();
+        }
+
+        return new ReflectionClass($this->requestHandler);
     }
 
     /**
@@ -301,6 +303,16 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
+    public function setAttribute(string $name, $value): RouteInterface
+    {
+        $this->attributes[$name] = $value;
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function setSummary(string $summary): RouteInterface
     {
         $this->summary = $summary;
@@ -372,6 +384,18 @@ class Route implements RouteInterface
     {
         foreach ($middlewares as $middleware) {
             $this->middlewares[] = $middleware;
+        }
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function addTag(string ...$tags): RouteInterface
+    {
+        foreach ($tags as $tag) {
+            $this->tags[] = $tag;
         }
 
         return $this;
