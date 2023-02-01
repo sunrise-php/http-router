@@ -14,6 +14,7 @@ namespace Sunrise\Http\Router\Rest\Middleware;
 /**
  * Import classes
  */
+use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -27,6 +28,19 @@ use Throwable;
  */
 final class ErrorHandlingMiddleware implements MiddlewareInterface
 {
+
+    /**
+     * @var ResponseFactoryInterface
+     */
+    private ResponseFactoryInterface $responseFactory;
+
+    /**
+     * @param ResponseFactoryInterface $responseFactory
+     */
+    public function __construct(ResponseFactoryInterface $responseFactory)
+    {
+        $this->responseFactory = $responseFactory;
+    }
 
     /**
      * {@inheritdoc}
