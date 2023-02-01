@@ -12,41 +12,10 @@
 namespace Sunrise\Http\Router\Exception;
 
 /**
- * Import classes
- */
-use Sunrise\Http\Router\Exception\Http\HttpUnprocessableEntityException;
-use Symfony\Component\Validator\ConstraintViolationListInterface;
-
-/**
  * UnprocessableRequestQueryException
  *
  * @since 3.0.0
  */
-class UnprocessableRequestQueryException extends HttpUnprocessableEntityException
+class UnprocessableRequestQueryException extends UnprocessableRequestEntityException
 {
-
-    /**
-     * @var ConstraintViolationListInterface
-     */
-    private ConstraintViolationListInterface $violations;
-
-    /**
-     * Constructor of the class
-     *
-     * @param ConstraintViolationListInterface $violations
-     */
-    public function __construct(ConstraintViolationListInterface $violations)
-    {
-        $this->violations = $violations;
-    }
-
-    /**
-     * Gets the violations list
-     *
-     * @return ConstraintViolationListInterface
-     */
-    final public function getViolations(): ConstraintViolationListInterface
-    {
-        return $this->violations;
-    }
 }

@@ -16,14 +16,13 @@ namespace Sunrise\Http\Router\Event;
  */
 use Psr\Http\Message\ServerRequestInterface;
 use Sunrise\Http\Router\RouteInterface;
-use Symfony\Contracts\EventDispatcher\Event;
 
 /**
  * RouteEvent
  *
  * @since 2.13.0
  */
-final class RouteEvent extends Event
+final class RouteEvent
 {
 
     /**

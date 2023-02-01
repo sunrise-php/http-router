@@ -75,8 +75,7 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     /**
      * The router's middlewares
      *
-     * @var array<string, MiddlewareInterface>
-     *      The keys is an object hash.
+     * @var list<MiddlewareInterface>
      */
     private $middlewares = [];
 
