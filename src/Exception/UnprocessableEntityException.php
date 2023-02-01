@@ -18,11 +18,11 @@ use Sunrise\Http\Router\Exception\Http\HttpUnprocessableEntityException;
 use Symfony\Component\Validator\ConstraintViolationListInterface;
 
 /**
- * UnprocessableRequestEntityException
+ * UnprocessableEntityException
  *
  * @since 3.0.0
  */
-class UnprocessableRequestEntityException extends HttpUnprocessableEntityException
+class UnprocessableEntityException extends HttpUnprocessableEntityException
 {
 
     /**

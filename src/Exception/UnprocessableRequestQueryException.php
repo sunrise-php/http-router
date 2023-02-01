@@ -16,6 +16,6 @@ namespace Sunrise\Http\Router\Exception;
  *
  * @since 3.0.0
  */
-class UnprocessableRequestQueryException extends UnprocessableRequestEntityException
+class UnprocessableRequestQueryException extends UnprocessableEntityException
 {
 }
