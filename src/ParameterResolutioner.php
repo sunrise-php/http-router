@@ -61,14 +61,16 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
      */
     public function withPriorityResolver(ParameterResolverInterface ...$resolvers): ParameterResolutionerInterface
     {
-        /** @var list<ParameterResolverInterface> $resolvers */
+        $clone = clone $this;
+        $clone->resolvers = [];
 
-        foreach ($this->resolvers as $resolver) {
-            $resolvers[] = $resolver;
+        foreach ($resolvers as $resolver) {
+            $clone->resolvers[] = $resolver;
         }
 
-        $clone = clone $this;
-        $clone->resolvers = $resolvers;
+        foreach ($this->resolvers as $resolver) {
+            $clone->resolvers[] = $resolver;
+        }
 
         return $clone;
     }

@@ -19,7 +19,6 @@ use Psr\Http\Server\MiddlewareInterface;
 /**
  * Import functions
  */
-use function array_merge;
 use function count;
 
 /**
@@ -166,7 +165,7 @@ class RouteCollection implements RouteCollectionInterface
     public function addPriorityMiddleware(MiddlewareInterface ...$middlewares): RouteCollectionInterface
     {
         foreach ($this->routes as $route) {
-            $route->setMiddlewares(...array_merge($middlewares, $route->getMiddlewares()));
+            $route->addPriorityMiddleware(...$middlewares);
         }
 
         return $this;

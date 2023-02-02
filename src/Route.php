@@ -26,6 +26,7 @@ use Reflector;
 /**
  * Import functions
  */
+use function array_values;
 use function rtrim;
 use function strtoupper;
 
@@ -283,9 +284,10 @@ class Route implements RouteInterface
      */
     public function setMiddlewares(MiddlewareInterface ...$middlewares): RouteInterface
     {
-        /** @var list<MiddlewareInterface> $middlewares */
-
-        $this->middlewares = $middlewares;
+        $this->middlewares = [];
+        foreach ($middlewares as $middleware) {
+            $this->middlewares[] = $middleware;
+        }
 
         return $this;
     }
@@ -335,9 +337,10 @@ class Route implements RouteInterface
      */
     public function setTags(string ...$tags): RouteInterface
     {
-        /** @var list<string> $tags */
-
-        $this->tags = $tags;
+        $this->tags = [];
+        foreach ($tags as $tag) {
+            $this->tags[] = $tag;
+        }
 
         return $this;
     }
@@ -385,6 +388,18 @@ class Route implements RouteInterface
         foreach ($middlewares as $middleware) {
             $this->middlewares[] = $middleware;
         }
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function addPriorityMiddleware(MiddlewareInterface ...$middlewares): RouteInterface
+    {
+        $middlewares = array_values($middlewares);
+
+        $this->middlewares = [...$middlewares, ...$this->middlewares];
 
         return $this;
     }

@@ -22,6 +22,7 @@ use Sunrise\Http\Router\Annotation\Middleware;
 use Sunrise\Http\Router\Annotation\Postfix;
 use Sunrise\Http\Router\Annotation\Prefix;
 use Sunrise\Http\Router\Annotation\Route;
+use Sunrise\Http\Router\Annotation\Tag;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ParameterResolver\DependencyInjectionParameterResolver;
@@ -480,6 +481,11 @@ final class DescriptorLoader implements LoaderInterface
         $annotations = $this->annotationReader->getClassOrMethodAnnotations($classOrMethod, Middleware::class);
         foreach ($annotations as $annotation) {
             $descriptor->middlewares[] = $annotation->value;
+        }
+
+        $annotations = $this->annotationReader->getClassOrMethodAnnotations($classOrMethod, Tag::class);
+        foreach ($annotations as $annotation) {
+            $descriptor->tags[] = $annotation->value;
         }
     }
 }

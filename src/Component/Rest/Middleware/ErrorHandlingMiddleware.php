@@ -9,7 +9,7 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
-namespace Sunrise\Http\Router\Rest\Middleware;
+namespace Sunrise\Http\Router\Component\Rest\Middleware;
 
 /**
  * Import classes
@@ -19,7 +19,10 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Throwable;
+use Sunrise\Http\Router\Exception\Http\HttpExceptionInterface;
+use Sunrise\Http\Router\Exception\Http\HttpMethodNotAllowedException;
+use Sunrise\Http\Router\Exception\Http\HttpUnsupportedMediaTypeException;
+use Sunrise\Http\Router\Exception\UnprocessableEntityException;
 
 /**
  * ErrorHandlingMiddleware
@@ -49,8 +52,18 @@ final class ErrorHandlingMiddleware implements MiddlewareInterface
     {
         try {
             return $handler->handle($request);
-        } catch (Throwable $e) {
-            throw $e;
+        } catch (HttpMethodNotAllowedException $e) {
+            /** @psalm-suppress TooFewArguments, MixedArgument */
+            return $this->responseFactory->createResponse($e->getStatusCode())
+                ->withHeader(...$e->getAllowHeaderArguments());
+        } catch (HttpUnsupportedMediaTypeException $e) {
+            /** @psalm-suppress TooFewArguments, MixedArgument */
+            return $this->responseFactory->createResponse($e->getStatusCode())
+                ->withHeader(...$e->getAcceptHeaderArguments());
+        } catch (UnprocessableEntityException $e) {
+            return $this->responseFactory->createResponse($e->getStatusCode());
+        } catch (HttpExceptionInterface $e) {
+            return $this->responseFactory->createResponse($e->getStatusCode());
         }
     }
 }
