@@ -24,6 +24,7 @@ use Sunrise\Http\Router\ResponseResolutionerInterface;
 use ReflectionFunctionAbstract;
 use ReflectionFunction;
 use ReflectionMethod;
+use ReflectionParameter;
 
 /**
  * Import functions
@@ -89,17 +90,31 @@ final class CallableMiddleware implements MiddlewareInterface
     }
 
     /**
+     * Gets the callback's parameters
+     *
+     * @return list<ReflectionParameter>
+     *
+     * @since 3.0.0
+     */
+    public function getParameters(): array
+    {
+        return $this->getReflection()->getParameters();
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
+        $parameterResolvers = [
+            new KnownTypeParameterResolver(ServerRequestInterface::class, $request),
+            new KnownTypeParameterResolver(RequestHandlerInterface::class, $handler),
+        ];
+
         $arguments = $this->parameterResolutioner
             ->withContext($request)
-            ->withPriorityResolver(
-                new KnownTypeParameterResolver(ServerRequestInterface::class, $request),
-                new KnownTypeParameterResolver(RequestHandlerInterface::class, $handler)
-            )
-            ->resolveParameters(...$this->getReflection()->getParameters());
+            ->withPriorityResolver(...$parameterResolvers)
+            ->resolveParameters(...$this->getParameters());
 
         /** @var mixed */
         $response = ($this->callback)(...$arguments);
