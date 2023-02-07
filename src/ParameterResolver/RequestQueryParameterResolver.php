@@ -42,6 +42,7 @@ use const PHP_MAJOR_VERSION;
  * RequestQueryParameterResolver
  *
  * @link https://github.com/sunrise-php/hydrator
+ * @link https://github.com/symfony/validator
  *
  * @since 3.0.0
  */
@@ -62,8 +63,10 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
      * @param HydratorInterface $hydrator
      * @param ValidatorInterface|null $validator
      */
-    public function __construct(HydratorInterface $hydrator, ?ValidatorInterface $validator = null)
-    {
+    public function __construct(
+        HydratorInterface $hydrator,
+        ?ValidatorInterface $validator = null
+    ) {
         $this->hydrator = $hydrator;
         $this->validator = $validator;
     }

@@ -20,6 +20,7 @@ use Sunrise\Http\Router\Annotation\RequestEntity;
 use Sunrise\Http\Router\Exception\EntityNotFoundException;
 use Sunrise\Http\Router\Exception\ResolvingParameterException;
 use ReflectionAttribute;
+use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionParameter;
 
@@ -34,7 +35,7 @@ use function sprintf;
  *
  * @since 3.0.0
  */
-final class RequestEntityParameterResolver extends AbstractParameterResolver
+final class RequestEntityParameterResolver implements ParameterResolverInterface
 {
 
     /**
@@ -154,5 +155,32 @@ final class RequestEntityParameterResolver extends AbstractParameterResolver
             '%s Not Found',
             $entityMetadata->getReflectionClass()->getShortName()
         ));
+    }
+
+    /**
+     * Stringifies the given parameter
+     *
+     * @param ReflectionParameter $parameter
+     *
+     * @return string
+     */
+    private function stringifyParameter(ReflectionParameter $parameter): string
+    {
+        if ($parameter->getDeclaringFunction() instanceof ReflectionMethod) {
+            return sprintf(
+                '%s::%s($%s[%d])',
+                $parameter->getDeclaringFunction()->getDeclaringClass()->getName(),
+                $parameter->getDeclaringFunction()->getName(),
+                $parameter->getName(),
+                $parameter->getPosition()
+            );
+        }
+
+        return sprintf(
+            '%s($%s[%d])',
+            $parameter->getDeclaringFunction()->getName(),
+            $parameter->getName(),
+            $parameter->getPosition()
+        );
     }
 }
