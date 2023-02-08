@@ -394,18 +394,19 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function addPriorityMiddleware(MiddlewareInterface ...$priorityMiddlewares): RouteInterface
+    public function addPriorityMiddleware(MiddlewareInterface ...$middlewares): RouteInterface
     {
-        $previousMiddlewares = $this->middlewares;
-        $this->middlewares = [];
+        $newValue = [];
 
-        foreach ($priorityMiddlewares as $middleware) {
-            $this->middlewares[] = $middleware;
+        foreach ($middlewares as $middleware) {
+            $newValue[] = $middleware;
         }
 
-        foreach ($previousMiddlewares as $middleware) {
-            $this->middlewares[] = $middleware;
+        foreach ($this->middlewares as $middleware) {
+            $newValue[] = $middleware;
         }
+
+        $this->middlewares = $newValue;
 
         return $this;
     }

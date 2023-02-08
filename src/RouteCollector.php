@@ -14,9 +14,7 @@ namespace Sunrise\Http\Router;
 /**
  * Import classes
  */
-use Psr\Container\ContainerInterface;
 use Sunrise\Http\Router\Exception\LogicException;
-use Sunrise\Http\Router\ParameterResolver\DependencyInjectionParameterResolver;
 
 /**
  * RouteCollector
@@ -70,6 +68,7 @@ class RouteCollector
      * @param ReferenceResolverInterface|null $referenceResolver
      * @param ParameterResolutionerInterface|null $parameterResolutioner
      * @param ResponseResolutionerInterface|null $responseResolutioner
+     * @param ClassResolverInterface|null $classResolver
      */
     public function __construct(
         ?RouteCollectionFactoryInterface $collectionFactory = null,
@@ -86,7 +85,8 @@ class RouteCollector
 
         $this->referenceResolver = $referenceResolver ?? new ReferenceResolver(
             $this->parameterResolutioner ??= new ParameterResolutioner(),
-            $this->responseResolutioner ??= new ResponseResolutioner()
+            $this->responseResolutioner ??= new ResponseResolutioner(),
+            $classResolver ?? new ClassResolver($this->parameterResolutioner)
         );
 
         $this->collection = $this->collectionFactory->createCollection();
@@ -113,32 +113,6 @@ class RouteCollector
     }
 
     /**
-     * Sets the given container to the parameter resolutioner
-     *
-     * @param ContainerInterface $container
-     *
-     * @return void
-     *
-     * @throws LogicException
-     *         If a custom reference resolver was setted
-     *         and a parameter resolutioner was not passed.
-     */
-    public function setContainer(ContainerInterface $container): void
-    {
-        if (!isset($this->parameterResolutioner)) {
-            throw new LogicException(
-                'The route collector cannot accept the container ' .
-                'because a custom reference resolver was setted ' .
-                'and a parameter resolutioner was not passed'
-            );
-        }
-
-        $this->parameterResolutioner->addResolver(
-            new DependencyInjectionParameterResolver($container)
-        );
-    }
-
-    /**
      * Adds the given parameter resolver(s) to the parameter resolutioner
      *
      * @param ParameterResolverInterface ...$resolvers
@@ -155,7 +129,7 @@ class RouteCollector
     {
         if (!isset($this->parameterResolutioner)) {
             throw new LogicException(
-                'The route collector cannot accept the parameter resolver ' .
+                'The route collector cannot accept the parameter resolver(s) ' .
                 'because a custom reference resolver was setted ' .
                 'and a parameter resolutioner was not passed'
             );
@@ -181,7 +155,7 @@ class RouteCollector
     {
         if (!isset($this->responseResolutioner)) {
             throw new LogicException(
-                'The route collector cannot accept the response resolver ' .
+                'The route collector cannot accept the response resolver(s) ' .
                 'because a custom reference resolver was setted ' .
                 'and a response resolutioner was not passed'
             );

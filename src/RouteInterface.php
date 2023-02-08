@@ -273,13 +273,13 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
     /**
      * Adds the given priority middleware(s) to the route
      *
-     * @param MiddlewareInterface ...$priorityMiddlewares
+     * @param MiddlewareInterface ...$middlewares
      *
      * @return RouteInterface
      *
      * @since 3.0.0
      */
-    public function addPriorityMiddleware(MiddlewareInterface ...$priorityMiddlewares): RouteInterface;
+    public function addPriorityMiddleware(MiddlewareInterface ...$middlewares): RouteInterface;
 
     /**
      * Adds the given tag(s) to the route

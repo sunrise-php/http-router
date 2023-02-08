@@ -167,19 +167,24 @@ final class RequestEntityParameterResolver implements ParameterResolverInterface
      */
     private function stringifyParameter(ReflectionParameter $parameter): string
     {
+        /** @var ReflectionNamedType */
+        $parameterType = $parameter->getType();
+
         if ($parameter->getDeclaringFunction() instanceof ReflectionMethod) {
             return sprintf(
-                '%s::%s($%s[%d])',
+                '%s::%s(%s $%s[%d])',
                 $parameter->getDeclaringFunction()->getDeclaringClass()->getName(),
                 $parameter->getDeclaringFunction()->getName(),
+                $parameterType->getName(),
                 $parameter->getName(),
                 $parameter->getPosition()
             );
         }
 
         return sprintf(
-            '%s($%s[%d])',
+            '%s(%s $%s[%d])',
             $parameter->getDeclaringFunction()->getName(),
+            $parameterType->getName(),
             $parameter->getName(),
             $parameter->getPosition()
         );

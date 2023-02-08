@@ -14,10 +14,10 @@ namespace Sunrise\Http\Router\Loader;
 /**
  * Import classes
  */
-use Psr\Container\ContainerInterface;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\LogicException;
-use Sunrise\Http\Router\ParameterResolver\DependencyInjectionParameterResolver;
+use Sunrise\Http\Router\ClassResolver;
+use Sunrise\Http\Router\ClassResolverInterface;
 use Sunrise\Http\Router\ParameterResolutioner;
 use Sunrise\Http\Router\ParameterResolutionerInterface;
 use Sunrise\Http\Router\ParameterResolverInterface;
@@ -85,13 +85,15 @@ final class ConfigLoader implements LoaderInterface
      * @param ReferenceResolverInterface|null $referenceResolver
      * @param ParameterResolutionerInterface|null $parameterResolutioner
      * @param ResponseResolutionerInterface|null $responseResolutioner
+     * @param ClassResolverInterface|null $classResolver
      */
     public function __construct(
         ?RouteCollectionFactoryInterface $collectionFactory = null,
         ?RouteFactoryInterface $routeFactory = null,
         ?ReferenceResolverInterface $referenceResolver = null,
         ?ParameterResolutionerInterface $parameterResolutioner = null,
-        ?ResponseResolutionerInterface $responseResolutioner = null
+        ?ResponseResolutionerInterface $responseResolutioner = null,
+        ?ClassResolverInterface $classResolver = null
     ) {
         $this->collectionFactory = $collectionFactory ?? new RouteCollectionFactory();
         $this->routeFactory = $routeFactory ?? new RouteFactory();
@@ -101,33 +103,8 @@ final class ConfigLoader implements LoaderInterface
 
         $this->referenceResolver = $referenceResolver ?? new ReferenceResolver(
             $this->parameterResolutioner ??= new ParameterResolutioner(),
-            $this->responseResolutioner ??= new ResponseResolutioner()
-        );
-    }
-
-    /**
-     * Sets the given container to the parameter resolutioner
-     *
-     * @param ContainerInterface $container
-     *
-     * @return void
-     *
-     * @throws LogicException
-     *         If a custom reference resolver was setted
-     *         and a parameter resolutioner was not passed.
-     */
-    public function setContainer(ContainerInterface $container): void
-    {
-        if (!isset($this->parameterResolutioner)) {
-            throw new LogicException(
-                'The config route loader cannot accept the container ' .
-                'because a custom reference resolver was setted ' .
-                'and a parameter resolutioner was not passed'
-            );
-        }
-
-        $this->parameterResolutioner->addResolver(
-            new DependencyInjectionParameterResolver($container)
+            $this->responseResolutioner ??= new ResponseResolutioner(),
+            $classResolver ?? new ClassResolver($this->parameterResolutioner)
         );
     }
 
@@ -148,7 +125,7 @@ final class ConfigLoader implements LoaderInterface
     {
         if (!isset($this->parameterResolutioner)) {
             throw new LogicException(
-                'The config route loader cannot accept the parameter resolver ' .
+                'The config route loader cannot accept the parameter resolver(s) ' .
                 'because a custom reference resolver was setted ' .
                 'and a parameter resolutioner was not passed'
             );
@@ -174,7 +151,7 @@ final class ConfigLoader implements LoaderInterface
     {
         if (!isset($this->responseResolutioner)) {
             throw new LogicException(
-                'The config route loader cannot accept the response resolver ' .
+                'The config route loader cannot accept the response resolver(s) ' .
                 'because a custom reference resolver was setted ' .
                 'and a response resolutioner was not passed'
             );

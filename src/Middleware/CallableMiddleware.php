@@ -18,6 +18,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Router\ParameterResolver\KnownNameParameterResolver;
 use Sunrise\Http\Router\ParameterResolver\KnownTypeParameterResolver;
 use Sunrise\Http\Router\ParameterResolutionerInterface;
 use Sunrise\Http\Router\ResponseResolutionerInterface;
@@ -90,18 +91,6 @@ final class CallableMiddleware implements MiddlewareInterface
     }
 
     /**
-     * Gets the callback's parameters
-     *
-     * @return list<ReflectionParameter>
-     *
-     * @since 3.0.0
-     */
-    public function getParameters(): array
-    {
-        return $this->getReflection()->getParameters();
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
@@ -109,12 +98,14 @@ final class CallableMiddleware implements MiddlewareInterface
         $parameterResolvers = [
             new KnownTypeParameterResolver(ServerRequestInterface::class, $request),
             new KnownTypeParameterResolver(RequestHandlerInterface::class, $handler),
+            new KnownNameParameterResolver('request', $request),
+            new KnownNameParameterResolver('handler', $handler),
         ];
 
         $arguments = $this->parameterResolutioner
             ->withContext($request)
             ->withPriorityResolver(...$parameterResolvers)
-            ->resolveParameters(...$this->getParameters());
+            ->resolveParameters(...$this->getReflection()->getParameters());
 
         /** @var mixed */
         $response = ($this->callback)(...$arguments);

@@ -14,7 +14,6 @@ namespace Sunrise\Http\Router\Loader;
 /**
  * Import classes
  */
-use Psr\Container\ContainerInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\SimpleCache\CacheInterface;
 use Sunrise\Http\Router\Annotation\Host;
@@ -25,8 +24,9 @@ use Sunrise\Http\Router\Annotation\Route;
 use Sunrise\Http\Router\Annotation\Tag;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\LogicException;
-use Sunrise\Http\Router\ParameterResolver\DependencyInjectionParameterResolver;
 use Sunrise\Http\Router\AnnotationReader;
+use Sunrise\Http\Router\ClassResolver;
+use Sunrise\Http\Router\ClassResolverInterface;
 use Sunrise\Http\Router\ParameterResolutioner;
 use Sunrise\Http\Router\ParameterResolutionerInterface;
 use Sunrise\Http\Router\ParameterResolverInterface;
@@ -118,6 +118,7 @@ final class DescriptorLoader implements LoaderInterface
      * @param ReferenceResolverInterface|null $referenceResolver
      * @param ParameterResolutionerInterface|null $parameterResolutioner
      * @param ResponseResolutionerInterface|null $responseResolutioner
+     * @param ClassResolverInterface|null $classResolver
      * @param \Doctrine\Common\Annotations\Reader|null $annotationReader
      */
     public function __construct(
@@ -126,6 +127,7 @@ final class DescriptorLoader implements LoaderInterface
         ?ReferenceResolverInterface $referenceResolver = null,
         ?ParameterResolutionerInterface $parameterResolutioner = null,
         ?ResponseResolutionerInterface $responseResolutioner = null,
+        ?ClassResolverInterface $classResolver = null,
         ?\Doctrine\Common\Annotations\Reader $annotationReader = null
     ) {
         $this->collectionFactory = $collectionFactory ?? new RouteCollectionFactory();
@@ -136,7 +138,8 @@ final class DescriptorLoader implements LoaderInterface
 
         $this->referenceResolver = $referenceResolver ?? new ReferenceResolver(
             $this->parameterResolutioner ??= new ParameterResolutioner(),
-            $this->responseResolutioner ??= new ResponseResolutioner()
+            $this->responseResolutioner ??= new ResponseResolutioner(),
+            $classResolver ?? new ClassResolver($this->parameterResolutioner)
         );
 
         $this->annotationReader = new AnnotationReader();
@@ -146,32 +149,6 @@ final class DescriptorLoader implements LoaderInterface
         } elseif (PHP_MAJOR_VERSION < 8) {
             $this->annotationReader->useDefaultAnnotationReader();
         }
-    }
-
-    /**
-     * Sets the given container to the parameter resolutioner
-     *
-     * @param ContainerInterface $container
-     *
-     * @return void
-     *
-     * @throws LogicException
-     *         If a custom reference resolver was setted
-     *         and a parameter resolutioner was not passed.
-     */
-    public function setContainer(ContainerInterface $container): void
-    {
-        if (!isset($this->parameterResolutioner)) {
-            throw new LogicException(
-                'The descriptor route loader cannot accept the container ' .
-                'because a custom reference resolver was setted ' .
-                'and a parameter resolutioner was not passed'
-            );
-        }
-
-        $this->parameterResolutioner->addResolver(
-            new DependencyInjectionParameterResolver($container)
-        );
     }
 
     /**
@@ -191,7 +168,7 @@ final class DescriptorLoader implements LoaderInterface
     {
         if (!isset($this->parameterResolutioner)) {
             throw new LogicException(
-                'The descriptor route loader cannot accept the parameter resolver ' .
+                'The descriptor route loader cannot accept the parameter resolver(s) ' .
                 'because a custom reference resolver was setted ' .
                 'and a parameter resolutioner was not passed'
             );
@@ -217,7 +194,7 @@ final class DescriptorLoader implements LoaderInterface
     {
         if (!isset($this->responseResolutioner)) {
             throw new LogicException(
-                'The descriptor route loader cannot accept the response resolver ' .
+                'The descriptor route loader cannot accept the response resolver(s) ' .
                 'because a custom reference resolver was setted ' .
                 'and a response resolutioner was not passed'
             );
