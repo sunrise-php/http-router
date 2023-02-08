@@ -35,6 +35,8 @@ interface ReferenceResolverInterface
      *
      * @throws ResolvingReferenceException
      *         If the reference cannot be resolved to a request handler.
+     *
+     * @since 3.0.0
      */
     public function resolveRequestHandler($reference): RequestHandlerInterface;
 
@@ -47,6 +49,8 @@ interface ReferenceResolverInterface
      *
      * @throws ResolvingReferenceException
      *         If the reference cannot be resolved to a middleware.
+     *
+     * @since 3.0.0
      */
     public function resolveMiddleware($reference): MiddlewareInterface;
 

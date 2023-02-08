@@ -37,6 +37,8 @@ class UnprocessableEntityException extends HttpUnprocessableEntityException
      */
     public function __construct(ConstraintViolationListInterface $violations)
     {
+        parent::__construct();
+
         $this->violations = $violations;
     }
 

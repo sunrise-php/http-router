@@ -26,7 +26,6 @@ use Reflector;
 /**
  * Import functions
  */
-use function array_values;
 use function rtrim;
 use function strtoupper;
 
@@ -395,11 +394,18 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function addPriorityMiddleware(MiddlewareInterface ...$middlewares): RouteInterface
+    public function addPriorityMiddleware(MiddlewareInterface ...$priorityMiddlewares): RouteInterface
     {
-        $middlewares = array_values($middlewares);
+        $previousMiddlewares = $this->middlewares;
+        $this->middlewares = [];
 
-        $this->middlewares = [...$middlewares, ...$this->middlewares];
+        foreach ($priorityMiddlewares as $middleware) {
+            $this->middlewares[] = $middleware;
+        }
+
+        foreach ($previousMiddlewares as $middleware) {
+            $this->middlewares[] = $middleware;
+        }
 
         return $this;
     }

@@ -74,11 +74,7 @@ final class KnownTypeParameterResolver implements ParameterResolverInterface
             return false;
         }
 
-        if (!($parameter->getType()->getName() === $this->type)) {
-            return false;
-        }
-
-        return true;
+        return $this->type === $parameter->getType()->getName();
     }
 
     /**

@@ -19,6 +19,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Sunrise\Http\Router\Annotation\RequestEntity;
 use Sunrise\Http\Router\Exception\EntityNotFoundException;
 use Sunrise\Http\Router\Exception\ResolvingParameterException;
+use Sunrise\Http\Router\ParameterResolverInterface;
 use ReflectionAttribute;
 use ReflectionMethod;
 use ReflectionNamedType;

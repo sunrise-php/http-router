@@ -19,6 +19,8 @@ if (!function_exists('get_debug_type')) {
      * @return string
      *
      * @since 3.0.0
+     *
+     * @link https://www.php.net/get_debug_type
      */
     function get_debug_type($value): string
     {
