@@ -585,6 +585,9 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
                 continue;
             }
 
+            // $routeConsumedContentTypes = $route->getConsumedContentTypes();
+            // $routeProducedContentTypes = $route->getProducedContentTypes();
+
             /** @var array<string, string> $attributes */
 
             return $route->withAddedAttributes($attributes);

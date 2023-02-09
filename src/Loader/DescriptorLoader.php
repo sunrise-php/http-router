@@ -14,19 +14,21 @@ namespace Sunrise\Http\Router\Loader;
 /**
  * Import classes
  */
+use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\Common\Annotations\Reader as AnnotationReaderInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\SimpleCache\CacheInterface;
+use Sunrise\Http\Router\Annotation\Consume;
 use Sunrise\Http\Router\Annotation\Host;
+use Sunrise\Http\Router\Annotation\Method;
 use Sunrise\Http\Router\Annotation\Middleware;
 use Sunrise\Http\Router\Annotation\Postfix;
 use Sunrise\Http\Router\Annotation\Prefix;
+use Sunrise\Http\Router\Annotation\Produce;
 use Sunrise\Http\Router\Annotation\Route;
 use Sunrise\Http\Router\Annotation\Tag;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\LogicException;
-use Sunrise\Http\Router\AnnotationReader;
-use Sunrise\Http\Router\ClassResolver;
-use Sunrise\Http\Router\ClassResolverInterface;
 use Sunrise\Http\Router\ParameterResolutioner;
 use Sunrise\Http\Router\ParameterResolutionerInterface;
 use Sunrise\Http\Router\ParameterResolverInterface;
@@ -40,6 +42,7 @@ use Sunrise\Http\Router\RouteCollectionFactoryInterface;
 use Sunrise\Http\Router\RouteCollectionInterface;
 use Sunrise\Http\Router\RouteFactory;
 use Sunrise\Http\Router\RouteFactoryInterface;
+use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
 use Reflector;
@@ -88,17 +91,17 @@ final class DescriptorLoader implements LoaderInterface
     /**
      * @var ParameterResolutionerInterface|null
      */
-    private ?ParameterResolutionerInterface $parameterResolutioner = null;
+    private ?ParameterResolutionerInterface $parameterResolutioner;
 
     /**
      * @var ResponseResolutionerInterface|null
      */
-    private ?ResponseResolutionerInterface $responseResolutioner = null;
+    private ?ResponseResolutionerInterface $responseResolutioner;
 
     /**
-     * @var AnnotationReader
+     * @var AnnotationReaderInterface|null
      */
-    private AnnotationReader $annotationReader;
+    private ?AnnotationReaderInterface $annotationReader = null;
 
     /**
      * @var CacheInterface|null
@@ -118,17 +121,13 @@ final class DescriptorLoader implements LoaderInterface
      * @param ReferenceResolverInterface|null $referenceResolver
      * @param ParameterResolutionerInterface|null $parameterResolutioner
      * @param ResponseResolutionerInterface|null $responseResolutioner
-     * @param ClassResolverInterface|null $classResolver
-     * @param \Doctrine\Common\Annotations\Reader|null $annotationReader
      */
     public function __construct(
         ?RouteCollectionFactoryInterface $collectionFactory = null,
         ?RouteFactoryInterface $routeFactory = null,
         ?ReferenceResolverInterface $referenceResolver = null,
         ?ParameterResolutionerInterface $parameterResolutioner = null,
-        ?ResponseResolutionerInterface $responseResolutioner = null,
-        ?ClassResolverInterface $classResolver = null,
-        ?\Doctrine\Common\Annotations\Reader $annotationReader = null
+        ?ResponseResolutionerInterface $responseResolutioner = null
     ) {
         $this->collectionFactory = $collectionFactory ?? new RouteCollectionFactory();
         $this->routeFactory = $routeFactory ?? new RouteFactory();
@@ -138,17 +137,8 @@ final class DescriptorLoader implements LoaderInterface
 
         $this->referenceResolver = $referenceResolver ?? new ReferenceResolver(
             $this->parameterResolutioner ??= new ParameterResolutioner(),
-            $this->responseResolutioner ??= new ResponseResolutioner(),
-            $classResolver ?? new ClassResolver($this->parameterResolutioner)
+            $this->responseResolutioner ??= new ResponseResolutioner()
         );
-
-        $this->annotationReader = new AnnotationReader();
-
-        if (isset($annotationReader)) {
-            $this->annotationReader->setAnnotationReader($annotationReader);
-        } elseif (PHP_MAJOR_VERSION < 8) {
-            $this->annotationReader->useDefaultAnnotationReader();
-        }
     }
 
     /**
@@ -159,8 +149,7 @@ final class DescriptorLoader implements LoaderInterface
      * @return void
      *
      * @throws LogicException
-     *         If a custom reference resolver was setted
-     *         and a parameter resolutioner was not passed.
+     *         If a custom reference resolver was setted and a parameter resolutioner wasn't passed.
      *
      * @since 3.0.0
      */
@@ -169,8 +158,7 @@ final class DescriptorLoader implements LoaderInterface
         if (!isset($this->parameterResolutioner)) {
             throw new LogicException(
                 'The descriptor route loader cannot accept the parameter resolver(s) ' .
-                'because a custom reference resolver was setted ' .
-                'and a parameter resolutioner was not passed'
+                'because a custom reference resolver was setted and a parameter resolutioner was not passed'
             );
         }
 
@@ -185,8 +173,7 @@ final class DescriptorLoader implements LoaderInterface
      * @return void
      *
      * @throws LogicException
-     *         If a custom reference resolver was setted
-     *         and a response resolutioner was not passed.
+     *         If a custom reference resolver was setted and a response resolutioner wasn't passed.
      *
      * @since 3.0.0
      */
@@ -195,8 +182,7 @@ final class DescriptorLoader implements LoaderInterface
         if (!isset($this->responseResolutioner)) {
             throw new LogicException(
                 'The descriptor route loader cannot accept the response resolver(s) ' .
-                'because a custom reference resolver was setted ' .
-                'and a response resolutioner was not passed'
+                'because a custom reference resolver was setted and a response resolutioner was not passed'
             );
         }
 
@@ -204,29 +190,39 @@ final class DescriptorLoader implements LoaderInterface
     }
 
     /**
-     * Sets the given annotation reader to the descriptor loader
-     *
-     * @param \Doctrine\Common\Annotations\Reader|null $annotationReader
-     *
-     * @return void
-     *
-     * @since 3.0.0
-     */
-    public function setAnnotationReader(?\Doctrine\Common\Annotations\Reader $annotationReader): void
-    {
-        $this->annotationReader->setAnnotationReader($annotationReader);
-    }
-
-    /**
      * Uses the default annotation reader
      *
      * @return void
+     *
+     * @throws LogicException
+     *         If the "doctrine/annotations" package isn't installed.
      *
      * @since 3.0.0
      */
     public function useDefaultAnnotationReader(): void
     {
-        $this->annotationReader->useDefaultAnnotationReader();
+        if (!class_exists(AnnotationReader::class)) {
+            throw new LogicException(
+                'The annotations reading logic requires an uninstalled "doctrine/annotations" package, ' .
+                'run the following command "composer install doctrine/annotations" and try again'
+            );
+        }
+
+        $this->annotationReader = new AnnotationReader();
+    }
+
+    /**
+     * Sets the given annotation reader to the loader
+     *
+     * @param AnnotationReaderInterface|null $annotationReader
+     *
+     * @return void
+     *
+     * @since 3.0.0
+     */
+    public function setAnnotationReader(?AnnotationReaderInterface $annotationReader): void
+    {
+        $this->annotationReader = $annotationReader;
     }
 
     /**
@@ -325,24 +321,28 @@ final class DescriptorLoader implements LoaderInterface
      */
     public function load(): RouteCollectionInterface
     {
-        $routes = [];
+        $routes = $this->collectionFactory->createCollection();
+
         $descriptors = $this->getDescriptors();
         foreach ($descriptors as $descriptor) {
-            $routes[] = $this->routeFactory->createRoute(
+            $route = $this->routeFactory->createRoute(
                 $descriptor->name,
                 $descriptor->path,
                 $descriptor->methods,
                 $this->referenceResolver->resolveRequestHandler($descriptor->holder),
                 $this->referenceResolver->resolveMiddlewares($descriptor->middlewares),
                 $descriptor->attributes
-            )
-            ->setHost($descriptor->host)
-            ->setSummary($descriptor->summary)
-            ->setDescription($descriptor->description)
-            ->setTags(...$descriptor->tags);
+            );
+
+            $route->setHost($descriptor->host);
+            $route->setSummary($descriptor->summary);
+            $route->setDescription($descriptor->description);
+            $route->setTags(...$descriptor->tags);
+
+            $routes->add($route);
         }
 
-        return $this->collectionFactory->createCollection(...$routes);
+        return $routes;
     }
 
     /**
@@ -402,7 +402,7 @@ final class DescriptorLoader implements LoaderInterface
         $result = [];
 
         if ($class->isSubclassOf(RequestHandlerInterface::class)) {
-            $annotations = $this->annotationReader->getClassAnnotations($class, Route::class);
+            $annotations = $this->getClassOrMethodAnnotations($class, Route::class);
             if (isset($annotations[0])) {
                 $descriptor = $annotations[0];
                 $descriptor->holder = $class->getName();
@@ -417,13 +417,51 @@ final class DescriptorLoader implements LoaderInterface
                 continue;
             }
 
-            $annotations = $this->annotationReader->getMethodAnnotations($method, Route::class);
+            $annotations = $this->getClassOrMethodAnnotations($method, Route::class);
             if (isset($annotations[0])) {
                 $descriptor = $annotations[0];
                 $descriptor->holder = [$class->getName(), $method->getName()];
                 $this->supplementDescriptor($descriptor, $class);
                 $this->supplementDescriptor($descriptor, $method);
                 $result[] = $descriptor;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Gets annotations from the given class or method
+     *
+     * @param ReflectionClass|ReflectionMethod $classOrMethod
+     * @param class-string<T> $annotationName
+     *
+     * @return list<T>
+     *
+     * @template T
+     */
+    private function getClassOrMethodAnnotations(Reflector $classOrMethod, string $annotationName): array
+    {
+        $result = [];
+
+        if (PHP_MAJOR_VERSION === 8) {
+            /** @var ReflectionAttribute[] */
+            $attributes = $classOrMethod->getAttributes($annotationName);
+            foreach ($attributes as $attribute) {
+                /** @var T */
+                $result[] = $attribute->newInstance();
+            }
+        }
+
+        if (isset($this->annotationReader)) {
+            $annotations = ($classOrMethod instanceof ReflectionClass) ?
+                $this->annotationReader->getClassAnnotations($classOrMethod) :
+                $this->annotationReader->getMethodAnnotations($classOrMethod);
+
+            foreach ($annotations as $annotation) {
+                if ($annotation instanceof $annotationName) {
+                    $result[] = $annotation;
+                }
             }
         }
 
@@ -440,27 +478,42 @@ final class DescriptorLoader implements LoaderInterface
      */
     private function supplementDescriptor(Route $descriptor, Reflector $classOrMethod): void
     {
-        $annotations = $this->annotationReader->getClassOrMethodAnnotations($classOrMethod, Host::class);
+        $annotations = $this->getClassOrMethodAnnotations($classOrMethod, Host::class);
         if (isset($annotations[0])) {
             $descriptor->host = $annotations[0]->value;
         }
 
-        $annotations = $this->annotationReader->getClassOrMethodAnnotations($classOrMethod, Prefix::class);
+        $annotations = $this->getClassOrMethodAnnotations($classOrMethod, Prefix::class);
         if (isset($annotations[0])) {
             $descriptor->path = $annotations[0]->value . $descriptor->path;
         }
 
-        $annotations = $this->annotationReader->getClassOrMethodAnnotations($classOrMethod, Postfix::class);
+        $annotations = $this->getClassOrMethodAnnotations($classOrMethod, Postfix::class);
         if (isset($annotations[0])) {
             $descriptor->path = $descriptor->path . $annotations[0]->value;
         }
 
-        $annotations = $this->annotationReader->getClassOrMethodAnnotations($classOrMethod, Middleware::class);
+        $annotations = $this->getClassOrMethodAnnotations($classOrMethod, Method::class);
+        foreach ($annotations as $annotation) {
+            $descriptor->methods[] = $annotation->value;
+        }
+
+        $annotations = $this->getClassOrMethodAnnotations($classOrMethod, Consume::class);
+        foreach ($annotations as $annotation) {
+            $descriptor->consumes[] = $annotation->value;
+        }
+
+        $annotations = $this->getClassOrMethodAnnotations($classOrMethod, Produce::class);
+        foreach ($annotations as $annotation) {
+            $descriptor->produces[] = $annotation->value;
+        }
+
+        $annotations = $this->getClassOrMethodAnnotations($classOrMethod, Middleware::class);
         foreach ($annotations as $annotation) {
             $descriptor->middlewares[] = $annotation->value;
         }
 
-        $annotations = $this->annotationReader->getClassOrMethodAnnotations($classOrMethod, Tag::class);
+        $annotations = $this->getClassOrMethodAnnotations($classOrMethod, Tag::class);
         foreach ($annotations as $annotation) {
             $descriptor->tags[] = $annotation->value;
         }

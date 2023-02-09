@@ -66,6 +66,20 @@ class Route implements RouteInterface
     private array $methods = [];
 
     /**
+     * The route's consumed content types
+     *
+     * @var list<string>
+     */
+    private array $consumedContentTypes = [];
+
+    /**
+     * The route's produced content types
+     *
+     * @var list<string>
+     */
+    private array $producedContentTypes = [];
+
+    /**
      * The route request handler
      *
      * @var RequestHandlerInterface
@@ -168,6 +182,22 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
+    public function getConsumedContentTypes(): array
+    {
+        return $this->consumedContentTypes;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getProducedContentTypes(): array
+    {
+        return $this->producedContentTypes;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getRequestHandler(): RequestHandlerInterface
     {
         return $this->requestHandler;
@@ -263,6 +293,32 @@ class Route implements RouteInterface
         $this->methods = [];
         foreach ($methods as $method) {
             $this->methods[] = strtoupper($method);
+        }
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setConsumedContentTypes(string ...$contentTypes): RouteInterface
+    {
+        $this->consumedContentTypes = [];
+        foreach ($contentTypes as $contentType) {
+            $this->consumedContentTypes[] = $contentType;
+        }
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setProducedContentTypes(string ...$contentTypes): RouteInterface
+    {
+        $this->producedContentTypes = [];
+        foreach ($contentTypes as $contentType) {
+            $this->producedContentTypes[] = $contentType;
         }
 
         return $this;
@@ -374,6 +430,30 @@ class Route implements RouteInterface
     {
         foreach ($methods as $method) {
             $this->methods[] = strtoupper($method);
+        }
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function addConsumedContentType(string ...$contentTypes): RouteInterface
+    {
+        foreach ($contentTypes as $contentType) {
+            $this->consumedContentTypes[] = $contentType;
+        }
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function addProducedContentType(string ...$contentTypes): RouteInterface
+    {
+        foreach ($contentTypes as $contentType) {
+            $this->producedContentTypes[] = $contentType;
         }
 
         return $this;

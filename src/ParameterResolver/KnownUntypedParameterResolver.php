@@ -18,11 +18,11 @@ use Sunrise\Http\Router\ParameterResolverInterface;
 use ReflectionParameter;
 
 /**
- * KnownNameParameterResolver
+ * KnownUntypedParameterResolver
  *
  * @since 3.0.0
  */
-final class KnownNameParameterResolver implements ParameterResolverInterface
+final class KnownUntypedParameterResolver implements ParameterResolverInterface
 {
 
     /**
@@ -54,7 +54,11 @@ final class KnownNameParameterResolver implements ParameterResolverInterface
             return false;
         }
 
-        return $this->name === $parameter->getName();
+        if (!($parameter->getName() === $this->name)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

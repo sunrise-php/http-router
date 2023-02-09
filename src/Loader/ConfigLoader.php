@@ -16,8 +16,6 @@ namespace Sunrise\Http\Router\Loader;
  */
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\LogicException;
-use Sunrise\Http\Router\ClassResolver;
-use Sunrise\Http\Router\ClassResolverInterface;
 use Sunrise\Http\Router\ParameterResolutioner;
 use Sunrise\Http\Router\ParameterResolutionerInterface;
 use Sunrise\Http\Router\ParameterResolverInterface;
@@ -70,12 +68,12 @@ final class ConfigLoader implements LoaderInterface
     /**
      * @var ParameterResolutionerInterface|null
      */
-    private ?ParameterResolutionerInterface $parameterResolutioner = null;
+    private ?ParameterResolutionerInterface $parameterResolutioner;
 
     /**
      * @var ResponseResolutionerInterface|null
      */
-    private ?ResponseResolutionerInterface $responseResolutioner = null;
+    private ?ResponseResolutionerInterface $responseResolutioner;
 
     /**
      * Constructor of the class
@@ -85,15 +83,13 @@ final class ConfigLoader implements LoaderInterface
      * @param ReferenceResolverInterface|null $referenceResolver
      * @param ParameterResolutionerInterface|null $parameterResolutioner
      * @param ResponseResolutionerInterface|null $responseResolutioner
-     * @param ClassResolverInterface|null $classResolver
      */
     public function __construct(
         ?RouteCollectionFactoryInterface $collectionFactory = null,
         ?RouteFactoryInterface $routeFactory = null,
         ?ReferenceResolverInterface $referenceResolver = null,
         ?ParameterResolutionerInterface $parameterResolutioner = null,
-        ?ResponseResolutionerInterface $responseResolutioner = null,
-        ?ClassResolverInterface $classResolver = null
+        ?ResponseResolutionerInterface $responseResolutioner = null
     ) {
         $this->collectionFactory = $collectionFactory ?? new RouteCollectionFactory();
         $this->routeFactory = $routeFactory ?? new RouteFactory();
@@ -103,8 +99,7 @@ final class ConfigLoader implements LoaderInterface
 
         $this->referenceResolver = $referenceResolver ?? new ReferenceResolver(
             $this->parameterResolutioner ??= new ParameterResolutioner(),
-            $this->responseResolutioner ??= new ResponseResolutioner(),
-            $classResolver ?? new ClassResolver($this->parameterResolutioner)
+            $this->responseResolutioner ??= new ResponseResolutioner()
         );
     }
 
@@ -116,8 +111,7 @@ final class ConfigLoader implements LoaderInterface
      * @return void
      *
      * @throws LogicException
-     *         If a custom reference resolver was setted
-     *         and a parameter resolutioner was not passed.
+     *         If a custom reference resolver was setted and a parameter resolutioner wasn't passed.
      *
      * @since 3.0.0
      */
@@ -126,8 +120,7 @@ final class ConfigLoader implements LoaderInterface
         if (!isset($this->parameterResolutioner)) {
             throw new LogicException(
                 'The config route loader cannot accept the parameter resolver(s) ' .
-                'because a custom reference resolver was setted ' .
-                'and a parameter resolutioner was not passed'
+                'because a custom reference resolver was setted and a parameter resolutioner was not passed'
             );
         }
 
@@ -142,8 +135,7 @@ final class ConfigLoader implements LoaderInterface
      * @return void
      *
      * @throws LogicException
-     *         If a custom reference resolver was setted
-     *         and a response resolutioner was not passed.
+     *         If a custom reference resolver was setted and a response resolutioner wasn't passed.
      *
      * @since 3.0.0
      */
@@ -152,8 +144,7 @@ final class ConfigLoader implements LoaderInterface
         if (!isset($this->responseResolutioner)) {
             throw new LogicException(
                 'The config route loader cannot accept the response resolver(s) ' .
-                'because a custom reference resolver was setted ' .
-                'and a response resolutioner was not passed'
+                'because a custom reference resolver was setted and a response resolutioner was not passed'
             );
         }
 

@@ -19,6 +19,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Exception\InvalidRequestPayloadException;
+use Sunrise\Http\Router\ServerRequest;
 use JsonException;
 
 /**
@@ -27,9 +28,6 @@ use JsonException;
 use function is_array;
 use function json_decode;
 use function sprintf;
-use function strpos;
-use function strstr;
-use function trim;
 
 /**
  * Import constants
@@ -52,10 +50,8 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         if ($this->supportsRequest($request)) {
-            return $handler->handle(
-                $request->withParsedBody(
-                    $this->decodeRequestPayload($request)
-                )
+            $request = $request->withParsedBody(
+                $this->decodeRequestPayload($request)
             );
         }
 
@@ -65,42 +61,17 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
     /**
      * Checks if the given request is supported
      *
-     * @link https://datatracker.ietf.org/doc/html/rfc4627
-     *
      * @param ServerRequestInterface $request
      *
      * @return bool
      */
     private function supportsRequest(ServerRequestInterface $request): bool
     {
-        return $this->getRequestMediaType($request) === 'application/json';
-    }
-
-    /**
-     * Gets a media type from the given request
-     *
-     * Returns null if a media type cannot be retrieved.
-     *
-     * @link https://tools.ietf.org/html/rfc7231#section-3.1.1.1
-     *
-     * @param ServerRequestInterface $request
-     *
-     * @return string|null
-     */
-    private function getRequestMediaType(ServerRequestInterface $request): ?string
-    {
-        if (!$request->hasHeader('Content-Type')) {
-            return null;
+        if (!($request instanceof ServerRequest)) {
+            $request = new ServerRequest($request);
         }
 
-        // type "/" subtype *( OWS ";" OWS parameter )
-        $mediaType = $request->getHeaderLine('Content-Type');
-
-        if (false !== strpos($mediaType, ';')) {
-            $mediaType = strstr($mediaType, ';', true);
-        }
-
-        return trim($mediaType);
+        return $request->isJson();
     }
 
     /**
@@ -125,6 +96,7 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
             throw new InvalidRequestPayloadException(sprintf('Invalid Payload: %s', $e->getMessage()), 0, $e);
         }
 
+        // according to PSR-7 the parsed body can be only an array or an object...
         return is_array($result) ? $result : null;
     }
 }

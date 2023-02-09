@@ -14,23 +14,16 @@ namespace Sunrise\Http\Router\ParameterResolver;
 /**
  * Import classes
  */
-use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\ParameterResolverInterface;
 use ReflectionNamedType;
 use ReflectionParameter;
 
 /**
- * Import classes
- */
-use function get_class;
-use function sprintf;
-
-/**
- * KnownTypeParameterResolver
+ * KnownTypedParameterResolver
  *
  * @since 3.0.0
  */
-final class KnownTypeParameterResolver implements ParameterResolverInterface
+final class KnownTypedParameterResolver implements ParameterResolverInterface
 {
 
     /**
@@ -46,21 +39,9 @@ final class KnownTypeParameterResolver implements ParameterResolverInterface
     /**
      * @param class-string $type
      * @param object $value
-     *
-     * @throws InvalidArgumentException
-     *         If the given value is not an instance of the given type.
      */
     public function __construct(string $type, object $value)
     {
-        if (!($value instanceof $type)) {
-            throw new InvalidArgumentException(sprintf(
-                'The known type parameter resolver cannot accept the value "%s" ' .
-                'because it is not an instance of the "%s"',
-                get_class($value),
-                $type
-            ));
-        }
-
         $this->type = $type;
         $this->value = $value;
     }
@@ -74,7 +55,15 @@ final class KnownTypeParameterResolver implements ParameterResolverInterface
             return false;
         }
 
-        return $this->type === $parameter->getType()->getName();
+        if ($parameter->getType()->isBuiltin()) {
+            return false;
+        }
+
+        if (!($parameter->getType()->getName() === $this->type)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

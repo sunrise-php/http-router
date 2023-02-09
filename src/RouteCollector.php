@@ -53,13 +53,12 @@ class RouteCollector
     /**
      * @var ParameterResolutionerInterface|null
      */
-    private ?ParameterResolutionerInterface $parameterResolutioner = null;
+    private ?ParameterResolutionerInterface $parameterResolutioner;
 
     /**
      * @var ResponseResolutionerInterface|null
      */
-    private ?ResponseResolutionerInterface $responseResolutioner = null;
-
+    private ?ResponseResolutionerInterface $responseResolutioner;
     /**
      * Constructor of the class
      *
@@ -68,7 +67,6 @@ class RouteCollector
      * @param ReferenceResolverInterface|null $referenceResolver
      * @param ParameterResolutionerInterface|null $parameterResolutioner
      * @param ResponseResolutionerInterface|null $responseResolutioner
-     * @param ClassResolverInterface|null $classResolver
      */
     public function __construct(
         ?RouteCollectionFactoryInterface $collectionFactory = null,
@@ -85,8 +83,7 @@ class RouteCollector
 
         $this->referenceResolver = $referenceResolver ?? new ReferenceResolver(
             $this->parameterResolutioner ??= new ParameterResolutioner(),
-            $this->responseResolutioner ??= new ResponseResolutioner(),
-            $classResolver ?? new ClassResolver($this->parameterResolutioner)
+            $this->responseResolutioner ??= new ResponseResolutioner()
         );
 
         $this->collection = $this->collectionFactory->createCollection();
@@ -103,16 +100,6 @@ class RouteCollector
     }
 
     /**
-     * Gets the collector's routes
-     *
-     * @return list<RouteInterface>
-     */
-    public function getRoutes(): array
-    {
-        return $this->collection->all();
-    }
-
-    /**
      * Adds the given parameter resolver(s) to the parameter resolutioner
      *
      * @param ParameterResolverInterface ...$resolvers
@@ -120,8 +107,7 @@ class RouteCollector
      * @return void
      *
      * @throws LogicException
-     *         If a custom reference resolver was setted
-     *         and a parameter resolutioner was not passed.
+     *         If a custom reference resolver was setted and a parameter resolutioner wasn't passed.
      *
      * @since 3.0.0
      */
@@ -130,8 +116,7 @@ class RouteCollector
         if (!isset($this->parameterResolutioner)) {
             throw new LogicException(
                 'The route collector cannot accept the parameter resolver(s) ' .
-                'because a custom reference resolver was setted ' .
-                'and a parameter resolutioner was not passed'
+                'because a custom reference resolver was setted and a parameter resolutioner was not passed'
             );
         }
 
@@ -146,8 +131,7 @@ class RouteCollector
      * @return void
      *
      * @throws LogicException
-     *         If a custom reference resolver was setted
-     *         and a response resolutioner was not passed.
+     *         If a custom reference resolver was setted and a response resolutioner wasn't passed.
      *
      * @since 3.0.0
      */
@@ -156,8 +140,7 @@ class RouteCollector
         if (!isset($this->responseResolutioner)) {
             throw new LogicException(
                 'The route collector cannot accept the response resolver(s) ' .
-                'because a custom reference resolver was setted ' .
-                'and a response resolutioner was not passed'
+                'because a custom reference resolver was setted and a response resolutioner was not passed'
             );
         }
 

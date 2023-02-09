@@ -73,6 +73,28 @@ interface RouteCollectionInterface extends Countable
     public function setHost(string $host): RouteCollectionInterface;
 
     /**
+     * Sets the given consumed content type(s) to all routes in the collection
+     *
+     * @param string ...$contentTypes
+     *
+     * @return RouteCollectionInterface
+     *
+     * @since 3.0.0
+     */
+    public function setConsumedContentTypes(string ...$contentTypes): RouteCollectionInterface;
+
+    /**
+     * Sets the given produced content type(s) to all routes in the collection
+     *
+     * @param string ...$contentTypes
+     *
+     * @return RouteCollectionInterface
+     *
+     * @since 3.0.0
+     */
+    public function setProducedContentTypes(string ...$contentTypes): RouteCollectionInterface;
+
+    /**
      * Sets the given attribute to all routes in the collection
      *
      * @param string $name
@@ -116,6 +138,28 @@ interface RouteCollectionInterface extends Countable
      * @since 2.9.0
      */
     public function addMethod(string ...$methods): RouteCollectionInterface;
+
+    /**
+     * Adds the given consumed content type(s) to all routes in the collection
+     *
+     * @param string ...$contentTypes
+     *
+     * @return RouteCollectionInterface
+     *
+     * @since 3.0.0
+     */
+    public function addConsumedContentType(string ...$contentTypes): RouteCollectionInterface;
+
+    /**
+     * Adds the given produced content type(s) to all routes in the collection
+     *
+     * @param string ...$contentTypes
+     *
+     * @return RouteCollectionInterface
+     *
+     * @since 3.0.0
+     */
+    public function addProducedContentType(string ...$contentTypes): RouteCollectionInterface;
 
     /**
      * Adds the given middleware(s) to all routes in the collection

@@ -102,6 +102,30 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * {@inheritdoc}
      */
+    public function setConsumedContentTypes(string ...$contentTypes): RouteCollectionInterface
+    {
+        foreach ($this->routes as $route) {
+            $route->setConsumedContentTypes(...$contentTypes);
+        }
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setProducedContentTypes(string ...$contentTypes): RouteCollectionInterface
+    {
+        foreach ($this->routes as $route) {
+            $route->setProducedContentTypes(...$contentTypes);
+        }
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function setAttribute(string $name, $value): RouteCollectionInterface
     {
         foreach ($this->routes as $route) {
@@ -142,6 +166,30 @@ class RouteCollection implements RouteCollectionInterface
     {
         foreach ($this->routes as $route) {
             $route->addMethod(...$methods);
+        }
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function addConsumedContentType(string ...$contentTypes): RouteCollectionInterface
+    {
+        foreach ($this->routes as $route) {
+            $route->addConsumedContentType(...$contentTypes);
+        }
+
+        return $this;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function addProducedContentType(string ...$contentTypes): RouteCollectionInterface
+    {
+        foreach ($this->routes as $route) {
+            $route->addProducedContentType(...$contentTypes);
         }
 
         return $this;

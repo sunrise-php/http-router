@@ -31,6 +31,8 @@ use Psr\Http\Server\MiddlewareInterface;
  *   @Attribute("path", type="string", required=true),
  *   @Attribute("method", type="string"),
  *   @Attribute("methods", type="array<string>"),
+ *   @Attribute("consumes", type="array<string>"),
+ *   @Attribute("produces", type="array<string>"),
  *   @Attribute("middlewares", type="array<string>"),
  *   @Attribute("attributes", type="array"),
  *   @Attribute("summary", type="string"),
@@ -79,6 +81,24 @@ final class Route implements RequestMethodInterface
      * @var list<string>
      */
     public array $methods;
+
+    /**
+     * The route's consumed content types
+     *
+     * @var list<string>
+     *
+     * @since 3.0.0
+     */
+    public array $consumes;
+
+    /**
+     * The route's produced content types
+     *
+     * @var list<string>
+     *
+     * @since 3.0.0
+     */
+    public array $produces;
 
     /**
      * The route middlewares
@@ -130,6 +150,8 @@ final class Route implements RequestMethodInterface
      * @param  string                                   $path         The route path
      * @param  string|null                              $method       The route method
      * @param  list<string>                             $methods      The route methods
+     * @param  list<string>                             $consumes     The route's consumed content types
+     * @param  list<string>                             $produces     The route's produced content types
      * @param  list<class-string<MiddlewareInterface>>  $middlewares  The route middlewares
      * @param  array<string, mixed>                     $attributes   The route attributes
      * @param  string                                   $summary      The route summary
@@ -143,6 +165,8 @@ final class Route implements RequestMethodInterface
         string $path = '/',
         ?string $method = null,
         array $methods = [],
+        array $consumes = [],
+        array $produces = [],
         array $middlewares = [],
         array $attributes = [],
         string $summary = '',
@@ -164,6 +188,8 @@ final class Route implements RequestMethodInterface
         $this->host = $host;
         $this->path = $path;
         $this->methods = $methods;
+        $this->consumes = $consumes;
+        $this->produces = $produces;
         $this->middlewares = $middlewares;
         $this->attributes = $attributes;
         $this->summary = $summary;

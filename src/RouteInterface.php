@@ -68,6 +68,24 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
     public function getMethods(): array;
 
     /**
+     * Gets the route's consumed content types
+     *
+     * @return list<string>
+     *
+     * @since 3.0.0
+     */
+    public function getConsumedContentTypes(): array;
+
+    /**
+     * Gets the route's produced content types
+     *
+     * @return list<string>
+     *
+     * @since 3.0.0
+     */
+    public function getProducedContentTypes(): array;
+
+    /**
      * Gets the route request handler
      *
      * @return RequestHandlerInterface
@@ -161,6 +179,28 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
      * @return RouteInterface
      */
     public function setMethods(string ...$methods): RouteInterface;
+
+    /**
+     * Sets the given consumed content type(s) to the route
+     *
+     * @param string ...$contentTypes
+     *
+     * @return RouteInterface
+     *
+     * @since 3.0.0
+     */
+    public function setConsumedContentTypes(string ...$contentTypes): RouteInterface;
+
+    /**
+     * Sets the given produced content type(s) to the route
+     *
+     * @param string ...$contentTypes
+     *
+     * @return RouteInterface
+     *
+     * @since 3.0.0
+     */
+    public function setProducedContentTypes(string ...$contentTypes): RouteInterface;
 
     /**
      * Sets the given request handler to the route
@@ -260,6 +300,28 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
      * @return RouteInterface
      */
     public function addMethod(string ...$methods): RouteInterface;
+
+    /**
+     * Adds the given consumed content type(s) to the route
+     *
+     * @param string ...$contentTypes
+     *
+     * @return RouteInterface
+     *
+     * @since 3.0.0
+     */
+    public function addConsumedContentType(string ...$contentTypes): RouteInterface;
+
+    /**
+     * Adds the given produced content type(s) to the route
+     *
+     * @param string ...$contentTypes
+     *
+     * @return RouteInterface
+     *
+     * @since 3.0.0
+     */
+    public function addProducedContentType(string ...$contentTypes): RouteInterface;
 
     /**
      * Adds the given middleware(s) to the route
