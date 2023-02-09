@@ -19,6 +19,7 @@ use Doctrine\Common\Annotations\Reader as AnnotationReaderInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\SimpleCache\CacheInterface;
 use Sunrise\Http\Router\Annotation\Consume;
+use Sunrise\Http\Router\Annotation\Description;
 use Sunrise\Http\Router\Annotation\Host;
 use Sunrise\Http\Router\Annotation\Method;
 use Sunrise\Http\Router\Annotation\Middleware;
@@ -26,6 +27,7 @@ use Sunrise\Http\Router\Annotation\Postfix;
 use Sunrise\Http\Router\Annotation\Prefix;
 use Sunrise\Http\Router\Annotation\Produce;
 use Sunrise\Http\Router\Annotation\Route;
+use Sunrise\Http\Router\Annotation\Summary;
 use Sunrise\Http\Router\Annotation\Tag;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\LogicException;
@@ -54,6 +56,7 @@ use function class_exists;
 use function hash;
 use function is_dir;
 use function is_string;
+use function sprintf;
 use function usort;
 use function Sunrise\Http\Router\get_dir_classes;
 
@@ -513,6 +516,16 @@ final class DescriptorLoader implements LoaderInterface
         $annotations = $this->getClassOrMethodAnnotations($classOrMethod, Middleware::class);
         foreach ($annotations as $annotation) {
             $descriptor->middlewares[] = $annotation->value;
+        }
+
+        $annotations = $this->getClassOrMethodAnnotations($classOrMethod, Summary::class);
+        foreach ($annotations as $annotation) {
+            $descriptor->summary .= $annotation->value;
+        }
+
+        $annotations = $this->getClassOrMethodAnnotations($classOrMethod, Description::class);
+        foreach ($annotations as $annotation) {
+            $descriptor->description .= $annotation->value;
         }
 
         $annotations = $this->getClassOrMethodAnnotations($classOrMethod, Tag::class);

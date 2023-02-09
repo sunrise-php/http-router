@@ -38,6 +38,7 @@ use function glob;
 use function is_dir;
 use function is_file;
 use function is_string;
+use function sprintf;
 
 /**
  * ConfigLoader
