@@ -15,31 +15,40 @@ namespace Sunrise\Http\Router;
  * Import classes
  */
 use Psr\Http\Server\MiddlewareInterface;
+use Sunrise\Http\Router\Exception\RouteAlreadyExistsException;
+use Sunrise\Http\Router\Exception\RouteNotFoundException;
 use Countable;
+use Iterator;
+use IteratorAggregate;
 
 /**
  * RouteCollectionInterface
+ *
+ * @extends IteratorAggregate<int, RouteInterface>
  */
-interface RouteCollectionInterface extends Countable
+interface RouteCollectionInterface extends Countable, IteratorAggregate
 {
 
     /**
      * Gets all routes from the collection
      *
-     * @return list<RouteInterface>
+     * @return Iterator<int, RouteInterface>
      */
-    public function all(): array;
+    public function all(): Iterator;
 
     /**
-     * Gets a route by the given name
+     * Gets all routes from the collection by the given host
      *
-     * @param string $name
+     * This method should first return all routes that are served on the given host,
+     * and then return all routes that are not bound to any host.
      *
-     * @return RouteInterface|null
+     * @param string|null $host
      *
-     * @since 2.10.0
+     * @return Iterator<int, RouteInterface>
+     *
+     * @since 3.0.0
      */
-    public function get(string $name): ?RouteInterface;
+    public function allByHost(?string $host): Iterator;
 
     /**
      * Checks by the given name if a route exists in the collection
@@ -53,11 +62,28 @@ interface RouteCollectionInterface extends Countable
     public function has(string $name): bool;
 
     /**
+     * Gets a route by the given name
+     *
+     * @param string $name
+     *
+     * @return RouteInterface
+     *
+     * @throws RouteNotFoundException
+     *         If the collection doesn't contain a route with the name.
+     *
+     * @since 2.10.0
+     */
+    public function get(string $name): RouteInterface;
+
+    /**
      * Adds the given route(s) to the collection
      *
      * @param RouteInterface ...$routes
      *
      * @return RouteCollectionInterface
+     *
+     * @throws RouteAlreadyExistsException
+     *         If the collection already contains a route with the name.
      */
     public function add(RouteInterface ...$routes): RouteCollectionInterface;
 
@@ -73,26 +99,26 @@ interface RouteCollectionInterface extends Countable
     public function setHost(string $host): RouteCollectionInterface;
 
     /**
-     * Sets the given consumed content type(s) to all routes in the collection
+     * Sets the given consumed media type(s) to all routes in the collection
      *
-     * @param string ...$contentTypes
+     * @param string ...$mediaTypes
      *
      * @return RouteCollectionInterface
      *
      * @since 3.0.0
      */
-    public function setConsumedContentTypes(string ...$contentTypes): RouteCollectionInterface;
+    public function setConsumedMediaTypes(string ...$mediaTypes): RouteCollectionInterface;
 
     /**
-     * Sets the given produced content type(s) to all routes in the collection
+     * Sets the given produced media type(s) to all routes in the collection
      *
-     * @param string ...$contentTypes
+     * @param string ...$mediaTypes
      *
      * @return RouteCollectionInterface
      *
      * @since 3.0.0
      */
-    public function setProducedContentTypes(string ...$contentTypes): RouteCollectionInterface;
+    public function setProducedMediaTypes(string ...$mediaTypes): RouteCollectionInterface;
 
     /**
      * Sets the given attribute to all routes in the collection
@@ -140,26 +166,26 @@ interface RouteCollectionInterface extends Countable
     public function addMethod(string ...$methods): RouteCollectionInterface;
 
     /**
-     * Adds the given consumed content type(s) to all routes in the collection
+     * Adds the given consumed media type(s) to all routes in the collection
      *
-     * @param string ...$contentTypes
+     * @param string ...$mediaTypes
      *
      * @return RouteCollectionInterface
      *
      * @since 3.0.0
      */
-    public function addConsumedContentType(string ...$contentTypes): RouteCollectionInterface;
+    public function addConsumedMediaType(string ...$mediaTypes): RouteCollectionInterface;
 
     /**
-     * Adds the given produced content type(s) to all routes in the collection
+     * Adds the given produced media type(s) to all routes in the collection
      *
-     * @param string ...$contentTypes
+     * @param string ...$mediaTypes
      *
      * @return RouteCollectionInterface
      *
      * @since 3.0.0
      */
-    public function addProducedContentType(string ...$contentTypes): RouteCollectionInterface;
+    public function addProducedMediaType(string ...$mediaTypes): RouteCollectionInterface;
 
     /**
      * Adds the given middleware(s) to all routes in the collection

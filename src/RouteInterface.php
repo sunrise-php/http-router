@@ -68,22 +68,22 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
     public function getMethods(): array;
 
     /**
-     * Gets the route's consumed content types
+     * Gets the route's consumed media types
      *
      * @return list<string>
      *
      * @since 3.0.0
      */
-    public function getConsumedContentTypes(): array;
+    public function getConsumedMediaTypes(): array;
 
     /**
-     * Gets the route's produced content types
+     * Gets the route's produced media types
      *
      * @return list<string>
      *
      * @since 3.0.0
      */
-    public function getProducedContentTypes(): array;
+    public function getProducedMediaTypes(): array;
 
     /**
      * Gets the route request handler
@@ -181,26 +181,26 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
     public function setMethods(string ...$methods): RouteInterface;
 
     /**
-     * Sets the given consumed content type(s) to the route
+     * Sets the given consumed media type(s) to the route
      *
-     * @param string ...$contentTypes
+     * @param string ...$mediaTypes
      *
      * @return RouteInterface
      *
      * @since 3.0.0
      */
-    public function setConsumedContentTypes(string ...$contentTypes): RouteInterface;
+    public function setConsumedMediaTypes(string ...$mediaTypes): RouteInterface;
 
     /**
-     * Sets the given produced content type(s) to the route
+     * Sets the given produced media type(s) to the route
      *
-     * @param string ...$contentTypes
+     * @param string ...$mediaTypes
      *
      * @return RouteInterface
      *
      * @since 3.0.0
      */
-    public function setProducedContentTypes(string ...$contentTypes): RouteInterface;
+    public function setProducedMediaTypes(string ...$mediaTypes): RouteInterface;
 
     /**
      * Sets the given request handler to the route
@@ -302,26 +302,26 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
     public function addMethod(string ...$methods): RouteInterface;
 
     /**
-     * Adds the given consumed content type(s) to the route
+     * Adds the given consumed media type(s) to the route
      *
-     * @param string ...$contentTypes
+     * @param string ...$mediaTypes
      *
      * @return RouteInterface
      *
      * @since 3.0.0
      */
-    public function addConsumedContentType(string ...$contentTypes): RouteInterface;
+    public function addConsumedMediaType(string ...$mediaTypes): RouteInterface;
 
     /**
-     * Adds the given produced content type(s) to the route
+     * Adds the given produced media type(s) to the route
      *
-     * @param string ...$contentTypes
+     * @param string ...$mediaTypes
      *
      * @return RouteInterface
      *
      * @since 3.0.0
      */
-    public function addProducedContentType(string ...$contentTypes): RouteInterface;
+    public function addProducedMediaType(string ...$mediaTypes): RouteInterface;
 
     /**
      * Adds the given middleware(s) to the route

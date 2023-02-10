@@ -12,13 +12,10 @@
 namespace Sunrise\Http\Router\Exception;
 
 /**
- * Import classes
+ * RouteAlreadyExistsException
+ *
+ * @since 3.0.0
  */
-use Sunrise\Http\Router\Exception\Http\HttpNotFoundException;
-
-/**
- * PageNotFoundException
- */
-class PageNotFoundException extends HttpNotFoundException
+class RouteAlreadyExistsException extends LogicException
 {
 }

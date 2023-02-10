@@ -34,13 +34,6 @@ class HttpUnsupportedMediaTypeException extends HttpException
 {
 
     /**
-     * Unsupported media type
-     *
-     * @var string
-     */
-    private string $unsupportedMediaType;
-
-    /**
      * Supported media types
      *
      * @var list<string>
@@ -50,14 +43,12 @@ class HttpUnsupportedMediaTypeException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param string $unsupportedMediaType
      * @param string[] $supportedMediaTypes
      * @param ?string $message
      * @param int $code
      * @param ?Throwable $previous
      */
     public function __construct(
-        string $unsupportedMediaType,
         array $supportedMediaTypes,
         ?string $message = null,
         int $code = 0,
@@ -67,20 +58,9 @@ class HttpUnsupportedMediaTypeException extends HttpException
 
         parent::__construct(self::STATUS_UNSUPPORTED_MEDIA_TYPE, $message, $code, $previous);
 
-        $this->unsupportedMediaType = $unsupportedMediaType;
         foreach ($supportedMediaTypes as $supportedMediaType) {
             $this->supportedMediaTypes[] = $supportedMediaType;
         }
-    }
-
-    /**
-     * Gets unsupported media type
-     *
-     * @return string
-     */
-    final public function getType(): string
-    {
-        return $this->unsupportedMediaType;
     }
 
     /**

@@ -35,13 +35,6 @@ class HttpMethodNotAllowedException extends HttpException
 {
 
     /**
-     * Unallowed HTTP method
-     *
-     * @var string
-     */
-    private string $unallowedMethod;
-
-    /**
      * Allowed HTTP methods
      *
      * @var list<string>
@@ -51,14 +44,12 @@ class HttpMethodNotAllowedException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param string $unallowedMethod
      * @param string[] $allowedMethods
      * @param ?string $message
      * @param int $code
      * @param ?Throwable $previous
      */
     public function __construct(
-        string $unallowedMethod,
         array $allowedMethods,
         ?string $message = null,
         int $code = 0,
@@ -68,20 +59,9 @@ class HttpMethodNotAllowedException extends HttpException
 
         parent::__construct(self::STATUS_METHOD_NOT_ALLOWED, $message, $code, $previous);
 
-        $this->unallowedMethod = $unallowedMethod;
         foreach ($allowedMethods as $allowedMethod) {
             $this->allowedMethods[] = $allowedMethod;
         }
-    }
-
-    /**
-     * Gets unallowed HTTP method
-     *
-     * @return string
-     */
-    final public function getMethod(): string
-    {
-        return $this->unallowedMethod;
     }
 
     /**

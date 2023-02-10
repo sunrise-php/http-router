@@ -15,11 +15,15 @@ namespace Sunrise\Http\Router;
  * Import classes
  */
 use Psr\Http\Server\MiddlewareInterface;
+use Sunrise\Http\Router\Exception\RouteAlreadyExistsException;
+use Sunrise\Http\Router\Exception\RouteNotFoundException;
+use Iterator;
 
 /**
  * Import functions
  */
 use function count;
+use function sprintf;
 
 /**
  * RouteCollection
@@ -30,11 +34,19 @@ class RouteCollection implements RouteCollectionInterface
 {
 
     /**
-     * The collection routes
-     *
+     * @var string
+     */
+    private const ANY_HOST = '*';
+
+    /**
      * @var array<string, RouteInterface>
      */
     private array $routes = [];
+
+    /**
+     * @var array<string, list<string>>
+     */
+    private array $hostMap = [];
 
     /**
      * Constructor of the class
@@ -49,22 +61,39 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * {@inheritdoc}
      */
-    public function all(): array
+    public function getIterator(): Iterator
     {
-        $routes = [];
         foreach ($this->routes as $route) {
-            $routes[] = $route;
+            yield $route;
         }
-
-        return $routes;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function get(string $name): ?RouteInterface
+    public function all(): Iterator
     {
-        return $this->routes[$name] ?? null;
+        foreach ($this->routes as $route) {
+            yield $route;
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function allByHost(?string $host): Iterator
+    {
+        if (isset($host, $this->hostMap[$host])) {
+            foreach ($this->hostMap[$host] as $name) {
+                yield $this->routes[$name];
+            }
+        }
+
+        if (isset($this->hostMap[self::ANY_HOST])) {
+            foreach ($this->hostMap[self::ANY_HOST] as $name) {
+                yield $this->routes[$name];
+            }
+        }
     }
 
     /**
@@ -78,10 +107,36 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * {@inheritdoc}
      */
+    public function get(string $name): RouteInterface
+    {
+        if (!isset($this->routes[$name])) {
+            throw new RouteNotFoundException(sprintf(
+                'The collection does not contain a route with the name %s',
+                $name
+            ));
+        }
+
+        return $this->routes[$name];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function add(RouteInterface ...$routes): RouteCollectionInterface
     {
         foreach ($routes as $route) {
-            $this->routes[$route->getName()] = $route;
+            $name = $route->getName();
+            $host = $route->getHost() ?? self::ANY_HOST;
+
+            if (isset($this->routes[$name])) {
+                throw new RouteAlreadyExistsException(sprintf(
+                    'The collection already contains a route with the name %s',
+                    $name
+                ));
+            }
+
+            $this->routes[$name] = $route;
+            $this->hostMap[$host][] = $name;
         }
 
         return $this;
@@ -102,10 +157,10 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * {@inheritdoc}
      */
-    public function setConsumedContentTypes(string ...$contentTypes): RouteCollectionInterface
+    public function setConsumedMediaTypes(string ...$mediaTypes): RouteCollectionInterface
     {
         foreach ($this->routes as $route) {
-            $route->setConsumedContentTypes(...$contentTypes);
+            $route->setConsumedMediaTypes(...$mediaTypes);
         }
 
         return $this;
@@ -114,10 +169,10 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * {@inheritdoc}
      */
-    public function setProducedContentTypes(string ...$contentTypes): RouteCollectionInterface
+    public function setProducedMediaTypes(string ...$mediaTypes): RouteCollectionInterface
     {
         foreach ($this->routes as $route) {
-            $route->setProducedContentTypes(...$contentTypes);
+            $route->setProducedMediaTypes(...$mediaTypes);
         }
 
         return $this;
@@ -174,10 +229,10 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * {@inheritdoc}
      */
-    public function addConsumedContentType(string ...$contentTypes): RouteCollectionInterface
+    public function addConsumedMediaType(string ...$mediaTypes): RouteCollectionInterface
     {
         foreach ($this->routes as $route) {
-            $route->addConsumedContentType(...$contentTypes);
+            $route->addConsumedMediaType(...$mediaTypes);
         }
 
         return $this;
@@ -186,10 +241,10 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * {@inheritdoc}
      */
-    public function addProducedContentType(string ...$contentTypes): RouteCollectionInterface
+    public function addProducedMediaType(string ...$mediaTypes): RouteCollectionInterface
     {
         foreach ($this->routes as $route) {
-            $route->addProducedContentType(...$contentTypes);
+            $route->addProducedMediaType(...$mediaTypes);
         }
 
         return $this;

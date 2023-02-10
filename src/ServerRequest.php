@@ -17,6 +17,15 @@ namespace Sunrise\Http\Router;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
+ * Import functions
+ */
+use function explode;
+use function strpos;
+use function strstr;
+use function strtolower;
+use function trim;
+
+/**
  * ServerRequest
  *
  * @since 3.0.0
@@ -42,35 +51,140 @@ final class ServerRequest implements ServerRequestInterface
     /**
      * Checks if the request is JSON
      *
-     * @link https://datatracker.ietf.org/doc/html/rfc4627
+     * @link https://tools.ietf.org/html/rfc4627
      *
      * @return bool
      */
     public function isJson(): bool
     {
-        return $this->getContentType() === 'application/json';
+        return $this->getClientProducedMediaType() === 'application/json';
     }
 
     /**
-     * Gets the request media type
+     * Gets the client's produced media type
      *
      * @link https://tools.ietf.org/html/rfc7231#section-3.1.1.1
+     * @link https://tools.ietf.org/html/rfc7231#section-3.1.1.5
      *
-     * @return string|null
+     * @return string
      */
-    public function getContentType(): ?string
+    public function getClientProducedMediaType(): string
     {
-        if (!$this->request->hasHeader('Content-Type')) {
-            return null;
+        $header = $this->request->getHeaderLine('Content-Type');
+        if ($header === '') {
+            return '';
         }
 
-        $result = $this->request->getHeaderLine('Content-Type');
-
-        if (false !== \strpos($result, ';')) {
-            $result = \strstr($result, ';', true);
+        if (strpos($header, ';') !== false) {
+            $header = strstr($header, ';', true);
         }
 
-        return \trim($result);
+        $header = trim($header);
+        if ($header === '') {
+            return '';
+        }
+
+        return strtolower($header);
+    }
+
+    /**
+     * Gets the client's consumed media types
+     *
+     * @link https://tools.ietf.org/html/rfc7231#section-1.2
+     * @link https://tools.ietf.org/html/rfc7231#section-3.1.1.1
+     * @link https://tools.ietf.org/html/rfc7231#section-5.3.2
+     *
+     * @return list<string>
+     */
+    public function getClientConsumedMediaTypes(): array
+    {
+        $header = $this->request->getHeaderLine('Accept');
+        if ($header === '') {
+            return [];
+        }
+
+        $result = [];
+        $accepts = explode(',', $header);
+        foreach ($accepts as $accept) {
+            if (strpos($accept, ';') !== false) {
+                $accept = strstr($accept, ';', true);
+            }
+
+            $accept = trim($accept);
+            if ($accept === '') {
+                continue;
+            }
+
+            if ($accept === '*/*') {
+                return [];
+            }
+
+            $result[] = strtolower($accept);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Checks if the client produces one of the given media types
+     *
+     * @param list<string> $consumedMediaTypes
+     *
+     * @return bool
+     */
+    public function clientProducesMediaType(array $consumedMediaTypes): bool
+    {
+        if ($consumedMediaTypes === []) {
+            return true;
+        }
+
+        $producedMediaType = $this->getClientProducedMediaType();
+        if ($producedMediaType === '') {
+            return false;
+        }
+
+        foreach ($consumedMediaTypes as $consumedMediaType) {
+            if ($consumedMediaType === $producedMediaType) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if the client consumes one of the given media types
+     *
+     * @param list<string> $producedMediaTypes
+     *
+     * @return bool
+     */
+    public function clientConsumesMediaType(array $producedMediaTypes): bool
+    {
+        if ($producedMediaTypes === []) {
+            return true;
+        }
+
+        $consumedMediaTypes = $this->getClientConsumedMediaTypes();
+        if ($consumedMediaTypes === []) {
+            return true;
+        }
+
+        foreach ($producedMediaTypes as $producedMediaType) {
+            if (strpos($producedMediaType, '/') !== false) {
+                $producedMediaTypes[] = strstr($producedMediaType, '/', true) . '/*';
+            }
+        }
+
+        foreach ($consumedMediaTypes as $consumedMediaType) {
+            foreach ($producedMediaTypes as $producedMediaType) {
+                if ($consumedMediaType === $producedMediaType) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**

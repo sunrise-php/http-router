@@ -66,18 +66,18 @@ class Route implements RouteInterface
     private array $methods = [];
 
     /**
-     * The route's consumed content types
+     * The route's consumed media types
      *
      * @var list<string>
      */
-    private array $consumedContentTypes = [];
+    private array $consumedMediaTypes = [];
 
     /**
-     * The route's produced content types
+     * The route's produced media types
      *
      * @var list<string>
      */
-    private array $producedContentTypes = [];
+    private array $producedMediaTypes = [];
 
     /**
      * The route request handler
@@ -182,17 +182,17 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function getConsumedContentTypes(): array
+    public function getConsumedMediaTypes(): array
     {
-        return $this->consumedContentTypes;
+        return $this->consumedMediaTypes;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getProducedContentTypes(): array
+    public function getProducedMediaTypes(): array
     {
-        return $this->producedContentTypes;
+        return $this->producedMediaTypes;
     }
 
     /**
@@ -301,11 +301,11 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function setConsumedContentTypes(string ...$contentTypes): RouteInterface
+    public function setConsumedMediaTypes(string ...$mediaTypes): RouteInterface
     {
-        $this->consumedContentTypes = [];
-        foreach ($contentTypes as $contentType) {
-            $this->consumedContentTypes[] = $contentType;
+        $this->consumedMediaTypes = [];
+        foreach ($mediaTypes as $mediaType) {
+            $this->consumedMediaTypes[] = $mediaType;
         }
 
         return $this;
@@ -314,11 +314,11 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function setProducedContentTypes(string ...$contentTypes): RouteInterface
+    public function setProducedMediaTypes(string ...$mediaTypes): RouteInterface
     {
-        $this->producedContentTypes = [];
-        foreach ($contentTypes as $contentType) {
-            $this->producedContentTypes[] = $contentType;
+        $this->producedMediaTypes = [];
+        foreach ($mediaTypes as $mediaType) {
+            $this->producedMediaTypes[] = $mediaType;
         }
 
         return $this;
@@ -438,10 +438,10 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function addConsumedContentType(string ...$contentTypes): RouteInterface
+    public function addConsumedMediaType(string ...$mediaTypes): RouteInterface
     {
-        foreach ($contentTypes as $contentType) {
-            $this->consumedContentTypes[] = $contentType;
+        foreach ($mediaTypes as $mediaType) {
+            $this->consumedMediaTypes[] = $mediaType;
         }
 
         return $this;
@@ -450,10 +450,10 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function addProducedContentType(string ...$contentTypes): RouteInterface
+    public function addProducedMediaType(string ...$mediaTypes): RouteInterface
     {
-        foreach ($contentTypes as $contentType) {
-            $this->producedContentTypes[] = $contentType;
+        foreach ($mediaTypes as $mediaType) {
+            $this->producedMediaTypes[] = $mediaType;
         }
 
         return $this;

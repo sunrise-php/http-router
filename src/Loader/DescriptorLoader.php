@@ -338,8 +338,8 @@ final class DescriptorLoader implements LoaderInterface
             );
 
             $route->setHost($descriptor->host);
-            $route->setConsumedContentTypes(...$descriptor->consumes);
-            $route->setProducedContentTypes(...$descriptor->produces);
+            $route->setConsumedMediaTypes(...$descriptor->consumes);
+            $route->setProducedMediaTypes(...$descriptor->produces);
             $route->setSummary($descriptor->summary);
             $route->setDescription($descriptor->description);
             $route->setTags(...$descriptor->tags);

@@ -21,21 +21,19 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Event\RouteEvent;
-use Sunrise\Http\Router\Exception\InvalidArgumentException;
-use Sunrise\Http\Router\Exception\PageNotFoundException;
-use Sunrise\Http\Router\Exception\RouteNotFoundException;
-use Sunrise\Http\Router\Exception\MethodNotAllowedException;
+use Sunrise\Http\Router\Exception\Http\HttpMethodNotAllowedException;
+use Sunrise\Http\Router\Exception\Http\HttpNotAcceptableException;
+use Sunrise\Http\Router\Exception\Http\HttpNotFoundException;
+use Sunrise\Http\Router\Exception\Http\HttpUnsupportedMediaTypeException;
 use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
 use Sunrise\Http\Router\RequestHandler\UnsafeCallableRequestHandler;
-use Generator;
 
 /**
  * Import functions
  */
 use function Sunrise\Http\Router\path_build;
 use function Sunrise\Http\Router\path_match;
-use function sprintf;
 
 /**
  * Router
@@ -58,16 +56,16 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     /**
      * The router's host table
      *
-     * @var array<string, list<string>>
+     * @var HostTable
      */
-    private array $hosts = [];
+    private HostTable $hosts;
 
     /**
      * The router's routes
      *
-     * @var array<string, array<string, RouteInterface>>
+     * @var RouteCollectionInterface
      */
-    private array $routes = [];
+    private RouteCollectionInterface $routes;
 
     /**
      * The router's middlewares
@@ -77,6 +75,13 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     private array $middlewares = [];
 
     /**
+     * The router's event dispatcher
+     *
+     * @var EventDispatcherInterface|null
+     */
+    private ?EventDispatcherInterface $eventDispatcher = null;
+
+    /**
      * The router's matched route
      *
      * @var RouteInterface|null
@@ -84,11 +89,20 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     private ?RouteInterface $matchedRoute = null;
 
     /**
-     * The router's event dispatcher
+     * Constructor of the class
      *
-     * @var EventDispatcherInterface|null
+     * @param HostTable|null $hosts
+     * @param RouteCollectionInterface|null $routes
+     *
+     * @since 3.0.0
      */
-    private ?EventDispatcherInterface $eventDispatcher = null;
+    public function __construct(
+        ?HostTable $hosts = null,
+        ?RouteCollectionInterface $routes = null
+    ) {
+        $this->hosts = $hosts ?? new HostTable();
+        $this->routes = $routes ?? new RouteCollection();
+    }
 
     /**
      * Adds the given patterns to the router
@@ -107,283 +121,25 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     }
 
     /**
-     * Adds the given host to the router's host table
-     *
-     * @param string $alias
-     * @param string ...$hostnames
-     *
-     * @return void
-     *
-     * @since 2.6.0
-     */
-    public function addHost(string $alias, string ...$hostnames): void
-    {
-        foreach ($hostnames as $hostname) {
-            $this->hosts[$alias][] = $hostname;
-        }
-    }
-
-    /**
-     * Adds the given hosts to the router's host table
-     *
-     * @param array<string, list<string>> $hosts
-     *
-     * @return void
-     *
-     * @since 2.11.0
-     */
-    public function addHosts(array $hosts): void
-    {
-        foreach ($hosts as $alias => $hostnames) {
-            foreach ($hostnames as $hostname) {
-                $this->hosts[$alias][] = $hostname;
-            }
-        }
-    }
-
-    /**
      * Gets the router's host table
      *
-     * @return array<string, list<string>>
+     * @return HostTable
      *
      * @since 2.6.0
      */
-    public function getHosts(): array
+    public function getHosts(): HostTable
     {
         return $this->hosts;
     }
 
     /**
-     * Resolves the given hostname to its alias
+     * Gets the router's route collection
      *
-     * @param string $hostname
-     *
-     * @return string|null
-     *
-     * @since 2.14.0
+     * @return RouteCollectionInterface
      */
-    public function resolveHostname(string $hostname): ?string
+    public function getRoutes(): RouteCollectionInterface
     {
-        foreach ($this->hosts as $alias => $hostnames) {
-            foreach ($hostnames as $value) {
-                if ($hostname === $value) {
-                    return $alias;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Adds the given route(s) to the router
-     *
-     * @param RouteInterface ...$routes
-     *
-     * @return void
-     */
-    public function addRoute(RouteInterface ...$routes): void
-    {
-        foreach ($routes as $route) {
-            $host = $route->getHost() ?? '*';
-            $name = $route->getName();
-
-            $this->routes[$host][$name] = $route;
-        }
-    }
-
-    /**
-     * Gets all routes
-     *
-     * @return Generator<RouteInterface>
-     */
-    public function getRoutes(): Generator
-    {
-        foreach ($this->routes as $routes) {
-            foreach ($routes as $route) {
-                yield $route;
-            }
-        }
-    }
-
-    /**
-     * Gets routes by the given host
-     *
-     * @param string $host
-     *
-     * @return Generator<RouteInterface>
-     *
-     * @since 3.0.0
-     */
-    public function getRoutesByHost(string $host): Generator
-    {
-        if (isset($this->routes[$host])) {
-            foreach ($this->routes[$host] as $route) {
-                yield $route;
-            }
-        }
-    }
-
-    /**
-     * Gets routes by the given hostname
-     *
-     * @param string $hostname
-     *
-     * @return Generator<RouteInterface>
-     *
-     * @since 2.14.0
-     */
-    public function getRoutesByHostname(string $hostname): Generator
-    {
-        $host = $this->resolveHostname($hostname);
-
-        if (isset($host) && isset($this->routes[$host])) {
-            foreach ($this->routes[$host] as $route) {
-                yield $route;
-            }
-        }
-
-        if (isset($this->routes['*'])) {
-            foreach ($this->routes['*'] as $route) {
-                yield $route;
-            }
-        }
-    }
-
-    /**
-     * Gets a route by the given name
-     *
-     * @param string $name
-     *
-     * @return RouteInterface
-     *
-     * @throws RouteNotFoundException
-     *         If a route wasn't found by the given name.
-     */
-    public function getRoute(string $name): RouteInterface
-    {
-        foreach ($this->routes as $routes) {
-            if (isset($routes[$name])) {
-                return $routes[$name];
-            }
-        }
-
-        throw new RouteNotFoundException(sprintf(
-            'No route found for name "%s"',
-            $name
-        ));
-    }
-
-    /**
-     * Gets a route by the given name and host
-     *
-     * @param string $name
-     * @param string $host
-     *
-     * @return RouteInterface
-     *
-     * @throws RouteNotFoundException
-     *         If a route wasn't found by the given name and host.
-     *
-     * @since 3.0.0
-     */
-    public function getNamedRouteByHost(string $name, string $host): RouteInterface
-    {
-        if (isset($this->routes[$host][$name])) {
-            return $this->routes[$host][$name];
-        }
-
-        throw new RouteNotFoundException(sprintf(
-            'No route found for name "%s" and host "%s"',
-            $name,
-            $host
-        ));
-    }
-
-    /**
-     * Gets a route by the given name and hostname
-     *
-     * @param string $name
-     * @param string $hostname
-     *
-     * @return RouteInterface
-     *
-     * @throws RouteNotFoundException
-     *         If a route wasn't found by the given name and hostname.
-     *
-     * @since 3.0.0
-     */
-    public function getNamedRouteByHostname(string $name, string $hostname): RouteInterface
-    {
-        $host = $this->resolveHostname($hostname);
-
-        if (isset($host) && isset($this->routes[$host][$name])) {
-            return $this->routes[$host][$name];
-        }
-
-        if (isset($this->routes['*'][$name])) {
-            return $this->routes['*'][$name];
-        }
-
-        throw new RouteNotFoundException(sprintf(
-            'No route found for name "%s" and hostname "%s"',
-            $name,
-            $hostname
-        ));
-    }
-
-    /**
-     * Checks if a route exists by the given name
-     *
-     * @return bool
-     */
-    public function hasRoute(string $name): bool
-    {
-        foreach ($this->routes as $routes) {
-            if (isset($routes[$name])) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Checks if a route exists by the given name and host
-     *
-     * @return bool
-     *
-     * @since 3.0.0
-     */
-    public function existsNamedRouteByHost(string $name, string $host): bool
-    {
-        if (isset($this->routes[$host][$name])) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Checks if a route exists by the given name and hostname
-     *
-     * @return bool
-     *
-     * @since 3.0.0
-     */
-    public function existsNamedRouteByHostname(string $name, string $hostname): bool
-    {
-        if (isset($this->routes['*'][$name])) {
-            return true;
-        }
-
-        $host = $this->resolveHostname($hostname);
-
-        if (isset($host) && isset($this->routes[$host][$name])) {
-            return true;
-        }
-
-        return false;
+        return $this->routes;
     }
 
     /**
@@ -454,17 +210,10 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
      * @param bool $strict
      *
      * @return string
-     *
-     * @throws RouteNotFoundException
-     *         If a route wasn't found by the given name.
-     *
-     * @throws Exception\RoutePathBuildException
-     *         If a required attribute value is not given,
-     *         or if an attribute value is not valid in strict mode.
      */
     public function generateUri(string $name, array $attributes = [], bool $strict = false): string
     {
-        $route = $this->getRoute($name);
+        $route = $this->routes->get($name);
 
         $attributes += $route->getAttributes();
 
@@ -478,11 +227,15 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
      *
      * @return RouteInterface
      *
-     * @throws PageNotFoundException
+     * @throws HttpNotFoundException
      *         If the request URI cannot be matched against any route.
      *
-     * @throws MethodNotAllowedException
+     * @throws HttpMethodNotAllowedException
      *         If the request method isn't allowed.
+     *
+     * @throws HttpUnsupportedMediaTypeException
+     *
+     * @throws HttpNotAcceptableException
      */
     public function match(ServerRequestInterface $request): RouteInterface
     {
@@ -492,7 +245,9 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
         $requestMethod = $request->getMethod();
         $allowedMethods = [];
 
-        $routes = $this->getRoutesByHostname($requestHost);
+        $routes = $this->routes->allByHost($this->hosts->resolve($requestHost));
+
+        $request = new ServerRequest($request);
 
         foreach ($routes as $route) {
             // https://github.com/sunrise-php/http-router/issues/50
@@ -511,8 +266,15 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
                 continue;
             }
 
-            // $routeConsumedContentTypes = $route->getConsumedContentTypes();
-            // $routeProducedContentTypes = $route->getProducedContentTypes();
+            $consumedMediaTypes = $route->getConsumedMediaTypes();
+            if (!empty($consumedMediaTypes) && !$request->clientProducesMediaType($consumedMediaTypes)) {
+                throw new HttpUnsupportedMediaTypeException($consumedMediaTypes);
+            }
+
+            $producedMediaTypes = $route->getProducedMediaTypes();
+            if (!empty($producedMediaTypes) && !$request->clientConsumesMediaType($producedMediaTypes)) {
+                throw new HttpNotAcceptableException($producedMediaTypes);
+            }
 
             /** @var array<string, string> $attributes */
 
@@ -520,10 +282,10 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
         }
 
         if (!empty($allowedMethods)) {
-            throw new MethodNotAllowedException($requestMethod, $allowedMethods);
+            throw new HttpMethodNotAllowedException($allowedMethods);
         }
 
-        throw new PageNotFoundException();
+        throw new HttpNotFoundException();
     }
 
     /**
@@ -595,7 +357,7 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     public function load(LoaderInterface ...$loaders): void
     {
         foreach ($loaders as $loader) {
-            $this->addRoute(...$loader->load()->all());
+            $this->routes->add(...$loader->load()->all());
         }
     }
 }
