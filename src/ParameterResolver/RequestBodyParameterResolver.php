@@ -102,14 +102,14 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
     /**
      * {@inheritdoc}
      *
-     * @throws UnhydrableObjectException
-     *         If an object isn't valid.
-     *
      * @throws InvalidRequestBodyException
      *         If the request body structure isn't valid.
      *
      * @throws UnprocessableRequestBodyException
      *         If the request body data isn't valid.
+     *
+     * @throws UnhydrableObjectException
+     *         If an object isn't valid.
      */
     public function resolveParameter(ReflectionParameter $parameter, $context)
     {
@@ -117,10 +117,10 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
         $context = $context;
 
         /** @var ReflectionNamedType */
-        $type = $parameter->getType();
+        $parameterType = $parameter->getType();
 
         try {
-            $object = $this->hydrator->hydrate($type->getName(), (array) $context->getParsedBody());
+            $object = $this->hydrator->hydrate($parameterType->getName(), (array) $context->getParsedBody());
         } catch (InvalidObjectException $e) {
             throw new UnhydrableObjectException($e->getMessage(), 0, $e);
         } catch (InvalidValueException $e) {

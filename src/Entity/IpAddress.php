@@ -15,6 +15,7 @@ namespace Sunrise\Http\Router\Entity;
  * Import functions
  */
 use function filter_var;
+use function ip2long;
 
 /**
  * Import constants
@@ -116,6 +117,25 @@ final class IpAddress
         }
 
         return false === filter_var($this->value, FILTER_VALIDATE_IP, FILTER_FLAG_NO_RES_RANGE);
+    }
+
+    /**
+     * Converts the IP address to an integer if it possible
+     *
+     * @return int|null
+     */
+    public function toLong(): ?int
+    {
+        if (!$this->isVersion4()) {
+            return null;
+        }
+
+        $long = ip2long($this->value);
+        if ($long === false) {
+            return null;
+        }
+
+        return $long;
     }
 
     /**

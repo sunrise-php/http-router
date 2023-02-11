@@ -285,7 +285,7 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
             throw new HttpMethodNotAllowedException($allowedMethods);
         }
 
-        throw new HttpNotFoundException();
+        throw new HttpNotFoundException('Page Not Found');
     }
 
     /**

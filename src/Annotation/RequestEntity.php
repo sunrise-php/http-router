@@ -28,13 +28,13 @@ final class RequestEntity
      *
      * @param string|null $em
      * @param string $findBy
-     * @param string $paramKey
+     * @param string|null $paramKey
      * @param array<string, mixed> $criteria
      */
     public function __construct(
         public ?string $em = null,
         public string $findBy = 'id',
-        public string $paramKey = 'id',
+        public ?string $paramKey = null,
         public array $criteria = []
     ) {
     }

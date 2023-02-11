@@ -18,17 +18,15 @@ use Doctrine\Persistence\ManagerRegistry as EntityManagerRegistryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Sunrise\Http\Router\Annotation\RequestEntity;
 use Sunrise\Http\Router\Exception\EntityNotFoundException;
-use Sunrise\Http\Router\Exception\ResolvingParameterException;
+use Sunrise\Http\Router\Exception\MissingRequestParameterException;
 use Sunrise\Http\Router\ParameterResolverInterface;
 use ReflectionAttribute;
-use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionParameter;
 
 /**
  * Import functions
  */
-use function class_exists;
 use function sprintf;
 
 /**
@@ -78,6 +76,12 @@ final class RequestEntityParameterResolver implements ParameterResolverInterface
 
     /**
      * {@inheritdoc}
+     *
+     * @throws MissingRequestParameterException
+     *         If an entity ID was not found in the request parameters.
+     *
+     * @throws EntityNotFoundException
+     *         If an entity was not found.
      */
     public function resolveParameter(ReflectionParameter $parameter, $context)
     {
@@ -85,63 +89,36 @@ final class RequestEntityParameterResolver implements ParameterResolverInterface
         $context = $context;
 
         /** @var ReflectionNamedType */
-        $type = $parameter->getType();
+        $parameterType = $parameter->getType();
 
-        /** @var array{0: ReflectionAttribute} */
-        $attributes = $parameter->getAttributes(RequestEntity::class);
+        /** @var non-empty-list<ReflectionAttribute> */
+        $parameterRequestEntityAttributes = $parameter->getAttributes(RequestEntity::class);
 
         /** @var RequestEntity */
-        $requestEntity = $attributes[0]->newInstance();
+        $requestEntity = $parameterRequestEntityAttributes[0]->newInstance();
 
-        /** @var mixed */
-        $entityId = $context->getAttribute($requestEntity->paramKey);
+        // if no request parameter key was assigned, the entity field name will be used...
+        $requestParameterKey = $requestEntity->paramKey ?? $requestEntity->findBy;
+
+        /** @var string|null */
+        $entityId = $context->getAttribute($requestParameterKey);
+
         if (!isset($entityId)) {
-            throw new ResolvingParameterException(sprintf(
-                '{%s} Unable to get Entity ID (%s) by key %s from the request attributes',
-                $this->stringifyParameter($parameter),
-                $requestEntity->findBy,
-                $requestEntity->paramKey
+            throw new MissingRequestParameterException(sprintf(
+                'Missing the %s parameter in the request',
+                $requestParameterKey
             ));
         }
 
-        $entityName = $type->getName();
-        if (!class_exists($entityName)) {
-            throw new ResolvingParameterException(sprintf(
-                '{%s} Entity %s does not exist',
-                $this->stringifyParameter($parameter),
-                $entityName
-            ));
-        }
+        $criteria = $requestEntity->criteria;
+        $criteria[$requestEntity->findBy] = $entityId;
 
-        $entityManager = isset($requestEntity->em) ?
-            $this->entityManagerRegistry->getManager($requestEntity->em) :
-            $this->entityManagerRegistry->getManagerForClass($entityName);
+        /** @var class-string */
+        $entityName = $parameterType->getName();
 
-        if (!isset($entityManager)) {
-            throw new ResolvingParameterException(sprintf(
-                '{%s} Unable to get Entity Manager for %s',
-                $this->stringifyParameter($parameter),
-                $entityName
-            ));
-        }
-
-        $entityMetadata = $entityManager->getClassMetadata($entityName);
-        if (!$entityMetadata->hasField($requestEntity->findBy)) {
-            throw new ResolvingParameterException(sprintf(
-                '{%s} Entity %s does not contain field %s',
-                $this->stringifyParameter($parameter),
-                $entityName,
-                $requestEntity->findBy
-            ));
-        }
-
-        $criteria = [
-            $requestEntity->findBy => $entityId,
-        ];
-
-        $criteria += $requestEntity->criteria;
-
-        $entity = $entityManager->getRepository($entityName)
+        $entity = $this->entityManagerRegistry
+            ->getManager($requestEntity->em)
+            ->getRepository($entityName)
             ->findOneBy($criteria);
 
         if (isset($entity)) {
@@ -152,41 +129,6 @@ final class RequestEntityParameterResolver implements ParameterResolverInterface
             return null;
         }
 
-        throw new EntityNotFoundException(sprintf(
-            '%s Not Found',
-            $entityMetadata->getReflectionClass()->getShortName()
-        ));
-    }
-
-    /**
-     * Stringifies the given parameter
-     *
-     * @param ReflectionParameter $parameter
-     *
-     * @return string
-     */
-    private function stringifyParameter(ReflectionParameter $parameter): string
-    {
-        /** @var ReflectionNamedType */
-        $parameterType = $parameter->getType();
-
-        if ($parameter->getDeclaringFunction() instanceof ReflectionMethod) {
-            return sprintf(
-                '%s::%s(%s $%s[%d])',
-                $parameter->getDeclaringFunction()->getDeclaringClass()->getName(),
-                $parameter->getDeclaringFunction()->getName(),
-                $parameterType->getName(),
-                $parameter->getName(),
-                $parameter->getPosition()
-            );
-        }
-
-        return sprintf(
-            '%s(%s $%s[%d])',
-            $parameter->getDeclaringFunction()->getName(),
-            $parameterType->getName(),
-            $parameter->getName(),
-            $parameter->getPosition()
-        );
+        throw new EntityNotFoundException('Entity Not Found');
     }
 }
