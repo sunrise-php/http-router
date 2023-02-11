@@ -178,7 +178,7 @@ final class ServerRequest implements ServerRequestInterface
         }
 
         foreach ($consumedMediaTypes as $consumedMediaType) {
-            if ($this->compareMediaTypes($consumedMediaType, $producedMediaType)) {
+            if ($this->equalsMediaTypes($consumedMediaType, $producedMediaType)) {
                 return true;
             }
         }
@@ -206,7 +206,7 @@ final class ServerRequest implements ServerRequestInterface
 
         foreach ($producedMediaTypes as $a) {
             foreach ($consumedMediaTypes as $b) {
-                if ($this->compareMediaTypes($a, $b)) {
+                if ($this->equalsMediaTypes($a, $b)) {
                     return true;
                 }
             }
@@ -216,14 +216,14 @@ final class ServerRequest implements ServerRequestInterface
     }
 
     /**
-     * Compares the given media types
+     * Checks if the given media types are equal
      *
      * @param string $a
      * @param string $b
      *
      * @return bool
      */
-    public function compareMediaTypes(string $a, string $b): bool
+    public function equalsMediaTypes(string $a, string $b): bool
     {
         if ($a === $b) {
             return true;
