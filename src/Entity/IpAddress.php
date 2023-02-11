@@ -19,7 +19,6 @@ use function filter_var;
 /**
  * Import constants
  */
-use const FILTER_FLAG_GLOBAL_RANGE;
 use const FILTER_FLAG_IPV4;
 use const FILTER_FLAG_IPV6;
 use const FILTER_FLAG_NO_PRIV_RANGE;
@@ -89,16 +88,6 @@ final class IpAddress
     public function isVersion6(): bool
     {
         return false !== filter_var($this->value, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6);
-    }
-
-    /**
-     * Checks if the IP address is in the global range
-     *
-     * @return bool
-     */
-    public function isInGlobalRange(): bool
-    {
-        return false !== filter_var($this->value, FILTER_VALIDATE_IP, FILTER_FLAG_GLOBAL_RANGE);
     }
 
     /**
