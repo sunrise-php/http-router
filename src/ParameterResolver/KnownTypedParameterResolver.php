@@ -21,24 +21,26 @@ use ReflectionParameter;
 /**
  * KnownTypedParameterResolver
  *
+ * @template T as object
+ *
  * @since 3.0.0
  */
 final class KnownTypedParameterResolver implements ParameterResolverInterface
 {
 
     /**
-     * @var class-string
+     * @var class-string<T>
      */
     private string $type;
 
     /**
-     * @var object
+     * @var T
      */
     private object $value;
 
     /**
-     * @param class-string $type
-     * @param object $value
+     * @param class-string<T> $type
+     * @param T $value
      */
     public function __construct(string $type, object $value)
     {

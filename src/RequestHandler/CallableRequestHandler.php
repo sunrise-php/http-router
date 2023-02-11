@@ -18,7 +18,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\ParameterResolver\KnownTypedParameterResolver;
-use Sunrise\Http\Router\ParameterResolver\KnownUntypedParameterResolver;
 use Sunrise\Http\Router\ParameterResolutionerInterface;
 use Sunrise\Http\Router\ResponseResolutionerInterface;
 use ReflectionFunctionAbstract;
@@ -91,14 +90,9 @@ final class CallableRequestHandler implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $parameterResolvers = [
-            new KnownTypedParameterResolver(ServerRequestInterface::class, $request),
-            new KnownUntypedParameterResolver('request', $request),
-        ];
-
         $arguments = $this->parameterResolutioner
             ->withContext($request)
-            ->withPriorityResolver(...$parameterResolvers)
+            ->withPriorityResolver(new KnownTypedParameterResolver(ServerRequestInterface::class, $request))
             ->resolveParameters(...$this->getReflection()->getParameters());
 
         /** @var mixed */

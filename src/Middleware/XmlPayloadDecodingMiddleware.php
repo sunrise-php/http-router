@@ -20,28 +20,29 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Exception\InvalidRequestPayloadException;
 use Sunrise\Http\Router\ServerRequest;
-use JsonException;
+use SimpleXMLElement;
+use Throwable;
 
 /**
  * Import functions
  */
-use function is_array;
-use function json_decode;
 use function sprintf;
 
 /**
  * Import constants
  */
-use const JSON_BIGINT_AS_STRING;
-use const JSON_OBJECT_AS_ARRAY;
-use const JSON_THROW_ON_ERROR;
+use const LIBXML_COMPACT;
+use const LIBXML_NONET;
+use const LIBXML_NOERROR;
+use const LIBXML_NOWARNING;
+use const LIBXML_PARSEHUGE;
 
 /**
- * JsonPayloadDecodingMiddleware
+ * XmlPayloadDecodingMiddleware
  *
- * @since 2.15.0
+ * @since 3.0.0
  */
-final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
+final class XmlPayloadDecodingMiddleware implements MiddlewareInterface
 {
 
     /**
@@ -49,7 +50,7 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        if (ServerRequest::from($request)->isJson()) {
+        if (ServerRequest::from($request)->isXml()) {
             $request = $request->withParsedBody(
                 $this->decodeRequestPayload($request)
             );
@@ -63,24 +64,22 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
      *
      * @param ServerRequestInterface $request
      *
-     * @return array|null
+     * @return SimpleXMLElement
      *
      * @throws InvalidRequestPayloadException
      *         If the request's payload cannot be decoded.
      */
-    private function decodeRequestPayload(ServerRequestInterface $request): ?array
+    private function decodeRequestPayload(ServerRequestInterface $request): SimpleXMLElement
     {
-        // https://www.php.net/json.constants
-        $options = JSON_BIGINT_AS_STRING | JSON_OBJECT_AS_ARRAY | JSON_THROW_ON_ERROR;
+        // https://www.php.net/manual/en/libxml.constants.php
+        $options = LIBXML_COMPACT | LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING | LIBXML_PARSEHUGE;
 
         try {
-            /** @var mixed */
-            $result = json_decode($request->getBody()->__toString(), null, 512, $options);
-        } catch (JsonException $e) {
+            $result = new SimpleXMLElement($request->getBody()->__toString(), $options);
+        } catch (Throwable $e) {
             throw new InvalidRequestPayloadException(sprintf('Invalid Payload: %s', $e->getMessage()), 0, $e);
         }
 
-        // according to PSR-7 the parsed body can be only an array or an object...
-        return is_array($result) ? $result : null;
+        return $result;
     }
 }

@@ -19,7 +19,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\ParameterResolver\KnownTypedParameterResolver;
-use Sunrise\Http\Router\ParameterResolver\KnownUntypedParameterResolver;
 use Sunrise\Http\Router\ParameterResolutionerInterface;
 use Sunrise\Http\Router\ResponseResolutionerInterface;
 use ReflectionFunctionAbstract;
@@ -94,16 +93,10 @@ final class CallableMiddleware implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $parameterResolvers = [
-            new KnownTypedParameterResolver(ServerRequestInterface::class, $request),
-            new KnownUntypedParameterResolver('request', $request),
-            new KnownTypedParameterResolver(RequestHandlerInterface::class, $handler),
-            new KnownUntypedParameterResolver('handler', $handler),
-        ];
-
         $arguments = $this->parameterResolutioner
             ->withContext($request)
-            ->withPriorityResolver(...$parameterResolvers)
+            ->withPriorityResolver(new KnownTypedParameterResolver(ServerRequestInterface::class, $request))
+            ->withPriorityResolver(new KnownTypedParameterResolver(RequestHandlerInterface::class, $handler))
             ->resolveParameters(...$this->getReflection()->getParameters());
 
         /** @var mixed */

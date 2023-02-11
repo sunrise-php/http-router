@@ -44,23 +44,19 @@ class HttpMethodNotAllowedException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param string[] $allowedMethods
-     * @param ?string $message
+     * @param array<string> $allowed
+     * @param string|null $message
      * @param int $code
-     * @param ?Throwable $previous
+     * @param Throwable|null $previous
      */
-    public function __construct(
-        array $allowedMethods,
-        ?string $message = null,
-        int $code = 0,
-        ?Throwable $previous = null
-    ) {
+    public function __construct(array $allowed, ?string $message = null, int $code = 0, ?Throwable $previous = null)
+    {
         $message ??= 'Method Not Allowed';
 
         parent::__construct(self::STATUS_METHOD_NOT_ALLOWED, $message, $code, $previous);
 
-        foreach ($allowedMethods as $allowedMethod) {
-            $this->allowedMethods[] = $allowedMethod;
+        foreach ($allowed as $method) {
+            $this->allowedMethods[] = $method;
         }
     }
 

@@ -115,8 +115,9 @@ class RouteCollector
     {
         if (!isset($this->parameterResolutioner)) {
             throw new LogicException(
-                'The route collector cannot accept the parameter resolver(s) ' .
-                'because a custom reference resolver was setted and a parameter resolutioner was not passed'
+                'The route collector cannot accept parameter resolvers ' .
+                'because a custom reference resolver was setted ' .
+                'and a parameter resolutioner was not passed'
             );
         }
 
@@ -139,8 +140,9 @@ class RouteCollector
     {
         if (!isset($this->responseResolutioner)) {
             throw new LogicException(
-                'The route collector cannot accept the response resolver(s) ' .
-                'because a custom reference resolver was setted and a response resolutioner was not passed'
+                'The route collector cannot accept response resolvers ' .
+                'because a custom reference resolver was setted ' .
+                'and a response resolutioner was not passed'
             );
         }
 

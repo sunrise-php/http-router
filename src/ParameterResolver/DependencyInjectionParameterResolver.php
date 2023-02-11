@@ -66,8 +66,8 @@ final class DependencyInjectionParameterResolver implements ParameterResolverInt
     public function resolveParameter(ReflectionParameter $parameter, $context)
     {
         /** @var ReflectionNamedType */
-        $parameterType = $parameter->getType();
+        $type = $parameter->getType();
 
-        return $this->container->get($parameterType->getName());
+        return $this->container->get($type->getName());
     }
 }

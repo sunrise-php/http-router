@@ -12,10 +12,10 @@
 namespace Sunrise\Http\Router\Exception;
 
 /**
- * UnprocessableRequestBodyException
+ * UnhydrableObjectException
  *
  * @since 3.0.0
  */
-class UnprocessableRequestBodyException extends UnprocessableEntityException
+class UnhydrableObjectException extends LogicException
 {
 }

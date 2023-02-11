@@ -56,11 +56,7 @@ final class ServerRequestParameterResolver implements ParameterResolverInterface
         /** @var ServerRequestInterface */
         $context = $context;
 
-        if ($context instanceof ServerRequest) {
-            return $context;
-        }
-
-        return new ServerRequest($context);
+        return ServerRequest::from($context);
     }
 }
 

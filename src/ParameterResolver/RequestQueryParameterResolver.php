@@ -17,7 +17,7 @@ namespace Sunrise\Http\Router\ParameterResolver;
 use Psr\Http\Message\ServerRequestInterface;
 use Sunrise\Http\Router\Annotation\RequestQuery;
 use Sunrise\Http\Router\Exception\InvalidRequestQueryException;
-use Sunrise\Http\Router\Exception\ResolvingParameterException;
+use Sunrise\Http\Router\Exception\UnhydrableObjectException;
 use Sunrise\Http\Router\Exception\UnprocessableRequestQueryException;
 use Sunrise\Http\Router\ParameterResolverInterface;
 use Sunrise\Http\Router\RequestQueryInterface;
@@ -102,8 +102,8 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
     /**
      * {@inheritdoc}
      *
-     * @throws ResolvingParameterException
-     *         If the object cannot be hydrated.
+     * @throws UnhydrableObjectException
+     *         If an object isn't valid.
      *
      * @throws InvalidRequestQueryException
      *         If the request query structure isn't valid.
@@ -117,12 +117,12 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
         $context = $context;
 
         /** @var ReflectionNamedType */
-        $parameterType = $parameter->getType();
+        $type = $parameter->getType();
 
         try {
-            $object = $this->hydrator->hydrate($parameterType->getName(), $context->getQueryParams());
+            $object = $this->hydrator->hydrate($type->getName(), $context->getQueryParams());
         } catch (InvalidObjectException $e) {
-            throw new ResolvingParameterException($e->getMessage(), 0, $e);
+            throw new UnhydrableObjectException($e->getMessage(), 0, $e);
         } catch (InvalidValueException $e) {
             throw new InvalidRequestQueryException($e->getMessage(), 0, $e);
         }

@@ -160,8 +160,9 @@ final class DescriptorLoader implements LoaderInterface
     {
         if (!isset($this->parameterResolutioner)) {
             throw new LogicException(
-                'The descriptor route loader cannot accept the parameter resolver(s) ' .
-                'because a custom reference resolver was setted and a parameter resolutioner was not passed'
+                'The descriptor route loader cannot accept parameter resolvers ' .
+                'because a custom reference resolver was setted ' .
+                'and a parameter resolutioner was not passed'
             );
         }
 
@@ -184,8 +185,9 @@ final class DescriptorLoader implements LoaderInterface
     {
         if (!isset($this->responseResolutioner)) {
             throw new LogicException(
-                'The descriptor route loader cannot accept the response resolver(s) ' .
-                'because a custom reference resolver was setted and a response resolutioner was not passed'
+                'The descriptor route loader cannot accept response resolvers ' .
+                'because a custom reference resolver was setted ' .
+                'and a response resolutioner was not passed'
             );
         }
 
@@ -206,8 +208,9 @@ final class DescriptorLoader implements LoaderInterface
     {
         if (!class_exists(AnnotationReader::class)) {
             throw new LogicException(
-                'The annotations reading logic requires an uninstalled "doctrine/annotations" package, ' .
-                'run the following command "composer install doctrine/annotations" and try again'
+                'The descriptor route loader cannot use the default annotation reader ' .
+                'because the annotation reading logic requires the "doctrine/annotations" package, ' .
+                'run the "composer install doctrine/annotations" command and try again'
             );
         }
 
@@ -324,8 +327,7 @@ final class DescriptorLoader implements LoaderInterface
      */
     public function load(): RouteCollectionInterface
     {
-        $routes = $this->collectionFactory->createCollection();
-
+        $routes = [];
         $descriptors = $this->getDescriptors();
         foreach ($descriptors as $descriptor) {
             $route = $this->routeFactory->createRoute(
@@ -344,10 +346,10 @@ final class DescriptorLoader implements LoaderInterface
             $route->setDescription($descriptor->description);
             $route->setTags(...$descriptor->tags);
 
-            $routes->add($route);
+            $routes[] = $route;
         }
 
-        return $routes;
+        return $this->collectionFactory->createCollection(...$routes);
     }
 
     /**

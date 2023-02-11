@@ -97,7 +97,7 @@ final class RequestEntityParameterResolver implements ParameterResolverInterface
         $entityId = $context->getAttribute($requestEntity->paramKey);
         if (!isset($entityId)) {
             throw new ResolvingParameterException(sprintf(
-                '{%s} Unable to get Entity ID (%s) by key %s',
+                '{%s} Unable to get Entity ID (%s) by key %s from the request attributes',
                 $this->stringifyParameter($parameter),
                 $requestEntity->findBy,
                 $requestEntity->paramKey

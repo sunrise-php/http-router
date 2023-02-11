@@ -74,7 +74,7 @@ class RouteListCommand extends Command
         if (!isset($this->router)) {
             throw new LogicException(sprintf(
                 'The %2$s() method MUST return the %1$s class instance. ' .
-                'Pass the %1$s class instance to the constructor, ' .
+                'Pass the %1$s class instance to the constructor ' .
                 'or override the %2$s() method.',
                 Router::class,
                 __METHOD__
@@ -107,7 +107,7 @@ class RouteListCommand extends Command
             'Verb',
         ]);
 
-        foreach ($this->getRouter()->getRoutes() as $route) {
+        foreach ($this->getRouter()->getRoutes()->all() as $route) {
             $table->addRow([
                 $route->getName(),
                 $route->getHost() ?? 'ANY',

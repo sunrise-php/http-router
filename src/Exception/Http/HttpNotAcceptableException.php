@@ -39,23 +39,19 @@ class HttpNotAcceptableException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param string[] $supportedMediaTypes
-     * @param ?string $message
+     * @param array<string> $supported
+     * @param string|null $message
      * @param int $code
-     * @param ?Throwable $previous
+     * @param Throwable|null $previous
      */
-    public function __construct(
-        array $supportedMediaTypes,
-        ?string $message = null,
-        int $code = 0,
-        ?Throwable $previous = null
-    ) {
+    public function __construct(array $supported, ?string $message = null, int $code = 0, ?Throwable $previous = null)
+    {
         $message ??= 'Not Acceptable';
 
         parent::__construct(self::STATUS_NOT_ACCEPTABLE, $message, $code, $previous);
 
-        foreach ($supportedMediaTypes as $supportedMediaType) {
-            $this->supportedMediaTypes[] = $supportedMediaType;
+        foreach ($supported as $mediaType) {
+            $this->supportedMediaTypes[] = $mediaType;
         }
     }
 

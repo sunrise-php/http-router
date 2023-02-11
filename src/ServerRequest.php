@@ -20,6 +20,7 @@ use Psr\Http\Message\ServerRequestInterface;
  * Import functions
  */
 use function explode;
+use function strncmp;
 use function strpos;
 use function strstr;
 use function strtolower;
@@ -49,6 +50,22 @@ final class ServerRequest implements ServerRequestInterface
     }
 
     /**
+     * Creates the class from the given request
+     *
+     * @param ServerRequestInterface $request
+     *
+     * @return self
+     */
+    public static function from(ServerRequestInterface $request): self
+    {
+        if ($request instanceof self) {
+            return $request;
+        }
+
+        return new self($request);
+    }
+
+    /**
      * Checks if the request is JSON
      *
      * @link https://tools.ietf.org/html/rfc4627
@@ -57,7 +74,24 @@ final class ServerRequest implements ServerRequestInterface
      */
     public function isJson(): bool
     {
-        return $this->getClientProducedMediaType() === 'application/json';
+        return $this->clientProducesMediaType([
+            'application/json',
+        ]);
+    }
+
+    /**
+     * Checks if the request is XML
+     *
+     * @link https://tools.ietf.org/html/rfc2376
+     *
+     * @return bool
+     */
+    public function isXml(): bool
+    {
+        return $this->clientProducesMediaType([
+            'application/xml',
+            'text/xml',
+        ]);
     }
 
     /**
@@ -144,7 +178,7 @@ final class ServerRequest implements ServerRequestInterface
         }
 
         foreach ($consumedMediaTypes as $consumedMediaType) {
-            if ($consumedMediaType === $producedMediaType) {
+            if ($this->compareMediaTypes($consumedMediaType, $producedMediaType)) {
                 return true;
             }
         }
@@ -170,21 +204,46 @@ final class ServerRequest implements ServerRequestInterface
             return true;
         }
 
-        foreach ($producedMediaTypes as $producedMediaType) {
-            if (strpos($producedMediaType, '/') !== false) {
-                $producedMediaTypes[] = strstr($producedMediaType, '/', true) . '/*';
-            }
-        }
-
-        foreach ($consumedMediaTypes as $consumedMediaType) {
-            foreach ($producedMediaTypes as $producedMediaType) {
-                if ($consumedMediaType === $producedMediaType) {
+        foreach ($producedMediaTypes as $a) {
+            foreach ($consumedMediaTypes as $b) {
+                if ($this->compareMediaTypes($a, $b)) {
                     return true;
                 }
             }
         }
 
         return false;
+    }
+
+    /**
+     * Compares the given media types
+     *
+     * @param string $a
+     * @param string $b
+     *
+     * @return bool
+     */
+    public function compareMediaTypes(string $a, string $b): bool
+    {
+        if ($a === $b) {
+            return true;
+        }
+
+        $slash = strpos($a, '/');
+        if ($slash === false) {
+            return false;
+        }
+
+        $star = $slash + 1;
+        if (!isset($a[$star], $b[$star])) {
+            return false;
+        }
+
+        if (!($a[$star] === '*' || $b[$star] === '*')) {
+            return false;
+        }
+
+        return strncmp($a, $b, $star) === 0;
     }
 
     /**
