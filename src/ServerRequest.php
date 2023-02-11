@@ -15,6 +15,7 @@ namespace Sunrise\Http\Router;
  * Import classes
  */
 use Psr\Http\Message\ServerRequestInterface;
+use Sunrise\Http\Router\Entity\IpAddress;
 
 /**
  * Import functions
@@ -92,6 +93,41 @@ final class ServerRequest implements ServerRequestInterface
             'application/xml',
             'text/xml',
         ]);
+    }
+
+    /**
+     * Gets the client's IP address
+     *
+     * @param array<string, string> $proxyChain
+     *
+     * @return IpAddress
+     */
+    public function getClientIpAddress(array $proxyChain = []): IpAddress
+    {
+        $env = $this->request->getServerParams();
+
+        /** @var string */
+        $clientIp = $env['REMOTE_ADDR'] ?? '::1';
+
+        while (isset($proxyChain[$clientIp])) {
+            $trustedHeader = $proxyChain[$clientIp];
+            unset($proxyChain[$clientIp]);
+
+            // the chain can't be untangled...
+            if (!$this->request->hasHeader($trustedHeader)) {
+                break;
+            }
+
+            // X-Forwarded-For: <client>, <proxy1>, <proxy2>
+            $clientIp = $this->request->getHeaderLine($trustedHeader);
+            if (strpos($clientIp, ',') !== false) {
+                $clientIp = strstr($clientIp, ',', true);
+            }
+
+            $clientIp = trim($clientIp);
+        }
+
+        return new IpAddress($clientIp);
     }
 
     /**
