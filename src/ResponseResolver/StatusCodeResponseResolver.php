@@ -57,7 +57,7 @@ final class StatusCodeResponseResolver implements ResponseResolverInterface
      */
     public function resolveResponse($response, $context): ResponseInterface
     {
-        /** @var int $response */
+        /** @var int<100, 599> $response */
 
         return $this->responseFactory->createResponse($response);
     }

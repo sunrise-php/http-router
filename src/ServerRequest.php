@@ -20,12 +20,18 @@ use Sunrise\Http\Router\Entity\IpAddress;
 /**
  * Import functions
  */
+use function arsort;
 use function explode;
 use function strncmp;
 use function strpos;
 use function strstr;
 use function strtolower;
 use function trim;
+
+/**
+ * Import constants
+ */
+use const SORT_NUMERIC;
 
 /**
  * ServerRequest
@@ -214,7 +220,7 @@ final class ServerRequest implements ServerRequestInterface
     /**
      * Gets the client's consumed languages
      *
-     * @return array<string, numeric>
+     * @return array<string, float>
      */
     public function getClientConsumedLanguages(): array
     {
@@ -226,7 +232,7 @@ final class ServerRequest implements ServerRequestInterface
         $cursor = -1;
         $inLanguage = true;
         $inWeight = false;
-        $rows = [];
+        $data = [];
         $i = 0;
 
         while (true) {
@@ -253,21 +259,24 @@ final class ServerRequest implements ServerRequestInterface
                 continue;
             }
             if ($inLanguage) {
-                $rows[$i][0] ??= '';
-                $rows[$i][0] .= $char;
+                $data[$i][0] ??= '';
+                $data[$i][0] .= $char;
                 continue;
             }
             if ($inWeight) {
-                $rows[$i][1] ??= '';
-                $rows[$i][1] .= $char;
+                $data[$i][1] ??= '';
+                $data[$i][1] .= $char;
                 continue;
             }
         }
 
         $result = [];
-        foreach ($rows as $row) {
-            $result[$row[0]] = $row[1] ?? '1';
+        foreach ($data as $item) {
+            /** @var array{0: string, 1?: numeric-string} $item */
+            $result[$item[0]] = (float) ($item[1] ?? 1.0);
         }
+
+        arsort($result, SORT_NUMERIC);
 
         return $result;
     }
