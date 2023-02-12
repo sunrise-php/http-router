@@ -61,7 +61,7 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     private HostTable $hosts;
 
     /**
-     * The router's routes
+     * The router's route collection
      *
      * @var RouteCollectionInterface
      */
@@ -105,22 +105,6 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     }
 
     /**
-     * Adds the given patterns to the router
-     *
-     * @param array<string, string> $patterns
-     *
-     * @return void
-     *
-     * @since 2.11.0
-     */
-    public function addPatterns(array $patterns): void
-    {
-        foreach ($patterns as $alias => $pattern) {
-            self::$patterns[$alias] = $pattern;
-        }
-    }
-
-    /**
      * Gets the router's host table
      *
      * @return HostTable
@@ -143,6 +127,56 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     }
 
     /**
+     * Gets the router's middlewares
+     *
+     * @return list<MiddlewareInterface>
+     */
+    public function getMiddlewares(): array
+    {
+        return $this->middlewares;
+    }
+
+    /**
+     * Gets the router's event dispatcher
+     *
+     * @return EventDispatcherInterface|null
+     *
+     * @since 2.13.0
+     */
+    public function getEventDispatcher(): ?EventDispatcherInterface
+    {
+        return $this->eventDispatcher;
+    }
+
+    /**
+     * Gets the router's matched route
+     *
+     * @return RouteInterface|null
+     *
+     * @since 2.12.0
+     */
+    public function getMatchedRoute(): ?RouteInterface
+    {
+        return $this->matchedRoute;
+    }
+
+    /**
+     * Adds the given patterns to the router
+     *
+     * @param array<string, string> $patterns
+     *
+     * @return void
+     *
+     * @since 2.11.0
+     */
+    public function addPatterns(array $patterns): void
+    {
+        foreach ($patterns as $alias => $pattern) {
+            self::$patterns[$alias] = $pattern;
+        }
+    }
+
+    /**
      * Adds the given middleware(s) to the router
      *
      * @param MiddlewareInterface ...$middlewares
@@ -157,26 +191,6 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     }
 
     /**
-     * Gets the router's middlewares
-     *
-     * @return list<MiddlewareInterface>
-     */
-    public function getMiddlewares(): array
-    {
-        return $this->middlewares;
-    }
-
-    /**
-     * Gets the router's matched route
-     *
-     * @return RouteInterface|null
-     */
-    public function getMatchedRoute(): ?RouteInterface
-    {
-        return $this->matchedRoute;
-    }
-
-    /**
      * Sets the given event dispatcher to the router
      *
      * @param EventDispatcherInterface|null $eventDispatcher
@@ -188,18 +202,6 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     public function setEventDispatcher(?EventDispatcherInterface $eventDispatcher): void
     {
         $this->eventDispatcher = $eventDispatcher;
-    }
-
-    /**
-     * Gets the router's event dispatcher
-     *
-     * @return EventDispatcherInterface|null
-     *
-     * @since 2.13.0
-     */
-    public function getEventDispatcher(): ?EventDispatcherInterface
-    {
-        return $this->eventDispatcher;
     }
 
     /**
@@ -254,7 +256,7 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
         foreach ($routes as $route) {
             // https://github.com/sunrise-php/http-router/issues/50
             // https://tools.ietf.org/html/rfc7231#section-6.5.5
-            if (!path_match($route->getPath(), $requestPath, $routeAttributes)) {
+            if (!path_match($route->getPath(), $requestPath, $attributes)) {
                 continue;
             }
 
@@ -268,19 +270,19 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
                 continue;
             }
 
-            $routeConsumed = $route->getConsumedMediaTypes();
-            if (!empty($routeConsumed) && !$request->clientProducesMediaType($routeConsumed)) {
-                throw new ClientNotProducedMediaTypeException($routeConsumed);
+            $routeConsumes = $route->getConsumedMediaTypes();
+            if (!empty($routeConsumes) && !$request->clientProducesMediaType($routeConsumes)) {
+                throw new ClientNotProducedMediaTypeException($routeConsumes);
             }
 
-            $routeProduced = $route->getProducedMediaTypes();
-            if (!empty($routeProduced) && !$request->clientConsumesMediaType($routeProduced)) {
-                throw new ClientNotConsumedMediaTypeException($routeProduced);
+            $routeProduces = $route->getProducedMediaTypes();
+            if (!empty($routeProduces) && !$request->clientConsumesMediaType($routeProduces)) {
+                throw new ClientNotConsumedMediaTypeException($routeProduces);
             }
 
-            /** @var array<string, string> $routeAttributes */
+            /** @var array<string, string> $attributes */
 
-            return $route->withAddedAttributes($routeAttributes);
+            return $route->withAddedAttributes($attributes);
         }
 
         if (!empty($allowedVerbs)) {

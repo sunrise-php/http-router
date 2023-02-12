@@ -96,6 +96,16 @@ final class ServerRequest implements ServerRequestInterface
     }
 
     /**
+     * Checks if the request is XMLHttpRequest
+     *
+     * @return bool
+     */
+    public function isXmlHttpRequest(): bool
+    {
+        return $this->request->getHeaderLine('X-Requested-With') === 'XMLHttpRequest';
+    }
+
+    /**
      * Gets the client's IP address
      *
      * @param array<string, string> $proxyChain
@@ -113,18 +123,22 @@ final class ServerRequest implements ServerRequestInterface
             $trustedHeader = $proxyChain[$clientIp];
             unset($proxyChain[$clientIp]);
 
-            // the chain can't be untangled...
-            if (!$this->request->hasHeader($trustedHeader)) {
+            $header = $this->request->getHeaderLine($trustedHeader);
+            if ($header === '') {
                 break;
             }
 
-            // X-Forwarded-For: <client>, <proxy1>, <proxy2>
-            $clientIp = $this->request->getHeaderLine($trustedHeader);
-            if (strpos($clientIp, ',') !== false) {
-                $clientIp = strstr($clientIp, ',', true);
+            $proxiedClientIp = strstr($header, ',', true);
+            if ($proxiedClientIp === false) {
+                $proxiedClientIp = $header;
             }
 
-            $clientIp = trim($clientIp);
+            $proxiedClientIp = trim($proxiedClientIp);
+            if ($proxiedClientIp === '') {
+                break;
+            }
+
+            $clientIp = $proxiedClientIp;
         }
 
         return new IpAddress($clientIp);
@@ -145,16 +159,17 @@ final class ServerRequest implements ServerRequestInterface
             return '';
         }
 
-        if (strpos($header, ';') !== false) {
-            $header = strstr($header, ';', true);
+        $mediaType = strstr($header, ';', true);
+        if ($mediaType === false) {
+            $mediaType = $header;
         }
 
-        $header = trim($header);
-        if ($header === '') {
+        $mediaType = trim($mediaType);
+        if ($mediaType === '') {
             return '';
         }
 
-        return strtolower($header);
+        return strtolower($mediaType);
     }
 
     /**
@@ -176,20 +191,82 @@ final class ServerRequest implements ServerRequestInterface
         $result = [];
         $accepts = explode(',', $header);
         foreach ($accepts as $accept) {
-            if (strpos($accept, ';') !== false) {
-                $accept = strstr($accept, ';', true);
+            $mediaType = strstr($accept, ';', true);
+            if ($mediaType === false) {
+                $mediaType = $accept;
             }
 
-            $accept = trim($accept);
-            if ($accept === '') {
+            $mediaType = trim($mediaType);
+            if ($mediaType === '') {
                 continue;
             }
 
-            if ($accept === '*/*') {
+            if ($mediaType === '*/*') {
                 return [];
             }
 
-            $result[] = strtolower($accept);
+            $result[] = strtolower($mediaType);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Gets the client's consumed languages
+     *
+     * @return array<string, numeric>
+     */
+    public function getClientConsumedLanguages(): array
+    {
+        $header = $this->request->getHeaderLine('Accept-Language');
+        if ($header === '') {
+            return [];
+        }
+
+        $cursor = -1;
+        $inLanguage = true;
+        $inWeight = false;
+        $rows = [];
+        $i = 0;
+
+        while (true) {
+            $char = $header[++$cursor] ?? null;
+
+            if ($char === null) {
+                break;
+            }
+            if ($char === ' ') {
+                continue;
+            }
+            if ($char === ';') {
+                $inLanguage = false;
+                continue;
+            }
+            if ($char === '=') {
+                $inWeight = true;
+                continue;
+            }
+            if ($char === ',') {
+                $inLanguage = true;
+                $inWeight = false;
+                $i++;
+                continue;
+            }
+            if ($inLanguage) {
+                $rows[$i][0] ??= '';
+                $rows[$i][0] .= $char;
+                continue;
+            }
+            if ($inWeight) {
+                $rows[$i][1] ??= '';
+                $rows[$i][1] .= $char;
+                continue;
+            }
+        }
+
+        $result = [];
+        foreach ($rows as $row) {
+            $result[$row[0]] = $row[1] ?? '1';
         }
 
         return $result;
