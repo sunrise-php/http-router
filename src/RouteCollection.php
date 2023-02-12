@@ -36,7 +36,7 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * @var string
      */
-    private const ANY_HOST = '*';
+    private const ANY = '*';
 
     /**
      * @var array<string, RouteInterface>
@@ -81,16 +81,16 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * {@inheritdoc}
      */
-    public function allByHost(?string $host): Iterator
+    public function allOnHost(?string $host): Iterator
     {
-        if (isset($host, $this->hostMap[$host])) {
+        if (isset($host) && isset($this->hostMap[$host])) {
             foreach ($this->hostMap[$host] as $name) {
                 yield $this->routes[$name];
             }
         }
 
-        if (isset($this->hostMap[self::ANY_HOST])) {
-            foreach ($this->hostMap[self::ANY_HOST] as $name) {
+        if (isset($this->hostMap[self::ANY])) {
+            foreach ($this->hostMap[self::ANY] as $name) {
                 yield $this->routes[$name];
             }
         }
@@ -126,7 +126,7 @@ class RouteCollection implements RouteCollectionInterface
     {
         foreach ($routes as $route) {
             $name = $route->getName();
-            $host = $route->getHost() ?? self::ANY_HOST;
+            $host = $route->getHost() ?? self::ANY;
 
             if (isset($this->routes[$name])) {
                 throw new RouteAlreadyExistsException(sprintf(

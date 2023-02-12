@@ -48,7 +48,7 @@ interface RouteCollectionInterface extends Countable, IteratorAggregate
      *
      * @since 3.0.0
      */
-    public function allByHost(?string $host): Iterator;
+    public function allOnHost(?string $host): Iterator;
 
     /**
      * Checks by the given name if a route exists in the collection

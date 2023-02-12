@@ -21,10 +21,10 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Event\RouteEvent;
-use Sunrise\Http\Router\Exception\Http\HttpMethodNotAllowedException;
-use Sunrise\Http\Router\Exception\Http\HttpNotAcceptableException;
-use Sunrise\Http\Router\Exception\Http\HttpNotFoundException;
-use Sunrise\Http\Router\Exception\Http\HttpUnsupportedMediaTypeException;
+use Sunrise\Http\Router\Exception\ClientNotConsumedMediaTypeException;
+use Sunrise\Http\Router\Exception\ClientNotProducedMediaTypeException;
+use Sunrise\Http\Router\Exception\MethodNotAllowedException;
+use Sunrise\Http\Router\Exception\PageNotFoundException;
 use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
 use Sunrise\Http\Router\RequestHandler\UnsafeCallableRequestHandler;
@@ -227,65 +227,67 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
      *
      * @return RouteInterface
      *
-     * @throws HttpNotFoundException
-     *         If the request URI cannot be matched against any route.
+     * @throws PageNotFoundException
+     *         If the request URI isn't served.
      *
-     * @throws HttpMethodNotAllowedException
+     * @throws MethodNotAllowedException
      *         If the request method isn't allowed.
      *
-     * @throws HttpUnsupportedMediaTypeException
+     * @throws ClientNotProducedMediaTypeException
+     *         If the client not produces required media types.
      *
-     * @throws HttpNotAcceptableException
+     * @throws ClientNotConsumedMediaTypeException
+     *         If the client not consumed provided media types.
      */
     public function match(ServerRequestInterface $request): RouteInterface
     {
         $requestUri = $request->getUri();
         $requestHost = $requestUri->getHost();
         $requestPath = $requestUri->getPath();
-        $requestMethod = $request->getMethod();
-        $allowedMethods = [];
+        $requestVerb = $request->getMethod();
+        $allowedVerbs = [];
 
-        $routes = $this->routes->allByHost($this->hosts->resolve($requestHost));
-
-        $request = new ServerRequest($request);
+        $host = $this->hosts->resolve($requestHost);
+        $routes = $this->routes->allOnHost($host);
+        $request = ServerRequest::from($request);
 
         foreach ($routes as $route) {
             // https://github.com/sunrise-php/http-router/issues/50
             // https://tools.ietf.org/html/rfc7231#section-6.5.5
-            if (!path_match($route->getPath(), $requestPath, $attributes)) {
+            if (!path_match($route->getPath(), $requestPath, $routeAttributes)) {
                 continue;
             }
 
-            $routeMethods = [];
-            foreach ($route->getMethods() as $routeMethod) {
-                $routeMethods[$routeMethod] = true;
-                $allowedMethods[$routeMethod] = $routeMethod;
+            $routeVerbs = [];
+            foreach ($route->getMethods() as $routeVerb) {
+                $routeVerbs[$routeVerb] = true;
+                $allowedVerbs[$routeVerb] = $routeVerb;
             }
 
-            if (!isset($routeMethods[$requestMethod])) {
+            if (!isset($routeVerbs[$requestVerb])) {
                 continue;
             }
 
-            $consumedMediaTypes = $route->getConsumedMediaTypes();
-            if (!empty($consumedMediaTypes) && !$request->clientProducesMediaType($consumedMediaTypes)) {
-                throw new HttpUnsupportedMediaTypeException($consumedMediaTypes);
+            $routeConsumed = $route->getConsumedMediaTypes();
+            if (!empty($routeConsumed) && !$request->clientProducesMediaType($routeConsumed)) {
+                throw new ClientNotProducedMediaTypeException($routeConsumed);
             }
 
-            $producedMediaTypes = $route->getProducedMediaTypes();
-            if (!empty($producedMediaTypes) && !$request->clientConsumesMediaType($producedMediaTypes)) {
-                throw new HttpNotAcceptableException($producedMediaTypes);
+            $routeProduced = $route->getProducedMediaTypes();
+            if (!empty($routeProduced) && !$request->clientConsumesMediaType($routeProduced)) {
+                throw new ClientNotConsumedMediaTypeException($routeProduced);
             }
 
-            /** @var array<string, string> $attributes */
+            /** @var array<string, string> $routeAttributes */
 
-            return $route->withAddedAttributes($attributes);
+            return $route->withAddedAttributes($routeAttributes);
         }
 
-        if (!empty($allowedMethods)) {
-            throw new HttpMethodNotAllowedException($allowedMethods);
+        if (!empty($allowedVerbs)) {
+            throw new MethodNotAllowedException($allowedVerbs);
         }
 
-        throw new HttpNotFoundException('Page Not Found');
+        throw new PageNotFoundException('Page Not Found');
     }
 
     /**
