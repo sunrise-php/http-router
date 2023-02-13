@@ -32,6 +32,7 @@ use Sunrise\Http\Router\RequestHandler\UnsafeCallableRequestHandler;
 /**
  * Import functions
  */
+use function array_keys;
 use function Sunrise\Http\Router\path_build;
 use function Sunrise\Http\Router\path_match;
 
@@ -102,6 +103,20 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     ) {
         $this->hosts = $hosts ?? new HostTable();
         $this->routes = $routes ?? new RouteCollection();
+    }
+
+    /**
+     * Loads routes through the given loaders
+     *
+     * @param LoaderInterface ...$loaders
+     *
+     * @return void
+     */
+    public function load(LoaderInterface ...$loaders): void
+    {
+        foreach ($loaders as $loader) {
+            $this->routes->add(...$loader->load()->all());
+        }
     }
 
     /**
@@ -246,8 +261,8 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
         $requestUri = $request->getUri();
         $requestHost = $requestUri->getHost();
         $requestPath = $requestUri->getPath();
-        $requestVerb = $request->getMethod();
-        $allowedVerbs = [];
+        $requestMethod = $request->getMethod();
+        $allowedMethods = [];
 
         $host = $this->hosts->resolve($requestHost);
         $routes = $this->routes->allOnHost($host);
@@ -260,13 +275,13 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
                 continue;
             }
 
-            $routeVerbs = [];
-            foreach ($route->getMethods() as $routeVerb) {
-                $routeVerbs[$routeVerb] = true;
-                $allowedVerbs[$routeVerb] = $routeVerb;
+            $routeMethods = [];
+            foreach ($route->getMethods() as $routeMethod) {
+                $routeMethods[$routeMethod] = true;
+                $allowedMethods[$routeMethod] = true;
             }
 
-            if (!isset($routeVerbs[$requestVerb])) {
+            if (!isset($routeMethods[$requestMethod])) {
                 continue;
             }
 
@@ -285,8 +300,10 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
             return $route->withAddedAttributes($attributes);
         }
 
-        if (!empty($allowedVerbs)) {
-            throw new MethodNotAllowedException($allowedVerbs);
+        if (!empty($allowedMethods)) {
+            $allowedMethods = array_keys($allowedMethods);
+
+            throw new MethodNotAllowedException($allowedMethods);
         }
 
         throw new PageNotFoundException('Page Not Found');
@@ -349,19 +366,5 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
         $handler->add(...$this->middlewares);
 
         return $handler->handle($request);
-    }
-
-    /**
-     * Loads routes through the given loaders
-     *
-     * @param LoaderInterface ...$loaders
-     *
-     * @return void
-     */
-    public function load(LoaderInterface ...$loaders): void
-    {
-        foreach ($loaders as $loader) {
-            $this->routes->add(...$loader->load()->all());
-        }
     }
 }
