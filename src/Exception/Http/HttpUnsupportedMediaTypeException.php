@@ -14,6 +14,7 @@ namespace Sunrise\Http\Router\Exception\Http;
 /**
  * Import classes
  */
+use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
 /**
@@ -23,8 +24,6 @@ use function join;
 
 /**
  * HTTP Unsupported Media Type Exception
- *
- * The media format of the requested data is not supported by the server, so the server is rejecting the request.
  *
  * @link https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/415
  *
@@ -43,20 +42,24 @@ class HttpUnsupportedMediaTypeException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param array<string> $supported
+     * @param list<string> $supportedMediaTypes
      * @param string|null $message
      * @param int $code
      * @param Throwable|null $previous
      */
-    public function __construct(array $supported, ?string $message = null, int $code = 0, ?Throwable $previous = null)
-    {
+    public function __construct(
+        array $supportedMediaTypes,
+        ?string $message = null,
+        int $code = 0,
+        ?Throwable $previous = null
+    ) {
         $message ??= 'Unsupported Media Type';
 
         parent::__construct(self::STATUS_UNSUPPORTED_MEDIA_TYPE, $message, $code, $previous);
 
-        foreach ($supported as $mediaType) {
-            $this->supportedMediaTypes[] = $mediaType;
-        }
+        $this->supportedMediaTypes = $supportedMediaTypes;
+
+        $this->addHeaderField('Accept', $this->getJoinedSupportedTypes());
     }
 
     /**
@@ -76,24 +79,6 @@ class HttpUnsupportedMediaTypeException extends HttpException
      */
     final public function getJoinedSupportedTypes(): string
     {
-        return join(',', $this->getSupportedTypes());
-    }
-
-    /**
-     * Gets arguments for an Accept header field
-     *
-     * Returns an array where key 0 contains the header name and key 1 contains its value.
-     *
-     * <code>
-     *   $response = $response
-     *       ->withStatus($e->getStatusCode())
-     *       ->withHeader(...$e->getAcceptHeaderArguments());
-     * </code>
-     *
-     * @return array{0: string, 1: string}
-     */
-    final public function getAcceptHeaderArguments(): array
-    {
-        return ['Accept', $this->getJoinedSupportedTypes()];
+        return join(',', $this->supportedMediaTypes);
     }
 }

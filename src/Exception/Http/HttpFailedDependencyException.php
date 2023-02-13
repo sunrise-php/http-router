@@ -14,12 +14,13 @@ namespace Sunrise\Http\Router\Exception\Http;
 /**
  * Import classes
  */
+use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
 /**
  * HTTP Failed Dependency Exception
  *
- * The request failed due to failure of a previous request.
+ * @link https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/424
  *
  * @since 3.0.0
  */
@@ -29,9 +30,9 @@ class HttpFailedDependencyException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param ?string $message
+     * @param string|null $message
      * @param int $code
-     * @param ?Throwable $previous
+     * @param Throwable|null $previous
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {

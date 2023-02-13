@@ -14,13 +14,11 @@ namespace Sunrise\Http\Router\Exception\Http;
 /**
  * Import classes
  */
+use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
 /**
  * HTTP Bad Request Exception
- *
- * The server cannot or will not process the request due to something that is perceived to be a client error (e.g.,
- * malformed request syntax, invalid request message framing, or deceptive request routing).
  *
  * @link https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400
  *
@@ -32,9 +30,9 @@ class HttpBadRequestException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param ?string $message
+     * @param string|null $message
      * @param int $code
-     * @param ?Throwable $previous
+     * @param Throwable|null $previous
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {

@@ -14,13 +14,11 @@ namespace Sunrise\Http\Router\Exception\Http;
 /**
  * Import classes
  */
+use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
 /**
  * HTTP Not Acceptable Exception
- *
- * This response is sent when the web server, after performing server-driven content negotiation, doesn't find any
- * content that conforms to the criteria given by the user agent.
  *
  * @link https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/406
  *
@@ -39,20 +37,22 @@ class HttpNotAcceptableException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param array<string> $supported
+     * @param list<string> $supportedMediaTypes
      * @param string|null $message
      * @param int $code
      * @param Throwable|null $previous
      */
-    public function __construct(array $supported, ?string $message = null, int $code = 0, ?Throwable $previous = null)
-    {
+    public function __construct(
+        array $supportedMediaTypes,
+        ?string $message = null,
+        int $code = 0,
+        ?Throwable $previous = null
+    ) {
         $message ??= 'Not Acceptable';
 
         parent::__construct(self::STATUS_NOT_ACCEPTABLE, $message, $code, $previous);
 
-        foreach ($supported as $mediaType) {
-            $this->supportedMediaTypes[] = $mediaType;
-        }
+        $this->supportedMediaTypes = $supportedMediaTypes;
     }
 
     /**

@@ -14,12 +14,11 @@ namespace Sunrise\Http\Router\Exception\Http;
 /**
  * Import classes
  */
+use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
 /**
  * HTTP Length Required Exception
- *
- * Server rejected the request because the Content-Length header field is not defined and the server requires it.
  *
  * @link https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/411
  *
@@ -31,9 +30,9 @@ class HttpLengthRequiredException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param ?string $message
+     * @param string|null $message
      * @param int $code
-     * @param ?Throwable $previous
+     * @param Throwable|null $previous
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {

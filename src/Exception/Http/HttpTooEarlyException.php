@@ -14,12 +14,11 @@ namespace Sunrise\Http\Router\Exception\Http;
 /**
  * Import classes
  */
+use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
 /**
  * HTTP Too Early Exception
- *
- * Indicates that the server is unwilling to risk processing a request that might be replayed.
  *
  * @link https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/425
  *
@@ -31,9 +30,9 @@ class HttpTooEarlyException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param ?string $message
+     * @param string|null $message
      * @param int $code
-     * @param ?Throwable $previous
+     * @param Throwable|null $previous
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {

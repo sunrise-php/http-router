@@ -20,18 +20,12 @@ use Sunrise\Http\Router\Entity\IpAddress;
 /**
  * Import functions
  */
-use function arsort;
 use function explode;
 use function strncmp;
 use function strpos;
 use function strstr;
 use function strtolower;
 use function trim;
-
-/**
- * Import constants
- */
-use const SORT_NUMERIC;
 
 /**
  * ServerRequest
@@ -102,16 +96,6 @@ final class ServerRequest implements ServerRequestInterface
     }
 
     /**
-     * Checks if the request is XMLHttpRequest
-     *
-     * @return bool
-     */
-    public function isXmlHttpRequest(): bool
-    {
-        return $this->request->getHeaderLine('X-Requested-With') === 'XMLHttpRequest';
-    }
-
-    /**
      * Gets the client's IP address
      *
      * @param array<string, string> $proxyChain
@@ -126,10 +110,10 @@ final class ServerRequest implements ServerRequestInterface
         $clientIp = $env['REMOTE_ADDR'] ?? '::1';
 
         while (isset($proxyChain[$clientIp])) {
-            $trustedHeader = $proxyChain[$clientIp];
+            $proxyHeader = $proxyChain[$clientIp];
             unset($proxyChain[$clientIp]);
 
-            $header = $this->request->getHeaderLine($trustedHeader);
+            $header = $this->request->getHeaderLine($proxyHeader);
             if ($header === '') {
                 break;
             }
@@ -213,70 +197,6 @@ final class ServerRequest implements ServerRequestInterface
 
             $result[] = strtolower($mediaType);
         }
-
-        return $result;
-    }
-
-    /**
-     * Gets the client's consumed languages
-     *
-     * @return array<string, float>
-     */
-    public function getClientConsumedLanguages(): array
-    {
-        $header = $this->request->getHeaderLine('Accept-Language');
-        if ($header === '') {
-            return [];
-        }
-
-        $cursor = -1;
-        $inLanguage = true;
-        $inWeight = false;
-        $data = [];
-        $i = 0;
-
-        while (true) {
-            $char = $header[++$cursor] ?? null;
-
-            if ($char === null) {
-                break;
-            }
-            if ($char === ' ') {
-                continue;
-            }
-            if ($char === ';') {
-                $inLanguage = false;
-                continue;
-            }
-            if ($char === '=') {
-                $inWeight = true;
-                continue;
-            }
-            if ($char === ',') {
-                $inLanguage = true;
-                $inWeight = false;
-                $i++;
-                continue;
-            }
-            if ($inLanguage) {
-                $data[$i][0] ??= '';
-                $data[$i][0] .= $char;
-                continue;
-            }
-            if ($inWeight) {
-                $data[$i][1] ??= '';
-                $data[$i][1] .= $char;
-                continue;
-            }
-        }
-
-        $result = [];
-        foreach ($data as $item) {
-            /** @var array{0: string, 1?: numeric-string} $item */
-            $result[$item[0]] = (float) ($item[1] ?? 1.0);
-        }
-
-        arsort($result, SORT_NUMERIC);
 
         return $result;
     }

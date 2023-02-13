@@ -14,13 +14,11 @@ namespace Sunrise\Http\Router\Exception\Http;
 /**
  * Import classes
  */
+use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
 /**
  * HTTP Range Not Satisfiable Exception
- *
- * The range specified by the Range header field in the request cannot be fulfilled. It's possible that the range is
- * outside the size of the target URI's data.
  *
  * @link https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/416
  *
@@ -32,9 +30,9 @@ class HttpRangeNotSatisfiableException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param ?string $message
+     * @param string|null $message
      * @param int $code
-     * @param ?Throwable $previous
+     * @param Throwable|null $previous
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {

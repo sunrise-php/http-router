@@ -14,12 +14,11 @@ namespace Sunrise\Http\Router\Exception\Http;
 /**
  * Import classes
  */
+use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
 /**
  * HTTP Precondition Failed Exception
- *
- * The server does not meet one of the preconditions that the requester put on the request header fields.
  *
  * @link https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/412
  *
@@ -31,9 +30,9 @@ class HttpPreconditionFailedException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param ?string $message
+     * @param string|null $message
      * @param int $code
-     * @param ?Throwable $previous
+     * @param Throwable|null $previous
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {

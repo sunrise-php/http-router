@@ -14,14 +14,11 @@ namespace Sunrise\Http\Router\Exception\Http;
 /**
  * Import classes
  */
+use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
 /**
  * HTTP Upgrade Required Exception
- *
- * The server refuses to perform the request using the current protocol but might be willing to do so after the client
- * upgrades to a different protocol. The server sends an Upgrade header in a 426 response to indicate the required
- * protocol(s).
  *
  * @link https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/426
  *
@@ -33,9 +30,9 @@ class HttpUpgradeRequiredException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param ?string $message
+     * @param string|null $message
      * @param int $code
-     * @param ?Throwable $previous
+     * @param Throwable|null $previous
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {

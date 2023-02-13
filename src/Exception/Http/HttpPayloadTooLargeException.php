@@ -14,13 +14,11 @@ namespace Sunrise\Http\Router\Exception\Http;
 /**
  * Import classes
  */
+use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
 /**
  * HTTP Payload Too Large Exception
- *
- * Request entity is larger than limits defined by server. The server might close the connection or return an
- * Retry-After header field.
  *
  * @link https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/413
  *
@@ -32,9 +30,9 @@ class HttpPayloadTooLargeException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param ?string $message
+     * @param string|null $message
      * @param int $code
-     * @param ?Throwable $previous
+     * @param Throwable|null $previous
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {

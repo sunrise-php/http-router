@@ -14,13 +14,11 @@ namespace Sunrise\Http\Router\Exception\Http;
 /**
  * Import classes
  */
+use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
 /**
  * HTTP Unauthorized Exception
- *
- * Although the HTTP standard specifies "unauthorized", semantically this response means "unauthenticated". That is, the
- * client must authenticate itself to get the requested response.
  *
  * @link https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401
  *
@@ -32,9 +30,9 @@ class HttpUnauthorizedException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param ?string $message
+     * @param string|null $message
      * @param int $code
-     * @param ?Throwable $previous
+     * @param Throwable|null $previous
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {

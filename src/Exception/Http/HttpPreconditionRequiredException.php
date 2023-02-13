@@ -14,14 +14,11 @@ namespace Sunrise\Http\Router\Exception\Http;
 /**
  * Import classes
  */
+use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
 /**
  * HTTP Precondition Required Exception
- *
- * The origin server requires the request to be conditional. This response is intended to prevent the 'lost update'
- * problem, where a client GETs a resource's state, modifies it and PUTs it back to the server, when meanwhile a third
- * party has modified the state on the server, leading to a conflict.
  *
  * @link https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/428
  *
@@ -33,9 +30,9 @@ class HttpPreconditionRequiredException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param ?string $message
+     * @param string|null $message
      * @param int $code
-     * @param ?Throwable $previous
+     * @param Throwable|null $previous
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {

@@ -14,13 +14,11 @@ namespace Sunrise\Http\Router\Exception\Http;
 /**
  * Import classes
  */
+use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
 /**
  * HTTP Unavailable For Legal Reasons Exception
- *
- * The server is unwilling to process the request because its header fields are too large. The request may be
- * resubmitted after reducing the size of the request header fields.
  *
  * @link https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/451
  *
@@ -32,9 +30,9 @@ class HttpUnavailableForLegalReasonsException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param ?string $message
+     * @param string|null $message
      * @param int $code
-     * @param ?Throwable $previous
+     * @param Throwable|null $previous
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {

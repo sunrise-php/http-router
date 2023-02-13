@@ -14,12 +14,11 @@ namespace Sunrise\Http\Router\Exception\Http;
 /**
  * Import classes
  */
+use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
 /**
  * HTTP Expectation Failed Exception
- *
- * This response code means the expectation indicated by the Expect request header field cannot be met by the server.
  *
  * @link https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/417
  *
@@ -31,9 +30,9 @@ class HttpExpectationFailedException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param ?string $message
+     * @param string|null $message
      * @param int $code
-     * @param ?Throwable $previous
+     * @param Throwable|null $previous
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {

@@ -14,13 +14,11 @@ namespace Sunrise\Http\Router\Exception\Http;
 /**
  * Import classes
  */
+use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
 /**
  * HTTP Forbidden Exception
- *
- * The client does not have access rights to the content; that is, it is unauthorized, so the server is refusing to give
- * the requested resource. Unlike 401 Unauthorized, the client's identity is known to the server.
  *
  * @link https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
  *
@@ -32,9 +30,9 @@ class HttpForbiddenException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param ?string $message
+     * @param string|null $message
      * @param int $code
-     * @param ?Throwable $previous
+     * @param Throwable|null $previous
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {

@@ -14,13 +14,11 @@ namespace Sunrise\Http\Router\Exception\Http;
 /**
  * Import classes
  */
+use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
 /**
  * HTTP Misdirected Request Exception
- *
- * The request was directed at a server that is not able to produce a response. This can be sent by a server that is not
- * configured to produce responses for the combination of scheme and authority that are included in the request URI.
  *
  * @since 3.0.0
  */
@@ -30,9 +28,9 @@ class HttpMisdirectedRequestException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param ?string $message
+     * @param string|null $message
      * @param int $code
-     * @param ?Throwable $previous
+     * @param Throwable|null $previous
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {

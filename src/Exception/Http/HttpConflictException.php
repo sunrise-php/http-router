@@ -14,12 +14,11 @@ namespace Sunrise\Http\Router\Exception\Http;
 /**
  * Import classes
  */
+use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
 /**
  * HTTP Conflict Exception
- *
- * This response is sent when a request conflicts with the current state of the server.
  *
  * @link https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/409
  *
@@ -31,9 +30,9 @@ class HttpConflictException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param ?string $message
+     * @param string|null $message
      * @param int $code
-     * @param ?Throwable $previous
+     * @param Throwable|null $previous
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {

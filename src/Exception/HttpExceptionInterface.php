@@ -9,13 +9,12 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
-namespace Sunrise\Http\Router\Exception\Http;
+namespace Sunrise\Http\Router\Exception;
 
 /**
  * Import classes
  */
 use Fig\Http\Message\StatusCodeInterface;
-use Sunrise\Http\Router\Exception\ExceptionInterface;
 
 /**
  * Base HTTP exception interface
@@ -28,7 +27,14 @@ interface HttpExceptionInterface extends ExceptionInterface, StatusCodeInterface
     /**
      * Gets HTTP status code
      *
-     * @return int
+     * @return int<100, 599>
      */
     public function getStatusCode(): int;
+
+    /**
+     * Gets HTTP header fields
+     *
+     * @return list<array{0: string, 1: string}>
+     */
+    public function getHeaderFields(): array;
 }

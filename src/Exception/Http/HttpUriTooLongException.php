@@ -14,12 +14,11 @@ namespace Sunrise\Http\Router\Exception\Http;
 /**
  * Import classes
  */
+use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
 /**
  * HTTP URI Too Long Exception
- *
- * The URI requested by the client is longer than the server is willing to interpret.
  *
  * @link https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/414
  *
@@ -31,9 +30,9 @@ class HttpUriTooLongException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param ?string $message
+     * @param string|null $message
      * @param int $code
-     * @param ?Throwable $previous
+     * @param Throwable|null $previous
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
