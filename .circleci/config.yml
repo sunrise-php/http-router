@@ -6,7 +6,7 @@ version: 2
 jobs:
   php71:
     docker:
-      - image: cimg/php:7.1
+      - image: cimg/php:7.4
     steps:
       - checkout
       - run: php -v
@@ -14,7 +14,7 @@ jobs:
       - run: XDEBUG_MODE=coverage php vendor/bin/phpunit --coverage-text
   php72:
     docker:
-      - image: cimg/php:7.2
+      - image: cimg/php:7.4
     steps:
       - checkout
       - run: php -v
@@ -22,7 +22,7 @@ jobs:
       - run: XDEBUG_MODE=coverage php vendor/bin/phpunit --coverage-text
   php73:
     docker:
-      - image: cimg/php:7.3
+      - image: cimg/php:7.4
     steps:
       - checkout
       - run: php -v
