@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * It's free open-source software released under the MIT License.
@@ -9,12 +9,13 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
+declare(strict_types=1);
+
 namespace Sunrise\Http\Router;
 
-/**
- * Import classes
- */
+use Psr\Http\Message\RequestInterface;
 use Sunrise\Http\Router\Exception\ResolvingParameterException;
+use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
 use ReflectionParameter;
 
 /**
@@ -26,15 +27,15 @@ interface ParameterResolutionerInterface
 {
 
     /**
-     * Creates a new instance of the resolutioner with the given current context
+     * Creates a new instance of the resolutioner with the given current request
      *
      * Please note that this method MUST NOT change the object state.
      *
-     * @param mixed $context
+     * @param RequestInterface $request
      *
      * @return static
      */
-    public function withContext($context): ParameterResolutionerInterface;
+    public function withRequest(RequestInterface $request): static;
 
     /**
      * Creates a new instance of the resolutioner with the given priority parameter resolver(s)
@@ -45,7 +46,7 @@ interface ParameterResolutionerInterface
      *
      * @return static
      */
-    public function withPriorityResolver(ParameterResolverInterface ...$resolvers): ParameterResolutionerInterface;
+    public function withPriorityResolver(ParameterResolverInterface ...$resolvers): static;
 
     /**
      * Adds the given parameter resolver(s) to the resolutioner
@@ -61,11 +62,9 @@ interface ParameterResolutionerInterface
      *
      * @param ReflectionParameter ...$parameters
      *
-     * @return list<mixed>
-     *         List of ready-to-pass arguments.
+     * @return list<mixed> List of ready-to-pass arguments.
      *
-     * @throws ResolvingParameterException
-     *         If one of the parameters cannot be resolved to an argument.
+     * @throws ResolvingParameterException If one of the parameters cannot be resolved to an argument.
      */
     public function resolveParameters(ReflectionParameter ...$parameters): array;
 }

@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * It's free open-source software released under the MIT License.
@@ -9,83 +9,40 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
+declare(strict_types=1);
+
 namespace Sunrise\Http\Router\Middleware;
 
-/**
- * Import classes
- */
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\ParameterResolver\KnownTypedParameterResolver;
-use Sunrise\Http\Router\ParameterResolutionerInterface;
-use Sunrise\Http\Router\ResponseResolutionerInterface;
-use ReflectionFunctionAbstract;
-use ReflectionFunction;
-use ReflectionMethod;
-
-/**
- * Import functions
- */
-use function Sunrise\Http\Router\reflect_callable;
 
 /**
  * CallableMiddleware
  *
  * @since 2.8.0
+ *
+ * @template T as callable(ServerRequestInterface=, RequestHandlerInterface=): ResponseInterface
  */
 final class CallableMiddleware implements MiddlewareInterface
 {
 
     /**
-     * The middleware callback
+     * The middleware's callback
      *
-     * @var callable
+     * @var T
      */
     private $callback;
 
     /**
-     * The callback's parameter resolutioner
-     *
-     * @var ParameterResolutionerInterface
-     */
-    private ParameterResolutionerInterface $parameterResolutioner;
-
-    /**
-     * The callback's response resolutioner
-     *
-     * @var ResponseResolutionerInterface
-     */
-    private ResponseResolutionerInterface $responseResolutioner;
-
-    /**
      * Constructor of the class
      *
-     * @param callable $callback
-     * @param ParameterResolutionerInterface $parameterResolutioner
-     * @param ResponseResolutionerInterface $responseResolutioner
+     * @param T $callback
      */
-    public function __construct(
-        callable $callback,
-        ParameterResolutionerInterface $parameterResolutioner,
-        ResponseResolutionerInterface $responseResolutioner
-    ) {
-        $this->callback = $callback;
-        $this->parameterResolutioner = $parameterResolutioner;
-        $this->responseResolutioner = $responseResolutioner;
-    }
-
-    /**
-     * Gets the callback's reflection
-     *
-     * @return ReflectionFunction|ReflectionMethod
-     *
-     * @since 3.0.0
-     */
-    public function getReflection(): ReflectionFunctionAbstract
+    public function __construct(callable $callback)
     {
-        return reflect_callable($this->callback);
+        $this->callback = $callback;
     }
 
     /**
@@ -93,17 +50,6 @@ final class CallableMiddleware implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $arguments = $this->parameterResolutioner
-            ->withContext($request)
-            ->withPriorityResolver(new KnownTypedParameterResolver(ServerRequestInterface::class, $request))
-            ->withPriorityResolver(new KnownTypedParameterResolver(RequestHandlerInterface::class, $handler))
-            ->resolveParameters(...$this->getReflection()->getParameters());
-
-        /** @var mixed */
-        $response = ($this->callback)(...$arguments);
-
-        return $this->responseResolutioner
-            ->withContext($request)
-            ->resolveResponse($response);
+        return ($this->callback)($request, $handler);
     }
 }

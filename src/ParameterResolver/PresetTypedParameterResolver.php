@@ -13,30 +13,28 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\ParameterResolver;
 
-use Psr\Container\ContainerInterface;
 use Psr\Http\Message\RequestInterface;
 use ReflectionNamedType;
 use ReflectionParameter;
 
 /**
- * DependencyInjectionParameterResolver
+ * PresetTypedParameterResolver
+ *
+ * @template T of object
  *
  * @since 3.0.0
  */
-final class DependencyInjectionParameterResolver implements ParameterResolverInterface
+final class PresetTypedParameterResolver implements ParameterResolverInterface
 {
 
     /**
-     * @var ContainerInterface
+     * @param class-string<T> $type
+     * @param T $value
+     *
+     * @template T of object
      */
-    private ContainerInterface $container;
-
-    /**
-     * @param ContainerInterface $container
-     */
-    public function __construct(ContainerInterface $container)
+    public function __construct(private string $type, private object $value)
     {
-        $this->container = $container;
     }
 
     /**
@@ -44,15 +42,17 @@ final class DependencyInjectionParameterResolver implements ParameterResolverInt
      */
     public function supportsParameter(ReflectionParameter $parameter, RequestInterface $request): bool
     {
-        if (!($parameter->getType() instanceof ReflectionNamedType)) {
+        $type = $parameter->getType();
+
+        if (!($type instanceof ReflectionNamedType)) {
             return false;
         }
 
-        if ($parameter->getType()->isBuiltin()) {
+        if ($type->isBuiltin()) {
             return false;
         }
 
-        if (!$this->container->has($parameter->getType()->getName())) {
+        if (!($type->getName() === $this->type)) {
             return false;
         }
 
@@ -64,6 +64,6 @@ final class DependencyInjectionParameterResolver implements ParameterResolverInt
      */
     public function resolveParameter(ReflectionParameter $parameter, RequestInterface $request): mixed
     {
-        return $this->container->get($parameter->getType()->getName());
+        return $this->value;
     }
 }

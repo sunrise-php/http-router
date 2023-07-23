@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * It's free open-source software released under the MIT License.
@@ -9,17 +9,15 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
+declare(strict_types=1);
+
 namespace Sunrise\Http\Router;
 
-/**
- * Import classes
- */
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Sunrise\Http\Router\Exception\ResolvingResponseException;
+use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
 
-/**
- * Import functions
- */
 use function get_debug_type;
 use function sprintf;
 
@@ -32,15 +30,11 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
 {
 
     /**
-     * The current context
-     *
-     * @var mixed
+     * @var RequestInterface|null
      */
-    private $context = null;
+    private ?RequestInterface $request = null;
 
     /**
-     * The resolutioner's resolvers
-     *
      * @var list<ResponseResolverInterface>
      */
     private array $resolvers = [];
@@ -48,10 +42,10 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
     /**
      * {@inheritdoc}
      */
-    public function withContext($context): ResponseResolutionerInterface
+    public function withRequest(RequestInterface $context): static
     {
         $clone = clone $this;
-        $clone->context = $context;
+        $clone->request = $context;
 
         return $clone;
     }
@@ -76,28 +70,14 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
         }
 
         foreach ($this->resolvers as $resolver) {
-            if ($resolver->supportsResponse($response, $this->context)) {
-                return $resolver->resolveResponse($response, $this->context);
+            if ($resolver->supportsResponse($response, $this->request)) {
+                return $resolver->resolveResponse($response, $this->request);
             }
         }
 
         throw new ResolvingResponseException(sprintf(
             'Unable to resolve the response {%s}',
-            $this->stringifyResponse($response)
+            get_debug_type($response),
         ));
-    }
-
-    /**
-     * Stringifies the given raw response
-     *
-     * @param mixed $response
-     *
-     * @return string
-     *
-     * @todo Think about how to display the responder...
-     */
-    private function stringifyResponse($response): string
-    {
-        return get_debug_type($response);
     }
 }

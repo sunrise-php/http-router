@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * It's free open-source software released under the MIT License.
@@ -9,18 +9,16 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
-namespace Sunrise\Http\Router\Exception;
+declare(strict_types=1);
+
+namespace Sunrise\Http\Router\Annotation;
+
+use Attribute;
 
 /**
- * Import classes
- */
-use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
-
-/**
- * InvalidRequestBodyException
- *
  * @since 3.0.0
  */
-class InvalidRequestBodyException extends HttpBadRequestException
+#[Attribute(Attribute::TARGET_CLASS)]
+final class ResponseBody
 {
 }

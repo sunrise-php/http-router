@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * It's free open-source software released under the MIT License.
@@ -9,11 +9,11 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
-namespace Sunrise\Http\Router;
+declare(strict_types=1);
 
-/**
- * Import classes
- */
+namespace Sunrise\Http\Router\ParameterResolver;
+
+use Psr\Http\Message\RequestInterface;
 use Sunrise\Http\Router\Exception\ResolvingParameterException;
 use ReflectionParameter;
 
@@ -29,22 +29,22 @@ interface ParameterResolverInterface
      * Checks if the given parameter is supported
      *
      * @param ReflectionParameter $parameter
-     * @param mixed $context
+     * @param RequestInterface $request
      *
      * @return bool
      */
-    public function supportsParameter(ReflectionParameter $parameter, $context): bool;
+    public function supportsParameter(ReflectionParameter $parameter, RequestInterface $request): bool;
 
     /**
      * Resolves the given parameter to an argument
      *
      * @param ReflectionParameter $parameter
-     * @param mixed $context
+     * @param RequestInterface $request
      *
      * @return mixed
      *
      * @throws ResolvingParameterException
      *         If the parameter cannot be resolved to an argument.
      */
-    public function resolveParameter(ReflectionParameter $parameter, $context);
+    public function resolveParameter(ReflectionParameter $parameter, RequestInterface $request): mixed;
 }

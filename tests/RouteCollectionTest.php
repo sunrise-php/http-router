@@ -2,16 +2,10 @@
 
 namespace Sunrise\Http\Router\Tests;
 
-/**
- * Import classes
- */
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\RouteCollection;
 use Sunrise\Http\Router\RouteCollectionInterface;
 
-/**
- * Import functions
- */
 use function array_merge;
 
 /**

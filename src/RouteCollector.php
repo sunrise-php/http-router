@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * It's free open-source software released under the MIT License.
@@ -9,12 +9,13 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
+declare(strict_types=1);
+
 namespace Sunrise\Http\Router;
 
-/**
- * Import classes
- */
 use Sunrise\Http\Router\Exception\LogicException;
+use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
+use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
 
 /**
  * RouteCollector
@@ -23,29 +24,21 @@ class RouteCollector
 {
 
     /**
-     * The collector's route collection
-     *
      * @var RouteCollectionInterface
      */
     private RouteCollectionInterface $collection;
 
     /**
-     * The collector's route collection factory
-     *
      * @var RouteCollectionFactoryInterface
      */
     private RouteCollectionFactoryInterface $collectionFactory;
 
     /**
-     * The collector's route factory
-     *
      * @var RouteFactoryInterface
      */
     private RouteFactoryInterface $routeFactory;
 
     /**
-     * The collector's reference resolver
-     *
      * @var ReferenceResolverInterface
      */
     private ReferenceResolverInterface $referenceResolver;

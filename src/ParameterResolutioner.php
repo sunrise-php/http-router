@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * It's free open-source software released under the MIT License.
@@ -9,18 +9,16 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
+declare(strict_types=1);
+
 namespace Sunrise\Http\Router;
 
-/**
- * Import classes
- */
-use Sunrise\Http\Router\Exception\ResolvingParameterException;
+use Psr\Http\Message\RequestInterface;
 use ReflectionMethod;
 use ReflectionParameter;
+use Sunrise\Http\Router\Exception\ResolvingParameterException;
+use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
 
-/**
- * Import functions
- */
 use function sprintf;
 
 /**
@@ -32,15 +30,11 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
 {
 
     /**
-     * The current context
-     *
-     * @var mixed
+     * @var RequestInterface|null
      */
-    private $context = null;
+    private ?RequestInterface $request = null;
 
     /**
-     * The resolutioner's resolvers
-     *
      * @var list<ParameterResolverInterface>
      */
     private array $resolvers = [];
@@ -48,10 +42,10 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
     /**
      * {@inheritdoc}
      */
-    public function withContext($context): ParameterResolutionerInterface
+    public function withRequest(RequestInterface $request): static
     {
         $clone = clone $this;
-        $clone->context = $context;
+        $clone->request = $request;
 
         return $clone;
     }
@@ -59,7 +53,7 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
     /**
      * {@inheritdoc}
      */
-    public function withPriorityResolver(ParameterResolverInterface ...$resolvers): ParameterResolutionerInterface
+    public function withPriorityResolver(ParameterResolverInterface ...$resolvers): static
     {
         $clone = clone $this;
         $clone->resolvers = [];
@@ -112,8 +106,8 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
     private function resolveParameter(ReflectionParameter $parameter)
     {
         foreach ($this->resolvers as $resolver) {
-            if ($resolver->supportsParameter($parameter, $this->context)) {
-                return $resolver->resolveParameter($parameter, $this->context);
+            if ($resolver->supportsParameter($parameter, $this->request)) {
+                return $resolver->resolveParameter($parameter, $this->request);
             }
         }
 

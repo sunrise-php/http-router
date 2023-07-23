@@ -2,14 +2,8 @@
 
 namespace Sunrise\Http\Router\Tests\Functions;
 
-/**
- * Import classes
- */
 use PHPUnit\Framework\TestCase;
 
-/**
- * Import functions
- */
 use function Sunrise\Http\Router\path_match;
 
 /**

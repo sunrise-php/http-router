@@ -15,27 +15,21 @@ namespace Sunrise\Http\Router\ResponseResolver;
 
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
-use function is_int;
+use Sunrise\Http\Router\Annotation\ResponseBody;
+use ReflectionClass;
+
+use function is_object;
 
 /**
- * StatusCodeResponseResolver
+ * ObjectResponseResolver
  *
  * @since 3.0.0
  */
-final class StatusCodeResponseResolver implements ResponseResolverInterface
+final class ObjectResponseResolver implements ResponseResolverInterface
 {
-
-    /**
-     * @var ResponseFactoryInterface
-     */
-    private ResponseFactoryInterface $responseFactory;
-
-    /**
-     * @param ResponseFactoryInterface $responseFactory
-     */
-    public function __construct(ResponseFactoryInterface $responseFactory)
-    {
-        $this->responseFactory = $responseFactory;
+    public function __construct(
+        private ResponseFactoryInterface $responseFactory,
+    ) {
     }
 
     /**
@@ -43,7 +37,11 @@ final class StatusCodeResponseResolver implements ResponseResolverInterface
      */
     public function supportsResponse($response, $context): bool
     {
-        return is_int($response) && $response >= 100 && $response <= 599;
+        if (!is_object($response)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -51,8 +49,8 @@ final class StatusCodeResponseResolver implements ResponseResolverInterface
      */
     public function resolveResponse($response, $context): ResponseInterface
     {
-        /** @var int<100, 599> $response */
+        $attributes = (new ReflectionClass($response))->getAttributes(ResponseBody::class);
 
-        return $this->responseFactory->createResponse($response);
+        return $this->responseFactory->createResponse(200);
     }
 }

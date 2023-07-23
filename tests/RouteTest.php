@@ -2,18 +2,12 @@
 
 namespace Sunrise\Http\Router\Tests;
 
-/**
- * Import classes
- */
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Sunrise\Http\Router\Route;
 use Sunrise\Http\Router\RouteInterface;
 use Sunrise\Http\ServerRequest\ServerRequestFactory;
 
-/**
- * Import functions
- */
 use function array_merge;
 
 /**

@@ -2,9 +2,6 @@
 
 namespace Sunrise\Http\Router\Tests;
 
-/**
- * Import classes
- */
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
 use Sunrise\Http\Router\Router;

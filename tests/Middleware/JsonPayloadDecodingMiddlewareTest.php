@@ -2,9 +2,6 @@
 
 namespace Sunrise\Http\Router\Tests\Middleware;
 
-/**
- * Import classes
- */
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Server\MiddlewareInterface;
 use Sunrise\Http\Router\Exception\UndecodablePayloadException;

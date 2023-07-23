@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * It's free open-source software released under the MIT License.
@@ -9,17 +9,17 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
+declare(strict_types=1);
+
 namespace Sunrise\Http\Router;
 
-/**
- * Import classes
- */
 use Fig\Http\Message\RequestMethodInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Message\ServerRequestProxy;
 use Sunrise\Http\Router\Event\RouteEvent;
 use Sunrise\Http\Router\Exception\ClientNotConsumedMediaTypeException;
 use Sunrise\Http\Router\Exception\ClientNotProducedMediaTypeException;
@@ -29,9 +29,6 @@ use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
 use Sunrise\Http\Router\RequestHandler\UnsafeCallableRequestHandler;
 
-/**
- * Import functions
- */
 use function array_keys;
 use function Sunrise\Http\Router\path_build;
 use function Sunrise\Http\Router\path_match;
@@ -43,8 +40,6 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
 {
 
     /**
-     * Global patterns
-     *
      * @var array<string, string>
      *
      * @since 2.9.0
@@ -55,36 +50,26 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     ];
 
     /**
-     * The router's host table
-     *
      * @var HostTable
      */
     private HostTable $hosts;
 
     /**
-     * The router's route collection
-     *
      * @var RouteCollectionInterface
      */
     private RouteCollectionInterface $routes;
 
     /**
-     * The router's middlewares
-     *
      * @var list<MiddlewareInterface>
      */
     private array $middlewares = [];
 
     /**
-     * The router's event dispatcher
-     *
      * @var EventDispatcherInterface|null
      */
     private ?EventDispatcherInterface $eventDispatcher = null;
 
     /**
-     * The router's matched route
-     *
      * @var RouteInterface|null
      */
     private ?RouteInterface $matchedRoute = null;
@@ -326,9 +311,9 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
                 $this->matchedRoute = $this->match($request);
 
                 if (isset($this->eventDispatcher)) {
-                    $this->eventDispatcher->dispatch(
-                        new RouteEvent($this->matchedRoute, $request)
-                    );
+                    $event = new RouteEvent($this->matchedRoute, $request);
+                    $this->eventDispatcher->dispatch($event);
+                    $request = $event->getRequest();
                 }
 
                 return $this->matchedRoute->handle($request);
@@ -353,9 +338,9 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
         $this->matchedRoute = $this->match($request);
 
         if (isset($this->eventDispatcher)) {
-            $this->eventDispatcher->dispatch(
-                new RouteEvent($this->matchedRoute, $request)
-            );
+            $event = new RouteEvent($this->matchedRoute, $request);
+            $this->eventDispatcher->dispatch($event);
+            $request = $event->getRequest();
         }
 
         if (empty($this->middlewares)) {

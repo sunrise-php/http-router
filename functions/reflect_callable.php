@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * It's free open-source software released under the MIT License.
@@ -9,20 +9,16 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
+declare(strict_types=1);
+
 namespace Sunrise\Http\Router;
 
-/**
- * Import classes
- */
 use Closure;
 use InvalidArgumentException;
 use ReflectionFunctionAbstract;
 use ReflectionFunction;
 use ReflectionMethod;
 
-/**
- * Import functions
- */
 use function function_exists;
 use function is_array;
 use function is_object;

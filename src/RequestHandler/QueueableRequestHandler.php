@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * It's free open-source software released under the MIT License.
@@ -9,11 +9,10 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
+declare(strict_types=1);
+
 namespace Sunrise\Http\Router\RequestHandler;
 
-/**
- * Import classes
- */
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -27,15 +26,11 @@ final class QueueableRequestHandler implements RequestHandlerInterface
 {
 
     /**
-     * The request handler queue
-     *
      * @var SplQueue<MiddlewareInterface>
      */
     private SplQueue $queue;
 
     /**
-     * The request handler endpoint
-     *
      * @var RequestHandlerInterface
      */
     private RequestHandlerInterface $endpoint;
@@ -47,10 +42,7 @@ final class QueueableRequestHandler implements RequestHandlerInterface
      */
     public function __construct(RequestHandlerInterface $endpoint)
     {
-        /** @var SplQueue<MiddlewareInterface> */
-        $queue = new SplQueue();
-
-        $this->queue = $queue;
+        $this->queue = new SplQueue();
         $this->endpoint = $endpoint;
     }
 

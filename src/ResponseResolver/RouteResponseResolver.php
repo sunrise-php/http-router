@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * It's free open-source software released under the MIT License.
@@ -9,14 +9,12 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
+declare(strict_types=1);
+
 namespace Sunrise\Http\Router\ResponseResolver;
 
-/**
- * Import classes
- */
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Sunrise\Http\Router\ResponseResolverInterface;
 use Sunrise\Http\Router\RouteInterface;
 
 /**
@@ -30,7 +28,7 @@ final class RouteResponseResolver implements ResponseResolverInterface
     /**
      * {@inheritdoc}
      */
-    public function supportsResponse($response, $context): bool
+    public function supportsResponse(mixed $response, mixed $context): bool
     {
         if (!($context instanceof ServerRequestInterface)) {
             return false;
@@ -46,13 +44,10 @@ final class RouteResponseResolver implements ResponseResolverInterface
     /**
      * {@inheritdoc}
      */
-    public function resolveResponse($response, $context): ResponseInterface
+    public function resolveResponse(mixed $response, mixed $context): ResponseInterface
     {
-        /** @var RouteInterface */
-        $response = $response;
-
-        /** @var ServerRequestInterface */
-        $context = $context;
+        /** @var RouteInterface $response */
+        /** @var ServerRequestInterface $context */
 
         return $response->handle($context);
     }

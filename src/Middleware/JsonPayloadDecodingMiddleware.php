@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * It's free open-source software released under the MIT License.
@@ -9,37 +9,31 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
+declare(strict_types=1);
+
 namespace Sunrise\Http\Router\Middleware;
 
-/**
- * Import classes
- */
+use JsonException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Exception\InvalidRequestPayloadException;
 use Sunrise\Http\Router\ServerRequest;
-use JsonException;
 
-/**
- * Import functions
- */
 use function is_array;
 use function json_decode;
 use function sprintf;
 
-/**
- * Import constants
- */
 use const JSON_BIGINT_AS_STRING;
-use const JSON_OBJECT_AS_ARRAY;
 use const JSON_THROW_ON_ERROR;
 
 /**
- * JsonPayloadDecodingMiddleware
+ * Middleware for JSON payload decoding
  *
  * @since 2.15.0
+ *
+ * @link https://www.php.net/manual/en/book.json.php
  */
 final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
 {
@@ -63,24 +57,25 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
      *
      * @param ServerRequestInterface $request
      *
-     * @return array|null
+     * @return array<array-key, mixed>
      *
      * @throws InvalidRequestPayloadException
      *         If the request's payload cannot be decoded.
      */
-    private function decodeRequestPayload(ServerRequestInterface $request): ?array
+    private function decodeRequestPayload(ServerRequestInterface $request): array
     {
-        // https://www.php.net/json.constants
-        $options = JSON_BIGINT_AS_STRING | JSON_OBJECT_AS_ARRAY | JSON_THROW_ON_ERROR;
+        $json = $request->getBody()->__toString();
 
         try {
-            /** @var mixed */
-            $result = json_decode($request->getBody()->__toString(), null, 512, $options);
+            $data = json_decode($json, true, 512, JSON_BIGINT_AS_STRING | JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
             throw new InvalidRequestPayloadException(sprintf('Invalid Payload: %s', $e->getMessage()), 0, $e);
         }
 
-        // according to PSR-7 the parsed body can be only an array or an object...
-        return is_array($result) ? $result : null;
+        if (!is_array($data)) {
+            throw new InvalidRequestPayloadException('Unexpected JSON: Expects an array or object.');
+        }
+
+        return $data;
     }
 }

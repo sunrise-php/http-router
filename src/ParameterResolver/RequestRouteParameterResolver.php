@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * It's free open-source software released under the MIT License.
@@ -9,16 +9,14 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
+declare(strict_types=1);
+
 namespace Sunrise\Http\Router\ParameterResolver;
 
-/**
- * Import classes
- */
 use Psr\Http\Message\ServerRequestInterface;
-use Sunrise\Http\Router\ParameterResolverInterface;
-use Sunrise\Http\Router\RouteInterface;
 use ReflectionNamedType;
 use ReflectionParameter;
+use Sunrise\Http\Router\RouteInterface;
 
 /**
  * RequestRouteParameterResolver
@@ -31,9 +29,9 @@ final class RequestRouteParameterResolver implements ParameterResolverInterface
     /**
      * {@inheritdoc}
      */
-    public function supportsParameter(ReflectionParameter $parameter, $context): bool
+    public function supportsParameter(ReflectionParameter $parameter, $request): bool
     {
-        if (!($context instanceof ServerRequestInterface)) {
+        if (!($request instanceof ServerRequestInterface)) {
             return false;
         }
 
@@ -45,7 +43,7 @@ final class RequestRouteParameterResolver implements ParameterResolverInterface
             return false;
         }
 
-        if (!($context->getAttribute(RouteInterface::ATTR_ROUTE) instanceof RouteInterface)) {
+        if (!($request->getAttribute(RouteInterface::ATTR_ROUTE) instanceof RouteInterface)) {
             return false;
         }
 
@@ -55,11 +53,10 @@ final class RequestRouteParameterResolver implements ParameterResolverInterface
     /**
      * {@inheritdoc}
      */
-    public function resolveParameter(ReflectionParameter $parameter, $context)
+    public function resolveParameter(ReflectionParameter $parameter, $request)
     {
-        /** @var ServerRequestInterface */
-        $context = $context;
+        /** @var ServerRequestInterface $request */
 
-        return $context->getAttribute(RouteInterface::ATTR_ROUTE);
+        return $request->getAttribute(RouteInterface::ATTR_ROUTE);
     }
 }

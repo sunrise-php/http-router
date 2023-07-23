@@ -2,9 +2,6 @@
 
 namespace Sunrise\Http\Router\Tests\Loader;
 
-/**
- * Import classes
- */
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
 use Sunrise\Http\Router\Loader\ConfigLoader;

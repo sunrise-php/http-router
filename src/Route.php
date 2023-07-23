@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * It's free open-source software released under the MIT License.
@@ -9,11 +9,10 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
+declare(strict_types=1);
+
 namespace Sunrise\Http\Router;
 
-/**
- * Import classes
- */
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -23,9 +22,6 @@ use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
 use ReflectionClass;
 use Reflector;
 
-/**
- * Import functions
- */
 use function rtrim;
 use function strtoupper;
 

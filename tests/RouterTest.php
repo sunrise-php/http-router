@@ -2,9 +2,6 @@
 
 namespace Sunrise\Http\Router\Tests;
 
-/**
- * Import classes
- */
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -13,7 +10,7 @@ use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\MethodNotAllowedException;
 use Sunrise\Http\Router\Exception\PageNotFoundException;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
-use Sunrise\Http\Router\Middleware\CallableMiddleware;
+use Sunrise\Http\Router\Middleware\CallbackMiddleware;
 use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\Route;
 use Sunrise\Http\Router\RouteCollection;
@@ -22,9 +19,6 @@ use Sunrise\Http\Message\ResponseFactory;
 use Sunrise\Http\ServerRequest\ServerRequestFactory;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
-/**
- * Import functions
- */
 use function array_merge;
 use function array_unique;
 
@@ -449,7 +443,7 @@ class RouterTest extends TestCase
         $router = new Router();
         $router->addRoute(...$routes);
 
-        $router->addMiddleware(new CallableMiddleware(function ($request, $handler) {
+        $router->addMiddleware(new CallbackMiddleware(function ($request, $handler) {
             try {
                 return $handler->handle($request);
             } catch (MethodNotAllowedException $e) {
@@ -477,7 +471,7 @@ class RouterTest extends TestCase
         $router = new Router();
         $router->addRoute(...$routes);
 
-        $router->addMiddleware(new CallableMiddleware(function ($request, $handler) {
+        $router->addMiddleware(new CallbackMiddleware(function ($request, $handler) {
             try {
                 return $handler->handle($request);
             } catch (RouteNotFoundException $e) {

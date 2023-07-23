@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * It's free open-source software released under the MIT License.
@@ -8,6 +8,8 @@
  * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-router
  */
+
+declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
@@ -56,7 +58,8 @@ final class HostTable
     }
 
     /**
-     * Resolves the given hostname to its alias if it exists in the table otherwise returns null
+     * Resolves the given hostname to its alias
+     * if it exists in the table otherwise returns null
      *
      * @param string $hostname
      *

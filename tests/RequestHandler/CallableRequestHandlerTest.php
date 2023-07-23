@@ -2,9 +2,6 @@
 
 namespace Sunrise\Http\Router\Tests\RequestHandler;
 
-/**
- * Import classes
- */
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;

@@ -11,13 +11,23 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Exception;
+namespace Sunrise\Http\Router\Annotation;
+
+use Attribute;
 
 /**
- * RouteAlreadyExistsException
- *
  * @since 3.0.0
  */
-class RouteAlreadyExistsException extends LogicException
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
+final class Version
 {
+
+    /**
+     * Constructor of the class
+     *
+     * @param non-empty-string $value
+     */
+    public function __construct(public string $value)
+    {
+    }
 }

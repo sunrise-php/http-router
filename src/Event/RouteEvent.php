@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * It's free open-source software released under the MIT License.
@@ -9,11 +9,10 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
+declare(strict_types=1);
+
 namespace Sunrise\Http\Router\Event;
 
-/**
- * Import classes
- */
 use Psr\Http\Message\ServerRequestInterface;
 use Sunrise\Http\Router\RouteInterface;
 
@@ -26,25 +25,13 @@ final class RouteEvent
 {
 
     /**
-     * @var RouteInterface
-     */
-    private RouteInterface $route;
-
-    /**
-     * @var ServerRequestInterface
-     */
-    private ServerRequestInterface $request;
-
-    /**
      * Constructor of the class
      *
      * @param RouteInterface $route
      * @param ServerRequestInterface $request
      */
-    public function __construct(RouteInterface $route, ServerRequestInterface $request)
+    public function __construct(private RouteInterface $route, private ServerRequestInterface $request)
     {
-        $this->route = $route;
-        $this->request = $request;
     }
 
     /**
@@ -61,5 +48,15 @@ final class RouteEvent
     public function getRequest(): ServerRequestInterface
     {
         return $this->request;
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     *
+     * @return void
+     */
+    public function setRequest(ServerRequestInterface $request): void
+    {
+        $this->request = $request;
     }
 }

@@ -264,7 +264,7 @@ $response = $router->process($request, $handler);
 use Sunrise\Http\Message\ResponseFactory;
 use Sunrise\Http\Router\Exception\MethodNotAllowedException;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
-use Sunrise\Http\Router\Middleware\CallableMiddleware;
+use Sunrise\Http\Router\Middleware\CallbackMiddleware;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Sunrise\Http\Router\RouteCollector;
 use Sunrise\Http\Router\Router;
@@ -281,7 +281,7 @@ $collector->get('home', '/', new CallableRequestHandler(function ($request) {
 $router = new Router();
 $router->addRoute(...$collector->getCollection()->all());
 
-$router->addMiddleware(new CallableMiddleware(function ($request, $handler) {
+$router->addMiddleware(new CallbackMiddleware(function ($request, $handler) {
     try {
         return $handler->handle($request);
     } catch (MethodNotAllowedException $e) {

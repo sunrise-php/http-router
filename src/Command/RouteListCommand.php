@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * It's free open-source software released under the MIT License.
@@ -9,11 +9,10 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
+declare(strict_types=1);
+
 namespace Sunrise\Http\Router\Command;
 
-/**
- * Import classes
- */
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\Router;
 use Symfony\Component\Console\Command\Command;
@@ -21,19 +20,13 @@ use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-/**
- * Import functions
- */
-use function join;
-use function sprintf;
 use function Sunrise\Http\Router\path_plain;
 
 /**
  * This command will list all routes in your application
  *
- * If you can't pass the router to the constructor,
- * or your architecture has problems with the autowiring,
- * just inherit this class and override the getRouter method.
+ * If you can't pass the router to the constructor or your architecture has problems with the autowiring,
+ * then just inherit this class and override the {@see self::getRouter()} method.
  *
  * @since 2.9.0
  */
@@ -41,22 +34,13 @@ class RouteListCommand extends Command
 {
 
     /**
-     * The router instance populated with routes
-     *
-     * @var Router|null
-     */
-    private ?Router $router;
-
-    /**
      * Constructor of the class
      *
      * @param Router|null $router
      */
-    public function __construct(?Router $router = null)
+    public function __construct(private ?Router $router = null)
     {
         parent::__construct();
-
-        $this->router = $router;
     }
 
     /**
@@ -72,12 +56,11 @@ class RouteListCommand extends Command
     protected function getRouter(): Router
     {
         if (!isset($this->router)) {
-            throw new LogicException(sprintf(
+            throw new LogicException(\sprintf(
                 'The %2$s() method MUST return the %1$s class instance. ' .
-                'Pass the %1$s class instance to the constructor ' .
-                'or override the %2$s() method.',
+                'Pass the %1$s class instance to the constructor or override the %2$s() method.',
                 Router::class,
-                __METHOD__
+                __METHOD__,
             ));
         }
 
@@ -110,14 +93,14 @@ class RouteListCommand extends Command
         foreach ($this->getRouter()->getRoutes()->all() as $route) {
             $table->addRow([
                 $route->getName(),
-                $route->getHost() ?? 'ANY',
+                $route->getHost() ?? '*',
                 path_plain($route->getPath()),
-                join(', ', $route->getMethods()),
+                \join(', ', $route->getMethods()),
             ]);
         }
 
         $table->render();
 
-        return 0;
+        return self::SUCCESS;
     }
 }

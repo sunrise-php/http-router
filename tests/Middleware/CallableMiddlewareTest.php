@@ -2,13 +2,10 @@
 
 namespace Sunrise\Http\Router\Tests\Middleware;
 
-/**
- * Import classes
- */
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
-use Sunrise\Http\Router\Middleware\CallableMiddleware;
+use Sunrise\Http\Router\Middleware\CallbackMiddleware;
 use Sunrise\Http\Router\Tests\Fixtures;
 
 /**
@@ -23,7 +20,7 @@ class CallableMiddlewareTest extends TestCase
     public function testContracts() : void
     {
         $callback = new Fixtures\Middlewares\BlankMiddleware();
-        $middleware = new CallableMiddleware($callback);
+        $middleware = new CallbackMiddleware($callback);
 
         $this->assertInstanceOf(MiddlewareInterface::class, $middleware);
     }
@@ -34,7 +31,7 @@ class CallableMiddlewareTest extends TestCase
     public function testRun() : void
     {
         $callback = new Fixtures\Middlewares\BlankMiddleware();
-        $middleware = new CallableMiddleware($callback);
+        $middleware = new CallbackMiddleware($callback);
 
         $this->assertSame($callback, $middleware->getCallback());
 

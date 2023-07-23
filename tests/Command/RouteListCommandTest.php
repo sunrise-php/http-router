@@ -2,9 +2,6 @@
 
 namespace Sunrise\Http\Router\Tests\Command;
 
-/**
- * Import classes
- */
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Command\RouteListCommand;
 use Sunrise\Http\Router\Router;

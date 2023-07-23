@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * It's free open-source software released under the MIT License.
@@ -9,21 +9,17 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
+declare(strict_types=1);
+
 namespace Sunrise\Http\Router;
 
-/**
- * Import classes
- */
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Exception\ResolvingReferenceException;
-use Sunrise\Http\Router\Middleware\CallableMiddleware;
+use Sunrise\Http\Router\Middleware\CallbackMiddleware;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Closure;
 
-/**
- * Import functions
- */
 use function get_debug_type;
 use function is_array;
 use function is_callable;
@@ -41,22 +37,16 @@ final class ReferenceResolver implements ReferenceResolverInterface
 {
 
     /**
-     * The resolver's class resolver
-     *
      * @var ClassResolverInterface
      */
     private ClassResolverInterface $classResolver;
 
     /**
-     * The resolver's parameter resolutioner
-     *
      * @var ParameterResolutionerInterface
      */
     private ParameterResolutionerInterface $parameterResolutioner;
 
     /**
-     * The resolver's response resolutioner
-     *
      * @var ResponseResolutionerInterface
      */
     private ResponseResolutionerInterface $responseResolutioner;
@@ -130,7 +120,7 @@ final class ReferenceResolver implements ReferenceResolverInterface
         }
 
         if ($reference instanceof Closure) {
-            return new CallableMiddleware($reference, $this->parameterResolutioner, $this->responseResolutioner);
+            return new CallbackMiddleware($reference, $this->parameterResolutioner, $this->responseResolutioner);
         }
 
         if (is_string($reference) && is_subclass_of($reference, MiddlewareInterface::class)) {
@@ -147,7 +137,7 @@ final class ReferenceResolver implements ReferenceResolverInterface
                 $reference[0] = $this->classResolver->resolveClass($reference[0]);
             }
 
-            return new CallableMiddleware(
+            return new CallbackMiddleware(
                 [$reference[0], $reference[1]],
                 $this->parameterResolutioner,
                 $this->responseResolutioner

@@ -2,9 +2,6 @@
 
 namespace Sunrise\Http\Router\Tests\Loader;
 
-/**
- * Import classes
- */
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Annotation\Route;
@@ -14,9 +11,6 @@ use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\Tests\Fixtures;
 use ReflectionClass;
 
-/**
- * Import functions
- */
 use function array_map;
 use function class_exists;
 
@@ -32,16 +26,6 @@ class DescriptorLoaderTest extends TestCase
 {
     use Fixtures\CacheAwareTrait;
     use Fixtures\ContainerAwareTrait;
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function setUp() : void
-    {
-        if (class_exists(AnnotationRegistry::class)) {
-            /** @scrutinizer ignore-deprecated */ AnnotationRegistry::registerLoader('class_exists');
-        }
-    }
 
     /**
      * @return void

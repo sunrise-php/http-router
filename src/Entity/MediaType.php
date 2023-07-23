@@ -14,25 +14,28 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Entity;
 
 /**
- * IP address
+ * Media type
  *
  * @since 3.0.0
  */
-final class IpAddress
+final class MediaType
 {
+    public const APPLICATION_JSON = 'application/json';
+    public const APPLICATION_XML = 'application/xml';
+    public const TEXT_XML = 'text/xml';
 
     /**
      * Constructor of the class
      *
-     * @param non-empty-string $value The IP address value
-     * @param list<non-empty-string> $proxies The list of proxies in front of this IP address
+     * @param non-empty-string $value
+     * @param array<non-empty-string, string> $parameters
      */
-    public function __construct(private string $value, private array $proxies = [])
+    public function __construct(private string $value, private array $parameters = [])
     {
     }
 
     /**
-     * Gets the IP address value
+     * Gets the media type value
      *
      * @return non-empty-string
      */
@@ -42,12 +45,12 @@ final class IpAddress
     }
 
     /**
-     * Gets the list of proxies in front of this IP address
+     * Gets the media type parameters
      *
-     * @return list<non-empty-string>
+     * @return array<non-empty-string, string>
      */
-    public function getProxies(): array
+    public function getParameters(): array
     {
-        return $this->proxies;
+        return $this->parameters;
     }
 }

@@ -11,27 +11,28 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\RequestHandler;
+namespace Sunrise\Http\Router\Middleware;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\ParameterResolver\PresetTypedParameterResolver;
 use Sunrise\Http\Router\ParameterResolutionerInterface;
+use Sunrise\Http\Router\ParameterResolver\PresetTypedParameterResolver;
 use Sunrise\Http\Router\ResponseResolutionerInterface;
-use ReflectionFunction;
-use ReflectionMethod;
 
 use function Sunrise\Http\Router\reflect_callable;
 
 /**
- * CallableRequestHandler
+ * CallbackMiddleware
+ *
+ * @since 3.0.0
  */
-final class CallableRequestHandler implements RequestHandlerInterface
+final class CallbackMiddleware implements MiddlewareInterface
 {
 
     /**
-     * The request handler's callback
+     * The middleware's callback
      *
      * @var callable
      */
@@ -61,7 +62,7 @@ final class CallableRequestHandler implements RequestHandlerInterface
     public function __construct(
         callable $callback,
         ParameterResolutionerInterface $parameterResolutioner,
-        ResponseResolutionerInterface $responseResolutioner
+        ResponseResolutionerInterface $responseResolutioner,
     ) {
         $this->callback = $callback;
         $this->parameterResolutioner = $parameterResolutioner;
@@ -69,29 +70,20 @@ final class CallableRequestHandler implements RequestHandlerInterface
     }
 
     /**
-     * Gets the callback's reflection
-     *
-     * @return ReflectionFunction|ReflectionMethod
-     *
-     * @since 3.0.0
-     */
-    public function getReflection(): ReflectionFunction|ReflectionMethod
-    {
-        return reflect_callable($this->callback);
-    }
-
-    /**
      * {@inheritdoc}
      */
-    public function handle(ServerRequestInterface $request): ResponseInterface
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $arguments = $this->parameterResolutioner
+        $args = $this->parameterResolutioner
             ->withRequest($request)
-            ->withPriorityResolver(new PresetTypedParameterResolver(ServerRequestInterface::class, $request))
-            ->resolveParameters(...$this->getReflection()->getParameters());
+            ->withPriorityResolver(
+                new PresetTypedParameterResolver(ServerRequestInterface::class, $request),
+                new PresetTypedParameterResolver(RequestHandlerInterface::class, $handler),
+            )
+            ->resolveParameters(...reflect_callable($this->callback)->getParameters());
 
         /** @var mixed $response */
-        $response = ($this->callback)(...$arguments);
+        $response = ($this->callback)(...$args);
 
         return $this->responseResolutioner->withRequest($request)->resolveResponse($response);
     }

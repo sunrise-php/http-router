@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * It's free open-source software released under the MIT License.
@@ -9,13 +9,14 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
+declare(strict_types=1);
+
 namespace Sunrise\Http\Router;
 
-/**
- * Import classes
- */
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Sunrise\Http\Router\Exception\ResolvingResponseException;
+use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
 
 /**
  * ResponseResolutionerInterface
@@ -30,11 +31,11 @@ interface ResponseResolutionerInterface
      *
      * Please note that this method MUST NOT change the object state.
      *
-     * @param mixed $context
+     * @param RequestInterface $context
      *
      * @return static
      */
-    public function withContext($context): ResponseResolutionerInterface;
+    public function withRequest(RequestInterface $context): static;
 
     /**
      * Adds the given response resolver(s) to the resolutioner

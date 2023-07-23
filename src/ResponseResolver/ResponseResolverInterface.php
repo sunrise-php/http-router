@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * It's free open-source software released under the MIT License.
@@ -9,11 +9,10 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
-namespace Sunrise\Http\Router;
+declare(strict_types=1);
 
-/**
- * Import classes
- */
+namespace Sunrise\Http\Router\ResponseResolver;
+
 use Psr\Http\Message\ResponseInterface;
 use Sunrise\Http\Router\Exception\ResolvingResponseException;
 
@@ -33,7 +32,7 @@ interface ResponseResolverInterface
      *
      * @return bool
      */
-    public function supportsResponse($response, $context): bool;
+    public function supportsResponse(mixed $response, mixed $context): bool;
 
     /**
      * Resolves the given raw response to the object
@@ -46,5 +45,5 @@ interface ResponseResolverInterface
      * @throws ResolvingResponseException
      *         If the raw response cannot be resolved to the object.
      */
-    public function resolveResponse($response, $context): ResponseInterface;
+    public function resolveResponse(mixed $response, mixed $context): ResponseInterface;
 }

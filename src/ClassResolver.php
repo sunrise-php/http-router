@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * It's free open-source software released under the MIT License.
@@ -9,18 +9,14 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
+declare(strict_types=1);
+
 namespace Sunrise\Http\Router;
 
-/**
- * Import classes
- */
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\LogicException;
 use ReflectionClass;
 
-/**
- * Import functions
- */
 use function class_exists;
 use function sprintf;
 
@@ -37,15 +33,11 @@ final class ClassResolver implements ClassResolverInterface
 {
 
     /**
-     * Map of classes that are already resolved
-     *
      * @var array<class-string<T>, T>
      */
     private array $resolvedClasses = [];
 
     /**
-     * The resolver's parameter resolutioner
-     *
      * @var ParameterResolutionerInterface
      */
     private ParameterResolutionerInterface $parameterResolutioner;

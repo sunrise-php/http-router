@@ -2,16 +2,10 @@
 
 namespace Sunrise\Http\Router\Tests\Functions;
 
-/**
- * Import classes
- */
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Exception\InvalidAttributeValueException;
 use Sunrise\Http\Router\Exception\MissingAttributeValueException;
 
-/**
- * Import functions
- */
 use function array_keys;
 use function Sunrise\Http\Router\path_build;
 

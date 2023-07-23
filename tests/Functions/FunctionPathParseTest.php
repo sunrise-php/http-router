@@ -2,16 +2,10 @@
 
 namespace Sunrise\Http\Router\Tests\Functions;
 
-/**
- * Import classes
- */
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Exception\InvalidPathException;
 use Sunrise\Http\Router\Router;
 
-/**
- * Import functions
- */
 use function Sunrise\Http\Router\path_parse;
 use function chr;
 

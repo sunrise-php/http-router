@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * It's free open-source software released under the MIT License.
@@ -9,18 +9,22 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
+declare(strict_types=1);
+
 namespace Sunrise\Http\Router;
 
-/**
- * Import classes
- */
+use Fig\Http\Message\RequestMethodInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\UriInterface;
 use Sunrise\Http\Router\Entity\IpAddress;
 
-/**
- * Import functions
- */
+use Sunrise\Http\Router\Entity\MediaType;
+use function array_merge;
 use function explode;
+use function key;
+use function preg_split;
+use function reset;
 use function strncmp;
 use function strpos;
 use function strstr;
@@ -32,26 +36,20 @@ use function trim;
  *
  * @since 3.0.0
  */
-final class ServerRequest implements ServerRequestInterface
+final class ServerRequest implements ServerRequestInterface, RequestMethodInterface
 {
-
-    /**
-     * @var ServerRequestInterface
-     */
-    private ServerRequestInterface $request;
 
     /**
      * Constructor of the class
      *
      * @param ServerRequestInterface $request
      */
-    public function __construct(ServerRequestInterface $request)
+    public function __construct(private ServerRequestInterface $request)
     {
-        $this->request = $request;
     }
 
     /**
-     * Creates the class from the given request
+     * Creates the proxy from the given request
      *
      * @param ServerRequestInterface $request
      *
@@ -76,7 +74,7 @@ final class ServerRequest implements ServerRequestInterface
     public function isJson(): bool
     {
         return $this->clientProducesMediaType([
-            'application/json',
+            MediaType::APPLICATION_JSON,
         ]);
     }
 
@@ -90,48 +88,52 @@ final class ServerRequest implements ServerRequestInterface
     public function isXml(): bool
     {
         return $this->clientProducesMediaType([
-            'application/xml',
-            'text/xml',
+            MediaType::APPLICATION_XML,
+            MediaType::TEXT_XML,
         ]);
     }
 
     /**
      * Gets the client's IP address
      *
-     * @param array<string, string> $proxyChain
+     * @param array<non-empty-string, non-empty-string> $proxyChain
      *
      * @return IpAddress
      */
     public function getClientIpAddress(array $proxyChain = []): IpAddress
     {
-        $env = $this->request->getServerParams();
+        $serverParams = $this->request->getServerParams();
 
-        /** @var string */
-        $clientIp = $env['REMOTE_ADDR'] ?? '::1';
+        /** @var non-empty-string $clientAddress */
+        $clientAddress = $serverParams['REMOTE_ADDR'] ?? '::1';
 
-        while (isset($proxyChain[$clientIp])) {
-            $proxyHeader = $proxyChain[$clientIp];
-            unset($proxyChain[$clientIp]);
+        /** @var list<non-empty-string> $proxyAddresses */
+        $proxyAddresses = [];
+
+        while (isset($proxyChain[$clientAddress])) {
+            $proxyHeader = $proxyChain[$clientAddress];
+            unset($proxyChain[$clientAddress]);
 
             $header = $this->request->getHeaderLine($proxyHeader);
             if ($header === '') {
                 break;
             }
 
-            $proxiedClientIp = strstr($header, ',', true);
-            if ($proxiedClientIp === false) {
-                $proxiedClientIp = $header;
-            }
-
-            $proxiedClientIp = trim($proxiedClientIp);
-            if ($proxiedClientIp === '') {
+            /** @var list<non-empty-string> $addresses */
+            $addresses = preg_split('/\s*,\s*/', $header, -1, PREG_SPLIT_NO_EMPTY);
+            if ($addresses === []) {
                 break;
             }
 
-            $clientIp = $proxiedClientIp;
+            $clientAddress = array_shift($addresses);
+            if ($addresses === []) {
+                continue;
+            }
+
+            $proxyAddresses = array_merge($proxyAddresses, $addresses);
         }
 
-        return new IpAddress($clientIp);
+        return new IpAddress($clientAddress, $proxyAddresses);
     }
 
     /**
@@ -149,17 +151,17 @@ final class ServerRequest implements ServerRequestInterface
             return '';
         }
 
-        $mediaType = strstr($header, ';', true);
-        if ($mediaType === false) {
-            $mediaType = $header;
+        $result = strstr($header, ';', true);
+        if ($result === false) {
+            $result = $header;
         }
 
-        $mediaType = trim($mediaType);
-        if ($mediaType === '') {
+        $result = trim($result);
+        if ($result === '') {
             return '';
         }
 
-        return strtolower($mediaType);
+        return strtolower($result);
     }
 
     /**
@@ -169,7 +171,7 @@ final class ServerRequest implements ServerRequestInterface
      * @link https://tools.ietf.org/html/rfc7231#section-3.1.1.1
      * @link https://tools.ietf.org/html/rfc7231#section-5.3.2
      *
-     * @return list<string>
+     * @return array<lowercase-string, array<string, string>>
      */
     public function getClientConsumedMediaTypes(): array
     {
@@ -178,49 +180,79 @@ final class ServerRequest implements ServerRequestInterface
             return [];
         }
 
+        $accepts = header_accept_like_parse($header);
+        if (empty($accepts)) {
+            return [];
+        }
+
         $result = [];
-        $accepts = explode(',', $header);
-        foreach ($accepts as $accept) {
-            $mediaType = strstr($accept, ';', true);
-            if ($mediaType === false) {
-                $mediaType = $accept;
-            }
-
-            $mediaType = trim($mediaType);
-            if ($mediaType === '') {
-                continue;
-            }
-
-            if ($mediaType === '*/*') {
-                return [];
-            }
-
-            $result[] = strtolower($mediaType);
+        foreach ($accepts as $type => $params) {
+            $result[strtolower($type)] = $params;
         }
 
         return $result;
     }
 
     /**
+     * Gets the client's consumed encodings
+     *
+     * @return array<string, array<string, string>>
+     */
+    public function getClientConsumedEncodings(): array
+    {
+        $header = $this->request->getHeaderLine('Accept-Encoding');
+        if ($header === '') {
+            return [];
+        }
+
+        $accepts = header_accept_like_parse($header);
+        if (empty($accepts)) {
+            return [];
+        }
+
+        return $accepts;
+    }
+
+    /**
+     * Gets the client's consumed languages
+     *
+     * @return array<string, array<string, string>>
+     */
+    public function getClientConsumedLanguages(): array
+    {
+        $header = $this->request->getHeaderLine('Accept-Language');
+        if ($header === '') {
+            return [];
+        }
+
+        $accepts = header_accept_like_parse($header);
+        if (empty($accepts)) {
+            return [];
+        }
+
+        return $accepts;
+    }
+
+    /**
      * Checks if the client produces one of the given media types
      *
-     * @param list<string> $consumedMediaTypes
+     * @param list<string> $consumes
      *
      * @return bool
      */
-    public function clientProducesMediaType(array $consumedMediaTypes): bool
+    public function clientProducesMediaType(array $consumes): bool
     {
-        if ($consumedMediaTypes === []) {
+        if ($consumes === []) {
             return true;
         }
 
-        $producedMediaType = $this->getClientProducedMediaType();
-        if ($producedMediaType === '') {
+        $produced = $this->getClientProducedMediaType();
+        if ($produced === '') {
             return false;
         }
 
-        foreach ($consumedMediaTypes as $consumedMediaType) {
-            if ($this->equalsMediaTypes($consumedMediaType, $producedMediaType)) {
+        foreach ($consumes as $consumed) {
+            if (media_types_compare($consumed, $produced)) {
                 return true;
             }
         }
@@ -231,24 +263,28 @@ final class ServerRequest implements ServerRequestInterface
     /**
      * Checks if the client consumes one of the given media types
      *
-     * @param list<string> $producedMediaTypes
+     * @param list<string> $produces
      *
      * @return bool
      */
-    public function clientConsumesMediaType(array $producedMediaTypes): bool
+    public function clientConsumesMediaType(array $produces): bool
     {
-        if ($producedMediaTypes === []) {
+        if ($produces === []) {
             return true;
         }
 
-        $consumedMediaTypes = $this->getClientConsumedMediaTypes();
-        if ($consumedMediaTypes === []) {
+        $consumes = $this->getClientConsumedMediaTypes();
+        if ($consumes === []) {
             return true;
         }
 
-        foreach ($producedMediaTypes as $a) {
-            foreach ($consumedMediaTypes as $b) {
-                if ($this->equalsMediaTypes($a, $b)) {
+        if (isset($consumes['*/*'])) {
+            return true;
+        }
+
+        foreach ($produces as $a) {
+            foreach ($consumes as $b => $_) {
+                if (media_types_compare($a, $b)) {
                     return true;
                 }
             }
@@ -272,7 +308,7 @@ final class ServerRequest implements ServerRequestInterface
         }
 
         $slash = strpos($a, '/');
-        if ($slash === false) {
+        if ($slash === false || !isset($b[$slash]) || $b[$slash] !== '/') {
             return false;
         }
 
@@ -299,7 +335,7 @@ final class ServerRequest implements ServerRequestInterface
     /**
      * {@inheritdoc}
      */
-    public function withProtocolVersion($version)
+    public function withProtocolVersion($version): self
     {
         $clone = clone $this;
         $clone->request = $clone->request->withProtocolVersion($version);
@@ -342,7 +378,7 @@ final class ServerRequest implements ServerRequestInterface
     /**
      * {@inheritdoc}
      */
-    public function withHeader($name, $value)
+    public function withHeader($name, $value): self
     {
         $clone = clone $this;
         $clone->request = $clone->request->withHeader($name, $value);
@@ -353,7 +389,7 @@ final class ServerRequest implements ServerRequestInterface
     /**
      * {@inheritdoc}
      */
-    public function withAddedHeader($name, $value)
+    public function withAddedHeader($name, $value): self
     {
         $clone = clone $this;
         $clone->request = $clone->request->withAddedHeader($name, $value);
@@ -364,7 +400,7 @@ final class ServerRequest implements ServerRequestInterface
     /**
      * {@inheritdoc}
      */
-    public function withoutHeader($name)
+    public function withoutHeader($name): self
     {
         $clone = clone $this;
         $clone->request = $clone->request->withoutHeader($name);
@@ -375,7 +411,7 @@ final class ServerRequest implements ServerRequestInterface
     /**
      * {@inheritdoc}
      */
-    public function getBody(): \Psr\Http\Message\StreamInterface
+    public function getBody(): StreamInterface
     {
         return $this->request->getBody();
     }
@@ -383,7 +419,7 @@ final class ServerRequest implements ServerRequestInterface
     /**
      * {@inheritdoc}
      */
-    public function withBody(\Psr\Http\Message\StreamInterface $body)
+    public function withBody(StreamInterface $body): self
     {
         $clone = clone $this;
         $clone->request = $clone->request->withBody($body);
@@ -402,7 +438,7 @@ final class ServerRequest implements ServerRequestInterface
     /**
      * {@inheritdoc}
      */
-    public function withMethod($method)
+    public function withMethod($method): self
     {
         $clone = clone $this;
         $clone->request = $clone->request->withMethod($method);
@@ -413,7 +449,7 @@ final class ServerRequest implements ServerRequestInterface
     /**
      * {@inheritdoc}
      */
-    public function getUri(): \Psr\Http\Message\UriInterface
+    public function getUri(): UriInterface
     {
         return $this->request->getUri();
     }
@@ -421,7 +457,7 @@ final class ServerRequest implements ServerRequestInterface
     /**
      * {@inheritdoc}
      */
-    public function withUri(\Psr\Http\Message\UriInterface $uri, $preserveHost = false)
+    public function withUri(UriInterface $uri, $preserveHost = false): self
     {
         $clone = clone $this;
         $clone->request = $clone->request->withUri($uri, $preserveHost);
@@ -440,7 +476,7 @@ final class ServerRequest implements ServerRequestInterface
     /**
      * {@inheritdoc}
      */
-    public function withRequestTarget($requestTarget)
+    public function withRequestTarget($requestTarget): self
     {
         $clone = clone $this;
         $clone->request = $clone->request->withRequestTarget($requestTarget);
@@ -467,7 +503,7 @@ final class ServerRequest implements ServerRequestInterface
     /**
      * {@inheritdoc}
      */
-    public function withQueryParams(array $query)
+    public function withQueryParams(array $query): self
     {
         $clone = clone $this;
         $clone->request = $clone->request->withQueryParams($query);
@@ -486,7 +522,7 @@ final class ServerRequest implements ServerRequestInterface
     /**
      * {@inheritdoc}
      */
-    public function withCookieParams(array $cookies)
+    public function withCookieParams(array $cookies): self
     {
         $clone = clone $this;
         $clone->request = $clone->request->withCookieParams($cookies);
@@ -505,7 +541,7 @@ final class ServerRequest implements ServerRequestInterface
     /**
      * {@inheritdoc}
      */
-    public function withUploadedFiles(array $uploadedFiles)
+    public function withUploadedFiles(array $uploadedFiles): self
     {
         $clone = clone $this;
         $clone->request = $clone->request->withUploadedFiles($uploadedFiles);
@@ -516,7 +552,7 @@ final class ServerRequest implements ServerRequestInterface
     /**
      * {@inheritdoc}
      */
-    public function getParsedBody()
+    public function getParsedBody(): mixed
     {
         return $this->request->getParsedBody();
     }
@@ -524,7 +560,7 @@ final class ServerRequest implements ServerRequestInterface
     /**
      * {@inheritdoc}
      */
-    public function withParsedBody($data)
+    public function withParsedBody($data): self
     {
         $clone = clone $this;
         $clone->request = $clone->request->withParsedBody($data);
@@ -543,7 +579,7 @@ final class ServerRequest implements ServerRequestInterface
     /**
      * {@inheritdoc}
      */
-    public function getAttribute($name, $default = null)
+    public function getAttribute($name, $default = null): mixed
     {
         return $this->request->getAttribute($name, $default);
     }
@@ -551,7 +587,7 @@ final class ServerRequest implements ServerRequestInterface
     /**
      * {@inheritdoc}
      */
-    public function withAttribute($name, $value)
+    public function withAttribute($name, $value): self
     {
         $clone = clone $this;
         $clone->request = $clone->request->withAttribute($name, $value);
@@ -562,7 +598,7 @@ final class ServerRequest implements ServerRequestInterface
     /**
      * {@inheritdoc}
      */
-    public function withoutAttribute($name)
+    public function withoutAttribute($name): self
     {
         $clone = clone $this;
         $clone->request = $clone->request->withoutAttribute($name);

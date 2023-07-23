@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * It's free open-source software released under the MIT License.
@@ -9,192 +9,61 @@
  * @link https://github.com/sunrise-php/http-router
  */
 
+declare(strict_types=1);
+
 namespace Sunrise\Http\Router\Annotation;
 
-/**
- * Import classes
- */
 use Attribute;
 use Fig\Http\Message\RequestMethodInterface;
 use Psr\Http\Server\MiddlewareInterface;
 
-/**
- * @Annotation
- *
- * @Target({"CLASS", "METHOD"})
- *
- * @NamedArgumentConstructor
- *
- * @Attributes({
- *   @Attribute("name", type="string", required=true),
- *   @Attribute("host", type="string"),
- *   @Attribute("path", type="string", required=true),
- *   @Attribute("method", type="string"),
- *   @Attribute("methods", type="array<string>"),
- *   @Attribute("consumes", type="array<string>"),
- *   @Attribute("produces", type="array<string>"),
- *   @Attribute("middlewares", type="array<string>"),
- *   @Attribute("attributes", type="array"),
- *   @Attribute("summary", type="string"),
- *   @Attribute("description", type="string"),
- *   @Attribute("tags", type="array<string>"),
- *   @Attribute("priority", type="integer"),
- * })
- */
-#[Attribute(Attribute::TARGET_CLASS|Attribute::TARGET_METHOD)]
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
 final class Route implements RequestMethodInterface
 {
 
     /**
-     * The descriptor holder
-     *
-     * @var class-string|array{0: class-string, 1: non-empty-string}|null
+     * The annotation's holder
      *
      * @internal
      */
-    public $holder = null;
-
-    /**
-     * The route name
-     *
-     * @var string
-     */
-    public string $name;
-
-    /**
-     * The route host
-     *
-     * @var string|null
-     */
-    public ?string $host;
-
-    /**
-     * The route path
-     *
-     * @var string
-     */
-    public string $path;
-
-    /**
-     * The route methods
-     *
-     * @var list<string>
-     */
-    public array $methods;
-
-    /**
-     * The route's consumed content types
-     *
-     * @var list<string>
-     *
-     * @since 3.0.0
-     */
-    public array $consumes;
-
-    /**
-     * The route's produced content types
-     *
-     * @var list<string>
-     *
-     * @since 3.0.0
-     */
-    public array $produces;
-
-    /**
-     * The route middlewares
-     *
-     * @var list<class-string<MiddlewareInterface>>
-     */
-    public array $middlewares;
-
-    /**
-     * The route attributes
-     *
-     * @var array<string, mixed>
-     */
-    public array $attributes;
-
-    /**
-     * The route summary
-     *
-     * @var string
-     */
-    public string $summary;
-
-    /**
-     * The route description
-     *
-     * @var string
-     */
-    public string $description;
-
-    /**
-     * The route tags
-     *
-     * @var list<string>
-     */
-    public array $tags;
-
-    /**
-     * The route priority
-     *
-     * @var int
-     */
-    public int $priority;
+    public mixed $holder = null;
 
     /**
      * Constructor of the class
      *
-     * @param  string                                   $name         The route name
-     * @param  string|null                              $host         The route host
-     * @param  string                                   $path         The route path
-     * @param  string|null                              $method       The route method
-     * @param  list<string>                             $methods      The route methods
-     * @param  list<string>                             $consumes     The route's consumed content types
-     * @param  list<string>                             $produces     The route's produced content types
-     * @param  list<class-string<MiddlewareInterface>>  $middlewares  The route middlewares
-     * @param  array<string, mixed>                     $attributes   The route attributes
-     * @param  string                                   $summary      The route summary
-     * @param  string                                   $description  The route description
-     * @param  list<string>                             $tags         The route tags
-     * @param  int                                      $priority     The route priority (default 0)
+     * @param  non-empty-string                         $name         The route's name
+     * @param  non-empty-string|null                    $host         The route's host
+     * @param  non-empty-string                         $path         The route's path
+     * @param  non-empty-string|null                    $method       The route's method
+     * @param  list<non-empty-string>                   $methods      The route's methods
+     * @param  list<non-empty-string>                   $consumes     The route's consumed media types
+     * @param  list<non-empty-string>                   $produces     The route's produced media types
+     * @param  list<class-string<MiddlewareInterface>>  $middlewares  The route's middlewares
+     * @param  array<non-empty-string, mixed>           $attributes   The route's attributes
+     * @param  string                                   $summary      The route's summary
+     * @param  string                                   $description  The route's description
+     * @param  list<non-empty-string>                   $tags         The route's tags
+     * @param  int<min, max>                            $priority     The route's priority (default 0)
      */
     public function __construct(
-        string $name,
-        ?string $host = null,
-        string $path = '/',
+        public string $name,
+        public ?string $host = null,
+        public string $path = '/',
         ?string $method = null,
-        array $methods = [],
-        array $consumes = [],
-        array $produces = [],
-        array $middlewares = [],
-        array $attributes = [],
-        string $summary = '',
-        string $description = '',
-        array $tags = [],
-        int $priority = 0
+        public array $methods = [],
+        public array $consumes = [],
+        public array $produces = [],
+        public array $middlewares = [],
+        public array $attributes = [],
+        public string $summary = '',
+        public string $description = '',
+        public array $tags = [],
+        public int $priority = 0,
     ) {
         if (isset($method)) {
-            $methods[] = $method;
+            $this->methods[] = $method;
+        } elseif (empty($this->methods)) {
+            $this->methods[] = self::METHOD_GET;
         }
-
-        // if no methods are specified,
-        // such a route is a GET route.
-        if (empty($methods)) {
-            $methods[] = self::METHOD_GET;
-        }
-
-        $this->name = $name;
-        $this->host = $host;
-        $this->path = $path;
-        $this->methods = $methods;
-        $this->consumes = $consumes;
-        $this->produces = $produces;
-        $this->middlewares = $middlewares;
-        $this->attributes = $attributes;
-        $this->summary = $summary;
-        $this->description = $description;
-        $this->tags = $tags;
-        $this->priority = $priority;
     }
 }
