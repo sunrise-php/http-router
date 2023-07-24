@@ -68,7 +68,7 @@ class RouteListCommand extends Command
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     protected function configure(): void
     {
@@ -77,7 +77,7 @@ class RouteListCommand extends Command
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     final protected function execute(InputInterface $input, OutputInterface $output): int
     {

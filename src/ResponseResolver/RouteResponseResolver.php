@@ -26,7 +26,7 @@ final class RouteResponseResolver implements ResponseResolverInterface
 {
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function supportsResponse(mixed $response, mixed $context): bool
     {
@@ -42,7 +42,7 @@ final class RouteResponseResolver implements ResponseResolverInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function resolveResponse(mixed $response, mixed $context): ResponseInterface
     {

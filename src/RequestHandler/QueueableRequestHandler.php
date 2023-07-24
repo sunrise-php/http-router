@@ -61,7 +61,7 @@ final class QueueableRequestHandler implements RequestHandlerInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {

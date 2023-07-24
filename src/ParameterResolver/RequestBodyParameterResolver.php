@@ -13,10 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\ParameterResolver;
 
-use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use ReflectionNamedType;
-use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestBody;
 use Sunrise\Http\Router\Exception\UnhydrableObjectException;
 use Sunrise\Http\Router\Exception\UnprocessableRequestBodyException;
@@ -24,6 +21,8 @@ use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\HydratorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use ReflectionNamedType;
+use ReflectionParameter;
 
 /**
  * RequestBodyParameterResolver
@@ -37,6 +36,8 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
 {
 
     /**
+     * Constructor of the class
+     *
      * @param HydratorInterface $hydrator
      * @param ValidatorInterface|null $validator
      */
@@ -45,44 +46,46 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function supportsParameter(ReflectionParameter $parameter, RequestInterface $request): bool
+    public function supportsParameter(ReflectionParameter $parameter, ?ServerRequestInterface $request): bool
     {
-        if (!($parameter->getType() instanceof ReflectionNamedType)) {
+        if ($request === null) {
             return false;
         }
 
-        if ($parameter->getType()->isBuiltin()) {
+        $type = $parameter->getType();
+
+        if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
             return false;
         }
 
-        if ($parameter->getAttributes(RequestBody::class)) {
-            return true;
+        if ($parameter->getAttributes(RequestBody::class) === []) {
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      *
      * @throws UnhydrableObjectException
      *         If an object isn't valid.
      *
      * @throws UnprocessableRequestBodyException
-     *         If the request body data isn't valid.
+     *         If the request's parsed body isn't valid.
      */
-    public function resolveParameter(ReflectionParameter $parameter, RequestInterface $request): mixed
+    public function resolveParameter(ReflectionParameter $parameter, ?ServerRequestInterface $request): mixed
     {
         /** @var ReflectionNamedType $type */
         $type = $parameter->getType();
 
-        /** @var class-string $typeName */
-        $typeName = $type->getName();
+        /** @var class-string $fqn */
+        $fqn = $type->getName();
 
         try {
-            $object = $this->hydrator->hydrate($typeName, (array) $request->getParsedBody());
+            $object = $this->hydrator->hydrate($fqn, (array) $request?->getParsedBody());
         } catch (InvalidObjectException $e) {
             throw new UnhydrableObjectException($e->getMessage(), 0, $e);
         } catch (InvalidDataException $e) {

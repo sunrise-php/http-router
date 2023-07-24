@@ -54,7 +54,7 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     final public function getStatusCode(): int
     {
@@ -62,7 +62,7 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     final public function getHeaderFields(): array
     {

@@ -53,7 +53,7 @@ final class ClassResolver implements ClassResolverInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function resolveClass(string $className): object
     {

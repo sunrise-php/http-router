@@ -40,7 +40,7 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
     private array $resolvers = [];
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function withRequest(RequestInterface $request): static
     {
@@ -51,7 +51,7 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function withPriorityResolver(ParameterResolverInterface ...$resolvers): static
     {
@@ -70,7 +70,7 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function addResolver(ParameterResolverInterface ...$resolvers): void
     {
@@ -80,7 +80,7 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function resolveParameters(ReflectionParameter ...$parameters): array
     {
@@ -103,7 +103,7 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
      * @throws ResolvingParameterException
      *         If the parameter cannot be resolved to an argument.
      */
-    private function resolveParameter(ReflectionParameter $parameter)
+    private function resolveParameter(ReflectionParameter $parameter): mixed
     {
         foreach ($this->resolvers as $resolver) {
             if ($resolver->supportsParameter($parameter, $this->request)) {

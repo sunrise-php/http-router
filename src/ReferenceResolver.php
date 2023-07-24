@@ -71,7 +71,7 @@ final class ReferenceResolver implements ReferenceResolverInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function resolveRequestHandler($reference): RequestHandlerInterface
     {
@@ -111,7 +111,7 @@ final class ReferenceResolver implements ReferenceResolverInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function resolveMiddleware($reference): MiddlewareInterface
     {
@@ -151,7 +151,7 @@ final class ReferenceResolver implements ReferenceResolverInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function resolveMiddlewares(array $references): array
     {

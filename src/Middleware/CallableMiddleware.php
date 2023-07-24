@@ -46,7 +46,7 @@ final class CallableMiddleware implements MiddlewareInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {

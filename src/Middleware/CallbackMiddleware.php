@@ -18,7 +18,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\ParameterResolutionerInterface;
-use Sunrise\Http\Router\ParameterResolver\PresetTypedParameterResolver;
+use Sunrise\Http\Router\ParameterResolver\TypeParameterResolver;
 use Sunrise\Http\Router\ResponseResolutionerInterface;
 
 use function Sunrise\Http\Router\reflect_callable;
@@ -70,15 +70,15 @@ final class CallbackMiddleware implements MiddlewareInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $args = $this->parameterResolutioner
             ->withRequest($request)
             ->withPriorityResolver(
-                new PresetTypedParameterResolver(ServerRequestInterface::class, $request),
-                new PresetTypedParameterResolver(RequestHandlerInterface::class, $handler),
+                new TypeParameterResolver(ServerRequestInterface::class, $request),
+                new TypeParameterResolver(RequestHandlerInterface::class, $handler),
             )
             ->resolveParameters(...reflect_callable($this->callback)->getParameters());
 

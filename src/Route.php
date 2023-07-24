@@ -144,7 +144,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getName(): string
     {
@@ -152,7 +152,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getHost(): ?string
     {
@@ -160,7 +160,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getPath(): string
     {
@@ -168,7 +168,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getMethods(): array
     {
@@ -176,7 +176,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getConsumedMediaTypes(): array
     {
@@ -184,7 +184,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getProducedMediaTypes(): array
     {
@@ -192,7 +192,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getRequestHandler(): RequestHandlerInterface
     {
@@ -200,7 +200,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getMiddlewares(): array
     {
@@ -208,7 +208,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getAttributes(): array
     {
@@ -216,7 +216,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getSummary(): string
     {
@@ -224,7 +224,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getDescription(): string
     {
@@ -232,7 +232,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getTags(): array
     {
@@ -240,7 +240,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getHolder(): Reflector
     {
@@ -252,7 +252,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function setName(string $name): RouteInterface
     {
@@ -262,7 +262,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function setHost(?string $host): RouteInterface
     {
@@ -272,7 +272,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function setPath(string $path): RouteInterface
     {
@@ -282,7 +282,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function setMethods(string ...$methods): RouteInterface
     {
@@ -295,7 +295,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function setConsumedMediaTypes(string ...$mediaTypes): RouteInterface
     {
@@ -308,7 +308,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function setProducedMediaTypes(string ...$mediaTypes): RouteInterface
     {
@@ -321,7 +321,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function setRequestHandler(RequestHandlerInterface $requestHandler): RouteInterface
     {
@@ -331,7 +331,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function setMiddlewares(MiddlewareInterface ...$middlewares): RouteInterface
     {
@@ -344,7 +344,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function setAttributes(array $attributes): RouteInterface
     {
@@ -354,7 +354,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function setAttribute(string $name, $value): RouteInterface
     {
@@ -364,7 +364,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function setSummary(string $summary): RouteInterface
     {
@@ -374,7 +374,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function setDescription(string $description): RouteInterface
     {
@@ -384,7 +384,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function setTags(string ...$tags): RouteInterface
     {
@@ -397,7 +397,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function addPrefix(string $prefix): RouteInterface
     {
@@ -410,7 +410,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function addSuffix(string $suffix): RouteInterface
     {
@@ -420,7 +420,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function addMethod(string ...$methods): RouteInterface
     {
@@ -432,7 +432,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function addConsumedMediaType(string ...$mediaTypes): RouteInterface
     {
@@ -444,7 +444,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function addProducedMediaType(string ...$mediaTypes): RouteInterface
     {
@@ -456,7 +456,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function addMiddleware(MiddlewareInterface ...$middlewares): RouteInterface
     {
@@ -468,7 +468,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function addPriorityMiddleware(MiddlewareInterface ...$middlewares): RouteInterface
     {
@@ -488,7 +488,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function addTag(string ...$tags): RouteInterface
     {
@@ -500,7 +500,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function withAddedAttributes(array $attributes): RouteInterface
     {
@@ -515,7 +515,7 @@ class Route implements RouteInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {

@@ -14,18 +14,15 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\ParameterResolver;
 
 use Psr\Http\Message\ServerRequestInterface;
-use ReflectionNamedType;
-use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestQuery;
 use Sunrise\Http\Router\Exception\UnhydrableObjectException;
 use Sunrise\Http\Router\Exception\UnprocessableRequestQueryException;
-use Sunrise\Http\Router\RequestQueryInterface;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\HydratorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use function is_subclass_of;
-use const PHP_MAJOR_VERSION;
+use ReflectionNamedType;
+use ReflectionParameter;
 
 /**
  * RequestQueryParameterResolver
@@ -39,68 +36,56 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
 {
 
     /**
-     * @var HydratorInterface
-     */
-    private HydratorInterface $hydrator;
-
-    /**
-     * @var ValidatorInterface|null
-     */
-    private ?ValidatorInterface $validator;
-
-    /**
+     * Constructor of the class
+     *
      * @param HydratorInterface $hydrator
      * @param ValidatorInterface|null $validator
      */
-    public function __construct(HydratorInterface $hydrator, ?ValidatorInterface $validator = null)
+    public function __construct(private HydratorInterface $hydrator, private ?ValidatorInterface $validator = null)
     {
-        $this->hydrator = $hydrator;
-        $this->validator = $validator;
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function supportsParameter(ReflectionParameter $parameter, $request): bool
+    public function supportsParameter(ReflectionParameter $parameter, ?ServerRequestInterface $request): bool
     {
-        if (!($request instanceof ServerRequestInterface)) {
+        if ($request === null) {
             return false;
         }
 
-        if (!($parameter->getType() instanceof ReflectionNamedType)) {
+        $type = $parameter->getType();
+
+        if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
             return false;
         }
 
-        if ($parameter->getType()->isBuiltin()) {
+        if ($parameter->getAttributes(RequestQuery::class) === []) {
             return false;
         }
 
-        if (PHP_MAJOR_VERSION >= 8 && $parameter->getAttributes(RequestQuery::class)) {
-            return true;
-        }
-
-        if (is_subclass_of($parameter->getType()->getName(), RequestQueryInterface::class)) {
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      *
      * @throws UnhydrableObjectException
      *         If an object isn't valid.
      *
      * @throws UnprocessableRequestQueryException
-     *         If the request query data isn't valid.
+     *         If the request's query parameters isn't valid.
      */
-    public function resolveParameter(ReflectionParameter $parameter, $request)
+    public function resolveParameter(ReflectionParameter $parameter, ?ServerRequestInterface $request): mixed
     {
-        /** @var ServerRequestInterface $request */
+        /** @var ReflectionNamedType $type */
+        $type = $parameter->getType();
+
+        /** @var class-string $fqn */
+        $fqn = $type->getName();
 
         try {
-            $object = $this->hydrator->hydrate($parameter->getType()->getName(), $request->getQueryParams());
+            $object = $this->hydrator->hydrate($fqn, (array) $request?->getQueryParams());
         } catch (InvalidObjectException $e) {
             throw new UnhydrableObjectException($e->getMessage(), 0, $e);
         } catch (InvalidDataException $e) {

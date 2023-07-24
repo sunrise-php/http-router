@@ -33,7 +33,7 @@ final class ObjectResponseResolver implements ResponseResolverInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function supportsResponse($response, $context): bool
     {
@@ -45,7 +45,7 @@ final class ObjectResponseResolver implements ResponseResolverInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function resolveResponse($response, $context): ResponseInterface
     {

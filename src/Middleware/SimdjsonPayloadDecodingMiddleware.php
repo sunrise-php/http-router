@@ -20,37 +20,34 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Exception\InvalidRequestPayloadException;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ServerRequest;
-use JsonException;
+use RuntimeException;
 
 use function extension_loaded;
 use function is_array;
-use function json_decode;
+use function simdjson_decode;
 use function sprintf;
 
-use const JSON_BIGINT_AS_STRING;
-use const JSON_THROW_ON_ERROR;
-
 /**
- * Middleware for JSON payload decoding using the JSON extension
+ * Middleware for JSON payload decoding using the Simdjson extension
  *
- * @since 2.15.0
+ * @since 3.0.0
  *
- * @link https://www.php.net/manual/en/book.json.php
+ * @link https://www.php.net/manual/en/book.simdjson.php
  */
-final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
+final class SimdjsonPayloadDecodingMiddleware implements MiddlewareInterface
 {
 
     /**
      * Constructor of the class
      *
      * @throws LogicException
-     *         If the JSON extension isn't loaded.
+     *         If the Simdjson extension isn't loaded.
      */
     public function __construct()
     {
-        if (!extension_loaded('json')) {
+        if (!extension_loaded('simdjson')) {
             throw new LogicException(
-                'The JSON extension is required, run the `pecl install json` command to resolve it.'
+                'The Simdjson extension is required, run the `pecl install simdjson` command to resolve it.'
             );
         }
     }
@@ -84,8 +81,8 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
     private function decodeJsonPayload(string $json): array
     {
         try {
-            $data = json_decode($json, true, 512, JSON_BIGINT_AS_STRING | JSON_THROW_ON_ERROR);
-        } catch (JsonException $e) {
+            $data = simdjson_decode($json, true, 512);
+        } catch (RuntimeException $e) {
             throw new InvalidRequestPayloadException(sprintf('Invalid JSON: %s', $e->getMessage()), 0, $e);
         }
 

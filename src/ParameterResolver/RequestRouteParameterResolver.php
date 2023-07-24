@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\ParameterResolver;
 
 use Psr\Http\Message\ServerRequestInterface;
+use Sunrise\Http\Router\RouteInterface;
 use ReflectionNamedType;
 use ReflectionParameter;
-use Sunrise\Http\Router\RouteInterface;
 
 /**
  * RequestRouteParameterResolver
@@ -27,36 +27,35 @@ final class RequestRouteParameterResolver implements ParameterResolverInterface
 {
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function supportsParameter(ReflectionParameter $parameter, $request): bool
+    public function supportsParameter(ReflectionParameter $parameter, ?ServerRequestInterface $request): bool
     {
-        if (!($request instanceof ServerRequestInterface)) {
+        if ($request === null) {
             return false;
         }
 
-        if (!($parameter->getType() instanceof ReflectionNamedType)) {
+        $type = $parameter->getType();
+
+        if (! $type instanceof ReflectionNamedType) {
             return false;
         }
 
-        if (!($parameter->getType()->getName() === RouteInterface::class)) {
+        if (! ($type->getName() === RouteInterface::class)) {
             return false;
         }
 
-        if (!($request->getAttribute(RouteInterface::ATTR_ROUTE) instanceof RouteInterface)) {
-            return false;
-        }
+        /** @var RouteInterface|null $route */
+        $route = $request->getAttribute('@route');
 
-        return true;
+        return isset($route) || $type->allowsNull();
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
-    public function resolveParameter(ReflectionParameter $parameter, $request)
+    public function resolveParameter(ReflectionParameter $parameter, ?ServerRequestInterface $request): mixed
     {
-        /** @var ServerRequestInterface $request */
-
-        return $request->getAttribute(RouteInterface::ATTR_ROUTE);
+        return $request?->getAttribute('@route');
     }
 }

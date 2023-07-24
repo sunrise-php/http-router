@@ -40,7 +40,7 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
     private array $resolvers = [];
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function withRequest(RequestInterface $context): static
     {
@@ -51,7 +51,7 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function addResolver(ResponseResolverInterface ...$resolvers): void
     {
@@ -61,7 +61,7 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function resolveResponse($response): ResponseInterface
     {

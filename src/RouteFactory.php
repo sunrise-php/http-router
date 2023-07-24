@@ -22,7 +22,7 @@ class RouteFactory implements RouteFactoryInterface
 {
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function createRoute(
         string $name,

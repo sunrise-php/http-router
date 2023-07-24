@@ -39,7 +39,7 @@ final class StatusCodeResponseResolver implements ResponseResolverInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function supportsResponse($response, $context): bool
     {
@@ -47,7 +47,7 @@ final class StatusCodeResponseResolver implements ResponseResolverInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function resolveResponse($response, $context): ResponseInterface
     {

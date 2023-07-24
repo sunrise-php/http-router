@@ -45,7 +45,7 @@ final class UnsafeCallableRequestHandler implements RequestHandlerInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {

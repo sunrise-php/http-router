@@ -13,26 +13,39 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\ParameterResolver;
 
-use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Sunrise\Http\Router\Exception\LogicException;
 use ReflectionNamedType;
 use ReflectionParameter;
 
+use function sprintf;
+
 /**
- * DependencyInjectionParameterResolver
+ * TypeParameterResolver
  *
  * @since 3.0.0
  */
-final class DependencyInjectionParameterResolver implements ParameterResolverInterface
+final class TypeParameterResolver implements ParameterResolverInterface
 {
 
     /**
      * Constructor of the class
      *
-     * @param ContainerInterface $container
+     * @param string $type
+     * @param object $value
+     *
+     * @throws LogicException
+     *         If the value isn't an instance of the type.
      */
-    public function __construct(private ContainerInterface $container)
+    public function __construct(private string $type, private object $value)
     {
+        if (! $this->value instanceof $this->type) {
+            throw new LogicException(sprintf(
+                'The %1$s value must be an instance of %2$s.',
+                $this->value::class,
+                $this->type,
+            ));
+        }
     }
 
     /**
@@ -42,11 +55,11 @@ final class DependencyInjectionParameterResolver implements ParameterResolverInt
     {
         $type = $parameter->getType();
 
-        if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
+        if (! $type instanceof ReflectionNamedType) {
             return false;
         }
 
-        return $this->container->has($type->getName());
+        return $type->getName() === $this->type;
     }
 
     /**
@@ -54,9 +67,6 @@ final class DependencyInjectionParameterResolver implements ParameterResolverInt
      */
     public function resolveParameter(ReflectionParameter $parameter, ?ServerRequestInterface $request): mixed
     {
-        /** @var ReflectionNamedType $type */
-        $type = $parameter->getType();
-
-        return $this->container->get($type->getName());
+        return $this->value;
     }
 }

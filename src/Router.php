@@ -331,7 +331,7 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {

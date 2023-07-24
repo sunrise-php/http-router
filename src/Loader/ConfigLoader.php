@@ -175,7 +175,7 @@ final class ConfigLoader implements LoaderInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      *
      * @throws InvalidArgumentException
      *         If the resource isn't valid.
@@ -210,7 +210,7 @@ final class ConfigLoader implements LoaderInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      *
      * @throws InvalidArgumentException
      *         If one of the given resources isn't valid.
@@ -224,7 +224,7 @@ final class ConfigLoader implements LoaderInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function load(): RouteCollectionInterface
     {

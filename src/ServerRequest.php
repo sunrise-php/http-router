@@ -325,7 +325,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getProtocolVersion(): string
     {
@@ -333,7 +333,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function withProtocolVersion($version): self
     {
@@ -344,7 +344,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getHeaders(): array
     {
@@ -352,7 +352,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function hasHeader($name): bool
     {
@@ -360,7 +360,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getHeader($name): array
     {
@@ -368,7 +368,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getHeaderLine($name): string
     {
@@ -376,7 +376,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function withHeader($name, $value): self
     {
@@ -387,7 +387,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function withAddedHeader($name, $value): self
     {
@@ -398,7 +398,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function withoutHeader($name): self
     {
@@ -409,7 +409,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getBody(): StreamInterface
     {
@@ -417,7 +417,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function withBody(StreamInterface $body): self
     {
@@ -428,7 +428,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getMethod(): string
     {
@@ -436,7 +436,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function withMethod($method): self
     {
@@ -447,7 +447,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getUri(): UriInterface
     {
@@ -455,7 +455,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function withUri(UriInterface $uri, $preserveHost = false): self
     {
@@ -466,7 +466,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getRequestTarget(): string
     {
@@ -474,7 +474,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function withRequestTarget($requestTarget): self
     {
@@ -485,7 +485,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getServerParams(): array
     {
@@ -493,7 +493,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getQueryParams(): array
     {
@@ -501,7 +501,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function withQueryParams(array $query): self
     {
@@ -512,7 +512,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getCookieParams(): array
     {
@@ -520,7 +520,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function withCookieParams(array $cookies): self
     {
@@ -531,7 +531,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getUploadedFiles(): array
     {
@@ -539,7 +539,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function withUploadedFiles(array $uploadedFiles): self
     {
@@ -550,7 +550,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getParsedBody(): mixed
     {
@@ -558,7 +558,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function withParsedBody($data): self
     {
@@ -569,7 +569,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getAttributes(): array
     {
@@ -577,7 +577,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getAttribute($name, $default = null): mixed
     {
@@ -585,7 +585,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function withAttribute($name, $value): self
     {
@@ -596,7 +596,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function withoutAttribute($name): self
     {

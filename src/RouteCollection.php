@@ -55,7 +55,7 @@ class RouteCollection implements RouteCollectionInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function getIterator(): Iterator
     {
@@ -65,7 +65,7 @@ class RouteCollection implements RouteCollectionInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function all(): Iterator
     {
@@ -75,7 +75,7 @@ class RouteCollection implements RouteCollectionInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function allOnHost(?string $host): Iterator
     {
@@ -93,7 +93,7 @@ class RouteCollection implements RouteCollectionInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function has(string $name): bool
     {
@@ -101,7 +101,7 @@ class RouteCollection implements RouteCollectionInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function get(string $name): RouteInterface
     {
@@ -116,7 +116,7 @@ class RouteCollection implements RouteCollectionInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function add(RouteInterface ...$routes): RouteCollectionInterface
     {
@@ -139,7 +139,7 @@ class RouteCollection implements RouteCollectionInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function setHost(string $host): RouteCollectionInterface
     {
@@ -151,7 +151,7 @@ class RouteCollection implements RouteCollectionInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function setConsumedMediaTypes(string ...$mediaTypes): RouteCollectionInterface
     {
@@ -163,7 +163,7 @@ class RouteCollection implements RouteCollectionInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function setProducedMediaTypes(string ...$mediaTypes): RouteCollectionInterface
     {
@@ -175,7 +175,7 @@ class RouteCollection implements RouteCollectionInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function setAttribute(string $name, $value): RouteCollectionInterface
     {
@@ -187,7 +187,7 @@ class RouteCollection implements RouteCollectionInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function addPrefix(string $prefix): RouteCollectionInterface
     {
@@ -199,7 +199,7 @@ class RouteCollection implements RouteCollectionInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function addSuffix(string $suffix): RouteCollectionInterface
     {
@@ -211,7 +211,7 @@ class RouteCollection implements RouteCollectionInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function addMethod(string ...$methods): RouteCollectionInterface
     {
@@ -223,7 +223,7 @@ class RouteCollection implements RouteCollectionInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function addConsumedMediaType(string ...$mediaTypes): RouteCollectionInterface
     {
@@ -235,7 +235,7 @@ class RouteCollection implements RouteCollectionInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function addProducedMediaType(string ...$mediaTypes): RouteCollectionInterface
     {
@@ -247,7 +247,7 @@ class RouteCollection implements RouteCollectionInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function addMiddleware(MiddlewareInterface ...$middlewares): RouteCollectionInterface
     {
@@ -259,7 +259,7 @@ class RouteCollection implements RouteCollectionInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function addPriorityMiddleware(MiddlewareInterface ...$middlewares): RouteCollectionInterface
     {
@@ -271,7 +271,7 @@ class RouteCollection implements RouteCollectionInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function addTag(string ...$tags): RouteCollectionInterface
     {
@@ -283,7 +283,7 @@ class RouteCollection implements RouteCollectionInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritDoc
      */
     public function count(): int
     {
