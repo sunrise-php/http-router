@@ -188,17 +188,17 @@ final class ConfigLoader implements LoaderInterface
             );
         }
 
+        if (is_file($resource)) {
+            $this->resources[] = $resource;
+            return;
+        }
+
         if (is_dir($resource)) {
             $filenames = glob($resource . '/*.php');
             foreach ($filenames as $filename) {
                 $this->resources[] = $filename;
             }
 
-            return;
-        }
-
-        if (is_file($resource)) {
-            $this->resources[] = $resource;
             return;
         }
 

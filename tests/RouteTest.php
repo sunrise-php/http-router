@@ -3,7 +3,7 @@
 namespace Sunrise\Http\Router\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
+use Sunrise\Http\Router\RequestHandler\CallbackRequestHandler;
 use Sunrise\Http\Router\Route;
 use Sunrise\Http\Router\RouteInterface;
 use Sunrise\Http\ServerRequest\ServerRequestFactory;
@@ -383,7 +383,7 @@ class RouteTest extends TestCase
         $callback = function () {
         };
 
-        $route = new Route('foo', '/foo', [], new CallableRequestHandler($callback));
+        $route = new Route('foo', '/foo', [], new CallbackRequestHandler($callback));
         $holder = $route->getHolder();
 
         $this->assertInstanceOf(\ReflectionFunction::class, $holder);
@@ -398,7 +398,7 @@ class RouteTest extends TestCase
         $class = new Fixtures\Controllers\BlankController();
         $method = '__invoke';
 
-        $route = new Route('foo', '/foo', [], new CallableRequestHandler([$class, $method]));
+        $route = new Route('foo', '/foo', [], new CallbackRequestHandler([$class, $method]));
         $holder = $route->getHolder();
 
         $this->assertInstanceOf(\ReflectionMethod::class, $holder);

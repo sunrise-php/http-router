@@ -27,7 +27,7 @@ use Sunrise\Http\Router\Exception\MethodNotAllowedException;
 use Sunrise\Http\Router\Exception\PageNotFoundException;
 use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
-use Sunrise\Http\Router\RequestHandler\UnsafeCallableRequestHandler;
+use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 
 use function array_keys;
 use function Sunrise\Http\Router\path_build;
@@ -306,7 +306,7 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     public function run(ServerRequestInterface $request): ResponseInterface
     {
         // lazy resolving of the given request...
-        $routing = new UnsafeCallableRequestHandler(
+        $routing = new CallableRequestHandler(
             function (ServerRequestInterface $request): ResponseInterface {
                 $this->matchedRoute = $this->match($request);
 

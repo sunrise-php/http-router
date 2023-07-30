@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Middleware;
 
+use JsonException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -20,7 +21,6 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Exception\InvalidRequestPayloadException;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ServerRequest;
-use JsonException;
 
 use function extension_loaded;
 use function is_array;
@@ -61,11 +61,7 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         if (ServerRequest::from($request)->isJson()) {
-            $request = $request->withParsedBody(
-                $this->decodeJsonPayload(
-                    $request->getBody()->__toString()
-                )
-            );
+            $request = $request->withParsedBody($this->decodePayload($request->getBody()->__toString()));
         }
 
         return $handler->handle($request);
@@ -74,23 +70,23 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
     /**
      * Tries to decode the given JSON payload
      *
-     * @param string $json
+     * @param string $payload
      *
      * @return array<array-key, mixed>
      *
      * @throws InvalidRequestPayloadException
      *         If the JSON payload cannot be decoded.
      */
-    private function decodeJsonPayload(string $json): array
+    private function decodePayload(string $payload): array
     {
         try {
-            $data = json_decode($json, true, 512, JSON_BIGINT_AS_STRING | JSON_THROW_ON_ERROR);
+            $data = json_decode($payload, true, 512, JSON_BIGINT_AS_STRING | JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
             throw new InvalidRequestPayloadException(sprintf('Invalid JSON: %s', $e->getMessage()), 0, $e);
         }
 
-        // According to PSR-7, the data must be an array because
-        // we're using the 'associative' option when decoding the JSON.
+        // According to PSR-7, the data must be an array
+        // because we're using the 'associative' option when decoding the JSON.
         if (!is_array($data)) {
             throw new InvalidRequestPayloadException('Unexpected JSON: Expects an array or object.');
         }

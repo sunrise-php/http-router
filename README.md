@@ -265,7 +265,7 @@ use Sunrise\Http\Message\ResponseFactory;
 use Sunrise\Http\Router\Exception\MethodNotAllowedException;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
 use Sunrise\Http\Router\Middleware\CallbackMiddleware;
-use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
+use Sunrise\Http\Router\RequestHandler\CallbackRequestHandler;
 use Sunrise\Http\Router\RouteCollector;
 use Sunrise\Http\Router\Router;
 use Sunrise\Http\ServerRequest\ServerRequestFactory;
@@ -274,7 +274,7 @@ use function Sunrise\Http\Router\emit;
 
 $collector = new RouteCollector();
 
-$collector->get('home', '/', new CallableRequestHandler(function ($request) {
+$collector->get('home', '/', new CallbackRequestHandler(function ($request) {
     return (new ResponseFactory)->createJsonResponse(200);
 }));
 

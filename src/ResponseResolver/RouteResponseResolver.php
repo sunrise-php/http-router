@@ -15,6 +15,7 @@ namespace Sunrise\Http\Router\ResponseResolver;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\RouteInterface;
 
 /**
@@ -27,28 +28,22 @@ final class RouteResponseResolver implements ResponseResolverInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws LogicException
+     *         If the resolver is used incorrectly.
      */
-    public function supportsResponse(mixed $response, mixed $context): bool
+    public function resolveResponse(mixed $value, mixed $context): ?ResponseInterface
     {
-        if (!($context instanceof ServerRequestInterface)) {
-            return false;
+        if (! $value instanceof RouteInterface) {
+            return null;
         }
 
-        if (!($response instanceof RouteInterface)) {
-            return false;
+        if (! $context instanceof ServerRequestInterface) {
+            throw new LogicException(
+                'At this level of the application, any operations with the request are not possible.'
+            );
         }
 
-        return true;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function resolveResponse(mixed $response, mixed $context): ResponseInterface
-    {
-        /** @var RouteInterface $response */
-        /** @var ServerRequestInterface $context */
-
-        return $response->handle($context);
+        return $value->handle($context);
     }
 }

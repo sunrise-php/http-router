@@ -16,14 +16,12 @@ namespace Sunrise\Http\Router\ResponseResolver;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 
-use function is_int;
-
 /**
- * StatusCodeResponseResolver
+ * NullResponseResolver
  *
  * @since 3.0.0
  */
-final class StatusCodeResponseResolver implements ResponseResolverInterface
+final class NullResponseResolver implements ResponseResolverInterface
 {
 
     /**
@@ -40,8 +38,8 @@ final class StatusCodeResponseResolver implements ResponseResolverInterface
      */
     public function resolveResponse(mixed $value, mixed $context): ?ResponseInterface
     {
-        if (is_int($value) && $value >= 100 && $value <= 599) {
-            return $this->responseFactory->createResponse($value);
+        if ($value === null) {
+            return $this->responseFactory->createResponse(204);
         }
 
         return null;

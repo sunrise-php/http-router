@@ -15,7 +15,6 @@ namespace Sunrise\Http\Router;
 
 use Closure;
 use InvalidArgumentException;
-use ReflectionFunctionAbstract;
 use ReflectionFunction;
 use ReflectionMethod;
 
@@ -38,7 +37,7 @@ use function strpos;
  *
  * @since 3.0.0
  */
-function reflect_callable(callable $callback): ReflectionFunctionAbstract
+function reflect_callable(callable $callback): ReflectionFunction|ReflectionMethod
 {
     if ($callback instanceof Closure) {
         return new ReflectionFunction($callback);

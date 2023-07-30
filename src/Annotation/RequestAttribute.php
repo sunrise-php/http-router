@@ -19,15 +19,15 @@ use Attribute;
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_PARAMETER)]
-final class RequestRouteAttribute
+final class RequestAttribute
 {
 
     /**
      * Constructor of the class
      *
-     * @param non-empty-string|null $name
+     * @param non-empty-string|null $key
      */
-    public function __construct(public ?string $name = null)
+    public function __construct(public ?string $key = null)
     {
     }
 }

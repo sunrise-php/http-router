@@ -13,9 +13,8 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
-use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Sunrise\Http\Router\Exception\ResolvingResponseException;
+use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
 
 use function get_debug_type;
@@ -30,25 +29,9 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
 {
 
     /**
-     * @var RequestInterface|null
-     */
-    private ?RequestInterface $request = null;
-
-    /**
      * @var list<ResponseResolverInterface>
      */
     private array $resolvers = [];
-
-    /**
-     * @inheritDoc
-     */
-    public function withRequest(RequestInterface $context): static
-    {
-        $clone = clone $this;
-        $clone->request = $context;
-
-        return $clone;
-    }
 
     /**
      * @inheritDoc
@@ -62,22 +45,25 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws LogicException If the value cannot be resolved to PSR-7 response.
      */
-    public function resolveResponse($response): ResponseInterface
+    public function resolveResponse(mixed $value, mixed $context): ResponseInterface
     {
-        if ($response instanceof ResponseInterface) {
-            return $response;
+        if ($value instanceof ResponseInterface) {
+            return $value;
         }
 
         foreach ($this->resolvers as $resolver) {
-            if ($resolver->supportsResponse($response, $this->request)) {
-                return $resolver->resolveResponse($response, $this->request);
+            $response = $resolver->resolveResponse($value, $context);
+            if ($response instanceof ResponseInterface) {
+                return $response;
             }
         }
 
-        throw new ResolvingResponseException(sprintf(
-            'Unable to resolve the response {%s}',
-            get_debug_type($response),
+        throw new LogicException(sprintf(
+            'Unable to resolve the value {%s} to PSR-7 response.',
+            get_debug_type($value),
         ));
     }
 }

@@ -13,16 +13,18 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\ParameterResolver;
 
+use Generator;
 use Psr\Http\Message\ServerRequestInterface;
+use ReflectionNamedType;
+use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestQuery;
+use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\Exception\UnhydrableObjectException;
 use Sunrise\Http\Router\Exception\UnprocessableRequestQueryException;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\HydratorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use ReflectionNamedType;
-use ReflectionParameter;
 
 /**
  * RequestQueryParameterResolver
@@ -39,32 +41,10 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
      * Constructor of the class
      *
      * @param HydratorInterface $hydrator
-     * @param ValidatorInterface|null $validator
+     * @param ValidatorInterface $validator
      */
-    public function __construct(private HydratorInterface $hydrator, private ?ValidatorInterface $validator = null)
+    public function __construct(private HydratorInterface $hydrator, private ValidatorInterface $validator)
     {
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function supportsParameter(ReflectionParameter $parameter, ?ServerRequestInterface $request): bool
-    {
-        if ($request === null) {
-            return false;
-        }
-
-        $type = $parameter->getType();
-
-        if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
-            return false;
-        }
-
-        if ($parameter->getAttributes(RequestQuery::class) === []) {
-            return false;
-        }
-
-        return true;
     }
 
     /**
@@ -75,30 +55,43 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
      *
      * @throws UnprocessableRequestQueryException
      *         If the request's query parameters isn't valid.
+     *
+     * @throws LogicException
+     *         If the resolver is used incorrectly.
      */
-    public function resolveParameter(ReflectionParameter $parameter, ?ServerRequestInterface $request): mixed
+    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
-        /** @var ReflectionNamedType $type */
+        if ($parameter->getAttributes(RequestQuery::class) === []) {
+            return;
+        }
+
         $type = $parameter->getType();
 
-        /** @var class-string $fqn */
-        $fqn = $type->getName();
+        if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
+            throw new LogicException(
+                'To use the #[RequestQuery] attribute, the parameter must be typed with a DTO.'
+            );
+        }
+
+        if (! $context instanceof ServerRequestInterface) {
+            throw new LogicException(
+                'At this level of the application, any operations with the request are not possible.'
+            );
+        }
 
         try {
-            $object = $this->hydrator->hydrate($fqn, (array) $request?->getQueryParams());
+            $object = $this->hydrator->hydrate($type->getName(), $context->getQueryParams());
         } catch (InvalidObjectException $e) {
             throw new UnhydrableObjectException($e->getMessage(), 0, $e);
         } catch (InvalidDataException $e) {
             throw new UnprocessableRequestQueryException($e->getViolations());
         }
 
-        if (isset($this->validator)) {
-            $violations = $this->validator->validate($object);
-            if ($violations->count() > 0) {
-                throw new UnprocessableRequestQueryException($violations);
-            }
+        $violations = $this->validator->validate($object);
+        if ($violations->count() > 0) {
+            throw new UnprocessableRequestQueryException($violations);
         }
 
-        return $object;
+        yield $object;
     }
 }

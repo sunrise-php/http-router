@@ -15,15 +15,14 @@ namespace Sunrise\Http\Router\ResponseResolver;
 
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
-
-use function is_int;
+use Psr\Http\Message\UriInterface;
 
 /**
- * StatusCodeResponseResolver
+ * UriResponseResolver
  *
  * @since 3.0.0
  */
-final class StatusCodeResponseResolver implements ResponseResolverInterface
+final class UriResponseResolver implements ResponseResolverInterface
 {
 
     /**
@@ -40,10 +39,11 @@ final class StatusCodeResponseResolver implements ResponseResolverInterface
      */
     public function resolveResponse(mixed $value, mixed $context): ?ResponseInterface
     {
-        if (is_int($value) && $value >= 100 && $value <= 599) {
-            return $this->responseFactory->createResponse($value);
+        if (! $value instanceof UriInterface) {
+            return null;
         }
 
-        return null;
+        return $this->responseFactory->createResponse(302)
+            ->withHeader('Location', $value->__toString());
     }
 }

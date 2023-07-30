@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
-use Psr\Http\Message\RequestInterface;
+use Generator;
 use ReflectionMethod;
 use ReflectionParameter;
-use Sunrise\Http\Router\Exception\ResolvingParameterException;
+use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
 
 use function sprintf;
@@ -30,9 +30,9 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
 {
 
     /**
-     * @var RequestInterface|null
+     * @var mixed
      */
-    private ?RequestInterface $request = null;
+    private mixed $context = null;
 
     /**
      * @var list<ParameterResolverInterface>
@@ -42,10 +42,10 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
     /**
      * @inheritDoc
      */
-    public function withRequest(RequestInterface $request): static
+    public function withContext(mixed $context): static
     {
         $clone = clone $this;
-        $clone->request = $request;
+        $clone->context = $context;
 
         return $clone;
     }
@@ -81,42 +81,40 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws LogicException If one of the parameters cannot be resolved to an argument(s).
      */
-    public function resolveParameters(ReflectionParameter ...$parameters): array
+    public function resolveParameters(ReflectionParameter ...$parameters): Generator
     {
-        $arguments = [];
         foreach ($parameters as $parameter) {
-            /** @var mixed */
-            $arguments[] = $this->resolveParameter($parameter);
+            yield from $this->resolveParameter($parameter);
         }
-
-        return $arguments;
     }
 
     /**
-     * Tries to resolve the given parameter to an argument
+     * Tries to resolve the given parameter to an argument(s)
      *
      * @param ReflectionParameter $parameter
      *
-     * @return mixed
+     * @return Generator<mixed>
      *
-     * @throws ResolvingParameterException
-     *         If the parameter cannot be resolved to an argument.
+     * @throws LogicException If the parameter cannot be resolved to an argument(s).
      */
-    private function resolveParameter(ReflectionParameter $parameter): mixed
+    private function resolveParameter(ReflectionParameter $parameter): Generator
     {
         foreach ($this->resolvers as $resolver) {
-            if ($resolver->supportsParameter($parameter, $this->request)) {
-                return $resolver->resolveParameter($parameter, $this->request);
+            $arguments = $resolver->resolveParameter($parameter, $this->context);
+            if ($arguments->valid()) {
+                return yield from $arguments;
             }
         }
 
         if ($parameter->isDefaultValueAvailable()) {
-            return $parameter->getDefaultValue();
+           return yield $parameter->getDefaultValue();
         }
 
-        throw new ResolvingParameterException(sprintf(
-            'Unable to resolve the parameter {%s}',
+        throw new LogicException(sprintf(
+            'Unable to resolve the parameter {%s}.',
             $this->stringifyParameter($parameter)
         ));
     }

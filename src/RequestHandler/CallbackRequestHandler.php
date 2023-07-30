@@ -11,11 +11,10 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Middleware;
+namespace Sunrise\Http\Router\RequestHandler;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use ReflectionFunction;
 use ReflectionMethod;
@@ -26,15 +25,15 @@ use Sunrise\Http\Router\ResponseResolutionerInterface;
 use function Sunrise\Http\Router\reflect_callable;
 
 /**
- * CallbackMiddleware
+ * CallbackRequestHandler
  *
  * @since 3.0.0
  */
-final class CallbackMiddleware implements MiddlewareInterface
+final class CallbackRequestHandler implements RequestHandlerInterface
 {
 
     /**
-     * The middleware's callback
+     * The request handler's callback
      *
      * @var callable
      */
@@ -64,7 +63,7 @@ final class CallbackMiddleware implements MiddlewareInterface
     public function __construct(
         callable $callback,
         ParameterResolutionerInterface $parameterResolutioner,
-        ResponseResolutionerInterface $responseResolutioner,
+        ResponseResolutionerInterface $responseResolutioner
     ) {
         $this->callback = $callback;
         $this->parameterResolutioner = $parameterResolutioner;
@@ -84,13 +83,12 @@ final class CallbackMiddleware implements MiddlewareInterface
     /**
      * @inheritDoc
      */
-    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $arguments = $this->parameterResolutioner
             ->withContext($request)
             ->withPriorityResolver(
                 new DirectInjectionParameterResolver($request),
-                new DirectInjectionParameterResolver($handler),
             )
             ->resolveParameters(...$this->getReflection()->getParameters());
 

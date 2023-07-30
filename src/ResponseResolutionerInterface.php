@@ -13,9 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
-use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Sunrise\Http\Router\Exception\ResolvingResponseException;
 use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
 
 /**
@@ -27,17 +25,6 @@ interface ResponseResolutionerInterface
 {
 
     /**
-     * Creates a new instance of the resolutioner with the given current context
-     *
-     * Please note that this method MUST NOT change the object state.
-     *
-     * @param RequestInterface $context
-     *
-     * @return static
-     */
-    public function withRequest(RequestInterface $context): static;
-
-    /**
      * Adds the given response resolver(s) to the resolutioner
      *
      * @param ResponseResolverInterface ...$resolvers
@@ -47,14 +34,12 @@ interface ResponseResolutionerInterface
     public function addResolver(ResponseResolverInterface ...$resolvers): void;
 
     /**
-     * Resolves the given raw response to the object
+     * Resolves the given value to PSR-7 response
      *
-     * @param mixed $response
+     * @param mixed $value
+     * @param mixed $context
      *
      * @return ResponseInterface
-     *
-     * @throws ResolvingResponseException
-     *         If the raw response cannot be resolved to the object.
      */
-    public function resolveResponse($response): ResponseInterface;
+    public function resolveResponse(mixed $value, mixed $context): ResponseInterface;
 }

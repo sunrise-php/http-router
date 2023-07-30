@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\ResponseResolver;
 
 use Psr\Http\Message\ResponseInterface;
-use Sunrise\Http\Router\Exception\ResolvingResponseException;
 
 /**
  * ResponseResolverInterface
@@ -25,25 +24,12 @@ interface ResponseResolverInterface
 {
 
     /**
-     * Checks if the given raw response is supported
+     * Resolves the given value to PSR-7 response
      *
-     * @param mixed $response
+     * @param mixed $value
      * @param mixed $context
      *
-     * @return bool
+     * @return ResponseInterface|null
      */
-    public function supportsResponse(mixed $response, mixed $context): bool;
-
-    /**
-     * Resolves the given raw response to the object
-     *
-     * @param mixed $response
-     * @param mixed $context
-     *
-     * @return ResponseInterface
-     *
-     * @throws ResolvingResponseException
-     *         If the raw response cannot be resolved to the object.
-     */
-    public function resolveResponse(mixed $response, mixed $context): ResponseInterface;
+    public function resolveResponse(mixed $value, mixed $context): ?ResponseInterface;
 }

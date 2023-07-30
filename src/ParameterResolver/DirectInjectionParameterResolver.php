@@ -14,24 +14,25 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\ParameterResolver;
 
 use Generator;
-use Psr\Container\ContainerInterface;
 use ReflectionNamedType;
 use ReflectionParameter;
 
+use function is_a;
+
 /**
- * DependencyInjectionParameterResolver
+ * ObjectParameterResolver
  *
  * @since 3.0.0
  */
-final class DependencyInjectionParameterResolver implements ParameterResolverInterface
+final class DirectInjectionParameterResolver implements ParameterResolverInterface
 {
 
     /**
      * Constructor of the class
      *
-     * @param ContainerInterface $container
+     * @param object $object
      */
-    public function __construct(private ContainerInterface $container)
+    public function __construct(private object $object)
     {
     }
 
@@ -46,8 +47,8 @@ final class DependencyInjectionParameterResolver implements ParameterResolverInt
             return;
         }
 
-        if ($this->container->has($type->getName())) {
-            yield $this->container->get($type->getName());
+        if (is_a($this->object, $type->getName())) {
+            yield $this->object;
         }
     }
 }

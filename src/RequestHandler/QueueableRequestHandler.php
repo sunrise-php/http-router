@@ -26,28 +26,34 @@ final class QueueableRequestHandler implements RequestHandlerInterface
 {
 
     /**
+     * The request handler's middleware queue
+     *
      * @var SplQueue<MiddlewareInterface>
      */
-    private SplQueue $queue;
+    private SplQueue $middlewareQueue;
 
     /**
+     * The request handler's request handler
+     *
      * @var RequestHandlerInterface
      */
-    private RequestHandlerInterface $endpoint;
+    private RequestHandlerInterface $requestHandler;
 
     /**
      * Constructor of the class
      *
-     * @param RequestHandlerInterface $endpoint
+     * @param RequestHandlerInterface $requestHandler
      */
-    public function __construct(RequestHandlerInterface $endpoint)
+    public function __construct(RequestHandlerInterface $requestHandler)
     {
-        $this->queue = new SplQueue();
-        $this->endpoint = $endpoint;
+        /** @var SplQueue<MiddlewareInterface> */
+        $this->middlewareQueue = new SplQueue();
+
+        $this->requestHandler = $requestHandler;
     }
 
     /**
-     * Adds the given middleware(s) to the request handler queue
+     * Adds the given middleware(s) to the request handler's middleware queue
      *
      * @param MiddlewareInterface ...$middlewares
      *
@@ -56,7 +62,7 @@ final class QueueableRequestHandler implements RequestHandlerInterface
     public function add(MiddlewareInterface ...$middlewares): void
     {
         foreach ($middlewares as $middleware) {
-            $this->queue->enqueue($middleware);
+            $this->middlewareQueue->enqueue($middleware);
         }
     }
 
@@ -65,10 +71,10 @@ final class QueueableRequestHandler implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        if (!$this->queue->isEmpty()) {
-            return $this->queue->dequeue()->process($request, $this);
+        if (!$this->middlewareQueue->isEmpty()) {
+            return $this->middlewareQueue->dequeue()->process($request, $this);
         }
 
-        return $this->endpoint->handle($request);
+        return $this->requestHandler->handle($request);
     }
 }

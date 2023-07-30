@@ -17,7 +17,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Exception\ResolvingReferenceException;
 use Sunrise\Http\Router\Middleware\CallbackMiddleware;
-use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
+use Sunrise\Http\Router\RequestHandler\CallbackRequestHandler;
 use Closure;
 
 use function get_debug_type;
@@ -80,7 +80,7 @@ final class ReferenceResolver implements ReferenceResolverInterface
         }
 
         if ($reference instanceof Closure) {
-            return new CallableRequestHandler($reference, $this->parameterResolutioner, $this->responseResolutioner);
+            return new CallbackRequestHandler($reference, $this->parameterResolutioner, $this->responseResolutioner);
         }
 
         if (is_string($reference) && is_subclass_of($reference, RequestHandlerInterface::class)) {
@@ -97,7 +97,7 @@ final class ReferenceResolver implements ReferenceResolverInterface
                 $reference[0] = $this->classResolver->resolveClass($reference[0]);
             }
 
-            return new CallableRequestHandler(
+            return new CallbackRequestHandler(
                 [$reference[0], $reference[1]],
                 $this->parameterResolutioner,
                 $this->responseResolutioner

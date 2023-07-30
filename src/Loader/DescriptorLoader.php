@@ -13,9 +13,15 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Loader;
 
+use FilesystemIterator;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\SimpleCache\CacheInterface;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use ReflectionClass;
+use ReflectionMethod;
+use RegexIterator;
 use Sunrise\Http\Router\Annotation\Consume;
 use Sunrise\Http\Router\Annotation\Description;
 use Sunrise\Http\Router\Annotation\Host;
@@ -43,12 +49,6 @@ use Sunrise\Http\Router\RouteCollectionFactoryInterface;
 use Sunrise\Http\Router\RouteCollectionInterface;
 use Sunrise\Http\Router\RouteFactory;
 use Sunrise\Http\Router\RouteFactoryInterface;
-use FilesystemIterator;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use ReflectionClass;
-use ReflectionMethod;
-use RegexIterator;
 
 use function class_exists;
 use function get_declared_classes;

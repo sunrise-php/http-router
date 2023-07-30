@@ -15,33 +15,25 @@ namespace Sunrise\Http\Router\ParameterResolver;
 
 use Generator;
 use Psr\Http\Message\ServerRequestInterface;
-use ReflectionNamedType;
 use ReflectionParameter;
+use Sunrise\Http\Router\Annotation\RequestAttribute;
 use Sunrise\Http\Router\Exception\LogicException;
-use Sunrise\Http\Router\RouteInterface;
 
 /**
- * RequestRouteParameterResolver
+ * RequestAttributeParameterResolver
  *
  * @since 3.0.0
  */
-final class RequestRouteParameterResolver implements ParameterResolverInterface
+final class RequestAttributeParameterResolver implements ParameterResolverInterface
 {
 
     /**
      * @inheritDoc
-     *
-     * @throws LogicException
-     *         If the resolver is used incorrectly.
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
-        $type = $parameter->getType();
-
-        if (
-            ! ($type instanceof ReflectionNamedType) ||
-            ! ($type->getName() === RouteInterface::class)
-        ) {
+        $attributes = $parameter->getAttributes(RequestAttribute::class);
+        if ($attributes === []) {
             return;
         }
 
@@ -51,16 +43,14 @@ final class RequestRouteParameterResolver implements ParameterResolverInterface
             );
         }
 
-        /** @var RouteInterface|null $route */
-        $route = $context->getAttribute('@route');
+        /**
+         * @var RequestAttribute $attribute
+         * @psalm-suppress UnnecessaryVarAnnotation
+         */
+        $attribute = $attributes[0]->newInstance();
 
-        if ($route === null && !$parameter->allowsNull()) {
-            throw new LogicException(
-                'At this level of the application, the current request does not contain a route. ' .
-                'To suppress this error, the parameter should be nullable.'
-            );
-        }
+        $value = $context->getAttribute($attribute->key);
 
-        yield $route;
+        yield $value;
     }
 }

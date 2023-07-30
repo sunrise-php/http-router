@@ -13,10 +13,9 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
-use Psr\Http\Message\RequestInterface;
-use Sunrise\Http\Router\Exception\ResolvingParameterException;
-use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
+use Generator;
 use ReflectionParameter;
+use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
 
 /**
  * ParameterResolutionerInterface
@@ -27,15 +26,15 @@ interface ParameterResolutionerInterface
 {
 
     /**
-     * Creates a new instance of the resolutioner with the given current request
+     * Creates a new instance of the resolutioner with the given context
      *
      * Please note that this method MUST NOT change the object state.
      *
-     * @param RequestInterface $request
+     * @param mixed $context
      *
      * @return static
      */
-    public function withRequest(RequestInterface $request): static;
+    public function withContext(mixed $context): static;
 
     /**
      * Creates a new instance of the resolutioner with the given priority parameter resolver(s)
@@ -62,9 +61,7 @@ interface ParameterResolutionerInterface
      *
      * @param ReflectionParameter ...$parameters
      *
-     * @return list<mixed> List of ready-to-pass arguments.
-     *
-     * @throws ResolvingParameterException If one of the parameters cannot be resolved to an argument.
+     * @return Generator<mixed> List of ready-to-pass arguments.
      */
-    public function resolveParameters(ReflectionParameter ...$parameters): array;
+    public function resolveParameters(ReflectionParameter ...$parameters): Generator;
 }
