@@ -86,14 +86,11 @@ final class ResponseBodyResponseResolver implements ResponseResolverInterface
         if ($route instanceof RouteInterface) {
             $producedMediaTypes = $route->getProducedMediaTypes();
             if (!empty($producedMediaTypes)) {
-                /** @var non-empty-string $mediaType */
                 $mediaType = reset($producedMediaTypes);
-                $requestProxy = ServerRequest::from($request);
-                $consumedMediaTypes = $requestProxy->getClientConsumedMediaTypes();
+                $consumedMediaTypes = ServerRequest::from($request)->getClientConsumedMediaTypes();
                 while ($producedMediaType = next($producedMediaTypes)) {
                     if (isset($consumedMediaTypes[$producedMediaType])) {
-                        /** @var non-empty-string $mediaType */
-                        $mediaType = $consumedMediaTypes[$producedMediaType];
+                        $mediaType = $producedMediaType;
                         break;
                     }
                 }
