@@ -14,6 +14,9 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\ResponseResolver;
 
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use ReflectionFunction;
+use ReflectionMethod;
 
 /**
  * ResponseResolverInterface
@@ -24,12 +27,17 @@ interface ResponseResolverInterface
 {
 
     /**
-     * Resolves the given value to PSR-7 response
+     * Resolves the given response to PSR-7 response
      *
-     * @param mixed $value
-     * @param mixed $context
+     * @param mixed $response
+     * @param ServerRequestInterface $request
+     * @param ReflectionFunction|ReflectionMethod $source
      *
      * @return ResponseInterface|null
      */
-    public function resolveResponse(mixed $value, mixed $context): ?ResponseInterface;
+    public function resolveResponse(
+        mixed $response,
+        ServerRequestInterface $request,
+        ReflectionFunction|ReflectionMethod $source,
+    ) : ?ResponseInterface;
 }

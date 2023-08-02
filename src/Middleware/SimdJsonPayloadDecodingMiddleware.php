@@ -40,8 +40,7 @@ final class SimdJsonPayloadDecodingMiddleware implements MiddlewareInterface
     /**
      * Constructor of the class
      *
-     * @throws LogicException
-     *         If the Simdjson extension isn't loaded.
+     * @throws LogicException If the Simdjson extension isn't loaded.
      */
     public function __construct()
     {
@@ -58,7 +57,11 @@ final class SimdJsonPayloadDecodingMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         if (ServerRequest::from($request)->isJson()) {
-            $request = $request->withParsedBody($this->decodePayload($request->getBody()->__toString()));
+            $request = $request->withParsedBody(
+                $this->decodePayload(
+                    $request->getBody()->__toString()
+                )
+            );
         }
 
         return $handler->handle($request);
@@ -71,8 +74,7 @@ final class SimdJsonPayloadDecodingMiddleware implements MiddlewareInterface
      *
      * @return array<array-key, mixed>
      *
-     * @throws InvalidRequestPayloadException
-     *         If the JSON payload cannot be decoded.
+     * @throws InvalidRequestPayloadException If the JSON payload cannot be decoded.
      */
     private function decodePayload(string $payload): array
     {

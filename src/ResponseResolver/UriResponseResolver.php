@@ -15,7 +15,10 @@ namespace Sunrise\Http\Router\ResponseResolver;
 
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
+use ReflectionFunction;
+use ReflectionMethod;
 
 /**
  * UriResponseResolver
@@ -37,13 +40,16 @@ final class UriResponseResolver implements ResponseResolverInterface
     /**
      * @inheritDoc
      */
-    public function resolveResponse(mixed $value, mixed $context): ?ResponseInterface
-    {
-        if (! $value instanceof UriInterface) {
-            return null;
+    public function resolveResponse(
+        mixed $response,
+        ServerRequestInterface $request,
+        ReflectionFunction|ReflectionMethod $source,
+    ) : ?ResponseInterface {
+        if ($response instanceof UriInterface) {
+            return $this->responseFactory->createResponse(302)
+                ->withHeader('Location', $response->__toString());
         }
 
-        return $this->responseFactory->createResponse(302)
-            ->withHeader('Location', $value->__toString());
+        return null;
     }
 }

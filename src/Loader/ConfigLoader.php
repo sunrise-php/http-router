@@ -177,8 +177,7 @@ final class ConfigLoader implements LoaderInterface
     /**
      * @inheritDoc
      *
-     * @throws InvalidArgumentException
-     *         If the resource isn't valid.
+     * @throws InvalidArgumentException If the resource isn't valid.
      */
     public function attach(mixed $resource): void
     {
@@ -212,8 +211,7 @@ final class ConfigLoader implements LoaderInterface
     /**
      * @inheritDoc
      *
-     * @throws InvalidArgumentException
-     *         If one of the given resources isn't valid.
+     * @throws InvalidArgumentException If one of the given resources isn't valid.
      */
     public function attachArray(array $resources): void
     {

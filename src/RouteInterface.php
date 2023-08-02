@@ -139,7 +139,7 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
      *
      * @since 2.14.0
      */
-    public function getHolder(): Reflector;
+    public function getHolder(): ReflectionClass|ReflectionMethod|ReflectionFunction;
 
     /**
      * Sets the given name to the route

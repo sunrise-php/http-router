@@ -115,7 +115,7 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
 
         throw new LogicException(sprintf(
             'Unable to resolve the parameter {%s}.',
-            $this->stringifyParameter($parameter)
+            self::stringifyParameter($parameter)
         ));
     }
 
@@ -124,9 +124,9 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
      *
      * @param ReflectionParameter $parameter
      *
-     * @return string
+     * @return non-empty-string
      */
-    private function stringifyParameter(ReflectionParameter $parameter): string
+    public static function stringifyParameter(ReflectionParameter $parameter): string
     {
         if ($parameter->getDeclaringFunction() instanceof ReflectionMethod) {
             return sprintf(

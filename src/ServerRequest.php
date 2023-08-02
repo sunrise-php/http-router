@@ -180,7 +180,7 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
             return [];
         }
 
-        $accepts = header_accept_like_parse($header);
+        $accepts = parse_accept_header($header);
         if (empty($accepts)) {
             return [];
         }

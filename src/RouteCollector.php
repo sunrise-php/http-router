@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
+use Fig\Http\Message\RequestMethodInterface;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
 use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
@@ -167,7 +168,7 @@ class RouteCollector
             $path,
             $methods,
             $this->referenceResolver->resolveRequestHandler($requestHandler),
-            $this->referenceResolver->resolveMiddlewares($middlewares),
+            [...$this->referenceResolver->resolveMiddlewares($middlewares)],
             $attributes
         );
 
@@ -365,7 +366,7 @@ class RouteCollector
         return $this->route(
             $name,
             $path,
-            [RouteInterface::METHOD_PURGE],
+            [RequestMethodInterface::METHOD_PURGE],
             $requestHandler,
             $middlewares,
             $attributes

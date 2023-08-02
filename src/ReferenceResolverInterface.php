@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
+use Generator;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Exception\ResolvingReferenceException;
 
 /**
  * ReferenceResolverInterface
@@ -32,12 +32,9 @@ interface ReferenceResolverInterface
      *
      * @return RequestHandlerInterface
      *
-     * @throws ResolvingReferenceException
-     *         If the reference cannot be resolved to a request handler.
-     *
      * @since 3.0.0
      */
-    public function resolveRequestHandler($reference): RequestHandlerInterface;
+    public function resolveRequestHandler(mixed $reference): RequestHandlerInterface;
 
     /**
      * Resolves the given reference to a middleware
@@ -46,24 +43,18 @@ interface ReferenceResolverInterface
      *
      * @return MiddlewareInterface
      *
-     * @throws ResolvingReferenceException
-     *         If the reference cannot be resolved to a middleware.
-     *
      * @since 3.0.0
      */
-    public function resolveMiddleware($reference): MiddlewareInterface;
+    public function resolveMiddleware(mixed $reference): MiddlewareInterface;
 
     /**
      * Resolves the given references to middlewares
      *
      * @param array<array-key, mixed> $references
      *
-     * @return list<MiddlewareInterface>
-     *
-     * @throws ResolvingReferenceException
-     *         If one of the references cannot be resolved to a middleware.
+     * @return Generator<int, MiddlewareInterface>
      *
      * @since 3.0.0
      */
-    public function resolveMiddlewares(array $references): array;
+    public function resolveMiddlewares(array $references): Generator;
 }

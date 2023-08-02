@@ -48,7 +48,6 @@ final class QueueableRequestHandler implements RequestHandlerInterface
     {
         /** @var SplQueue<MiddlewareInterface> */
         $this->middlewareQueue = new SplQueue();
-
         $this->requestHandler = $requestHandler;
     }
 

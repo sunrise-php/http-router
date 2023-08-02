@@ -24,6 +24,8 @@ final class MediaType
     public const APPLICATION_XML = 'application/xml';
     public const APPLICATION_YAML = 'application/yaml';
     public const TEXT_CSV = 'text/csv';
+    public const TEXT_HTML = 'text/html';
+    public const TEXT_PLAIN = 'text/plain';
     public const TEXT_XML = 'text/xml';
 
     /**

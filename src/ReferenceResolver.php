@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
+use Generator;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Exception\ResolvingReferenceException;
@@ -20,6 +21,7 @@ use Sunrise\Http\Router\Middleware\CallbackMiddleware;
 use Sunrise\Http\Router\RequestHandler\CallbackRequestHandler;
 use Closure;
 
+use function class_exists;
 use function get_debug_type;
 use function is_array;
 use function is_callable;
@@ -73,7 +75,7 @@ final class ReferenceResolver implements ReferenceResolverInterface
     /**
      * @inheritDoc
      */
-    public function resolveRequestHandler($reference): RequestHandlerInterface
+    public function resolveRequestHandler(mixed $reference): RequestHandlerInterface
     {
         if ($reference instanceof RequestHandlerInterface) {
             return $reference;
@@ -83,9 +85,19 @@ final class ReferenceResolver implements ReferenceResolverInterface
             return new CallbackRequestHandler($reference, $this->parameterResolutioner, $this->responseResolutioner);
         }
 
-        if (is_string($reference) && is_subclass_of($reference, RequestHandlerInterface::class)) {
-            /** @var RequestHandlerInterface */
-            return $this->classResolver->resolveClass($reference);
+        if (is_string($reference) && class_exists($reference)) {
+            if (is_subclass_of($reference, RequestHandlerInterface::class)) {
+                /** @var RequestHandlerInterface */
+                return $this->classResolver->resolveClass($reference);
+            }
+
+            if (method_exists($reference, '__invoke')) {
+                return new CallbackRequestHandler(
+                    $this->classResolver->resolveClass($reference),
+                    $this->parameterResolutioner,
+                    $this->responseResolutioner
+                );
+            }
         }
 
         // https://github.com/php/php-src/blob/3ed526441400060aa4e618b91b3352371fcd02a8/Zend/zend_API.c#L3884-L3932
@@ -105,15 +117,15 @@ final class ReferenceResolver implements ReferenceResolverInterface
         }
 
         throw new ResolvingReferenceException(sprintf(
-            'Unable to resolve the reference {%s}',
-            $this->stringifyReference($reference)
+            'Unable to resolve the reference {%s}.',
+            self::stringifyReference($reference)
         ));
     }
 
     /**
      * @inheritDoc
      */
-    public function resolveMiddleware($reference): MiddlewareInterface
+    public function resolveMiddleware(mixed $reference): MiddlewareInterface
     {
         if ($reference instanceof MiddlewareInterface) {
             return $reference;
@@ -146,22 +158,19 @@ final class ReferenceResolver implements ReferenceResolverInterface
 
         throw new ResolvingReferenceException(sprintf(
             'Unable to resolve the reference {%s}',
-            $this->stringifyReference($reference)
+            self::stringifyReference($reference)
         ));
     }
 
     /**
      * @inheritDoc
      */
-    public function resolveMiddlewares(array $references): array
+    public function resolveMiddlewares(array $references): Generator
     {
-        $middlewares = [];
         /** @psalm-suppress MixedAssignment */
         foreach ($references as $reference) {
-            $middlewares[] = $this->resolveMiddleware($reference);
+            yield $this->resolveMiddleware($reference);
         }
-
-        return $middlewares;
     }
 
     /**
@@ -171,7 +180,7 @@ final class ReferenceResolver implements ReferenceResolverInterface
      *
      * @return string
      */
-    private function stringifyReference($reference): string
+    public static function stringifyReference(mixed $reference): string
     {
         if (is_array($reference) && is_callable($reference, true, $stringReference)) {
             return $stringReference;

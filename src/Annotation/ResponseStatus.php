@@ -14,20 +14,21 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
+use Fig\Http\Message\StatusCodeInterface;
 
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_PARAMETER)]
-final class RequestAttribute
+#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION)]
+final class ResponseStatus implements StatusCodeInterface
 {
 
     /**
      * Constructor of the class
      *
-     * @param non-empty-string|null $key
+     * @param int<100, 599> $code
      */
-    public function __construct(public ?string $key = null)
+    public function __construct(public int $code)
     {
     }
 }

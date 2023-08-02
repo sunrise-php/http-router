@@ -18,7 +18,10 @@ use Psr\Http\Message\ServerRequestInterface;
 use ReflectionNamedType;
 use ReflectionParameter;
 use Sunrise\Http\Router\Exception\LogicException;
+use Sunrise\Http\Router\ParameterResolutioner;
 use Sunrise\Http\Router\RouteInterface;
+
+use function sprintf;
 
 /**
  * RequestRouteParameterResolver
@@ -31,8 +34,7 @@ final class RequestRouteParameterResolver implements ParameterResolverInterface
     /**
      * @inheritDoc
      *
-     * @throws LogicException
-     *         If the resolver is used incorrectly.
+     * @throws LogicException If the resolver is used incorrectly.
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
@@ -54,11 +56,12 @@ final class RequestRouteParameterResolver implements ParameterResolverInterface
         /** @var RouteInterface|null $route */
         $route = $context->getAttribute('@route');
 
-        if ($route === null && !$parameter->allowsNull()) {
-            throw new LogicException(
+        if (! $route instanceof RouteInterface && !$parameter->allowsNull()) {
+            throw new LogicException(sprintf(
                 'At this level of the application, the current request does not contain a route. ' .
-                'To suppress this error, the parameter should be nullable.'
-            );
+                'To suppress this error, the parameter {%s} should be nullable.',
+                ParameterResolutioner::stringifyParameter($parameter),
+            ));
         }
 
         yield $route;

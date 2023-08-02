@@ -21,10 +21,13 @@ use Sunrise\Http\Router\Annotation\RequestBody;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\Exception\UnhydrableObjectException;
 use Sunrise\Http\Router\Exception\UnprocessableRequestBodyException;
+use Sunrise\Http\Router\ParameterResolutioner;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\HydratorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+
+use function sprintf;
 
 /**
  * RequestBodyParameterResolver
@@ -50,14 +53,9 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
     /**
      * @inheritDoc
      *
-     * @throws UnhydrableObjectException
-     *         If an object isn't valid.
-     *
-     * @throws UnprocessableRequestBodyException
-     *         If the request's parsed body isn't valid.
-     *
-     * @throws LogicException
-     *         If the resolver is used incorrectly.
+     * @throws UnhydrableObjectException If an object isn't valid.
+     * @throws UnprocessableRequestBodyException If the request's parsed body isn't valid.
+     * @throws LogicException If the resolver is used incorrectly.
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
@@ -68,9 +66,10 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
         $type = $parameter->getType();
 
         if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
-            throw new LogicException(
-                'To use the #[RequestBody] attribute, the parameter must be typed with a DTO.'
-            );
+            throw new LogicException(sprintf(
+                'To use the #[RequestBody] attribute, the parameter {%s} must be typed with an object.',
+                ParameterResolutioner::stringifyParameter($parameter),
+            ));
         }
 
         if (! $context instanceof ServerRequestInterface) {

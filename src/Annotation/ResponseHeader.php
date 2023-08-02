@@ -18,7 +18,17 @@ use Attribute;
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION)]
-final class ResponseBody
+#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION | Attribute::IS_REPEATABLE)]
+final class ResponseHeader
 {
+
+    /**
+     * Constructor of the class
+     *
+     * @param non-empty-string $name
+     * @param string $value
+     */
+    public function __construct(public string $name, public string $value)
+    {
+    }
 }

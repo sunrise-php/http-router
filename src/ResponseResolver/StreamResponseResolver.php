@@ -15,13 +15,17 @@ namespace Sunrise\Http\Router\ResponseResolver;
 
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\StreamInterface;
+use ReflectionFunction;
+use ReflectionMethod;
 
 /**
- * NullResponseResolver
+ * StreamResponseResolver
  *
  * @since 3.0.0
  */
-final class NullResponseResolver implements ResponseResolverInterface
+final class StreamResponseResolver implements ResponseResolverInterface
 {
 
     /**
@@ -36,10 +40,14 @@ final class NullResponseResolver implements ResponseResolverInterface
     /**
      * @inheritDoc
      */
-    public function resolveResponse(mixed $value, mixed $context): ?ResponseInterface
-    {
-        if ($value === null) {
-            return $this->responseFactory->createResponse(204);
+    public function resolveResponse(
+        mixed $response,
+        ServerRequestInterface $request,
+        ReflectionFunction|ReflectionMethod $source,
+    ) : ?ResponseInterface {
+        if ($response instanceof StreamInterface) {
+            return $this->responseFactory->createResponse(200)
+                ->withBody($response);
         }
 
         return null;

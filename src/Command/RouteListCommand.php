@@ -48,8 +48,7 @@ class RouteListCommand extends Command
      *
      * @return Router
      *
-     * @throws LogicException
-     *         If the command doesn't contain the router instance.
+     * @throws LogicException If the command doesn't contain the router instance.
      *
      * @since 2.11.0
      */

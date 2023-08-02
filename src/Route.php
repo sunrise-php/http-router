@@ -17,6 +17,8 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use ReflectionFunction;
+use ReflectionMethod;
 use Sunrise\Http\Router\RequestHandler\CallbackRequestHandler;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
 use ReflectionClass;
@@ -242,7 +244,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function getHolder(): Reflector
+    public function getHolder(): ReflectionClass|ReflectionMethod|ReflectionFunction
     {
         if ($this->requestHandler instanceof CallbackRequestHandler) {
             return $this->requestHandler->getReflection();

@@ -20,11 +20,11 @@ use ReflectionParameter;
 use function is_a;
 
 /**
- * ObjectParameterResolver
+ * ObjectInjectionParameterResolver
  *
  * @since 3.0.0
  */
-final class DirectInjectionParameterResolver implements ParameterResolverInterface
+final class ObjectInjectionParameterResolver implements ParameterResolverInterface
 {
 
     /**
