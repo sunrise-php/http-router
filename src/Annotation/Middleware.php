@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
-use Psr\Http\Server\MiddlewareInterface;
 
 /**
  * @since 2.11.0
@@ -26,9 +25,9 @@ final class Middleware
     /**
      * Constructor of the class
      *
-     * @param class-string<MiddlewareInterface> $value
+     * @param mixed $value
      */
-    public function __construct(public string $value)
+    public function __construct(public mixed $value)
     {
     }
 }

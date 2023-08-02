@@ -15,7 +15,6 @@ namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
 use Fig\Http\Message\RequestMethodInterface;
-use Psr\Http\Server\MiddlewareInterface;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
 final class Route implements RequestMethodInterface
@@ -24,6 +23,8 @@ final class Route implements RequestMethodInterface
     /**
      * The annotation's holder
      *
+     * @var mixed
+     *
      * @internal
      */
     public mixed $holder = null;
@@ -31,19 +32,19 @@ final class Route implements RequestMethodInterface
     /**
      * Constructor of the class
      *
-     * @param  non-empty-string                         $name         The route's name
-     * @param  non-empty-string|null                    $host         The route's host
-     * @param  non-empty-string                         $path         The route's path
-     * @param  non-empty-string|null                    $method       The route's method
-     * @param  list<non-empty-string>                   $methods      The route's methods
-     * @param  list<non-empty-string>                   $consumes     The route's consumed media types
-     * @param  list<non-empty-string>                   $produces     The route's produced media types
-     * @param  list<class-string<MiddlewareInterface>>  $middlewares  The route's middlewares
-     * @param  array<non-empty-string, mixed>           $attributes   The route's attributes
-     * @param  string                                   $summary      The route's summary
-     * @param  string                                   $description  The route's description
-     * @param  list<non-empty-string>                   $tags         The route's tags
-     * @param  int<min, max>                            $priority     The route's priority (default 0)
+     * @param  non-empty-string                $name         The route's name
+     * @param  non-empty-string|null           $host         The route's host
+     * @param  non-empty-string                $path         The route's path
+     * @param  non-empty-string|null           $method       The route's method
+     * @param  list<non-empty-string>          $methods      The route's methods
+     * @param  list<non-empty-string>          $consumes     The route's consumed media types
+     * @param  list<non-empty-string>          $produces     The route's produced media types
+     * @param  list<mixed>                     $middlewares  The route's middlewares
+     * @param  array<non-empty-string, mixed>  $attributes   The route's attributes
+     * @param  string                          $summary      The route's summary
+     * @param  string                          $description  The route's description
+     * @param  list<non-empty-string>          $tags         The route's tags
+     * @param  int<min, max>                   $priority     The route's priority (default 0)
      */
     public function __construct(
         public string $name,

@@ -13,9 +13,6 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
-use Sunrise\Http\Router\Exception\InvalidArgumentException;
-use Sunrise\Http\Router\Exception\LogicException;
-
 /**
  * ClassResolverInterface
  *
@@ -29,15 +26,9 @@ interface ClassResolverInterface
     /**
      * Resolves the given named class
      *
-     * @param class-string<T> $className
+     * @param class-string<T> $fqn
      *
      * @return T
-     *
-     * @throws InvalidArgumentException
-     *         If the class doesn't exist.
-     *
-     * @throws LogicException
-     *         If the class cannot be resolved.
      */
-    public function resolveClass(string $className): object;
+    public function resolveClass(string $fqn): object;
 }

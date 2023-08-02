@@ -18,6 +18,7 @@ use Sunrise\Http\Router\Exception\LogicException;
 use ReflectionClass;
 
 use function class_exists;
+use function is_object;
 use function sprintf;
 
 /**
@@ -54,39 +55,44 @@ final class ClassResolver implements ClassResolverInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws InvalidArgumentException If the class doesn't exist.
+     * @throws LogicException If the class cannot be resolved.
      */
-    public function resolveClass(string $className): object
+    public function resolveClass(string $fqn): object
     {
-        if (isset($this->resolvedClasses[$className])) {
-            return $this->resolvedClasses[$className];
+        if (isset($this->resolvedClasses[$fqn])) {
+            return $this->resolvedClasses[$fqn];
         }
 
-        if (!class_exists($className)) {
+        if (!class_exists($fqn)) {
             throw new InvalidArgumentException(sprintf(
                 'Class %s does not exist',
-                $className
+                $fqn
             ));
         }
 
-        $reflection = new ReflectionClass($className);
-        if (!$reflection->isInstantiable()) {
+        $class = new ReflectionClass($fqn);
+        if (!$class->isInstantiable()) {
             throw new LogicException(sprintf(
                 'Class %s cannot be initialized',
-                $className
+                $fqn
             ));
         }
 
         $arguments = [];
-        $constructor = $reflection->getConstructor();
+        $constructor = $class->getConstructor();
         if (isset($constructor) && $constructor->getNumberOfParameters() > 0) {
             $arguments = $this->parameterResolutioner->resolveParameters(
                 ...$constructor->getParameters()
             );
         }
 
-        /** @var T */
-        $this->resolvedClasses[$className] = $reflection->newInstance(...$arguments);
+        /** @var T $instance */
+        $instance = new $class(...$arguments);
 
-        return $this->resolvedClasses[$className];
+        $this->resolvedClasses[$fqn] = $instance;
+
+        return $this->resolvedClasses[$fqn];
     }
 }
