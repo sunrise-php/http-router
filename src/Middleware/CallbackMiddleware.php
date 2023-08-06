@@ -23,7 +23,7 @@ use Sunrise\Http\Router\ParameterResolutionerInterface;
 use Sunrise\Http\Router\ParameterResolver\ObjectInjectionParameterResolver;
 use Sunrise\Http\Router\ResponseResolutionerInterface;
 
-use function Sunrise\Http\Router\reflect_callable;
+use function Sunrise\Http\Router\reflect_callback;
 
 /**
  * CallbackMiddleware
@@ -78,7 +78,7 @@ final class CallbackMiddleware implements MiddlewareInterface
      */
     public function getReflection(): ReflectionFunction|ReflectionMethod
     {
-        return reflect_callable($this->callback);
+        return reflect_callback($this->callback);
     }
 
     /**

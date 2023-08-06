@@ -19,7 +19,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionFunction;
-use Reflector;
+use Sunrise\Http\Router\Entity\MediaType;
 
 /**
  * RouteInterface
@@ -67,22 +67,22 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
     public function getMethods(): array;
 
     /**
-     * Gets the route's consumed media types
+     * Gets the route's consumes media types
      *
-     * @return list<string>
+     * @return list<MediaType>
      *
      * @since 3.0.0
      */
-    public function getConsumedMediaTypes(): array;
+    public function getConsumesMediaTypes(): array;
 
     /**
-     * Gets the route's produced media types
+     * Gets the route's produces media types
      *
-     * @return list<string>
+     * @return list<MediaType>
      *
      * @since 3.0.0
      */
-    public function getProducedMediaTypes(): array;
+    public function getProducesMediaTypes(): array;
 
     /**
      * Gets the route request handler
@@ -180,26 +180,26 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
     public function setMethods(string ...$methods): RouteInterface;
 
     /**
-     * Sets the given consumed media type(s) to the route
+     * Sets the given consumes media type(s) to the route
      *
-     * @param string ...$mediaTypes
+     * @param MediaType ...$mediaTypes
      *
      * @return RouteInterface
      *
      * @since 3.0.0
      */
-    public function setConsumedMediaTypes(string ...$mediaTypes): RouteInterface;
+    public function setConsumesMediaTypes(MediaType ...$mediaTypes): RouteInterface;
 
     /**
-     * Sets the given produced media type(s) to the route
+     * Sets the given produces media type(s) to the route
      *
-     * @param string ...$mediaTypes
+     * @param MediaType ...$mediaTypes
      *
      * @return RouteInterface
      *
      * @since 3.0.0
      */
-    public function setProducedMediaTypes(string ...$mediaTypes): RouteInterface;
+    public function setProducesMediaTypes(MediaType ...$mediaTypes): RouteInterface;
 
     /**
      * Sets the given request handler to the route
@@ -301,26 +301,26 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
     public function addMethod(string ...$methods): RouteInterface;
 
     /**
-     * Adds the given consumed media type(s) to the route
+     * Adds the given consumes media type(s) to the route
      *
-     * @param string ...$mediaTypes
+     * @param MediaType ...$mediaTypes
      *
      * @return RouteInterface
      *
      * @since 3.0.0
      */
-    public function addConsumedMediaType(string ...$mediaTypes): RouteInterface;
+    public function addConsumesMediaType(MediaType ...$mediaTypes): RouteInterface;
 
     /**
-     * Adds the given produced media type(s) to the route
+     * Adds the given produces media type(s) to the route
      *
-     * @param string ...$mediaTypes
+     * @param MediaType ...$mediaTypes
      *
      * @return RouteInterface
      *
      * @since 3.0.0
      */
-    public function addProducedMediaType(string ...$mediaTypes): RouteInterface;
+    public function addProducesMediaType(MediaType ...$mediaTypes): RouteInterface;
 
     /**
      * Adds the given middleware(s) to the route

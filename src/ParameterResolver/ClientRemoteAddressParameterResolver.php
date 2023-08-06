@@ -15,21 +15,33 @@ namespace Sunrise\Http\Router\ParameterResolver;
 
 use Generator;
 use Psr\Http\Message\ServerRequestInterface;
+use ReflectionAttribute;
 use ReflectionNamedType;
 use ReflectionParameter;
+use Sunrise\Http\Router\Annotation\ProxyChain;
+use Sunrise\Http\Router\Entity\ClientRemoteAddress;
 use Sunrise\Http\Router\Exception\LogicException;
-use Sunrise\Http\Router\ParameterResolutioner;
-use Sunrise\Http\Router\RouteInterface;
-
-use function sprintf;
+use Sunrise\Http\Router\ServerRequest;
 
 /**
- * RequestRouteParameterResolver
+ * ClientRemoteAddressParameterResolver
  *
  * @since 3.0.0
  */
-final class RequestRouteParameterResolver implements ParameterResolverInterface
+final class ClientRemoteAddressParameterResolver implements ParameterResolverInterface
 {
+
+    /**
+     * Constructor of th class
+     *
+     * @param array<TKey, TValue> $proxyChain
+     *
+     * @template TKey as non-empty-string Proxy address
+     * @template TValue as non-empty-string Trusted header
+     */
+    public function __construct(private array $proxyChain = [])
+    {
+    }
 
     /**
      * @inheritDoc
@@ -41,7 +53,7 @@ final class RequestRouteParameterResolver implements ParameterResolverInterface
         $type = $parameter->getType();
 
         if (! ($type instanceof ReflectionNamedType) ||
-            ! ($type->getName() === RouteInterface::class)) {
+            ! ($type->getName() === ClientRemoteAddress::class)) {
             return;
         }
 
@@ -51,17 +63,13 @@ final class RequestRouteParameterResolver implements ParameterResolverInterface
             );
         }
 
-        /** @var RouteInterface|null $route */
-        $route = $context->getAttribute('@route');
-
-        if (! $route instanceof RouteInterface && !$parameter->allowsNull()) {
-            throw new LogicException(sprintf(
-                'At this level of the application, the current request does not contain a route. ' .
-                'To suppress this error, the parameter {%s} should be nullable.',
-                ParameterResolutioner::stringifyParameter($parameter),
-            ));
+        $proxyChain = $this->proxyChain;
+        /** @var list<ReflectionAttribute<ProxyChain>> $attributes */
+        $attributes = $parameter->getAttributes(ProxyChain::class);
+        if (isset($attributes[0])) {
+            $proxyChain = $attributes[0]->newInstance()->value;
         }
 
-        yield $route;
+        yield ServerRequest::from($context)->getClientRemoteAddress($proxyChain);
     }
 }

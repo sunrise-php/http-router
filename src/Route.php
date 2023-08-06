@@ -19,10 +19,10 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use ReflectionFunction;
 use ReflectionMethod;
+use Sunrise\Http\Router\Entity\MediaType;
 use Sunrise\Http\Router\RequestHandler\CallbackRequestHandler;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
 use ReflectionClass;
-use Reflector;
 
 use function rtrim;
 use function strtoupper;
@@ -64,18 +64,18 @@ class Route implements RouteInterface
     private array $methods = [];
 
     /**
-     * The route's consumed media types
+     * The route's consumes media types
      *
-     * @var list<string>
+     * @var list<MediaType>
      */
-    private array $consumedMediaTypes = [];
+    private array $consumesMediaTypes = [];
 
     /**
-     * The route's produced media types
+     * The route's produces media types
      *
-     * @var list<string>
+     * @var list<MediaType>
      */
-    private array $producedMediaTypes = [];
+    private array $producesMediaTypes = [];
 
     /**
      * The route request handler
@@ -180,17 +180,17 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function getConsumedMediaTypes(): array
+    public function getConsumesMediaTypes(): array
     {
-        return $this->consumedMediaTypes;
+        return $this->consumesMediaTypes;
     }
 
     /**
      * @inheritDoc
      */
-    public function getProducedMediaTypes(): array
+    public function getProducesMediaTypes(): array
     {
-        return $this->producedMediaTypes;
+        return $this->producesMediaTypes;
     }
 
     /**
@@ -299,11 +299,11 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function setConsumedMediaTypes(string ...$mediaTypes): RouteInterface
+    public function setConsumesMediaTypes(MediaType ...$mediaTypes): RouteInterface
     {
-        $this->consumedMediaTypes = [];
+        $this->consumesMediaTypes = [];
         foreach ($mediaTypes as $mediaType) {
-            $this->consumedMediaTypes[] = $mediaType;
+            $this->consumesMediaTypes[] = $mediaType;
         }
 
         return $this;
@@ -312,11 +312,11 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function setProducedMediaTypes(string ...$mediaTypes): RouteInterface
+    public function setProducesMediaTypes(MediaType ...$mediaTypes): RouteInterface
     {
-        $this->producedMediaTypes = [];
+        $this->producesMediaTypes = [];
         foreach ($mediaTypes as $mediaType) {
-            $this->producedMediaTypes[] = $mediaType;
+            $this->producesMediaTypes[] = $mediaType;
         }
 
         return $this;
@@ -436,10 +436,10 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function addConsumedMediaType(string ...$mediaTypes): RouteInterface
+    public function addConsumesMediaType(MediaType ...$mediaTypes): RouteInterface
     {
         foreach ($mediaTypes as $mediaType) {
-            $this->consumedMediaTypes[] = $mediaType;
+            $this->consumesMediaTypes[] = $mediaType;
         }
 
         return $this;
@@ -448,10 +448,10 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function addProducedMediaType(string ...$mediaTypes): RouteInterface
+    public function addProducesMediaType(MediaType ...$mediaTypes): RouteInterface
     {
         foreach ($mediaTypes as $mediaType) {
-            $this->producedMediaTypes[] = $mediaType;
+            $this->producesMediaTypes[] = $mediaType;
         }
 
         return $this;

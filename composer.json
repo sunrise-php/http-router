@@ -44,17 +44,20 @@
         "vimeo/psalm": "^5.14",
         "sunrise/coding-standard": "^1.0",
         "sunrise/http-message": "^3.0",
-        "symfony/console": "^6.0"
+        "symfony/console": "^6.0",
+        "symfony/http-foundation": "^6.3"
     },
     "autoload": {
         "files": [
             "functions/emit.php",
+            "functions/parse_header.php",
+            "functions/parse_header_with_media_type.php",
             "functions/path_build.php",
             "functions/path_match.php",
             "functions/path_parse.php",
             "functions/path_plain.php",
             "functions/path_regex.php",
-            "functions/reflect_callable.php"
+            "functions/reflect_callback.php"
         ],
         "psr-4": {
             "Sunrise\\Http\\Router\\": "src/"

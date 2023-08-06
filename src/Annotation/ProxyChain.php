@@ -14,21 +14,23 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
-use Sunrise\Http\Router\Entity\MediaType;
 
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class Produce
+#[Attribute(Attribute::TARGET_PARAMETER)]
+final class ProxyChain
 {
 
     /**
      * Constructor of the class
      *
-     * @param MediaType|non-empty-string $value
+     * @param array<TKey, TValue> $value
+     *
+     * @template TKey as non-empty-string Proxy address
+     * @template TValue as non-empty-string Trusted header
      */
-    public function __construct(public MediaType|string $value)
+    public function __construct(public array $value)
     {
     }
 }

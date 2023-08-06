@@ -270,14 +270,9 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
                 continue;
             }
 
-            $routeConsumes = $route->getConsumedMediaTypes();
+            $routeConsumes = $route->getConsumesMediaTypes();
             if (!empty($routeConsumes) && !$request->clientProducesMediaType($routeConsumes)) {
                 throw new ClientNotProducedMediaTypeException($routeConsumes);
-            }
-
-            $routeProduces = $route->getProducedMediaTypes();
-            if (!empty($routeProduces) && !$request->clientConsumesMediaType($routeProduces)) {
-                throw new ClientNotConsumedMediaTypeException($routeProduces);
             }
 
             /** @var array<string, string> $attributes */

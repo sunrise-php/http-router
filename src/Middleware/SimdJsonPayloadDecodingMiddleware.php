@@ -18,6 +18,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Router\Entity\MediaType;
 use Sunrise\Http\Router\Exception\InvalidRequestPayloadException;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ServerRequest;
@@ -56,12 +57,17 @@ final class SimdJsonPayloadDecodingMiddleware implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        if (ServerRequest::from($request)->isJson()) {
-            $request = $request->withParsedBody(
-                $this->decodePayload(
-                    $request->getBody()->__toString()
-                )
-            );
+        $requestProxy = ServerRequest::from($request);
+        $clientProducedMediaType = $requestProxy->getClientProducedMediaType();
+        if (isset($clientProducedMediaType)) {
+            $serverConsumesMediaType = new MediaType('application', 'json');
+            if ($serverConsumesMediaType->equals($clientProducedMediaType)) {
+                $request = $request->withParsedBody(
+                    $this->decodePayload(
+                        $request->getBody()->__toString()
+                    )
+                );
+            }
         }
 
         return $handler->handle($request);
@@ -81,7 +87,7 @@ final class SimdJsonPayloadDecodingMiddleware implements MiddlewareInterface
         try {
             $data = simdjson_decode($payload, true, 512);
         } catch (SimdJsonException $e) {
-            throw new InvalidRequestPayloadException(sprintf('Invalid JSON: %s', $e->getMessage()), 0, $e);
+            throw new InvalidRequestPayloadException(sprintf('Invalid JSON payload: %s', $e->getMessage()), 0, $e);
         }
 
         // According to PSR-7, the data must be an array

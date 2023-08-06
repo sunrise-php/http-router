@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Loader;
 
 use FilesystemIterator;
+use Generator;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\SimpleCache\CacheInterface;
@@ -33,6 +34,7 @@ use Sunrise\Http\Router\Annotation\Produce;
 use Sunrise\Http\Router\Annotation\Route;
 use Sunrise\Http\Router\Annotation\Summary;
 use Sunrise\Http\Router\Annotation\Tag;
+use Sunrise\Http\Router\Entity\MediaType;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ParameterResolutioner;
@@ -58,6 +60,8 @@ use function is_string;
 use function iterator_to_array;
 use function sprintf;
 use function usort;
+
+use function Sunrise\Http\Router\parse_header_with_media_type;
 
 /**
  * DescriptorLoader
@@ -310,8 +314,8 @@ final class DescriptorLoader implements LoaderInterface
             );
 
             $route->setHost($descriptor->host);
-            $route->setConsumedMediaTypes(...$descriptor->consumes);
-            $route->setProducedMediaTypes(...$descriptor->produces);
+            $route->setConsumesMediaTypes(...$descriptor->consumes);
+            $route->setProducesMediaTypes(...$descriptor->produces);
             $route->setSummary($descriptor->summary);
             $route->setDescription($descriptor->description);
             $route->setTags(...$descriptor->tags);
@@ -360,9 +364,9 @@ final class DescriptorLoader implements LoaderInterface
      *
      * @param string $resource
      *
-     * @return iterable<Route>
+     * @return Generator<Route>
      */
-    private function getResourceDescriptors(string $resource): iterable
+    private function getResourceDescriptors(string $resource): Generator
     {
         if (class_exists($resource)) {
             yield from $this->getClassDescriptors(new ReflectionClass($resource));
@@ -380,9 +384,9 @@ final class DescriptorLoader implements LoaderInterface
      *
      * @param ReflectionClass $class
      *
-     * @return iterable<Route>
+     * @return Generator<Route>
      */
-    private function getClassDescriptors(ReflectionClass $class): iterable
+    private function getClassDescriptors(ReflectionClass $class): Generator
     {
         if (!$class->isInstantiable()) {
             return;
@@ -447,12 +451,28 @@ final class DescriptorLoader implements LoaderInterface
 
         $annotations = $this->getAnnotations(Consume::class, $holder);
         foreach ($annotations as $annotation) {
-            $descriptor->consumes[] = $annotation->value;
+            if ($annotation->value instanceof MediaType) {
+                $descriptor->consumes[] = $annotation->value;
+                continue;
+            }
+
+            $consumes = parse_header_with_media_type($annotation->value);
+            foreach ($consumes as $consume) {
+                $descriptor->consumes[] = $consume;
+            }
         }
 
         $annotations = $this->getAnnotations(Produce::class, $holder);
         foreach ($annotations as $annotation) {
-            $descriptor->produces[] = $annotation->value;
+            if ($annotation->value instanceof MediaType) {
+                $descriptor->produces[] = $annotation->value;
+                continue;
+            }
+
+            $produces = parse_header_with_media_type($annotation->value);
+            foreach ($produces as $produce) {
+                $descriptor->produces[] = $produce;
+            }
         }
 
         $annotations = $this->getAnnotations(Middleware::class, $holder);
@@ -502,9 +522,9 @@ final class DescriptorLoader implements LoaderInterface
      *
      * @param string $dirname
      *
-     * @return iterable<ReflectionClass>
+     * @return Generator<ReflectionClass>
      */
-    private function getDirectoryClasses(string $dirname): iterable
+    private function getDirectoryClasses(string $dirname): Generator
     {
         /** @var array<non-empty-string, non-empty-string> $filenames */
         $filenames = iterator_to_array(

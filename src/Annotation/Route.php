@@ -15,6 +15,7 @@ namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
 use Fig\Http\Message\RequestMethodInterface;
+use Sunrise\Http\Router\Entity\MediaType;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
 final class Route implements RequestMethodInterface
@@ -30,6 +31,20 @@ final class Route implements RequestMethodInterface
     public mixed $holder = null;
 
     /**
+     * The route's consumes media types
+     *
+     * @var list<MediaType>
+     */
+    public array $consumes = [];
+
+    /**
+     * The route's produces media types
+     *
+     * @var list<MediaType>
+     */
+    public array $produces = [];
+
+    /**
      * Constructor of the class
      *
      * @param  non-empty-string                $name         The route's name
@@ -37,8 +52,6 @@ final class Route implements RequestMethodInterface
      * @param  non-empty-string                $path         The route's path
      * @param  non-empty-string|null           $method       The route's method
      * @param  list<non-empty-string>          $methods      The route's methods
-     * @param  list<non-empty-string>          $consumes     The route's consumed media types
-     * @param  list<non-empty-string>          $produces     The route's produced media types
      * @param  list<mixed>                     $middlewares  The route's middlewares
      * @param  array<non-empty-string, mixed>  $attributes   The route's attributes
      * @param  string                          $summary      The route's summary
@@ -52,8 +65,6 @@ final class Route implements RequestMethodInterface
         public string $path = '/',
         ?string $method = null,
         public array $methods = [],
-        public array $consumes = [],
-        public array $produces = [],
         public array $middlewares = [],
         public array $attributes = [],
         public string $summary = '',

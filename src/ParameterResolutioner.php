@@ -110,11 +110,11 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
         }
 
         if ($parameter->isDefaultValueAvailable()) {
-           return yield $parameter->getDefaultValue();
+            return yield $parameter->getDefaultValue();
         }
 
         throw new LogicException(sprintf(
-            'Unable to resolve the parameter {%s}.',
+            'Unable to resolve the parameter {%s}',
             self::stringifyParameter($parameter)
         ));
     }

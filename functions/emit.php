@@ -32,15 +32,11 @@ function emit(ResponseInterface $response): void
         $response->getProtocolVersion(),
         $response->getStatusCode(),
         $response->getReasonPhrase()
-    ), true);
+    ));
 
     foreach ($response->getHeaders() as $name => $values) {
         foreach ($values as $value) {
-            header(sprintf(
-                '%s: %s',
-                $name,
-                $value
-            ), false);
+            header(sprintf('%s: %s', $name, $value), replace: false);
         }
     }
 

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
+use Sunrise\Http\Router\Entity\MediaType;
 
 /**
  * @since 3.0.0
@@ -25,9 +26,9 @@ final class Consume
     /**
      * Constructor of the class
      *
-     * @param non-empty-string $value
+     * @param MediaType|non-empty-string $value
      */
-    public function __construct(public string $value)
+    public function __construct(public MediaType|string $value)
     {
     }
 }

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router;
 
 use Psr\Http\Server\MiddlewareInterface;
+use Sunrise\Http\Router\Entity\MediaType;
 use Sunrise\Http\Router\Exception\RouteAlreadyExistsException;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
 use Iterator;
@@ -153,10 +154,10 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * @inheritDoc
      */
-    public function setConsumedMediaTypes(string ...$mediaTypes): RouteCollectionInterface
+    public function setConsumesMediaTypes(MediaType ...$mediaTypes): RouteCollectionInterface
     {
         foreach ($this->routes as $route) {
-            $route->setConsumedMediaTypes(...$mediaTypes);
+            $route->setConsumesMediaTypes(...$mediaTypes);
         }
 
         return $this;
@@ -165,10 +166,10 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * @inheritDoc
      */
-    public function setProducedMediaTypes(string ...$mediaTypes): RouteCollectionInterface
+    public function setProducesMediaTypes(MediaType ...$mediaTypes): RouteCollectionInterface
     {
         foreach ($this->routes as $route) {
-            $route->setProducedMediaTypes(...$mediaTypes);
+            $route->setProducesMediaTypes(...$mediaTypes);
         }
 
         return $this;
@@ -225,10 +226,10 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * @inheritDoc
      */
-    public function addConsumedMediaType(string ...$mediaTypes): RouteCollectionInterface
+    public function addConsumesMediaType(MediaType ...$mediaTypes): RouteCollectionInterface
     {
         foreach ($this->routes as $route) {
-            $route->addConsumedMediaType(...$mediaTypes);
+            $route->addConsumesMediaType(...$mediaTypes);
         }
 
         return $this;
@@ -237,10 +238,10 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * @inheritDoc
      */
-    public function addProducedMediaType(string ...$mediaTypes): RouteCollectionInterface
+    public function addProducesMediaType(MediaType ...$mediaTypes): RouteCollectionInterface
     {
         foreach ($this->routes as $route) {
-            $route->addProducedMediaType(...$mediaTypes);
+            $route->addProducesMediaType(...$mediaTypes);
         }
 
         return $this;

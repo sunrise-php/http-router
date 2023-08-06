@@ -32,12 +32,11 @@ use function strpos;
  *
  * @return ReflectionFunction|ReflectionMethod
  *
- * @throws InvalidArgumentException
- *         If the given callback cannot be reflected.
+ * @throws InvalidArgumentException If the given callback cannot be reflected.
  *
  * @since 3.0.0
  */
-function reflect_callable(callable $callback): ReflectionFunction|ReflectionMethod
+function reflect_callback(callable $callback): ReflectionFunction|ReflectionMethod
 {
     if ($callback instanceof Closure) {
         return new ReflectionFunction($callback);

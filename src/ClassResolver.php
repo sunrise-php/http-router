@@ -13,12 +13,11 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
+use ReflectionClass;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\LogicException;
-use ReflectionClass;
 
 use function class_exists;
-use function is_object;
 use function sprintf;
 
 /**
@@ -66,18 +65,12 @@ final class ClassResolver implements ClassResolverInterface
         }
 
         if (!class_exists($fqn)) {
-            throw new InvalidArgumentException(sprintf(
-                'Class %s does not exist',
-                $fqn
-            ));
+            throw new InvalidArgumentException(sprintf('The class %s does not exist', $fqn));
         }
 
         $class = new ReflectionClass($fqn);
         if (!$class->isInstantiable()) {
-            throw new LogicException(sprintf(
-                'Class %s cannot be initialized',
-                $fqn
-            ));
+            throw new LogicException(sprintf('The class %s cannot be initialized', $fqn));
         }
 
         $arguments = [];

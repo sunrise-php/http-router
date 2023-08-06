@@ -14,22 +14,25 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router;
 
 use Fig\Http\Message\RequestMethodInterface;
+use Generator;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
-use Sunrise\Http\Router\Entity\IpAddress;
-
+use Sunrise\Http\Router\Entity\ClientRemoteAddress;
 use Sunrise\Http\Router\Entity\MediaType;
-use function array_merge;
+use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
+use Sunrise\Http\Router\Exception\InvalidArgumentException;
+
+use Throwable;
+use function current;
 use function explode;
 use function key;
 use function preg_split;
-use function reset;
+use function sprintf;
 use function strncmp;
 use function strpos;
-use function strstr;
 use function strtolower;
-use function trim;
+use function usort;
 
 /**
  * ServerRequest
@@ -65,178 +68,122 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * Checks if the request is JSON
+     * Gets the client's remote address
      *
-     * @link https://tools.ietf.org/html/rfc4627
+     * @param array<TKey, TValue> $proxyChain
      *
-     * @return bool
+     * @return ClientRemoteAddress
+     *
+     * @template TKey as non-empty-string Proxy address; e.g., 127.0.0.1
+     * @template TValue as non-empty-string Trusted header; e.g., X-Forwarded-For
+     *
+     * @link https://www.rfc-editor.org/rfc/rfc7239.html#section-5.2
      */
-    public function isJson(): bool
-    {
-        return $this->clientProducesMediaType([
-            MediaType::APPLICATION_JSON,
-        ]);
-    }
-
-    /**
-     * Checks if the request is XML
-     *
-     * @link https://tools.ietf.org/html/rfc2376
-     *
-     * @return bool
-     */
-    public function isXml(): bool
-    {
-        return $this->clientProducesMediaType([
-            MediaType::APPLICATION_XML,
-            MediaType::TEXT_XML,
-        ]);
-    }
-
-    /**
-     * Gets the client's IP address
-     *
-     * @param array<non-empty-string, non-empty-string> $proxyChain
-     *
-     * @return IpAddress
-     */
-    public function getClientIpAddress(array $proxyChain = []): IpAddress
+    public function getClientRemoteAddress(array $proxyChain = []): ClientRemoteAddress
     {
         $serverParams = $this->request->getServerParams();
-
         /** @var non-empty-string $clientAddress */
         $clientAddress = $serverParams['REMOTE_ADDR'] ?? '::1';
-
         /** @var list<non-empty-string> $proxyAddresses */
         $proxyAddresses = [];
 
         while (isset($proxyChain[$clientAddress])) {
-            $proxyHeader = $proxyChain[$clientAddress];
+            $trustedHeader = $proxyChain[$clientAddress];
             unset($proxyChain[$clientAddress]);
 
-            $header = $this->request->getHeaderLine($proxyHeader);
+            $header = $this->request->getHeaderLine($trustedHeader);
             if ($header === '') {
                 break;
             }
 
             /** @var list<non-empty-string> $addresses */
             $addresses = preg_split('/\s*,\s*/', $header, -1, PREG_SPLIT_NO_EMPTY);
-            if ($addresses === []) {
+            if (empty($addresses)) {
                 break;
             }
 
-            $clientAddress = array_shift($addresses);
-            if ($addresses === []) {
-                continue;
-            }
+            $clientAddress = $addresses[0];
+            unset($addresses[0]);
 
-            $proxyAddresses = array_merge($proxyAddresses, $addresses);
+            foreach ($addresses as $address) {
+                $proxyAddresses[] = $address;
+            }
         }
 
-        return new IpAddress($clientAddress, $proxyAddresses);
+        return new ClientRemoteAddress($clientAddress, $proxyAddresses);
     }
 
     /**
-     * Gets the client's produced media type
+     * Gets the media type that the client produced
      *
-     * @link https://tools.ietf.org/html/rfc7231#section-3.1.1.1
-     * @link https://tools.ietf.org/html/rfc7231#section-3.1.1.5
-     *
-     * @return string
+     * @return MediaType|null
      */
-    public function getClientProducedMediaType(): string
+    public function getClientProducedMediaType(): ?MediaType
     {
         $header = $this->request->getHeaderLine('Content-Type');
-        if ($header === '') {
-            return '';
-        }
 
-        $result = strstr($header, ';', true);
-        if ($result === false) {
-            $result = $header;
+        try {
+            return parse_header_with_media_type($header)->current();
+        } catch (InvalidArgumentException $e) {
+            throw new HttpBadRequestException(sprintf('The Content-Type header is invalid: %s', $e->getMessage()));
         }
-
-        $result = trim($result);
-        if ($result === '') {
-            return '';
-        }
-
-        return strtolower($result);
     }
 
     /**
-     * Gets the client's consumed media types
+     * Gets the media types that the client consumes
      *
-     * @link https://tools.ietf.org/html/rfc7231#section-1.2
-     * @link https://tools.ietf.org/html/rfc7231#section-3.1.1.1
-     * @link https://tools.ietf.org/html/rfc7231#section-5.3.2
-     *
-     * @return array<lowercase-string, array<string, string>>
+     * @return Generator<int<0, max>, MediaType>
      */
-    public function getClientConsumedMediaTypes(): array
+    public function getClientConsumesMediaTypes(): Generator
     {
         $header = $this->request->getHeaderLine('Accept');
-        if ($header === '') {
-            return [];
-        }
 
-        $accepts = parse_accept_header($header);
-        if (empty($accepts)) {
-            return [];
+        try {
+            yield from parse_header_with_media_type($header);
+        } catch (InvalidArgumentException $e) {
+            throw new HttpBadRequestException(sprintf('The Accept header is invalid: %s', $e->getMessage()));
         }
-
-        $result = [];
-        foreach ($accepts as $type => $params) {
-            $result[strtolower($type)] = $params;
-        }
-
-        return $result;
     }
 
     /**
-     * Gets the client's consumed encodings
+     * Gets the client's preferred media type
      *
-     * @return array<string, array<string, string>>
-     */
-    public function getClientConsumedEncodings(): array
-    {
-        $header = $this->request->getHeaderLine('Accept-Encoding');
-        if ($header === '') {
-            return [];
-        }
-
-        $accepts = header_accept_like_parse($header);
-        if (empty($accepts)) {
-            return [];
-        }
-
-        return $accepts;
-    }
-
-    /**
-     * Gets the client's consumed languages
+     * @param MediaType ...$serverProducesMediaTypes
      *
-     * @return array<string, array<string, string>>
+     * @return MediaType|null
      */
-    public function getClientConsumedLanguages(): array
+    public function getClientPreferredMediaType(MediaType ...$serverProducesMediaTypes): ?MediaType
     {
-        $header = $this->request->getHeaderLine('Accept-Language');
-        if ($header === '') {
-            return [];
+        if ($serverProducesMediaTypes === []) {
+            return null;
         }
 
-        $accepts = header_accept_like_parse($header);
-        if (empty($accepts)) {
-            return [];
+        /** @var list<MediaType> $clientConsumesMediaTypes */
+        $clientConsumesMediaTypes = [...$this->getClientConsumesMediaTypes()];
+
+        if ($clientConsumesMediaTypes === []) {
+            return current($serverProducesMediaTypes);
         }
 
-        return $accepts;
+        usort($clientConsumesMediaTypes, static fn (MediaType $a, MediaType $b): int => (
+            $b->getQualityFactor() <=> $a->getQualityFactor()
+        ));
+
+        foreach ($clientConsumesMediaTypes as $clientConsumesMediaType) {
+            foreach ($serverProducesMediaTypes as $serverProducesMediaType) {
+                if ($serverProducesMediaType->equals($clientConsumesMediaType)) {
+                    return $serverProducesMediaType;
+                }
+            }
+        }
+
+        return current($serverProducesMediaTypes);
     }
 
     /**
      * Checks if the client produces one of the given media types
      *
-     * @param list<string> $consumes
+     * @param MediaType ...$consumes
      *
      * @return bool
      */
@@ -258,70 +205,6 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
         }
 
         return false;
-    }
-
-    /**
-     * Checks if the client consumes one of the given media types
-     *
-     * @param list<string> $produces
-     *
-     * @return bool
-     */
-    public function clientConsumesMediaType(array $produces): bool
-    {
-        if ($produces === []) {
-            return true;
-        }
-
-        $consumes = $this->getClientConsumedMediaTypes();
-        if ($consumes === []) {
-            return true;
-        }
-
-        if (isset($consumes['*/*'])) {
-            return true;
-        }
-
-        foreach ($produces as $a) {
-            foreach ($consumes as $b => $_) {
-                if (media_types_compare($a, $b)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Checks if the given media types are equal
-     *
-     * @param string $a
-     * @param string $b
-     *
-     * @return bool
-     */
-    public function equalsMediaTypes(string $a, string $b): bool
-    {
-        if ($a === $b) {
-            return true;
-        }
-
-        $slash = strpos($a, '/');
-        if ($slash === false || !isset($b[$slash]) || $b[$slash] !== '/') {
-            return false;
-        }
-
-        $star = $slash + 1;
-        if (!isset($a[$star], $b[$star])) {
-            return false;
-        }
-
-        if (!($a[$star] === '*' || $b[$star] === '*')) {
-            return false;
-        }
-
-        return strncmp($a, $b, $star) === 0;
     }
 
     /**

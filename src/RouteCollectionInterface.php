@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router;
 
 use Psr\Http\Server\MiddlewareInterface;
+use Sunrise\Http\Router\Entity\MediaType;
 use Sunrise\Http\Router\Exception\RouteAlreadyExistsException;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
 use Countable;
@@ -98,26 +99,26 @@ interface RouteCollectionInterface extends Countable, IteratorAggregate
     public function setHost(string $host): RouteCollectionInterface;
 
     /**
-     * Sets the given consumed media type(s) to all routes in the collection
+     * Sets the given consumes media type(s) to all routes in the collection
      *
-     * @param string ...$mediaTypes
+     * @param MediaType ...$mediaTypes
      *
      * @return RouteCollectionInterface
      *
      * @since 3.0.0
      */
-    public function setConsumedMediaTypes(string ...$mediaTypes): RouteCollectionInterface;
+    public function setConsumesMediaTypes(MediaType ...$mediaTypes): RouteCollectionInterface;
 
     /**
-     * Sets the given produced media type(s) to all routes in the collection
+     * Sets the given produces media type(s) to all routes in the collection
      *
-     * @param string ...$mediaTypes
+     * @param MediaType ...$mediaTypes
      *
      * @return RouteCollectionInterface
      *
      * @since 3.0.0
      */
-    public function setProducedMediaTypes(string ...$mediaTypes): RouteCollectionInterface;
+    public function setProducesMediaTypes(MediaType ...$mediaTypes): RouteCollectionInterface;
 
     /**
      * Sets the given attribute to all routes in the collection
@@ -165,26 +166,26 @@ interface RouteCollectionInterface extends Countable, IteratorAggregate
     public function addMethod(string ...$methods): RouteCollectionInterface;
 
     /**
-     * Adds the given consumed media type(s) to all routes in the collection
+     * Adds the given consumes media type(s) to all routes in the collection
      *
-     * @param string ...$mediaTypes
+     * @param MediaType ...$mediaTypes
      *
      * @return RouteCollectionInterface
      *
      * @since 3.0.0
      */
-    public function addConsumedMediaType(string ...$mediaTypes): RouteCollectionInterface;
+    public function addConsumesMediaType(MediaType ...$mediaTypes): RouteCollectionInterface;
 
     /**
-     * Adds the given produced media type(s) to all routes in the collection
+     * Adds the given produces media type(s) to all routes in the collection
      *
-     * @param string ...$mediaTypes
+     * @param MediaType ...$mediaTypes
      *
      * @return RouteCollectionInterface
      *
      * @since 3.0.0
      */
-    public function addProducedMediaType(string ...$mediaTypes): RouteCollectionInterface;
+    public function addProducesMediaType(MediaType ...$mediaTypes): RouteCollectionInterface;
 
     /**
      * Adds the given middleware(s) to all routes in the collection
