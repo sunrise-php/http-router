@@ -21,47 +21,22 @@ use SplQueue;
 
 /**
  * QueueableRequestHandler
+ *
+ * @extends SplQueue<MiddlewareInterface>
  */
-final class QueueableRequestHandler implements RequestHandlerInterface
+final class QueueableRequestHandler extends SplQueue implements RequestHandlerInterface
 {
-
-    /**
-     * The request handler's middleware queue
-     *
-     * @var SplQueue<MiddlewareInterface>
-     */
-    private SplQueue $middlewareQueue;
-
-    /**
-     * The request handler's request handler
-     *
-     * @var RequestHandlerInterface
-     */
-    private RequestHandlerInterface $requestHandler;
 
     /**
      * Constructor of the class
      *
      * @param RequestHandlerInterface $requestHandler
-     */
-    public function __construct(RequestHandlerInterface $requestHandler)
-    {
-        /** @var SplQueue<MiddlewareInterface> */
-        $this->middlewareQueue = new SplQueue();
-        $this->requestHandler = $requestHandler;
-    }
-
-    /**
-     * Adds the given middleware(s) to the request handler's middleware queue
-     *
      * @param MiddlewareInterface ...$middlewares
-     *
-     * @return void
      */
-    public function add(MiddlewareInterface ...$middlewares): void
+    public function __construct(private RequestHandlerInterface $requestHandler, MiddlewareInterface ...$middlewares)
     {
         foreach ($middlewares as $middleware) {
-            $this->middlewareQueue->enqueue($middleware);
+            $this->enqueue($middleware);
         }
     }
 
@@ -70,8 +45,8 @@ final class QueueableRequestHandler implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        if (!$this->middlewareQueue->isEmpty()) {
-            return $this->middlewareQueue->dequeue()->process($request, $this);
+        if (! $this->isEmpty()) {
+            return ($clone = clone $this)->dequeue()->process($request, $clone);
         }
 
         return $this->requestHandler->handle($request);

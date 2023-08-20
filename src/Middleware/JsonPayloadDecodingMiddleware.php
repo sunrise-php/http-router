@@ -60,17 +60,8 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $requestProxy = ServerRequest::from($request);
-        $clientProducedMediaType = $requestProxy->getClientProducedMediaType();
-        if (isset($clientProducedMediaType)) {
-            $serverConsumesMediaType = new MediaType('application', 'json');
-            if ($serverConsumesMediaType->equals($clientProducedMediaType)) {
-                $request = $request->withParsedBody(
-                    $this->decodePayload(
-                        $request->getBody()->__toString()
-                    )
-                );
-            }
+        if (ServerRequest::from($request)->clientProducesMediaType(MediaType::json())) {
+            $request = $request->withParsedBody($this->decodePayload($request->getBody()->__toString()));
         }
 
         return $handler->handle($request);
@@ -93,8 +84,7 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
             throw new InvalidRequestPayloadException(sprintf('Invalid JSON payload: %s', $e->getMessage()), 0, $e);
         }
 
-        // According to PSR-7, the data must be an array
-        // because we're using the 'associative' option when decoding the JSON.
+        // According to PSR-7, the data must be an array...
         if (!is_array($data)) {
             throw new InvalidRequestPayloadException('Unexpected JSON: Expects an array or object.');
         }

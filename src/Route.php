@@ -532,9 +532,6 @@ class Route implements RouteInterface
             return $this->requestHandler->handle($request);
         }
 
-        $handler = new QueueableRequestHandler($this->requestHandler);
-        $handler->add(...$this->middlewares);
-
-        return $handler->handle($request);
+        return (new QueueableRequestHandler($this->requestHandler, ...$this->middlewares))->handle($request);
     }
 }

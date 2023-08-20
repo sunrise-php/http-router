@@ -19,6 +19,7 @@ use Sunrise\Http\Router\Exception\LogicException;
 
 use function class_exists;
 use function sprintf;
+use function var_dump;
 
 /**
  * ClassResolver
@@ -82,7 +83,7 @@ final class ClassResolver implements ClassResolverInterface
         }
 
         /** @var T $instance */
-        $instance = new $class(...$arguments);
+        $instance = new $fqn(...$arguments);
 
         $this->resolvedClasses[$fqn] = $instance;
 

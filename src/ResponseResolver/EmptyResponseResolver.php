@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\ResponseResolver;
 
+use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -45,7 +46,7 @@ final class EmptyResponseResolver implements ResponseResolverInterface
         ReflectionFunction|ReflectionMethod $source,
     ) : ?ResponseInterface {
         if ($response === null) {
-            return $this->responseFactory->createResponse(204);
+            return $this->responseFactory->createResponse(StatusCodeInterface::STATUS_NO_CONTENT);
         }
 
         return null;

@@ -18,17 +18,17 @@ use Attribute;
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION | Attribute::IS_REPEATABLE)]
-final class ResponseHeader
+#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION)]
+final class JsonResponseBody
 {
 
     /**
      * Constructor of the class
      *
-     * @param non-empty-string $name
-     * @param non-empty-string $value
+     * @param int|null $jsonEncodingFlags
+     * @param int|null $jsonEncodingDepth
      */
-    public function __construct(public string $name, public string $value)
+    public function __construct(public ?int $jsonEncodingFlags = null, public ?int $jsonEncodingDepth = null)
     {
     }
 }

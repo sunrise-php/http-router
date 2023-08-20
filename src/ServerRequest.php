@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
-use Fig\Http\Message\RequestMethodInterface;
 use Generator;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
@@ -22,16 +21,11 @@ use Sunrise\Http\Router\Entity\ClientRemoteAddress;
 use Sunrise\Http\Router\Entity\MediaType;
 use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
+use Sunrise\Http\Router\Exception\LogicException;
 
-use Throwable;
-use function current;
-use function explode;
-use function key;
 use function preg_split;
+use function reset;
 use function sprintf;
-use function strncmp;
-use function strpos;
-use function strtolower;
 use function usort;
 
 /**
@@ -39,7 +33,7 @@ use function usort;
  *
  * @since 3.0.0
  */
-final class ServerRequest implements ServerRequestInterface, RequestMethodInterface
+final class ServerRequest implements ServerRequestInterface
 {
 
     /**
@@ -68,6 +62,16 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
+     * Gets the original request
+     *
+     * @return ServerRequestInterface
+     */
+    public function getOriginalRequest(): ServerRequestInterface
+    {
+        return $this->request;
+    }
+
+    /**
      * Gets the client's remote address
      *
      * @param array<TKey, TValue> $proxyChain
@@ -75,46 +79,41 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
      * @return ClientRemoteAddress
      *
      * @template TKey as non-empty-string Proxy address; e.g., 127.0.0.1
-     * @template TValue as non-empty-string Trusted header; e.g., X-Forwarded-For
+     * @template TValue as non-empty-string Trusted header; e.g., X-Forwarded-For, X-Real-IP, etc.
      *
+     * @link https://www.rfc-editor.org/rfc/rfc3875#section-4.1.8
      * @link https://www.rfc-editor.org/rfc/rfc7239.html#section-5.2
      */
     public function getClientRemoteAddress(array $proxyChain = []): ClientRemoteAddress
     {
         $serverParams = $this->request->getServerParams();
-        /** @var non-empty-string $clientAddress */
-        $clientAddress = $serverParams['REMOTE_ADDR'] ?? '::1';
-        /** @var list<non-empty-string> $proxyAddresses */
-        $proxyAddresses = [];
+        $clientRemoteAddress = $serverParams['REMOTE_ADDR'] ?? '::1';
+        $clientRemoteAddressChain = [$clientRemoteAddress];
 
-        while (isset($proxyChain[$clientAddress])) {
-            $trustedHeader = $proxyChain[$clientAddress];
-            unset($proxyChain[$clientAddress]);
+        while (isset($proxyChain[$clientRemoteAddressChain[0]])) {
+            $trustedHeader = $proxyChain[$clientRemoteAddressChain[0]];
+            unset($proxyChain[$clientRemoteAddressChain[0]]);
 
             $header = $this->request->getHeaderLine($trustedHeader);
-            if ($header === '') {
+            $addresses = preg_split('/\s*,\s*/', $header, flags: \PREG_SPLIT_NO_EMPTY);
+            if ($addresses === []) {
                 break;
             }
 
-            /** @var list<non-empty-string> $addresses */
-            $addresses = preg_split('/\s*,\s*/', $header, -1, PREG_SPLIT_NO_EMPTY);
-            if (empty($addresses)) {
-                break;
-            }
-
-            $clientAddress = $addresses[0];
-            unset($addresses[0]);
-
-            foreach ($addresses as $address) {
-                $proxyAddresses[] = $address;
-            }
+            $clientRemoteAddressChain = [...$addresses, ...$clientRemoteAddressChain];
         }
 
-        return new ClientRemoteAddress($clientAddress, $proxyAddresses);
+        $address = $clientRemoteAddressChain[0];
+        unset($clientRemoteAddressChain[0]);
+
+        /** @var list<non-empty-string> $proxies */
+        $proxies = [...$clientRemoteAddressChain];
+
+        return new ClientRemoteAddress($address, $proxies);
     }
 
     /**
-     * Gets the media type that the client produced
+     * Gets a media type that the client produced
      *
      * @return MediaType|null
      */
@@ -130,9 +129,9 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
     }
 
     /**
-     * Gets the media types that the client consumes
+     * Gets media types that the client consumes
      *
-     * @return Generator<int<0, max>, MediaType>
+     * @return Generator<MediaType>
      */
     public function getClientConsumesMediaTypes(): Generator
     {
@@ -150,23 +149,27 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
      *
      * @param MediaType ...$serverProducesMediaTypes
      *
-     * @return MediaType|null
+     * @return MediaType
+     *
+     * @throws LogicException If the list of produces media types is empty.
      */
-    public function getClientPreferredMediaType(MediaType ...$serverProducesMediaTypes): ?MediaType
+    public function getClientPreferredMediaType(MediaType ...$serverProducesMediaTypes): MediaType
     {
         if ($serverProducesMediaTypes === []) {
-            return null;
+            throw new LogicException(
+                'The list of media types produced by the server is empty, ' .
+                'making it impossible to determine the preferred media type for the client.'
+            );
         }
 
         /** @var list<MediaType> $clientConsumesMediaTypes */
         $clientConsumesMediaTypes = [...$this->getClientConsumesMediaTypes()];
-
         if ($clientConsumesMediaTypes === []) {
-            return current($serverProducesMediaTypes);
+            return reset($serverProducesMediaTypes);
         }
 
-        usort($clientConsumesMediaTypes, static fn (MediaType $a, MediaType $b): int => (
-            $b->getQualityFactor() <=> $a->getQualityFactor()
+        usort($clientConsumesMediaTypes, static fn(MediaType $a, MediaType $b): int => (
+            ($b->getParameters()['q'] ?? 1.) <=> ($a->getParameters()['q'] ?? 1.)
         ));
 
         foreach ($clientConsumesMediaTypes as $clientConsumesMediaType) {
@@ -177,29 +180,29 @@ final class ServerRequest implements ServerRequestInterface, RequestMethodInterf
             }
         }
 
-        return current($serverProducesMediaTypes);
+        return reset($serverProducesMediaTypes);
     }
 
     /**
      * Checks if the client produces one of the given media types
      *
-     * @param MediaType ...$consumes
+     * @param MediaType ...$serverConsumesMediaTypes
      *
      * @return bool
      */
-    public function clientProducesMediaType(array $consumes): bool
+    public function clientProducesMediaType(MediaType ...$serverConsumesMediaTypes): bool
     {
-        if ($consumes === []) {
+        if ($serverConsumesMediaTypes === []) {
             return true;
         }
 
-        $produced = $this->getClientProducedMediaType();
-        if ($produced === '') {
+        $clientProducedMediaType = $this->getClientProducedMediaType();
+        if ($clientProducedMediaType === null) {
             return false;
         }
 
-        foreach ($consumes as $consumed) {
-            if (media_types_compare($consumed, $produced)) {
+        foreach ($serverConsumesMediaTypes as $serverConsumesMediaType) {
+            if ($clientProducedMediaType->equals($serverConsumesMediaType)) {
                 return true;
             }
         }

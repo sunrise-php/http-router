@@ -16,7 +16,7 @@ namespace Sunrise\Http\Router\Entity;
 use Stringable;
 
 /**
- * Client remote address
+ * Client Remote Address
  *
  * @since 3.0.0
  */
@@ -26,21 +26,21 @@ final class ClientRemoteAddress implements Stringable
     /**
      * Constructor of the class
      *
-     * @param non-empty-string $value The address value
-     * @param list<non-empty-string> $proxies The list of proxies in front of this address
+     * @param non-empty-string $address
+     * @param list<non-empty-string> $proxies
      */
-    public function __construct(private string $value, private array $proxies = [])
+    public function __construct(private string $address, private array $proxies = [])
     {
     }
 
     /**
-     * Gets the address value
+     * Gets the client's remote address
      *
      * @return non-empty-string
      */
-    public function getValue(): string
+    public function getAddress(): string
     {
-        return $this->value;
+        return $this->address;
     }
 
     /**
@@ -58,6 +58,6 @@ final class ClientRemoteAddress implements Stringable
      */
     public function __toString(): string
     {
-        return $this->value;
+        return $this->address;
     }
 }

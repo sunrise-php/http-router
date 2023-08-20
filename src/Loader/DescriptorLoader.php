@@ -23,18 +23,17 @@ use RecursiveIteratorIterator;
 use ReflectionClass;
 use ReflectionMethod;
 use RegexIterator;
-use Sunrise\Http\Router\Annotation\Consume;
+use Sunrise\Http\Router\Annotation\Consumes;
 use Sunrise\Http\Router\Annotation\Description;
 use Sunrise\Http\Router\Annotation\Host;
 use Sunrise\Http\Router\Annotation\Method;
 use Sunrise\Http\Router\Annotation\Middleware;
 use Sunrise\Http\Router\Annotation\Postfix;
 use Sunrise\Http\Router\Annotation\Prefix;
-use Sunrise\Http\Router\Annotation\Produce;
+use Sunrise\Http\Router\Annotation\Produces;
 use Sunrise\Http\Router\Annotation\Route;
 use Sunrise\Http\Router\Annotation\Summary;
 use Sunrise\Http\Router\Annotation\Tag;
-use Sunrise\Http\Router\Entity\MediaType;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ParameterResolutioner;
@@ -57,11 +56,8 @@ use function get_declared_classes;
 use function hash;
 use function is_dir;
 use function is_string;
-use function iterator_to_array;
 use function sprintf;
 use function usort;
-
-use function Sunrise\Http\Router\parse_header_with_media_type;
 
 /**
  * DescriptorLoader
@@ -394,8 +390,8 @@ final class DescriptorLoader implements LoaderInterface
 
         if ($class->isSubclassOf(RequestHandlerInterface::class)) {
             $annotations = $this->getAnnotations(Route::class, $class);
-            if (isset($annotations[0])) {
-                $descriptor = $annotations[0];
+            if ($annotations->valid()) {
+                $descriptor = $annotations->current();
                 $descriptor->holder = $class->getName();
                 $this->supplementDescriptor($descriptor, $class);
                 yield $descriptor;
@@ -409,8 +405,8 @@ final class DescriptorLoader implements LoaderInterface
             }
 
             $annotations = $this->getAnnotations(Route::class, $method);
-            if (isset($annotations[0])) {
-                $descriptor = $annotations[0];
+            if ($annotations->valid()) {
+                $descriptor = $annotations->current();
                 $descriptor->holder = [$class->getName(), $method->getName()];
                 $this->supplementDescriptor($descriptor, $class);
                 $this->supplementDescriptor($descriptor, $method);
@@ -430,18 +426,18 @@ final class DescriptorLoader implements LoaderInterface
     private function supplementDescriptor(Route $descriptor, ReflectionClass|ReflectionMethod $holder): void
     {
         $annotations = $this->getAnnotations(Host::class, $holder);
-        if (isset($annotations[0])) {
-            $descriptor->host = $annotations[0]->value;
+        if ($annotations->valid()) {
+            $descriptor->host = $annotations->current()->value;
         }
 
         $annotations = $this->getAnnotations(Prefix::class, $holder);
-        if (isset($annotations[0])) {
-            $descriptor->path = $annotations[0]->value . $descriptor->path;
+        if ($annotations->valid()) {
+            $descriptor->path = $annotations->current()->value . $descriptor->path;
         }
 
         $annotations = $this->getAnnotations(Postfix::class, $holder);
-        if (isset($annotations[0])) {
-            $descriptor->path .= $annotations[0]->value;
+        if ($annotations->valid()) {
+            $descriptor->path .= $annotations->current()->value;
         }
 
         $annotations = $this->getAnnotations(Method::class, $holder);
@@ -449,29 +445,19 @@ final class DescriptorLoader implements LoaderInterface
             $descriptor->methods[] = $annotation->value;
         }
 
-        $annotations = $this->getAnnotations(Consume::class, $holder);
+        $annotations = $this->getAnnotations(Consumes::class, $holder);
         foreach ($annotations as $annotation) {
-            if ($annotation->value instanceof MediaType) {
-                $descriptor->consumes[] = $annotation->value;
-                continue;
-            }
-
-            $consumes = parse_header_with_media_type($annotation->value);
-            foreach ($consumes as $consume) {
-                $descriptor->consumes[] = $consume;
+            $consumesMediaTypes = \Sunrise\Http\Router\parse_header_with_media_type($annotation->value);
+            foreach ($consumesMediaTypes as $consumesMediaType) {
+                $descriptor->consumes[] = $consumesMediaType;
             }
         }
 
-        $annotations = $this->getAnnotations(Produce::class, $holder);
+        $annotations = $this->getAnnotations(Produces::class, $holder);
         foreach ($annotations as $annotation) {
-            if ($annotation->value instanceof MediaType) {
-                $descriptor->produces[] = $annotation->value;
-                continue;
-            }
-
-            $produces = parse_header_with_media_type($annotation->value);
-            foreach ($produces as $produce) {
-                $descriptor->produces[] = $produce;
+            $producesMediaTypes = \Sunrise\Http\Router\parse_header_with_media_type($annotation->value);
+            foreach ($producesMediaTypes as $producesMediaType) {
+                $descriptor->produces[] = $producesMediaType;
             }
         }
 
@@ -497,27 +483,6 @@ final class DescriptorLoader implements LoaderInterface
     }
 
     /**
-     * Gets the named annotations from the given class or method
-     *
-     * @param class-string<T> $name
-     * @param ReflectionClass|ReflectionMethod $source
-     *
-     * @return list<T>
-     *
-     * @template T of object
-     */
-    private function getAnnotations(string $name, ReflectionClass|ReflectionMethod $source): array
-    {
-        $result = [];
-        $attributes = $source->getAttributes($name);
-        foreach ($attributes as $attribute) {
-            $result[] = $attribute->newInstance();
-        }
-
-        return $result;
-    }
-
-    /**
      * Scans the given directory and returns the found classes
      *
      * @param string $dirname
@@ -527,7 +492,7 @@ final class DescriptorLoader implements LoaderInterface
     private function getDirectoryClasses(string $dirname): Generator
     {
         /** @var array<non-empty-string, non-empty-string> $filenames */
-        $filenames = iterator_to_array(
+        $filenames = [...(
             new RegexIterator(
                 new RecursiveIteratorIterator(
                     new RecursiveDirectoryIterator(
@@ -535,9 +500,9 @@ final class DescriptorLoader implements LoaderInterface
                         FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_PATHNAME,
                     )
                 ),
-                '/\.php$/',
+                pattern: '/\.php$/',
             )
-        );
+        )];
 
         foreach ($filenames as $filename) {
             (static function (string $filename): void {
@@ -546,12 +511,29 @@ final class DescriptorLoader implements LoaderInterface
             })($filename);
         }
 
-        foreach (get_declared_classes() as $fqn) {
-            $class = new ReflectionClass($fqn);
-            $filename = $class->getFileName();
-            if (isset($filenames[$filename])) {
-                yield $class;
+        foreach (get_declared_classes() as $className) {
+            $classReflection = new ReflectionClass($className);
+            if (isset($filenames[$classReflection->getFileName()])) {
+                yield $classReflection;
             }
+        }
+    }
+
+    /**
+     * Gets the named annotations from the given class or method
+     *
+     * @param class-string<T> $name
+     * @param ReflectionClass|ReflectionMethod $source
+     *
+     * @return Generator<T>
+     *
+     * @template T of object
+     */
+    private function getAnnotations(string $name, ReflectionClass|ReflectionMethod $source): Generator
+    {
+        $attributes = $source->getAttributes($name);
+        foreach ($attributes as $attribute) {
+            yield $attribute->newInstance();
         }
     }
 }

@@ -15,10 +15,8 @@ namespace Sunrise\Http\Router\ParameterResolver;
 
 use Generator;
 use Psr\Http\Message\ServerRequestInterface;
-use ReflectionAttribute;
 use ReflectionNamedType;
 use ReflectionParameter;
-use Sunrise\Http\Router\Annotation\ProxyChain;
 use Sunrise\Http\Router\Entity\ClientRemoteAddress;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ServerRequest;
@@ -36,8 +34,8 @@ final class ClientRemoteAddressParameterResolver implements ParameterResolverInt
      *
      * @param array<TKey, TValue> $proxyChain
      *
-     * @template TKey as non-empty-string Proxy address
-     * @template TValue as non-empty-string Trusted header
+     * @template TKey as non-empty-string Proxy address; e.g., 127.0.0.1
+     * @template TValue as non-empty-string Trusted header; e.g., X-Forwarded-For, X-Real-IP, etc.
      */
     public function __construct(private array $proxyChain = [])
     {
@@ -63,13 +61,6 @@ final class ClientRemoteAddressParameterResolver implements ParameterResolverInt
             );
         }
 
-        $proxyChain = $this->proxyChain;
-        /** @var list<ReflectionAttribute<ProxyChain>> $attributes */
-        $attributes = $parameter->getAttributes(ProxyChain::class);
-        if (isset($attributes[0])) {
-            $proxyChain = $attributes[0]->newInstance()->value;
-        }
-
-        yield ServerRequest::from($context)->getClientRemoteAddress($proxyChain);
+        yield ServerRequest::from($context)->getClientRemoteAddress($this->proxyChain);
     }
 }

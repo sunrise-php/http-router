@@ -20,8 +20,6 @@ namespace Sunrise\Http\Router\Dictionary;
  */
 final class Charset
 {
-    public const WILDCARD = '*';
-
     public const RFC7230_OWS = [
         "\x09" => 1, "\x20" => 1,
     ];

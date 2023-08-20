@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\ResponseResolver;
 
+use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -46,7 +47,7 @@ final class UriResponseResolver implements ResponseResolverInterface
         ReflectionFunction|ReflectionMethod $source,
     ) : ?ResponseInterface {
         if ($response instanceof UriInterface) {
-            return $this->responseFactory->createResponse(302)
+            return $this->responseFactory->createResponse(StatusCodeInterface::STATUS_FOUND)
                 ->withHeader('Location', $response->__toString());
         }
 

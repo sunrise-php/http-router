@@ -27,13 +27,13 @@ use function sprintf;
  *
  * @throws InvalidArgumentException If the given header is invalid.
  *
- * @template T as list<array{0: non-empty-string, 1: array<non-empty-string, ?string>}>
+ * @template T as list<array{0: non-empty-string, 1?: list<array{0: non-empty-string, 1?: non-empty-string}>}>
  *
  * @since 3.0.0
  */
 function parse_header(string $header): array
 {
-    /** @var list<array{0: non-empty-string, 1?: list<array{0: non-empty-string, 1?: non-empty-string}>}> $matches */
+    /** @var T $matches */
     $matches = [];
 
     $offset = -1;
@@ -160,19 +160,8 @@ function parse_header(string $header): array
             continue;
         }
 
-        throw new InvalidArgumentException(sprintf('Unexpected character at position %d', $offset));
+        throw new InvalidArgumentException(sprintf('Unexpected character at position %d.', $offset));
     }
 
-    $result = [];
-    foreach ($matches as $index => $match) {
-        $result[$index] = [$match[0], []];
-        if (isset($match[1])) {
-            foreach ($match[1] as $param) {
-                $result[$index][1][$param[0]] = $param[1] ?? null;
-            }
-        }
-    }
-
-    /** @var T */
-    return $result;
+    return $matches;
 }

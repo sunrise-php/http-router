@@ -45,7 +45,9 @@
         "sunrise/coding-standard": "^1.0",
         "sunrise/http-message": "^3.0",
         "symfony/console": "^6.0",
-        "symfony/http-foundation": "^6.3"
+        "symfony/http-foundation": "^6.3",
+        "doctrine/orm": "^2.16",
+        "filp/whoops": "^2.15"
     },
     "autoload": {
         "files": [
@@ -60,7 +62,8 @@
             "functions/reflect_callback.php"
         ],
         "psr-4": {
-            "Sunrise\\Http\\Router\\": "src/"
+            "Sunrise\\Http\\Router\\": "src/",
+            "App\\": "example/"
         }
     },
     "autoload-dev": {

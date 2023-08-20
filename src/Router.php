@@ -243,6 +243,7 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
      */
     public function match(ServerRequestInterface $request): RouteInterface
     {
+        $request = ServerRequest::from($request);
         $requestUri = $request->getUri();
         $requestHost = $requestUri->getHost();
         $requestPath = $requestUri->getPath();
@@ -251,7 +252,6 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
 
         $host = $this->hosts->resolve($requestHost);
         $routes = $this->routes->allOnHost($host);
-        $request = ServerRequest::from($request);
 
         foreach ($routes as $route) {
             // https://github.com/sunrise-php/http-router/issues/50
@@ -270,9 +270,8 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
                 continue;
             }
 
-            $routeConsumes = $route->getConsumesMediaTypes();
-            if (!empty($routeConsumes) && !$request->clientProducesMediaType($routeConsumes)) {
-                throw new ClientNotProducedMediaTypeException($routeConsumes);
+            if (!$request->clientProducesMediaType(...$route->getConsumesMediaTypes())) {
+                throw new ClientNotProducedMediaTypeException($route->getConsumesMediaTypes());
             }
 
             /** @var array<string, string> $attributes */
@@ -319,10 +318,7 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
             return $routing->handle($request);
         }
 
-        $handler = new QueueableRequestHandler($routing);
-        $handler->add(...$this->middlewares);
-
-        return $handler->handle($request);
+        return (new QueueableRequestHandler($routing, ...$this->middlewares))->handle($request);
     }
 
     /**
@@ -342,9 +338,6 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
             return $this->matchedRoute->handle($request);
         }
 
-        $handler = new QueueableRequestHandler($this->matchedRoute);
-        $handler->add(...$this->middlewares);
-
-        return $handler->handle($request);
+        return (new QueueableRequestHandler($this->matchedRoute, ...$this->middlewares))->handle($request);
     }
 }

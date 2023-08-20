@@ -19,7 +19,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\ParameterResolutionerInterface;
-use Sunrise\Http\Router\ParameterResolver\ObjectInjectionParameterResolver;
+use Sunrise\Http\Router\ParameterResolver\PresetObjectParameterResolver;
 use Sunrise\Http\Router\ResponseResolutionerInterface;
 
 use function Sunrise\Http\Router\reflect_callback;
@@ -63,7 +63,7 @@ final class CallbackRequestHandler implements RequestHandlerInterface
     public function __construct(
         callable $callback,
         ParameterResolutionerInterface $parameterResolutioner,
-        ResponseResolutionerInterface $responseResolutioner
+        ResponseResolutionerInterface $responseResolutioner,
     ) {
         $this->callback = $callback;
         $this->parameterResolutioner = $parameterResolutioner;
@@ -90,7 +90,7 @@ final class CallbackRequestHandler implements RequestHandlerInterface
         $arguments = $this->parameterResolutioner
             ->withContext($request)
             ->withPriorityResolver(
-                new ObjectInjectionParameterResolver($request),
+                new PresetObjectParameterResolver($request),
             )
             ->resolveParameters(...$source->getParameters());
 

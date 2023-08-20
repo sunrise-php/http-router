@@ -19,14 +19,13 @@ use Sunrise\Http\Router\Entity\MediaType;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
 
 use function sprintf;
-use function strtolower;
 
 /**
  * Parses the given header that contains media types
  *
  * @param string $header
  *
- * @return Generator<int<0, max>, MediaType>
+ * @return Generator<MediaType>
  *
  * @throws InvalidArgumentException If one of the media types is invalid.
  *
@@ -39,7 +38,7 @@ function parse_header_with_media_type(string $header): Generator
         return;
     }
 
-    foreach ($matches as $index => [$token, $parameters]) {
+    foreach ($matches as $index => $match) {
         $offset = -1;
 
         $inType = true;
@@ -51,12 +50,12 @@ function parse_header_with_media_type(string $header): Generator
         while (true) {
             $offset++;
 
-            $char = $token[$offset] ?? null;
+            $char = $match[0][$offset] ?? null;
             if ($char === null) {
                 break;
             }
 
-            if ($char === '/' && $inSubtype === false) {
+            if ($inType && $char === '/') {
                 $inType = false;
                 $inSubtype = true;
                 continue;
@@ -66,7 +65,6 @@ function parse_header_with_media_type(string $header): Generator
                 $type .= $char;
                 continue;
             }
-
             if ($inSubtype && isset(Charset::RFC7230_TOKEN[$char])) {
                 $subtype .= $char;
                 continue;
@@ -86,6 +84,20 @@ function parse_header_with_media_type(string $header): Generator
             ));
         }
 
-        yield $index => new MediaType(strtolower($type), strtolower($subtype), $parameters);
+        if ($type === '*' && $subtype !== '*') {
+            throw new InvalidArgumentException(sprintf(
+                'Subtype "*" expected for media type with index %d.',
+                $index,
+            ));
+        }
+
+        $parameters = [];
+        if (isset($match[1])) {
+            foreach ($match[1] as $param) {
+                $parameters[$param[0]] = $param[1] ?? null;
+            }
+        }
+
+        yield new MediaType($type, $subtype, $parameters);
     }
 }

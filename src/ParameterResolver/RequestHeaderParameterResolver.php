@@ -14,41 +14,24 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\ParameterResolver;
 
 use Generator;
-use ReflectionNamedType;
+use ReflectionAttribute;
 use ReflectionParameter;
+use Sunrise\Http\Router\Annotation\RequestHeader;
 
-use function is_a;
-
-/**
- * ObjectInjectionParameterResolver
- *
- * @since 3.0.0
- */
-final class ObjectInjectionParameterResolver implements ParameterResolverInterface
+final class RequestHeaderParameterResolver implements ParameterResolverInterface
 {
-
-    /**
-     * Constructor of the class
-     *
-     * @param object $object
-     */
-    public function __construct(private object $object)
-    {
-    }
 
     /**
      * @inheritDoc
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
-        $type = $parameter->getType();
-
-        if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
+        /** @var list<ReflectionAttribute<RequestHeader>> $attributes */
+        $attributes = $parameter->getAttributes(RequestHeader::class);
+        if ($attributes === []) {
             return;
         }
 
-        if (is_a($this->object, $type->getName())) {
-            yield $this->object;
-        }
+        // TODO: Implement the method...
     }
 }

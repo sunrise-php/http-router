@@ -66,25 +66,26 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
         foreach ($this->resolvers as $resolver) {
             $result = $resolver->resolveResponse($response, $request, $source);
             if ($result instanceof ResponseInterface) {
-                return $this->handleResponse($result, $source);
+                return $this->supplementResponse($result, $source);
             }
         }
 
         throw new LogicException(sprintf(
-            'Unable to resolve the response {%s} to PSR-7 response',
-            self::stringifyResponse($response, $source),
+            'Unable to resolve the response {%s->%s} to PSR-7 response',
+            self::stringifySource($source),
+            get_debug_type($response),
         ));
     }
 
     /**
-     * Handles the given response
+     * Supplements the given response
      *
      * @param ResponseInterface $response
      * @param ReflectionFunction|ReflectionMethod $source
      *
      * @return ResponseInterface
      */
-    private function handleResponse(
+    private function supplementResponse(
         ResponseInterface $response,
         ReflectionFunction|ReflectionMethod $source,
     ) : ResponseInterface {
@@ -106,28 +107,18 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
     }
 
     /**
-     * Stringifies the given raw response
+     * Stringifies the given source of a response
      *
-     * @param mixed $response
      * @param ReflectionFunction|ReflectionMethod $source
      *
      * @return non-empty-string
      */
-    public static function stringifyResponse(mixed $response, ReflectionFunction|ReflectionMethod $source): string
+    public static function stringifySource(ReflectionFunction|ReflectionMethod $source): string
     {
         if ($source instanceof ReflectionMethod) {
-            return sprintf(
-                '%s::%s():$%s',
-                $source->getDeclaringClass()->getName(),
-                $source->getName(),
-                get_debug_type($response),
-            );
+            return sprintf('%s::%s()', $source->getDeclaringClass()->getName(), $source->getName());
         }
 
-        return sprintf(
-            '%s():$%s',
-            $source->getName(),
-            get_debug_type($response),
-        );
+        return sprintf('%s()', $source->getName());
     }
 }

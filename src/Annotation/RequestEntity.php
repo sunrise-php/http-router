@@ -19,18 +19,22 @@ use Attribute;
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_PARAMETER)]
-final class ProxyChain
+final class RequestEntity
 {
 
     /**
      * Constructor of the class
      *
-     * @param array<TKey, TValue> $value
-     *
-     * @template TKey as non-empty-string Proxy address
-     * @template TValue as non-empty-string Trusted header
+     * @param non-empty-string|null $em
+     * @param non-empty-string|null $findBy
+     * @param non-empty-string|null $valueKey
+     * @param array<non-empty-string, mixed> $criteria An entity's additional search criteria
      */
-    public function __construct(public array $value)
-    {
+    public function __construct(
+        public string|null $em = null,
+        public string|null $findBy = null,
+        public string|null $valueKey = null,
+        public array $criteria = [],
+    ) {
     }
 }
