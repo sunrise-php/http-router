@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Exception;
 
 use Fig\Http\Message\StatusCodeInterface;
+use Sunrise\Http\Router\Dto\ViolationDto;
 
 /**
  * Base HTTP exception interface
@@ -24,16 +25,37 @@ interface HttpExceptionInterface extends ExceptionInterface, StatusCodeInterface
 {
 
     /**
-     * Gets HTTP status code
+     * {@inheritDoc}
+     *
+     * @return non-empty-string
+     */
+    public function getMessage(): string;
+
+    /**
+     * Gets the error's reason phrase
+     *
+     * @return non-empty-string
+     */
+    public function getReasonPhrase(): string;
+
+    /**
+     * Gets HTTP status code that will be sent to the client
      *
      * @return int<100, 599>
      */
     public function getStatusCode(): int;
 
     /**
-     * Gets HTTP header fields
+     * Gets HTTP header fields that will be sent to the client
      *
-     * @return list<array{0: string, 1: string}>
+     * @return list<array{0: non-empty-string, 1: non-empty-string}>
      */
-    public function getHeaderFields(): array;
+    public function getHeaders(): array;
+
+    /**
+     * Gets the list of violations associated with the error
+     *
+     * @return list<ViolationDto>
+     */
+    public function getViolations(): array;
 }

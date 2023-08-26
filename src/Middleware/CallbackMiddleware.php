@@ -19,9 +19,9 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use ReflectionFunction;
 use ReflectionMethod;
-use Sunrise\Http\Router\ParameterResolutionerInterface;
-use Sunrise\Http\Router\ParameterResolver\PresetObjectParameterResolver;
-use Sunrise\Http\Router\ResponseResolutionerInterface;
+use Sunrise\Http\Router\ParameterResolving\ParameterResolutionerInterface;
+use Sunrise\Http\Router\ParameterResolving\ParameterResolver\ObjectInjectionParameterResolver;
+use Sunrise\Http\Router\ResponseResolving\ResponseResolutionerInterface;
 
 use function Sunrise\Http\Router\reflect_callback;
 
@@ -91,8 +91,8 @@ final class CallbackMiddleware implements MiddlewareInterface
         $arguments = $this->parameterResolutioner
             ->withContext($request)
             ->withPriorityResolver(
-                new PresetObjectParameterResolver($request),
-                new PresetObjectParameterResolver($handler),
+                new ObjectInjectionParameterResolver($request),
+                new ObjectInjectionParameterResolver($handler),
             )
             ->resolveParameters(...$source->getParameters());
 

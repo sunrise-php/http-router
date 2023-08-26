@@ -29,14 +29,16 @@ class HttpFailedDependencyException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param string|null $message
+     * @param non-empty-string|null $message
      * @param int $code
      * @param Throwable|null $previous
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
-        $message ??= 'Failed Dependency';
+        $message ??= 'The request couldn‘t be processed due to failures with the resource‘s dependencies.';
 
         parent::__construct(self::STATUS_FAILED_DEPENDENCY, $message, $code, $previous);
+
+        $this->setReasonPhrase('Failed Dependency');
     }
 }

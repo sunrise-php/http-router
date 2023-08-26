@@ -29,14 +29,16 @@ class HttpGoneException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param string|null $message
+     * @param non-empty-string|null $message
      * @param int $code
      * @param Throwable|null $previous
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
-        $message ??= 'Gone';
+        $message ??= 'The resource is no longer available.';
 
         parent::__construct(self::STATUS_GONE, $message, $code, $previous);
+
+        $this->setReasonPhrase('Gone');
     }
 }

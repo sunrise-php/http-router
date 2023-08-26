@@ -29,14 +29,16 @@ class HttpUnavailableForLegalReasonsException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param string|null $message
+     * @param non-empty-string|null $message
      * @param int $code
      * @param Throwable|null $previous
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
-        $message ??= 'Unavailable For Legal Reasons';
+        $message ??= 'The request couldn‘t be processed due to legal restrictions on the resource.';
 
         parent::__construct(self::STATUS_UNAVAILABLE_FOR_LEGAL_REASONS, $message, $code, $previous);
+
+        $this->setReasonPhrase('Unavailable For Legal Reasons');
     }
 }

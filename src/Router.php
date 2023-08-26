@@ -19,19 +19,15 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Message\ServerRequestProxy;
 use Sunrise\Http\Router\Event\RouteEvent;
-use Sunrise\Http\Router\Exception\ClientNotConsumedMediaTypeException;
-use Sunrise\Http\Router\Exception\ClientNotProducedMediaTypeException;
-use Sunrise\Http\Router\Exception\MethodNotAllowedException;
-use Sunrise\Http\Router\Exception\PageNotFoundException;
+use Sunrise\Http\Router\Exception\Http\HttpMethodNotAllowedException;
+use Sunrise\Http\Router\Exception\Http\HttpNotFoundException;
+use Sunrise\Http\Router\Exception\Http\HttpUnsupportedMediaTypeException;
 use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 
 use function array_keys;
-use function Sunrise\Http\Router\path_build;
-use function Sunrise\Http\Router\path_match;
 
 /**
  * Router
@@ -229,17 +225,14 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
      *
      * @return RouteInterface
      *
-     * @throws PageNotFoundException
+     * @throws HttpNotFoundException
      *         If the request URI isn't served.
      *
-     * @throws MethodNotAllowedException
+     * @throws HttpMethodNotAllowedException
      *         If the request method isn't allowed.
      *
-     * @throws ClientNotProducedMediaTypeException
+     * @throws HttpUnsupportedMediaTypeException
      *         If the client not produces required media types.
-     *
-     * @throws ClientNotConsumedMediaTypeException
-     *         If the client not consumed provided media types.
      */
     public function match(ServerRequestInterface $request): RouteInterface
     {
@@ -271,7 +264,7 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
             }
 
             if (!$request->clientProducesMediaType(...$route->getConsumesMediaTypes())) {
-                throw new ClientNotProducedMediaTypeException($route->getConsumesMediaTypes());
+                throw new HttpUnsupportedMediaTypeException($route->getConsumesMediaTypes());
             }
 
             /** @var array<string, string> $attributes */
@@ -282,10 +275,10 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
         if (!empty($allowedMethods)) {
             $allowedMethods = array_keys($allowedMethods);
 
-            throw new MethodNotAllowedException($allowedMethods);
+            throw new HttpMethodNotAllowedException($allowedMethods);
         }
 
-        throw new PageNotFoundException('Page Not Found');
+        throw new HttpNotFoundException();
     }
 
     /**
@@ -299,6 +292,8 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
      */
     public function run(ServerRequestInterface $request): ResponseInterface
     {
+        // TODO: request event
+
         // lazy resolving of the given request...
         $routing = new CallableRequestHandler(
             function (ServerRequestInterface $request): ResponseInterface {
@@ -318,7 +313,11 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
             return $routing->handle($request);
         }
 
-        return (new QueueableRequestHandler($routing, ...$this->middlewares))->handle($request);
+        $response = (new QueueableRequestHandler($routing, ...$this->middlewares))->handle($request);
+
+        // TODO: response event
+
+        return $response;
     }
 
     /**

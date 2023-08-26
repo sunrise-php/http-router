@@ -45,10 +45,10 @@ final class QueueableRequestHandler extends SplQueue implements RequestHandlerIn
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        if (! $this->isEmpty()) {
-            return ($clone = clone $this)->dequeue()->process($request, $clone);
+        if ($this->isEmpty()) {
+            return $this->requestHandler->handle($request);
         }
 
-        return $this->requestHandler->handle($request);
+        return ($clone = clone $this)->dequeue()->process($request, $clone);
     }
 }

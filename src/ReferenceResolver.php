@@ -19,7 +19,9 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\Middleware\CallbackMiddleware;
+use Sunrise\Http\Router\ParameterResolving\ParameterResolutionerInterface;
 use Sunrise\Http\Router\RequestHandler\CallbackRequestHandler;
+use Sunrise\Http\Router\ResponseResolving\ResponseResolutionerInterface;
 
 use function class_exists;
 use function get_debug_type;
@@ -75,7 +77,7 @@ final class ReferenceResolver implements ReferenceResolverInterface
     /**
      * @inheritDoc
      *
-     * @throws LogicException If the reference cannot be resolved.
+     * @throws LogicException If the reference couldn't be resolved.
      */
     public function resolveRequestHandler(mixed $reference): RequestHandlerInterface
     {
@@ -132,7 +134,7 @@ final class ReferenceResolver implements ReferenceResolverInterface
     /**
      * @inheritDoc
      *
-     * @throws LogicException If the reference cannot be resolved.
+     * @throws LogicException If the reference couldn't be resolved.
      */
     public function resolveMiddleware(mixed $reference): MiddlewareInterface
     {
@@ -189,7 +191,7 @@ final class ReferenceResolver implements ReferenceResolverInterface
     /**
      * @inheritDoc
      *
-     * @throws LogicException If one of the references cannot be resolved.
+     * @throws LogicException If one of the references couldn't be resolved.
      */
     public function resolveMiddlewares(array $references): Generator
     {

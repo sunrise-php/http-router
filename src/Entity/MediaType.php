@@ -85,6 +85,30 @@ final class MediaType implements Stringable
     }
 
     /**
+     * Creates the text media type
+     *
+     * @param array<non-empty-string, ?string> $parameters
+     *
+     * @return self
+     */
+    public static function text(array $parameters = []): self
+    {
+        return new self('text', 'plain', $parameters);
+    }
+
+    /**
+     * Creates the image media range
+     *
+     * @param array<non-empty-string, ?string> $parameters
+     *
+     * @return self
+     */
+    public static function image(array $parameters = []): self
+    {
+        return new self('image', '*', $parameters);
+    }
+
+    /**
      * Gets the media range type
      *
      * @return non-empty-string
@@ -105,7 +129,7 @@ final class MediaType implements Stringable
     }
 
     /**
-     * Gets the media range parameters
+     * Gets the media type parameters
      *
      * @return array<non-empty-string, ?string>
      */
@@ -134,7 +158,7 @@ final class MediaType implements Stringable
     {
         $result = sprintf('%s/%s', $this->type, $this->subtype);
         foreach ($this->parameters as $name => $value) {
-            $result .= sprintf('; %s="%s"', $name, $value);
+            $result .= sprintf('; %s="%s"', $name, (string) $value);
         }
 
         return $result;

@@ -34,17 +34,18 @@ use Sunrise\Http\Router\Annotation\Produces;
 use Sunrise\Http\Router\Annotation\Route;
 use Sunrise\Http\Router\Annotation\Summary;
 use Sunrise\Http\Router\Annotation\Tag;
+use Sunrise\Http\Router\Entity\MediaType;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\LogicException;
-use Sunrise\Http\Router\ParameterResolutioner;
-use Sunrise\Http\Router\ParameterResolutionerInterface;
-use Sunrise\Http\Router\ParameterResolver\DependencyInjectionParameterResolver;
-use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
+use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
+use Sunrise\Http\Router\ParameterResolving\ParameterResolutionerInterface;
+use Sunrise\Http\Router\ParameterResolving\ParameterResolver\DependencyInjectionParameterResolver;
+use Sunrise\Http\Router\ParameterResolving\ParameterResolver\ParameterResolverInterface;
 use Sunrise\Http\Router\ReferenceResolver;
 use Sunrise\Http\Router\ReferenceResolverInterface;
-use Sunrise\Http\Router\ResponseResolutioner;
-use Sunrise\Http\Router\ResponseResolutionerInterface;
-use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
+use Sunrise\Http\Router\ResponseResolving\ResponseResolutioner;
+use Sunrise\Http\Router\ResponseResolving\ResponseResolutionerInterface;
+use Sunrise\Http\Router\ResponseResolving\ResponseResolver\ResponseResolverInterface;
 use Sunrise\Http\Router\RouteCollectionFactory;
 use Sunrise\Http\Router\RouteCollectionFactoryInterface;
 use Sunrise\Http\Router\RouteCollectionInterface;
@@ -56,6 +57,7 @@ use function get_declared_classes;
 use function hash;
 use function is_dir;
 use function is_string;
+use function iterator_to_array;
 use function sprintf;
 use function usort;
 
@@ -252,7 +254,7 @@ final class DescriptorLoader implements LoaderInterface
      */
     public function getCacheKey(): string
     {
-        return $this->cacheKey ??= hash('md5', __METHOD__);
+        return $this->cacheKey ??= hash('md5', $this::class);
     }
 
     /**
@@ -360,7 +362,7 @@ final class DescriptorLoader implements LoaderInterface
      *
      * @param string $resource
      *
-     * @return Generator<Route>
+     * @return Generator<int, Route>
      */
     private function getResourceDescriptors(string $resource): Generator
     {
@@ -380,7 +382,7 @@ final class DescriptorLoader implements LoaderInterface
      *
      * @param ReflectionClass $class
      *
-     * @return Generator<Route>
+     * @return Generator<int, Route>
      */
     private function getClassDescriptors(ReflectionClass $class): Generator
     {
@@ -393,7 +395,8 @@ final class DescriptorLoader implements LoaderInterface
             if ($annotations->valid()) {
                 $descriptor = $annotations->current();
                 $descriptor->holder = $class->getName();
-                $this->supplementDescriptor($descriptor, $class);
+                $this->supplementDescriptorFromParentClasses($descriptor, $class);
+                $this->supplementDescriptorFromClassOrMethod($descriptor, $class);
                 yield $descriptor;
             }
         }
@@ -408,10 +411,26 @@ final class DescriptorLoader implements LoaderInterface
             if ($annotations->valid()) {
                 $descriptor = $annotations->current();
                 $descriptor->holder = [$class->getName(), $method->getName()];
-                $this->supplementDescriptor($descriptor, $class);
-                $this->supplementDescriptor($descriptor, $method);
+                $this->supplementDescriptorFromParentClasses($descriptor, $class);
+                $this->supplementDescriptorFromClassOrMethod($descriptor, $class);
+                $this->supplementDescriptorFromClassOrMethod($descriptor, $method);
                 yield $descriptor;
             }
+        }
+    }
+
+    /**
+     * Supplements the given descriptor from parent classes of the given class
+     *
+     * @param Route $descriptor
+     * @param ReflectionClass $holder
+     *
+     * @return void
+     */
+    private function supplementDescriptorFromParentClasses(Route $descriptor, ReflectionClass $holder): void
+    {
+        foreach ($this->getClassParents($holder) as $parent) {
+            $this->supplementDescriptorFromClassOrMethod($descriptor, $parent);
         }
     }
 
@@ -423,7 +442,8 @@ final class DescriptorLoader implements LoaderInterface
      *
      * @return void
      */
-    private function supplementDescriptor(Route $descriptor, ReflectionClass|ReflectionMethod $holder): void
+    // phpcs:ignore Generic.Files.LineLength
+    private function supplementDescriptorFromClassOrMethod(Route $descriptor, ReflectionClass|ReflectionMethod $holder): void
     {
         $annotations = $this->getAnnotations(Host::class, $holder);
         if ($annotations->valid()) {
@@ -447,18 +467,12 @@ final class DescriptorLoader implements LoaderInterface
 
         $annotations = $this->getAnnotations(Consumes::class, $holder);
         foreach ($annotations as $annotation) {
-            $consumesMediaTypes = \Sunrise\Http\Router\parse_header_with_media_type($annotation->value);
-            foreach ($consumesMediaTypes as $consumesMediaType) {
-                $descriptor->consumes[] = $consumesMediaType;
-            }
+            $descriptor->consumes[] = new MediaType($annotation->type, $annotation->subtype);
         }
 
         $annotations = $this->getAnnotations(Produces::class, $holder);
         foreach ($annotations as $annotation) {
-            $producesMediaTypes = \Sunrise\Http\Router\parse_header_with_media_type($annotation->value);
-            foreach ($producesMediaTypes as $producesMediaType) {
-                $descriptor->produces[] = $producesMediaType;
-            }
+            $descriptor->produces[] = new MediaType($annotation->type, $annotation->subtype, $annotation->parameters);
         }
 
         $annotations = $this->getAnnotations(Middleware::class, $holder);
@@ -487,22 +501,15 @@ final class DescriptorLoader implements LoaderInterface
      *
      * @param string $dirname
      *
-     * @return Generator<ReflectionClass>
+     * @return Generator<int, ReflectionClass>
      */
     private function getDirectoryClasses(string $dirname): Generator
     {
+        $flags = FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_PATHNAME;
+
         /** @var array<non-empty-string, non-empty-string> $filenames */
-        $filenames = [...(
-            new RegexIterator(
-                new RecursiveIteratorIterator(
-                    new RecursiveDirectoryIterator(
-                        $dirname,
-                        FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_PATHNAME,
-                    )
-                ),
-                pattern: '/\.php$/',
-            )
-        )];
+        // phpcs:ignore Generic.Files.LineLength
+        $filenames = iterator_to_array(new RegexIterator(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dirname, $flags)), '/\.php$/'));
 
         foreach ($filenames as $filename) {
             (static function (string $filename): void {
@@ -520,12 +527,29 @@ final class DescriptorLoader implements LoaderInterface
     }
 
     /**
+     * Gets parents of the given class
+     *
+     * @param ReflectionClass $child
+     *
+     * @return Generator<int, ReflectionClass>
+     */
+    private function getClassParents(ReflectionClass $child): Generator
+    {
+        $ancestors = [];
+        while ($child = $child->getParentClass()) {
+            $ancestors = [$child, ...$ancestors];
+        }
+
+        yield from $ancestors;
+    }
+
+    /**
      * Gets the named annotations from the given class or method
      *
      * @param class-string<T> $name
      * @param ReflectionClass|ReflectionMethod $source
      *
-     * @return Generator<T>
+     * @return Generator<int, T>
      *
      * @template T of object
      */

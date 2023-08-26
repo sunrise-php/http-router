@@ -34,6 +34,8 @@ final class Route implements RequestMethodInterface
      * The route's consumes media types
      *
      * @var list<MediaType>
+     *
+     * @internal
      */
     public array $consumes = [];
 
@@ -41,6 +43,8 @@ final class Route implements RequestMethodInterface
      * The route's produces media types
      *
      * @var list<MediaType>
+     *
+     * @internal
      */
     public array $produces = [];
 

@@ -25,7 +25,7 @@ use function sprintf;
  *
  * @param string $header
  *
- * @return Generator<MediaType>
+ * @return Generator<int, MediaType>
  *
  * @throws InvalidArgumentException If one of the media types is invalid.
  *

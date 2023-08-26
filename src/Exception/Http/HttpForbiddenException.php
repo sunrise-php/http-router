@@ -29,14 +29,16 @@ class HttpForbiddenException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param string|null $message
+     * @param non-empty-string|null $message
      * @param int $code
      * @param Throwable|null $previous
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
-        $message ??= 'Forbidden';
+        $message ??= 'The request couldn‘t be processed due to insufficient permissions for the resource.';
 
         parent::__construct(self::STATUS_FORBIDDEN, $message, $code, $previous);
+
+        $this->setReasonPhrase('Forbidden');
     }
 }

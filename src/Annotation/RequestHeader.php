@@ -21,4 +21,13 @@ use Attribute;
 #[Attribute(Attribute::TARGET_PARAMETER)]
 final class RequestHeader
 {
+
+    /**
+     * Constructor of the class
+     *
+     * @param non-empty-string $name
+     */
+    public function __construct(public string $name)
+    {
+    }
 }

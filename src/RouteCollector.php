@@ -15,8 +15,12 @@ namespace Sunrise\Http\Router;
 
 use Fig\Http\Message\RequestMethodInterface;
 use Sunrise\Http\Router\Exception\LogicException;
-use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
-use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
+use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
+use Sunrise\Http\Router\ParameterResolving\ParameterResolutionerInterface;
+use Sunrise\Http\Router\ParameterResolving\ParameterResolver\ParameterResolverInterface;
+use Sunrise\Http\Router\ResponseResolving\ResponseResolutioner;
+use Sunrise\Http\Router\ResponseResolving\ResponseResolutionerInterface;
+use Sunrise\Http\Router\ResponseResolving\ResponseResolver\ResponseResolverInterface;
 
 /**
  * RouteCollector
@@ -110,7 +114,7 @@ class RouteCollector
         if (!isset($this->parameterResolutioner)) {
             throw new LogicException(
                 'The route collector cannot accept parameter resolvers ' .
-                'because a custom reference resolver was setted ' .
+                'because a custom reference resolver was set ' .
                 'and a parameter resolutioner was not passed'
             );
         }
@@ -135,7 +139,7 @@ class RouteCollector
         if (!isset($this->responseResolutioner)) {
             throw new LogicException(
                 'The route collector cannot accept response resolvers ' .
-                'because a custom reference resolver was setted ' .
+                'because a custom reference resolver was set ' .
                 'and a response resolutioner was not passed'
             );
         }

@@ -220,6 +220,14 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
+    public function getAttribute(string $name, mixed $default = null): mixed
+    {
+        return $this->attributes[$name] ?? $default;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getSummary(): string
     {
         return $this->summary;

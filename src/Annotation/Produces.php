@@ -25,9 +25,11 @@ final class Produces
     /**
      * Constructor of the class
      *
-     * @param non-empty-string $value
+     * @param non-empty-string $type
+     * @param non-empty-string $subtype
+     * @param array<non-empty-string, ?string> $parameters
      */
-    public function __construct(public string $value)
+    public function __construct(public string $type, public string $subtype, public array $parameters = [])
     {
     }
 }

@@ -25,10 +25,9 @@ final class JsonResponseBody
     /**
      * Constructor of the class
      *
-     * @param int|null $jsonEncodingFlags
-     * @param int|null $jsonEncodingDepth
+     * @param int $options
      */
-    public function __construct(public ?int $jsonEncodingFlags = null, public ?int $jsonEncodingDepth = null)
+    public function __construct(public int $options = 0)
     {
     }
 }

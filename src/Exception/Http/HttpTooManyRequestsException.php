@@ -29,14 +29,16 @@ class HttpTooManyRequestsException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param string|null $message
+     * @param non-empty-string|null $message
      * @param int $code
      * @param Throwable|null $previous
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
-        $message ??= 'Too Many Requests';
+        $message ??= 'The request couldn‘t be processed due to exceeding rate-limiting thresholds.';
 
         parent::__construct(self::STATUS_TOO_MANY_REQUESTS, $message, $code, $previous);
+
+        $this->setReasonPhrase('Too Many Requests');
     }
 }

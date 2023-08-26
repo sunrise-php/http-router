@@ -25,9 +25,10 @@ final class Consumes
     /**
      * Constructor of the class
      *
-     * @param non-empty-string $value
+     * @param non-empty-string $type
+     * @param non-empty-string $subtype
      */
-    public function __construct(public string $value)
+    public function __construct(public string $type, public string $subtype)
     {
     }
 }

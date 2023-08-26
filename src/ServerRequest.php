@@ -17,15 +17,12 @@ use Generator;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
-use Sunrise\Http\Router\Entity\ClientRemoteAddress;
 use Sunrise\Http\Router\Entity\MediaType;
 use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\LogicException;
 
-use function preg_split;
 use function reset;
-use function sprintf;
 use function usort;
 
 /**
@@ -72,47 +69,6 @@ final class ServerRequest implements ServerRequestInterface
     }
 
     /**
-     * Gets the client's remote address
-     *
-     * @param array<TKey, TValue> $proxyChain
-     *
-     * @return ClientRemoteAddress
-     *
-     * @template TKey as non-empty-string Proxy address; e.g., 127.0.0.1
-     * @template TValue as non-empty-string Trusted header; e.g., X-Forwarded-For, X-Real-IP, etc.
-     *
-     * @link https://www.rfc-editor.org/rfc/rfc3875#section-4.1.8
-     * @link https://www.rfc-editor.org/rfc/rfc7239.html#section-5.2
-     */
-    public function getClientRemoteAddress(array $proxyChain = []): ClientRemoteAddress
-    {
-        $serverParams = $this->request->getServerParams();
-        $clientRemoteAddress = $serverParams['REMOTE_ADDR'] ?? '::1';
-        $clientRemoteAddressChain = [$clientRemoteAddress];
-
-        while (isset($proxyChain[$clientRemoteAddressChain[0]])) {
-            $trustedHeader = $proxyChain[$clientRemoteAddressChain[0]];
-            unset($proxyChain[$clientRemoteAddressChain[0]]);
-
-            $header = $this->request->getHeaderLine($trustedHeader);
-            $addresses = preg_split('/\s*,\s*/', $header, flags: \PREG_SPLIT_NO_EMPTY);
-            if ($addresses === []) {
-                break;
-            }
-
-            $clientRemoteAddressChain = [...$addresses, ...$clientRemoteAddressChain];
-        }
-
-        $address = $clientRemoteAddressChain[0];
-        unset($clientRemoteAddressChain[0]);
-
-        /** @var list<non-empty-string> $proxies */
-        $proxies = [...$clientRemoteAddressChain];
-
-        return new ClientRemoteAddress($address, $proxies);
-    }
-
-    /**
      * Gets a media type that the client produced
      *
      * @return MediaType|null
@@ -124,14 +80,14 @@ final class ServerRequest implements ServerRequestInterface
         try {
             return parse_header_with_media_type($header)->current();
         } catch (InvalidArgumentException $e) {
-            throw new HttpBadRequestException(sprintf('The Content-Type header is invalid: %s', $e->getMessage()));
+            throw new HttpBadRequestException('The Content-Type header is invalid.', previous: $e);
         }
     }
 
     /**
      * Gets media types that the client consumes
      *
-     * @return Generator<MediaType>
+     * @return Generator<int, MediaType>
      */
     public function getClientConsumesMediaTypes(): Generator
     {
@@ -140,8 +96,35 @@ final class ServerRequest implements ServerRequestInterface
         try {
             yield from parse_header_with_media_type($header);
         } catch (InvalidArgumentException $e) {
-            throw new HttpBadRequestException(sprintf('The Accept header is invalid: %s', $e->getMessage()));
+            throw new HttpBadRequestException('The Accept header is invalid', previous: $e);
         }
+    }
+
+    /**
+     * Checks if the client produces one of the given media types
+     *
+     * @param MediaType ...$serverConsumesMediaTypes
+     *
+     * @return bool
+     */
+    public function clientProducesMediaType(MediaType ...$serverConsumesMediaTypes): bool
+    {
+        if ($serverConsumesMediaTypes === []) {
+            return true;
+        }
+
+        $clientProducedMediaType = $this->getClientProducedMediaType();
+        if ($clientProducedMediaType === null) {
+            return false;
+        }
+
+        foreach ($serverConsumesMediaTypes as $serverConsumesMediaType) {
+            if ($clientProducedMediaType->equals($serverConsumesMediaType)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -181,33 +164,6 @@ final class ServerRequest implements ServerRequestInterface
         }
 
         return reset($serverProducesMediaTypes);
-    }
-
-    /**
-     * Checks if the client produces one of the given media types
-     *
-     * @param MediaType ...$serverConsumesMediaTypes
-     *
-     * @return bool
-     */
-    public function clientProducesMediaType(MediaType ...$serverConsumesMediaTypes): bool
-    {
-        if ($serverConsumesMediaTypes === []) {
-            return true;
-        }
-
-        $clientProducedMediaType = $this->getClientProducedMediaType();
-        if ($clientProducedMediaType === null) {
-            return false;
-        }
-
-        foreach ($serverConsumesMediaTypes as $serverConsumesMediaType) {
-            if ($clientProducedMediaType->equals($serverConsumesMediaType)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**

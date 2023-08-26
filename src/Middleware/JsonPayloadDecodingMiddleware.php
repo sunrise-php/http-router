@@ -19,14 +19,11 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Entity\MediaType;
-use Sunrise\Http\Router\Exception\InvalidRequestPayloadException;
-use Sunrise\Http\Router\Exception\LogicException;
+use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
 use Sunrise\Http\Router\ServerRequest;
 
-use function extension_loaded;
 use function is_array;
 use function json_decode;
-use function sprintf;
 
 use const JSON_BIGINT_AS_STRING;
 use const JSON_THROW_ON_ERROR;
@@ -40,20 +37,6 @@ use const JSON_THROW_ON_ERROR;
  */
 final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
 {
-
-    /**
-     * Constructor of the class
-     *
-     * @throws LogicException If the JSON extension isn't loaded.
-     */
-    public function __construct()
-    {
-        if (!extension_loaded('json')) {
-            throw new LogicException(
-                'The JSON extension is required, run the `pecl install json` command to resolve it.'
-            );
-        }
-    }
 
     /**
      * @inheritDoc
@@ -74,19 +57,22 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
      *
      * @return array<array-key, mixed>
      *
-     * @throws InvalidRequestPayloadException If the JSON payload cannot be decoded.
+     * @throws HttpBadRequestException If the JSON payload couldn't be decoded.
      */
     private function decodePayload(string $payload): array
     {
+        if ($payload === '') {
+            throw new HttpBadRequestException('JSON payload cannot be empty.');
+        }
+
         try {
             $data = json_decode($payload, true, 512, JSON_BIGINT_AS_STRING | JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
-            throw new InvalidRequestPayloadException(sprintf('Invalid JSON payload: %s', $e->getMessage()), 0, $e);
+            throw new HttpBadRequestException('The JSON payload is invalid and could not be decoded.', previous: $e);
         }
 
-        // According to PSR-7, the data must be an array...
-        if (!is_array($data)) {
-            throw new InvalidRequestPayloadException('Unexpected JSON: Expects an array or object.');
+        if (is_array($data) === false) {
+            throw new HttpBadRequestException('The JSON payload must be in the form of an array or an object.');
         }
 
         return $data;

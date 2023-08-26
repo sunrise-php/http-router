@@ -16,10 +16,10 @@ namespace Sunrise\Http\Router;
 use ReflectionClass;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\LogicException;
+use Sunrise\Http\Router\ParameterResolving\ParameterResolutionerInterface;
 
 use function class_exists;
 use function sprintf;
-use function var_dump;
 
 /**
  * ClassResolver
@@ -57,7 +57,8 @@ final class ClassResolver implements ClassResolverInterface
      * @inheritDoc
      *
      * @throws InvalidArgumentException If the class doesn't exist.
-     * @throws LogicException If the class cannot be resolved.
+     *
+     * @throws LogicException If the class couldn't be resolved.
      */
     public function resolveClass(string $fqn): object
     {
@@ -66,12 +67,12 @@ final class ClassResolver implements ClassResolverInterface
         }
 
         if (!class_exists($fqn)) {
-            throw new InvalidArgumentException(sprintf('The class %s does not exist', $fqn));
+            throw new InvalidArgumentException(sprintf('The class %s does not exist.', $fqn));
         }
 
         $class = new ReflectionClass($fqn);
         if (!$class->isInstantiable()) {
-            throw new LogicException(sprintf('The class %s cannot be initialized', $fqn));
+            throw new LogicException(sprintf('The class %s cannot be initialized.', $fqn));
         }
 
         $arguments = [];
@@ -83,7 +84,7 @@ final class ClassResolver implements ClassResolverInterface
         }
 
         /** @var T $instance */
-        $instance = new $fqn(...$arguments);
+        $instance = $class->newInstance(...$arguments);
 
         $this->resolvedClasses[$fqn] = $instance;
 

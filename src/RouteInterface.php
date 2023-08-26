@@ -106,6 +106,16 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
     public function getAttributes(): array;
 
     /**
+     * Gets the route attribute by its given name
+     *
+     * @param non-empty-string $name
+     * @param mixed $default
+     *
+     * @return mixed
+     */
+    public function getAttribute(string $name, mixed $default = null): mixed;
+
+    /**
      * Gets the route summary
      *
      * @return string

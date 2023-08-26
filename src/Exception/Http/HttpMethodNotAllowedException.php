@@ -16,8 +16,6 @@ namespace Sunrise\Http\Router\Exception\Http;
 use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
-use function join;
-
 /**
  * HTTP Method Not Allowed Exception
  *
@@ -29,52 +27,30 @@ class HttpMethodNotAllowedException extends HttpException
 {
 
     /**
-     * Allowed HTTP methods
-     *
-     * @var list<string>
-     */
-    private array $allowedMethods;
-
-    /**
      * Constructor of the class
      *
-     * @param list<string> $allowedMethods
-     * @param string|null $message
+     * @param list<non-empty-string> $allowedMethods
+     * @param non-empty-string|null $message
      * @param int $code
      * @param Throwable|null $previous
      */
-    public function __construct(
-        array $allowedMethods,
-        ?string $message = null,
-        int $code = 0,
-        ?Throwable $previous = null
-    ) {
-        $message ??= 'Method Not Allowed';
+    // phpcs:ignore Generic.Files.LineLength
+    public function __construct(private array $allowedMethods, ?string $message = null, int $code = 0, ?Throwable $previous = null)
+    {
+        $message ??= 'The request couldn‘t be processed using the requested HTTP method for the resource.';
 
         parent::__construct(self::STATUS_METHOD_NOT_ALLOWED, $message, $code, $previous);
 
-        $this->allowedMethods = $allowedMethods;
+        $this->setReasonPhrase('Method Not Allowed');
 
-        $this->addHeaderField('Allow', $this->getJoinedAllowedMethods());
+        $this->addHeader('Allow', ...$allowedMethods);
     }
 
     /**
-     * Gets allowed HTTP methods
-     *
-     * @return list<string>
+     * @return list<non-empty-string>
      */
-    final public function getAllowedMethods(): array
+    public function getAllowedMethods(): array
     {
         return $this->allowedMethods;
-    }
-
-    /**
-     * Gets joined allowed HTTP methods
-     *
-     * @return string
-     */
-    final public function getJoinedAllowedMethods(): string
-    {
-        return join(',', $this->allowedMethods);
     }
 }

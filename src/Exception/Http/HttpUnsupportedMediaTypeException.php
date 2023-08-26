@@ -13,10 +13,9 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Exception\Http;
 
+use Sunrise\Http\Router\Entity\MediaType;
 use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
-
-use function join;
 
 /**
  * HTTP Unsupported Media Type Exception
@@ -29,52 +28,30 @@ class HttpUnsupportedMediaTypeException extends HttpException
 {
 
     /**
-     * Supported media types
-     *
-     * @var list<string>
-     */
-    private array $supportedMediaTypes = [];
-
-    /**
      * Constructor of the class
      *
-     * @param list<string> $supportedMediaTypes
-     * @param string|null $message
+     * @param list<MediaType> $supportedMediaTypes
+     * @param non-empty-string|null $message
      * @param int $code
      * @param Throwable|null $previous
      */
-    public function __construct(
-        array $supportedMediaTypes,
-        ?string $message = null,
-        int $code = 0,
-        ?Throwable $previous = null
-    ) {
-        $message ??= 'Unsupported Media Type';
+    // phpcs:ignore Generic.Files.LineLength
+    public function __construct(private array $supportedMediaTypes, ?string $message = null, int $code = 0, ?Throwable $previous = null)
+    {
+        $message ??= 'The request couldn‘t be processed due to an unsupported format of the request payload.';
 
         parent::__construct(self::STATUS_UNSUPPORTED_MEDIA_TYPE, $message, $code, $previous);
 
-        $this->supportedMediaTypes = $supportedMediaTypes;
+        $this->setReasonPhrase('Unsupported Media Type');
 
-        $this->addHeaderField('Accept', $this->getJoinedSupportedTypes());
+        $this->addHeader('Accept', ...$supportedMediaTypes);
     }
 
     /**
-     * Gets supported media types
-     *
-     * @return list<string>
+     * @return list<MediaType>
      */
-    final public function getSupportedTypes(): array
+    public function getSupportedMediaTypes(): array
     {
         return $this->supportedMediaTypes;
-    }
-
-    /**
-     * Gets joined supported media types
-     *
-     * @return string
-     */
-    final public function getJoinedSupportedTypes(): string
-    {
-        return join(',', $this->supportedMediaTypes);
     }
 }

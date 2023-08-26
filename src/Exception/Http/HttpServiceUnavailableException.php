@@ -29,14 +29,17 @@ class HttpServiceUnavailableException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param string|null $message
+     * @param non-empty-string|null $message
      * @param int $code
      * @param Throwable|null $previous
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
-        $message ??= 'Service Unavailable';
+        // phpcs:ignore Generic.Files.LineLength
+        $message ??= 'The server is currently unable to handle the request due to temporary overloading or maintenance.';
 
         parent::__construct(self::STATUS_SERVICE_UNAVAILABLE, $message, $code, $previous);
+
+        $this->setReasonPhrase('Service Unavailable');
     }
 }
