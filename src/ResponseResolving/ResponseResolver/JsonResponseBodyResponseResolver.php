@@ -57,9 +57,9 @@ final class JsonResponseBodyResponseResolver implements ResponseResolverInterfac
      * @throws LogicException If the resolver is used incorrectly.
      */
     public function resolveResponse(
-        mixed $response,
-        ServerRequestInterface $request,
         ReflectionFunction|ReflectionMethod $source,
+        ServerRequestInterface $request,
+        mixed $response,
     ) : ?ResponseInterface {
         /** @var list<ReflectionAttribute<JsonResponseBody>> $attributes */
         $attributes = $source->getAttributes(JsonResponseBody::class);

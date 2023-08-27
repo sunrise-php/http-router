@@ -16,18 +16,18 @@ namespace Sunrise\Http\Router\Annotation;
 use Attribute;
 
 /**
- * @since 2.11.0
+ * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
-final class Host
+#[Attribute(Attribute::TARGET_PARAMETER)]
+final class RequestCookie
 {
 
     /**
      * Constructor of the class
      *
-     * @param non-empty-string $value
+     * @param non-empty-string $name
      */
-    public function __construct(public string $value)
+    public function __construct(public string $name)
     {
     }
 }

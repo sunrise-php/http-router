@@ -68,7 +68,7 @@ final class BackedEnumTypeConverter implements TypeConverterInterface
 
         if (is_string($value)) {
             // As part of the support for HTML forms and other untyped data sources,
-            // an instance of BackedEnum should not be created from an empty string,
+            // an instance of Enum should not be created from an empty string,
             // therefore, such values should be treated as NULL.
             if (trim($value) === '') {
                 // phpcs:ignore Generic.Files.LineLength
@@ -98,7 +98,7 @@ final class BackedEnumTypeConverter implements TypeConverterInterface
 
             throw new InvalidArgumentException(sprintf(
                 'This value must be one of: %s.',
-                join(', ', $choices)
+                join(', ', $choices),
             ), previous: $e);
         }
     }

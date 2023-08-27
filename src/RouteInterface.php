@@ -16,9 +16,6 @@ namespace Sunrise\Http\Router;
 use Fig\Http\Message\RequestMethodInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use ReflectionClass;
-use ReflectionMethod;
-use ReflectionFunction;
 use Sunrise\Http\Router\Entity\MediaType;
 
 /**
@@ -42,15 +39,6 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
      * @return string
      */
     public function getName(): string;
-
-    /**
-     * Gets the route host
-     *
-     * @return string|null
-     *
-     * @since 2.6.0
-     */
-    public function getHost(): ?string;
 
     /**
      * Gets the route path
@@ -143,15 +131,6 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
     public function getTags(): array;
 
     /**
-     * Gets the route holder
-     *
-     * @return ReflectionClass|ReflectionMethod|ReflectionFunction
-     *
-     * @since 2.14.0
-     */
-    public function getHolder(): ReflectionClass|ReflectionMethod|ReflectionFunction;
-
-    /**
      * Sets the given name to the route
      *
      * @param string $name
@@ -159,17 +138,6 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
      * @return RouteInterface
      */
     public function setName(string $name): RouteInterface;
-
-    /**
-     * Sets the given host to the route
-     *
-     * @param string|null $host
-     *
-     * @return RouteInterface
-     *
-     * @since 2.6.0
-     */
-    public function setHost(?string $host): RouteInterface;
 
     /**
      * Sets the given path to the route

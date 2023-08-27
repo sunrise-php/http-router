@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\ResponseResolving;
 
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
@@ -20,6 +21,7 @@ use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\ResponseHeader;
 use Sunrise\Http\Router\Annotation\ResponseStatus;
+use Sunrise\Http\Router\Event\ResponseResolvedEvent;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ResponseResolving\ResponseResolver\ResponseResolverInterface;
 
@@ -40,6 +42,15 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
     private array $resolvers = [];
 
     /**
+     * Constructor of the class
+     *
+     * @param EventDispatcherInterface|null $eventDispatcher
+     */
+    public function __construct(private ?EventDispatcherInterface $eventDispatcher = null)
+    {
+    }
+
+    /**
      * @inheritDoc
      */
     public function addResolver(ResponseResolverInterface ...$resolvers): void
@@ -55,18 +66,18 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
      * @throws LogicException If the response couldn't be resolved to PSR-7 response.
      */
     public function resolveResponse(
-        mixed $response,
-        ServerRequestInterface $request,
         ReflectionFunction|ReflectionMethod $source,
+        ServerRequestInterface $request,
+        mixed $response,
     ) : ResponseInterface {
         if ($response instanceof ResponseInterface) {
-            return $response;
+            return $this->handleResponse($source, $request, $response);
         }
 
         foreach ($this->resolvers as $resolver) {
-            $result = $resolver->resolveResponse($response, $request, $source);
-            if ($result instanceof ResponseInterface) {
-                return $this->supplementResponse($result, $source);
+            $resolvedResponse = $resolver->resolveResponse($source, $request, $response);
+            if ($resolvedResponse instanceof ResponseInterface) {
+                return $this->handleResponse($source, $request, $response);
             }
         }
 
@@ -78,16 +89,18 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
     }
 
     /**
-     * Supplements the given response
+     * Handles the given response
      *
-     * @param ResponseInterface $response
      * @param ReflectionFunction|ReflectionMethod $source
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
      *
      * @return ResponseInterface
      */
-    private function supplementResponse(
-        ResponseInterface $response,
+    private function handleResponse(
         ReflectionFunction|ReflectionMethod $source,
+        ServerRequestInterface $request,
+        mixed $response,
     ) : ResponseInterface {
         /** @var list<ReflectionAttribute<ResponseStatus>> $attributes */
         $attributes = $source->getAttributes(ResponseStatus::class);
@@ -101,6 +114,12 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
         foreach ($attributes as $attribute) {
             $header = $attribute->newInstance();
             $response = $response->withHeader($header->name, $header->value);
+        }
+
+        if (isset($this->eventDispatcher)) {
+            $event = new ResponseResolvedEvent($source, $request, $response);
+            $this->eventDispatcher->dispatch($event);
+            $response = $event->getResponse();
         }
 
         return $response;

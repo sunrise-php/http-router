@@ -59,7 +59,7 @@ final class DateTimeTypeConverter implements TypeConverterInterface
         }
 
         // As part of the support for HTML forms and other untyped data sources,
-        // an instance of DateTime* should not be created from an empty string,
+        // an instance of DateTime should not be created from an empty string,
         // therefore, such values should be treated as NULL.
         if (trim($value) === '') {
             return $type->allowsNull() ? yield : throw new InvalidArgumentException('This value must not be empty.');

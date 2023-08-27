@@ -29,16 +29,27 @@ class HttpInternalServerErrorException extends HttpException
     /**
      * Constructor of the class
      *
+     * @param Throwable $error
      * @param non-empty-string|null $message
      * @param int $code
-     * @param Throwable|null $previous
      */
-    public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
+    public function __construct(Throwable $error, ?string $message = null, int $code = 0)
     {
         $message ??= 'The server encountered an unexpected condition that prevented it from fulfilling the request.';
 
-        parent::__construct(self::STATUS_INTERNAL_SERVER_ERROR, $message, $code, $previous);
+        parent::__construct(self::STATUS_INTERNAL_SERVER_ERROR, $message, $code, $error);
 
         $this->setReasonPhrase('Internal Server Error');
+    }
+
+    /**
+     * Gets the error
+     *
+     * @return Throwable
+     */
+    public function getError(): Throwable
+    {
+        /** @var Throwable */
+        return $this->getPrevious();
     }
 }

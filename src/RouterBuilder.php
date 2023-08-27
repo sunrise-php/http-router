@@ -48,11 +48,6 @@ final class RouterBuilder
     private $patterns = null;
 
     /**
-     * @var array<string, string[]>|null
-     */
-    private $hosts = null;
-
-    /**
      * @var MiddlewareInterface[]|null
      */
     private $middlewares = null;
@@ -176,20 +171,6 @@ final class RouterBuilder
     }
 
     /**
-     * Sets the given hosts to the builder
-     *
-     * @param array<string, string[]>|null $hosts
-     *
-     * @return self
-     */
-    public function setHosts(?array $hosts): self
-    {
-        $this->hosts = $hosts;
-
-        return $this;
-    }
-
-    /**
      * Sets the given middlewares to the builder
      *
      * @param MiddlewareInterface[]|null $middlewares
@@ -228,10 +209,6 @@ final class RouterBuilder
 
         if (!empty($this->patterns)) {
             $router->addPatterns($this->patterns);
-        }
-
-        if (!empty($this->hosts)) {
-            $router->addHosts($this->hosts);
         }
 
         if (!empty($this->middlewares)) {

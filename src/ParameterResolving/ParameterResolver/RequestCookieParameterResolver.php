@@ -18,7 +18,7 @@ use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionParameter;
-use Sunrise\Http\Router\Annotation\RequestHeader;
+use Sunrise\Http\Router\Annotation\RequestCookie;
 use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
@@ -27,11 +27,11 @@ use Sunrise\Http\Router\TypeConversion\TypeConversionerInterface;
 use function sprintf;
 
 /**
- * RequestHeaderParameterResolver
+ * RequestCookieParameterResolver
  *
  * @since 3.0.0
  */
-final class RequestHeaderParameterResolver implements ParameterResolverInterface
+final class RequestCookieParameterResolver implements ParameterResolverInterface
 {
 
     /**
@@ -48,19 +48,19 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
      *
      * @throws LogicException If the resolver is used incorrectly.
      *
-     * @throws HttpBadRequestException If a header was missed or invalid.
+     * @throws HttpBadRequestException If a cookie was missed or invalid.
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
-        /** @var list<ReflectionAttribute<RequestHeader>> $attributes */
-        $attributes = $parameter->getAttributes(RequestHeader::class);
+        /** @var list<ReflectionAttribute<RequestCookie>> $attributes */
+        $attributes = $parameter->getAttributes(RequestCookie::class);
         if ($attributes === []) {
             return;
         }
 
         if (!$parameter->hasType()) {
             throw new LogicException(sprintf(
-                'To use the #[RequestHeader] attribute, the parameter {%s} must be typed.',
+                'To use the #[RequestCookie] attribute, the parameter {%s} must be typed.',
                 ParameterResolutioner::stringifyParameter($parameter),
             ));
         }
@@ -71,9 +71,10 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
             );
         }
 
-        $header = $attributes[0]->newInstance();
+        $cookie = $attributes[0]->newInstance();
+        $cookies = $context->getCookieParams();
 
-        if (!$context->hasHeader($header->name)) {
+        if (!isset($cookies[$cookie->name])) {
             if ($parameter->isDefaultValueAvailable()) {
                 return yield $parameter->getDefaultValue();
             } elseif ($parameter->allowsNull()) {
@@ -81,20 +82,20 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
             }
 
             throw new HttpBadRequestException(sprintf(
-                'The HTTP header %s must be provided.',
-                $header->name,
+                'The cookie %s must be provided.',
+                $cookie->name,
             ));
         }
 
         try {
             yield $this->typeConversioner->castValue(
-                $context->getHeaderLine($header->name),
+                $cookies[$cookie->name],
                 $parameter->getType(),
             );
         } catch (InvalidArgumentException $violation) {
             throw new HttpBadRequestException(sprintf(
-                'The value of the HTTP header %s is not valid. %s',
-                $header->name,
+                'The value of the cookie %s is not valid. %s',
+                $cookie->name,
                 $violation->getMessage(),
             ), previous: $violation);
         }

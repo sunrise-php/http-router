@@ -15,7 +15,6 @@ namespace Sunrise\Http\Router;
 
 use Psr\Http\Server\MiddlewareInterface;
 use Sunrise\Http\Router\Entity\MediaType;
-use Sunrise\Http\Router\Exception\RouteAlreadyExistsException;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
 use Iterator;
 
@@ -31,19 +30,9 @@ class RouteCollection implements RouteCollectionInterface
 {
 
     /**
-     * @var string
-     */
-    private const ANY = '*';
-
-    /**
      * @var array<string, RouteInterface>
      */
     private array $routes = [];
-
-    /**
-     * @var array<string, list<string>>
-     */
-    private array $hostMap = [];
 
     /**
      * Constructor of the class
@@ -78,24 +67,6 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * @inheritDoc
      */
-    public function allOnHost(?string $host): Iterator
-    {
-        if (isset($host) && isset($this->hostMap[$host])) {
-            foreach ($this->hostMap[$host] as $name) {
-                yield $this->routes[$name];
-            }
-        }
-
-        if (isset($this->hostMap[self::ANY])) {
-            foreach ($this->hostMap[self::ANY] as $name) {
-                yield $this->routes[$name];
-            }
-        }
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function has(string $name): bool
     {
         return isset($this->routes[$name]);
@@ -122,30 +93,7 @@ class RouteCollection implements RouteCollectionInterface
     public function add(RouteInterface ...$routes): RouteCollectionInterface
     {
         foreach ($routes as $route) {
-            $name = $route->getName();
-            $host = $route->getHost() ?? self::ANY;
-
-            if (isset($this->routes[$name])) {
-                throw new RouteAlreadyExistsException(sprintf(
-                    'The collection already contains a route with the name %s',
-                    $name
-                ));
-            }
-
-            $this->routes[$name] = $route;
-            $this->hostMap[$host][] = $name;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setHost(string $host): RouteCollectionInterface
-    {
-        foreach ($this->routes as $route) {
-            $route->setHost($host);
+            $this->routes[$route->getName()] = $route;
         }
 
         return $this;

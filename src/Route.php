@@ -17,12 +17,8 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use ReflectionFunction;
-use ReflectionMethod;
 use Sunrise\Http\Router\Entity\MediaType;
-use Sunrise\Http\Router\RequestHandler\CallbackRequestHandler;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
-use ReflectionClass;
 
 use function rtrim;
 use function strtoupper;
@@ -41,13 +37,6 @@ class Route implements RouteInterface
      * @var string
      */
     private string $name;
-
-    /**
-     * The route host
-     *
-     * @var string|null
-     */
-    private ?string $host = null;
 
     /**
      * The route path
@@ -156,14 +145,6 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function getHost(): ?string
-    {
-        return $this->host;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function getPath(): string
     {
         return $this->path;
@@ -252,31 +233,9 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function getHolder(): ReflectionClass|ReflectionMethod|ReflectionFunction
-    {
-        if ($this->requestHandler instanceof CallbackRequestHandler) {
-            return $this->requestHandler->getReflection();
-        }
-
-        return new ReflectionClass($this->requestHandler);
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function setName(string $name): RouteInterface
     {
         $this->name = $name;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setHost(?string $host): RouteInterface
-    {
-        $this->host = $host;
 
         return $this;
     }
@@ -540,6 +499,11 @@ class Route implements RouteInterface
             return $this->requestHandler->handle($request);
         }
 
-        return (new QueueableRequestHandler($this->requestHandler, ...$this->middlewares))->handle($request);
+        $requestHandler = new QueueableRequestHandler(
+            $this->requestHandler,
+            ...$this->middlewares,
+        );
+
+        return $requestHandler->handle($request);
     }
 }

@@ -17,8 +17,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use ReflectionFunction;
-use ReflectionMethod;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutionerInterface;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolver\ObjectInjectionParameterResolver;
 use Sunrise\Http\Router\ResponseResolving\ResponseResolutionerInterface;
@@ -72,21 +70,11 @@ final class CallbackMiddleware implements MiddlewareInterface
     }
 
     /**
-     * Gets the callback's reflection
-     *
-     * @return ReflectionFunction|ReflectionMethod
-     */
-    public function getReflection(): ReflectionFunction|ReflectionMethod
-    {
-        return reflect_callback($this->callback);
-    }
-
-    /**
      * @inheritDoc
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $source = $this->getReflection();
+        $source = reflect_callback($this->callback);
 
         $arguments = $this->parameterResolutioner
             ->withContext($request)
@@ -99,6 +87,6 @@ final class CallbackMiddleware implements MiddlewareInterface
         /** @var mixed $response */
         $response = ($this->callback)(...$arguments);
 
-        return $this->responseResolutioner->resolveResponse($response, $request, $source);
+        return $this->responseResolutioner->resolveResponse($source, $request, $response);
     }
 }

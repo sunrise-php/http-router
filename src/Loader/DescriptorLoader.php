@@ -25,7 +25,6 @@ use ReflectionMethod;
 use RegexIterator;
 use Sunrise\Http\Router\Annotation\Consumes;
 use Sunrise\Http\Router\Annotation\Description;
-use Sunrise\Http\Router\Annotation\Host;
 use Sunrise\Http\Router\Annotation\Method;
 use Sunrise\Http\Router\Annotation\Middleware;
 use Sunrise\Http\Router\Annotation\Postfix;
@@ -311,9 +310,9 @@ final class DescriptorLoader implements LoaderInterface
                 $descriptor->attributes,
             );
 
-            $route->setHost($descriptor->host);
             $route->setConsumesMediaTypes(...$descriptor->consumes);
             $route->setProducesMediaTypes(...$descriptor->produces);
+
             $route->setSummary($descriptor->summary);
             $route->setDescription($descriptor->description);
             $route->setTags(...$descriptor->tags);
@@ -445,11 +444,6 @@ final class DescriptorLoader implements LoaderInterface
     // phpcs:ignore Generic.Files.LineLength
     private function supplementDescriptorFromClassOrMethod(Route $descriptor, ReflectionClass|ReflectionMethod $holder): void
     {
-        $annotations = $this->getAnnotations(Host::class, $holder);
-        if ($annotations->valid()) {
-            $descriptor->host = $annotations->current()->value;
-        }
-
         $annotations = $this->getAnnotations(Prefix::class, $holder);
         if ($annotations->valid()) {
             $descriptor->path = $annotations->current()->value . $descriptor->path;

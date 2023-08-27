@@ -75,11 +75,12 @@ final class PathVariableParameterResolver implements ParameterResolverInterface
         $route = $context->getAttribute('@route');
 
         if (! $route instanceof RouteInterface) {
-            throw new LogicException(
+            throw new LogicException(sprintf(
                 'The #[PathVariable] attribute cannot be applied to the parameter {%s}, ' .
                 'because the request does not contain information about the requested route, ' .
-                'at least at this level of the application.'
-            );
+                'at least at this level of the application.',
+                ParameterResolutioner::stringifyParameter($parameter),
+            ));
         }
 
         $variable = $attributes[0]->newInstance();
@@ -108,7 +109,7 @@ final class PathVariableParameterResolver implements ParameterResolverInterface
             yield $this->typeConversioner->castValue($variableValue, $parameter->getType());
         } catch (InvalidArgumentException $violation) {
             throw new HttpNotFoundException(sprintf(
-                'The request cannot be completed with an invalid "%s". %s',
+                'The request cannot be completed with an invalid %s. %s',
                 $variableName,
                 $violation->getMessage(),
             ), previous: $violation);

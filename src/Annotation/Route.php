@@ -52,7 +52,6 @@ final class Route implements RequestMethodInterface
      * Constructor of the class
      *
      * @param  non-empty-string                $name         The route's name
-     * @param  non-empty-string|null           $host         The route's host
      * @param  non-empty-string                $path         The route's path
      * @param  non-empty-string|null           $method       The route's method
      * @param  list<non-empty-string>          $methods      The route's methods
@@ -65,7 +64,6 @@ final class Route implements RequestMethodInterface
      */
     public function __construct(
         public string $name,
-        public ?string $host = null,
         public string $path = '/',
         ?string $method = null,
         public array $methods = [],

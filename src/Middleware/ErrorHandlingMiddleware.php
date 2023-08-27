@@ -26,14 +26,12 @@ use Sunrise\Http\Router\Entity\MediaType;
 use Sunrise\Http\Router\Event\ErrorEvent;
 use Sunrise\Http\Router\Exception\Http\HttpInternalServerErrorException;
 use Sunrise\Http\Router\Exception\HttpExceptionInterface;
+use Sunrise\Http\Router\Helper\ViewLoader;
 use Sunrise\Http\Router\ServerRequest;
 use Throwable;
 
 use function extension_loaded;
 use function json_encode;
-use function ob_end_clean;
-use function ob_get_clean;
-use function ob_start;
 
 use const JSON_PARTIAL_OUTPUT_ON_ERROR;
 use const LIBXML_COMPACT;
@@ -113,16 +111,14 @@ final class ErrorHandlingMiddleware implements MiddlewareInterface
     {
         $this->logger?->error($error->getMessage(), ['error' => $error]);
 
-        $httpError = new HttpInternalServerErrorException(previous: $error);
+        $httpError = new HttpInternalServerErrorException($error);
 
         return $this->handleHttpError($httpError, $request);
     }
 
     private function renderHtmlError(HttpExceptionInterface $error): string
     {
-        $view = __DIR__ . '/../../resources/views/error.phtml';
-
-        return $this->loadView($view, $error);
+        return ViewLoader::loadView('error.html.php', $error);
     }
 
     private function renderJsonError(HttpExceptionInterface $error): string
@@ -151,27 +147,7 @@ final class ErrorHandlingMiddleware implements MiddlewareInterface
             $violationsChild->addChild('code', $violation->code);
         }
 
-        /** @var string */
+        /** @var non-empty-string */
         return $errorChild->asXML();
-    }
-
-    private function loadView(string $filename, HttpExceptionInterface $error): string
-    {
-        try {
-            ob_start();
-
-            (function (string $filename): void {
-                /** @psalm-suppress UnresolvableInclude */
-                include $filename;
-            })->call($error, $filename);
-
-            return ob_get_clean();
-        } catch (Throwable $exception) {
-            while (ob_get_level()) {
-                ob_end_clean();
-            }
-
-            throw $exception;
-        }
     }
 }

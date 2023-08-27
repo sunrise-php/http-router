@@ -84,7 +84,6 @@ class RouteListCommand extends Command
 
         $table->setHeaders([
             'Name',
-            'Host',
             'Path',
             'Verb',
         ]);
@@ -92,7 +91,6 @@ class RouteListCommand extends Command
         foreach ($this->getRouter()->getRoutes()->all() as $route) {
             $table->addRow([
                 $route->getName(),
-                $route->getHost() ?? '*',
                 path_plain($route->getPath()),
                 \join(', ', $route->getMethods()),
             ]);

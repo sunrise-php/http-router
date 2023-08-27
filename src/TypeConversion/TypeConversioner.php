@@ -56,7 +56,7 @@ final class TypeConversioner implements TypeConversionerInterface
         }
 
         throw new LogicException(sprintf(
-            'Unable to convert the value {%s} to the type %s.',
+            'Unable to convert the value {%s} to the type {%s}.',
             get_debug_type($value),
             (string) $type,
         ));

@@ -37,20 +37,6 @@ interface RouteCollectionInterface extends Countable, IteratorAggregate
     public function all(): Iterator;
 
     /**
-     * Gets all routes from the collection by the given host
-     *
-     * This method should first return all routes that are served on the given host,
-     * and then return all routes that are not bound to any host.
-     *
-     * @param string|null $host
-     *
-     * @return Iterator<int, RouteInterface>
-     *
-     * @since 3.0.0
-     */
-    public function allOnHost(?string $host): Iterator;
-
-    /**
      * Checks by the given name if a route exists in the collection
      *
      * @param string $name
@@ -86,17 +72,6 @@ interface RouteCollectionInterface extends Countable, IteratorAggregate
      *         If the collection already contains a route with the name.
      */
     public function add(RouteInterface ...$routes): RouteCollectionInterface;
-
-    /**
-     * Sets the given host to all routes in the collection
-     *
-     * @param string $host
-     *
-     * @return RouteCollectionInterface
-     *
-     * @since 2.9.0
-     */
-    public function setHost(string $host): RouteCollectionInterface;
 
     /**
      * Sets the given consumes media type(s) to all routes in the collection

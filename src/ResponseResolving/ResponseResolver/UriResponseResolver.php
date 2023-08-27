@@ -41,9 +41,9 @@ final class UriResponseResolver implements ResponseResolverInterface
      * @inheritDoc
      */
     public function resolveResponse(
-        mixed $response,
-        ServerRequestInterface $request,
         ReflectionFunction|ReflectionMethod $source,
+        ServerRequestInterface $request,
+        mixed $response,
     ) : ?ResponseInterface {
         if ($response instanceof UriInterface) {
             return $this->responseFactory->createResponse(302)

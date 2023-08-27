@@ -22,7 +22,7 @@ use Throwable;
  *
  * @since 3.0.0
  */
-final class ErrorEvent
+final class ErrorEvent extends AbstractEvent
 {
 
     /**

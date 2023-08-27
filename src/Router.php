@@ -46,11 +46,6 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     ];
 
     /**
-     * @var HostTable
-     */
-    private HostTable $hosts;
-
-    /**
      * @var RouteCollectionInterface
      */
     private RouteCollectionInterface $routes;
@@ -73,16 +68,13 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     /**
      * Constructor of the class
      *
-     * @param HostTable|null $hosts
      * @param RouteCollectionInterface|null $routes
      *
      * @since 3.0.0
      */
     public function __construct(
-        ?HostTable $hosts = null,
         ?RouteCollectionInterface $routes = null
     ) {
-        $this->hosts = $hosts ?? new HostTable();
         $this->routes = $routes ?? new RouteCollection();
     }
 
@@ -98,18 +90,6 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
         foreach ($loaders as $loader) {
             $this->routes->add(...$loader->load()->all());
         }
-    }
-
-    /**
-     * Gets the router's host table
-     *
-     * @return HostTable
-     *
-     * @since 2.6.0
-     */
-    public function getHosts(): HostTable
-    {
-        return $this->hosts;
     }
 
     /**
@@ -238,15 +218,11 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     {
         $request = ServerRequest::from($request);
         $requestUri = $request->getUri();
-        $requestHost = $requestUri->getHost();
         $requestPath = $requestUri->getPath();
         $requestMethod = $request->getMethod();
         $allowedMethods = [];
 
-        $host = $this->hosts->resolve($requestHost);
-        $routes = $this->routes->allOnHost($host);
-
-        foreach ($routes as $route) {
+        foreach ($this->routes->all() as $route) {
             // https://github.com/sunrise-php/http-router/issues/50
             // https://tools.ietf.org/html/rfc7231#section-6.5.5
             if (!path_match($route->getPath(), $requestPath, $attributes)) {
@@ -292,20 +268,18 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
      */
     public function run(ServerRequestInterface $request): ResponseInterface
     {
-        // TODO: request event
-
         // lazy resolving of the given request...
         $routing = new CallableRequestHandler(
             function (ServerRequestInterface $request): ResponseInterface {
-                $this->matchedRoute = $this->match($request);
+                $this->matchedRoute = $route = $this->match($request);
 
                 if (isset($this->eventDispatcher)) {
-                    $event = new RouteEvent($this->matchedRoute, $request);
+                    $event = new RouteEvent($route, $request);
                     $this->eventDispatcher->dispatch($event);
                     $request = $event->getRequest();
                 }
 
-                return $this->matchedRoute->handle($request);
+                return $route->handle($request);
             }
         );
 
@@ -313,11 +287,12 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
             return $routing->handle($request);
         }
 
-        $response = (new QueueableRequestHandler($routing, ...$this->middlewares))->handle($request);
+        $requestHandler = new QueueableRequestHandler(
+            $routing,
+            ...$this->middlewares,
+        );
 
-        // TODO: response event
-
-        return $response;
+        return $requestHandler->handle($request);
     }
 
     /**
@@ -325,18 +300,23 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $this->matchedRoute = $this->match($request);
+        $this->matchedRoute = $route = $this->match($request);
 
         if (isset($this->eventDispatcher)) {
-            $event = new RouteEvent($this->matchedRoute, $request);
+            $event = new RouteEvent($route, $request);
             $this->eventDispatcher->dispatch($event);
             $request = $event->getRequest();
         }
 
         if (empty($this->middlewares)) {
-            return $this->matchedRoute->handle($request);
+            return $route->handle($request);
         }
 
-        return (new QueueableRequestHandler($this->matchedRoute, ...$this->middlewares))->handle($request);
+        $requestHandler = new QueueableRequestHandler(
+            $route,
+            ...$this->middlewares,
+        );
+
+        return $requestHandler->handle($request);
     }
 }

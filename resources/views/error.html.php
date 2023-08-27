@@ -68,10 +68,10 @@ use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 <body>
     <div class="content-container">
         <h1><?= $this->getReasonPhrase() ?></h1>
-        <p><?= $this->getMessage() ?></p>
+        <p><?= htmlentities($this->getMessage()) ?></p>
         <div class="violations-container">
             <?php foreach ($this->getViolations() as $violation): ?>
-                <p><span class="violation-property-path-label"><?= $violation->source ?></span> <?= $violation->message ?></p>
+                <p><span class="violation-property-path-label"><?= $violation->source ?></span> <?= htmlentities($violation->message) ?></p>
             <?php endforeach; ?>
         </div>
         <div class="navigation-container">
