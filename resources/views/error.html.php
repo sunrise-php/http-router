@@ -6,6 +6,8 @@ use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 
 /** @var HttpExceptionInterface $this */
 
+$e = static fn(string $string): string => htmlspecialchars($string, ENT_HTML5 | ENT_SUBSTITUTE, 'UTF-8', false);
+
 ?>
 <!doctype html>
 <html lang="en">
@@ -68,10 +70,10 @@ use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 <body>
     <div class="content-container">
         <h1><?= $this->getReasonPhrase() ?></h1>
-        <p><?= htmlentities($this->getMessage()) ?></p>
+        <p><?= $e($this->getMessage()) ?></p>
         <div class="violations-container">
             <?php foreach ($this->getViolations() as $violation): ?>
-                <p><span class="violation-property-path-label"><?= $violation->source ?></span> <?= htmlentities($violation->message) ?></p>
+                <p><span class="violation-property-path-label"><?= $violation->source ?></span> <?= $e($violation->message) ?></p>
             <?php endforeach; ?>
         </div>
         <div class="navigation-container">
