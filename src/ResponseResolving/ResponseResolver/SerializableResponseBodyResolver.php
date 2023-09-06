@@ -13,41 +13,45 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\ResponseResolving\ResponseResolver;
 
-use JsonException;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionFunction;
 use ReflectionMethod;
-use Sunrise\Http\Router\Annotation\JsonResponseBody;
+use Sunrise\Http\Router\Annotation\SerializableResponseBody;
+use Sunrise\Http\Router\Entity\MediaType;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ResponseResolving\ResponseResolutioner;
+use Sunrise\Http\Router\ServerRequest;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Encoder\XmlEncoder;
+use Symfony\Component\Serializer\SerializerInterface;
+use Throwable;
 
-use function json_encode;
 use function sprintf;
 
-use const JSON_THROW_ON_ERROR;
-
 /**
- * JsonResponseBodyResponseResolver
+ * SerializableResponseBodyResolver
+ *
+ * @link https://github.com/symfony/serializer
  *
  * @since 3.0.0
- *
- * @link https://www.php.net/manual/en/book.json.php
  */
-final class JsonResponseBodyResponseResolver implements ResponseResolverInterface
+final class SerializableResponseBodyResolver implements ResponseResolverInterface
 {
 
     /**
      * Constructor of the class
      *
      * @param ResponseFactoryInterface $responseFactory
-     * @param int $options
+     * @param SerializerInterface $serializer
+     * @param array<non-empty-string, mixed> $context Default serializing context
      */
     public function __construct(
         private ResponseFactoryInterface $responseFactory,
-        private int $options = 0,
+        private SerializerInterface $serializer,
+        private array $context = [],
     ) {
     }
 
@@ -61,17 +65,29 @@ final class JsonResponseBodyResponseResolver implements ResponseResolverInterfac
         ServerRequestInterface $request,
         mixed $response,
     ) : ?ResponseInterface {
-        /** @var list<ReflectionAttribute<JsonResponseBody>> $attributes */
-        $attributes = $source->getAttributes(JsonResponseBody::class);
+        /** @var list<ReflectionAttribute<SerializableResponseBody>> $attributes */
+        $attributes = $source->getAttributes(SerializableResponseBody::class);
         if ($attributes === []) {
             return null;
         }
 
         $attribute = $attributes[0]->newInstance();
 
+        $serverProducesMediaTypes = [MediaType::json(), MediaType::xml()];
+
+        $clientPreferredMediaType = ServerRequest::from($request)
+            ->getClientPreferredMediaType(...$serverProducesMediaTypes);
+
+        $format = match ($clientPreferredMediaType) {
+            $serverProducesMediaTypes[0] => JsonEncoder::FORMAT,
+            $serverProducesMediaTypes[1] => XmlEncoder::FORMAT,
+        };
+
+        $context = $attribute->context + $this->context;
+
         try {
-            $payload = json_encode($response, $this->options | $attribute->options | JSON_THROW_ON_ERROR);
-        } catch (JsonException $e) {
+            $payload = $this->serializer->serialize($response, $format, $context);
+        } catch (Throwable $e) {
             throw new LogicException(sprintf(
                 'Unable to encode a response from the source {%s} due to: %s',
                 ResponseResolutioner::stringifySource($source),
@@ -80,7 +96,7 @@ final class JsonResponseBodyResponseResolver implements ResponseResolverInterfac
         }
 
         $result = $this->responseFactory->createResponse(200)
-            ->withHeader('Content-Type', 'application/json; charset=UTF-8');
+            ->withHeader('Content-Type', $clientPreferredMediaType->build(['charset' => 'UTF-8']));
 
         $result->getBody()->write($payload);
 

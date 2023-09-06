@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Dto;
 
+use Sunrise\Http\Router\Exception\HttpExceptionInterface;
+
 /**
  * @since 3.0.0
  */
@@ -22,10 +24,33 @@ final class ErrorDto
     /**
      * Constructor of the class
      *
-     * @param non-empty-string $message
+     * @param int<100, 599> $statusCode
+     * @param string $reasonPhrase
+     * @param string $message
      * @param list<ViolationDto> $violations
      */
-    public function __construct(public string $message, public array $violations = [])
+    public function __construct(
+        public int $statusCode,
+        public string $reasonPhrase,
+        public string $message,
+        public array $violations,
+    ) {
+    }
+
+    /**
+     * Creates the error from the given HTTP error
+     *
+     * @param HttpExceptionInterface $error
+     *
+     * @return self
+     */
+    public static function fromHttpError(HttpExceptionInterface $error): self
     {
+        return new self(
+            $error->getStatusCode(),
+            $error->getReasonPhrase(),
+            $error->getMessage(),
+            $error->getViolations(),
+        );
     }
 }

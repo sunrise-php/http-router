@@ -19,7 +19,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Event\RouteEvent;
+use Sunrise\Http\Router\Event\RouteMatchedEvent;
 use Sunrise\Http\Router\Exception\Http\HttpMethodNotAllowedException;
 use Sunrise\Http\Router\Exception\Http\HttpNotFoundException;
 use Sunrise\Http\Router\Exception\Http\HttpUnsupportedMediaTypeException;
@@ -274,7 +274,7 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
                 $this->matchedRoute = $route = $this->match($request);
 
                 if (isset($this->eventDispatcher)) {
-                    $event = new RouteEvent($route, $request);
+                    $event = new RouteMatchedEvent($route, $request);
                     $this->eventDispatcher->dispatch($event);
                     $request = $event->getRequest();
                 }
@@ -303,7 +303,7 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
         $this->matchedRoute = $route = $this->match($request);
 
         if (isset($this->eventDispatcher)) {
-            $event = new RouteEvent($route, $request);
+            $event = new RouteMatchedEvent($route, $request);
             $this->eventDispatcher->dispatch($event);
             $request = $event->getRequest();
         }

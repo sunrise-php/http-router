@@ -15,7 +15,6 @@ namespace Sunrise\Http\Router;
 
 use Psr\Http\Server\MiddlewareInterface;
 use Sunrise\Http\Router\Entity\MediaType;
-use Sunrise\Http\Router\Exception\RouteAlreadyExistsException;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
 use Countable;
 use Iterator;
@@ -67,9 +66,6 @@ interface RouteCollectionInterface extends Countable, IteratorAggregate
      * @param RouteInterface ...$routes
      *
      * @return RouteCollectionInterface
-     *
-     * @throws RouteAlreadyExistsException
-     *         If the collection already contains a route with the name.
      */
     public function add(RouteInterface ...$routes): RouteCollectionInterface;
 

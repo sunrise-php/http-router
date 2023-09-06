@@ -17,11 +17,11 @@ use Psr\Http\Message\ServerRequestInterface;
 use Sunrise\Http\Router\RouteInterface;
 
 /**
- * RouteEvent
+ * RouteMatchedEvent
  *
- * @since 2.13.0
+ * @since 3.0.0
  */
-final class RouteEvent extends AbstractEvent
+final class RouteMatchedEvent extends AbstractEvent
 {
 
     /**

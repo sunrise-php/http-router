@@ -29,13 +29,13 @@ class HttpNotFoundException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param non-empty-string|null $message
+     * @param string|null $message
      * @param int $code
      * @param Throwable|null $previous
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
-        $message ??= 'The requested page or resource could not be found.';
+        $message ??= 'The requested page or resource couldn‘t be found.';
 
         parent::__construct(self::STATUS_NOT_FOUND, $message, $code, $previous);
 

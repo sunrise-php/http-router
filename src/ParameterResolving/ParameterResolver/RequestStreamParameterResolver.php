@@ -15,20 +15,17 @@ namespace Sunrise\Http\Router\ParameterResolving\ParameterResolver;
 
 use Generator;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\StreamInterface;
 use ReflectionNamedType;
 use ReflectionParameter;
 use Sunrise\Http\Router\Exception\LogicException;
-use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
-use Sunrise\Http\Router\RouteInterface;
-
-use function sprintf;
 
 /**
- * RequestRouteParameterResolver
+ * RequestStreamParameterResolver
  *
  * @since 3.0.0
  */
-final class RequestRouteParameterResolver implements ParameterResolverInterface
+final class RequestStreamParameterResolver implements ParameterResolverInterface
 {
 
     /**
@@ -40,7 +37,7 @@ final class RequestRouteParameterResolver implements ParameterResolverInterface
     {
         $type = $parameter->getType();
 
-        if (! $type instanceof ReflectionNamedType || $type->getName() !== RouteInterface::class) {
+        if (! $type instanceof ReflectionNamedType || $type->getName() !== StreamInterface::class) {
             return;
         }
 
@@ -50,17 +47,6 @@ final class RequestRouteParameterResolver implements ParameterResolverInterface
             );
         }
 
-        /** @var RouteInterface|null $route */
-        $route = $context->getAttribute('@route');
-
-        if (! $route instanceof RouteInterface && !$parameter->allowsNull()) {
-            throw new LogicException(sprintf(
-                'At this level of the application, the current request does not contain a route. ' .
-                'To suppress this error, the parameter {%s} should be nullable.',
-                ParameterResolutioner::stringifyParameter($parameter),
-            ));
-        }
-
-        yield $route;
+        yield $context->getBody();
     }
 }

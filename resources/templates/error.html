@@ -1,20 +1,9 @@
-<?php
-
-declare(strict_types=1);
-
-use Sunrise\Http\Router\Exception\HttpExceptionInterface;
-
-/** @var HttpExceptionInterface $this */
-
-$e = static fn(string $string): string => htmlspecialchars($string, ENT_HTML5 | ENT_SUBSTITUTE, 'UTF-8', false);
-
-?>
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?= sprintf('%d | %s', $this->getStatusCode(), $this->getReasonPhrase()) ?></title>
+    <title>{{ error.reasonPhrase }}</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
@@ -38,7 +27,7 @@ $e = static fn(string $string): string => htmlspecialchars($string, ENT_HTML5 | 
             display: inline-block;
             margin-right: 0.25em;
             padding: 0.25em 0.5em;
-            background-color: #C62828;
+            background-color: #B71C1C;
             border-radius: 0.25em;
             color: #FAFAFA;
             font-size: .8em;
@@ -69,12 +58,12 @@ $e = static fn(string $string): string => htmlspecialchars($string, ENT_HTML5 | 
 </head>
 <body>
     <div class="content-container">
-        <h1><?= $this->getReasonPhrase() ?></h1>
-        <p><?= $e($this->getMessage()) ?></p>
+        <h1>{{ error.statusCode }} | {{ error.reasonPhrase }}</h1>
+        <p>{{ error.message }}</p>
         <div class="violations-container">
-            <?php foreach ($this->getViolations() as $violation): ?>
-                <p><span class="violation-property-path-label"><?= $violation->source ?></span> <?= $e($violation->message) ?></p>
-            <?php endforeach; ?>
+            {% for violation in error.violations %}
+                <p><span class="violation-property-path-label">{{ violation.source }}</span> {{ violation.message }}</p>
+            {% endfor %}
         </div>
         <div class="navigation-container">
             <p>

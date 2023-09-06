@@ -124,7 +124,7 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
      *
      * @param ReflectionParameter $parameter
      *
-     * @return non-empty-string
+     * @return string
      */
     public static function stringifyParameter(ReflectionParameter $parameter): string
     {

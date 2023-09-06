@@ -16,11 +16,10 @@ namespace Sunrise\Http\Router\RequestHandler;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Router\Helper\CallbackReflector;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutionerInterface;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolver\ObjectInjectionParameterResolver;
 use Sunrise\Http\Router\ResponseResolving\ResponseResolutionerInterface;
-
-use function Sunrise\Http\Router\reflect_callback;
 
 /**
  * CallbackRequestHandler
@@ -73,7 +72,7 @@ final class CallbackRequestHandler implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $source = reflect_callback($this->callback);
+        $source = CallbackReflector::reflectCallback($this->callback);
 
         $arguments = $this->parameterResolutioner
             ->withContext($request)

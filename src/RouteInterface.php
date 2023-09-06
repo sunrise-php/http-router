@@ -25,7 +25,7 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
 {
 
     /**
-     * Request attribute name for a route instance
+     * A request's attribute name for a route instance
      *
      * @var string
      *
@@ -96,7 +96,7 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
     /**
      * Gets the route attribute by its given name
      *
-     * @param non-empty-string $name
+     * @param string $name
      * @param mixed $default
      *
      * @return mixed

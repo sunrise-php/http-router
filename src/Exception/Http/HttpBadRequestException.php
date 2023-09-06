@@ -29,7 +29,7 @@ class HttpBadRequestException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param non-empty-string|null $message
+     * @param string|null $message
      * @param int $code
      * @param Throwable|null $previous
      */

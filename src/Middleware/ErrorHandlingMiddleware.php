@@ -20,25 +20,25 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
-use SimpleXMLElement;
 use Sunrise\Http\Router\Dto\ErrorDto;
 use Sunrise\Http\Router\Entity\MediaType;
-use Sunrise\Http\Router\Event\ErrorEvent;
+use Sunrise\Http\Router\Event\ErrorOccurredEvent;
 use Sunrise\Http\Router\Exception\Http\HttpInternalServerErrorException;
 use Sunrise\Http\Router\Exception\HttpExceptionInterface;
-use Sunrise\Http\Router\Helper\ViewLoader;
 use Sunrise\Http\Router\ServerRequest;
+use Symfony\Component\Serializer\Encoder\JsonEncode;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Encoder\XmlEncoder;
+use Symfony\Component\Serializer\SerializerInterface;
 use Throwable;
 
-use function extension_loaded;
-use function json_encode;
-
 use const JSON_PARTIAL_OUTPUT_ON_ERROR;
-use const LIBXML_COMPACT;
-use const LIBXML_NOERROR;
-use const LIBXML_NOWARNING;
 
 /**
+ * Error handling middleware
+ *
+ * @link https://github.com/symfony/serializer
+ *
  * @since 3.0.0
  */
 final class ErrorHandlingMiddleware implements MiddlewareInterface
@@ -48,11 +48,13 @@ final class ErrorHandlingMiddleware implements MiddlewareInterface
      * Constructor of the class
      *
      * @param ResponseFactoryInterface $responseFactory
+     * @param SerializerInterface $serializer
      * @param EventDispatcherInterface|null $eventDispatcher
      * @param LoggerInterface|null $logger
      */
     public function __construct(
         private ResponseFactoryInterface $responseFactory,
+        private SerializerInterface $serializer,
         private ?EventDispatcherInterface $eventDispatcher = null,
         private ?LoggerInterface $logger = null,
     ) {
@@ -74,35 +76,35 @@ final class ErrorHandlingMiddleware implements MiddlewareInterface
 
     private function handleHttpError(HttpExceptionInterface $error, ServerRequestInterface $request): ResponseInterface
     {
-        $serverProducesMediaTypes = [MediaType::html(), MediaType::json()];
-
-        if (extension_loaded('simplexml')) {
-            $serverProducesMediaTypes[] = MediaType::xml();
-        }
-
-        $clientPreferredMediaType = ServerRequest::from($request)
-            ->getClientPreferredMediaType(...$serverProducesMediaTypes);
-
-        $response = $this->responseFactory->createResponse($error->getStatusCode())
-            ->withHeader('Content-Type', $clientPreferredMediaType->__toString());
+        $response = $this->responseFactory->createResponse($error->getStatusCode());
 
         foreach ($error->getHeaders() as [$fieldName, $fieldValue]) {
             $response = $response->withHeader($fieldName, $fieldValue);
         }
 
-        if ($clientPreferredMediaType->equals(MediaType::html())) {
-            $response->getBody()->write($this->renderHtmlError($error));
-        } elseif ($clientPreferredMediaType->equals(MediaType::json())) {
-            $response->getBody()->write($this->renderJsonError($error));
-        } elseif ($clientPreferredMediaType->equals(MediaType::xml())) {
-            $response->getBody()->write($this->renderXmlError($error));
-        }
-
         if (isset($this->eventDispatcher)) {
-            $event = new ErrorEvent($error, $request, $response);
+            $event = new ErrorOccurredEvent($error, $request, $response);
             $this->eventDispatcher->dispatch($event);
             $response = $event->getResponse();
         }
+
+        if ($response->getBody()->getSize() > 0) {
+            return $response;
+        }
+
+        $serverProducesMediaTypes = [MediaType::json(), MediaType::xml()];
+
+        $clientPreferredMediaType = ServerRequest::from($request)
+            ->getClientPreferredMediaType(...$serverProducesMediaTypes);
+
+        $response = $response->withHeader('Content-Type', $clientPreferredMediaType->build(['charset' => 'UTF-8']));
+
+        $response->getBody()->write(
+            match ($clientPreferredMediaType) {
+                $serverProducesMediaTypes[0] => $this->renderJsonError($error),
+                $serverProducesMediaTypes[1] => $this->renderXmlError($error),
+            }
+        );
 
         return $response;
     }
@@ -116,38 +118,21 @@ final class ErrorHandlingMiddleware implements MiddlewareInterface
         return $this->handleHttpError($httpError, $request);
     }
 
-    private function renderHtmlError(HttpExceptionInterface $error): string
-    {
-        return ViewLoader::loadView('error.html.php', $error);
-    }
-
     private function renderJsonError(HttpExceptionInterface $error): string
     {
-        $view = new ErrorDto(
-            $error->getMessage(),
-            $error->getViolations(),
-        );
+        $view = ErrorDto::fromHttpError($error);
 
-        return json_encode($view, flags: JSON_PARTIAL_OUTPUT_ON_ERROR);
+        return $this->serializer->serialize($view, JsonEncoder::FORMAT, [
+            JsonEncode::OPTIONS => JSON_PARTIAL_OUTPUT_ON_ERROR,
+        ]);
     }
 
     private function renderXmlError(HttpExceptionInterface $error): string
     {
-        $xmlBlank = '<?xml version="1.0" encoding="UTF-8"?><error/>';
-        $xmlOptions = LIBXML_COMPACT | LIBXML_NOERROR | LIBXML_NOWARNING;
+        $view = ErrorDto::fromHttpError($error);
 
-        $errorChild = new SimpleXMLElement($xmlBlank, $xmlOptions);
-        $errorChild->addChild('message', $error->getMessage());
-
-        foreach ($error->getViolations() as $violation) {
-            /** @var SimpleXMLElement $violationsChild */
-            $violationsChild = $errorChild->addChild('violations');
-            $violationsChild->addChild('message', $violation->message);
-            $violationsChild->addChild('source', $violation->source);
-            $violationsChild->addChild('code', $violation->code);
-        }
-
-        /** @var non-empty-string */
-        return $errorChild->asXML();
+        return $this->serializer->serialize($view, XmlEncoder::FORMAT, [
+            XmlEncoder::ROOT_NODE_NAME => 'error',
+        ]);
     }
 }

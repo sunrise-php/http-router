@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Exception\Http;
 
-use Sunrise\Http\Router\Entity\MediaType;
+use Stringable;
 use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
@@ -30,8 +30,8 @@ class HttpUnsupportedMediaTypeException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param list<MediaType> $supportedMediaTypes
-     * @param non-empty-string|null $message
+     * @param list<Stringable|string> $supportedMediaTypes
+     * @param string|null $message
      * @param int $code
      * @param Throwable|null $previous
      */
@@ -48,7 +48,7 @@ class HttpUnsupportedMediaTypeException extends HttpException
     }
 
     /**
-     * @return list<MediaType>
+     * @return list<Stringable|string>
      */
     public function getSupportedMediaTypes(): array
     {

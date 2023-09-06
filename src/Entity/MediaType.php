@@ -28,9 +28,9 @@ final class MediaType implements Stringable
     /**
      * Constructor of the class
      *
-     * @param non-empty-string $type
-     * @param non-empty-string $subtype
-     * @param array<non-empty-string, ?string> $parameters
+     * @param string $type
+     * @param string $subtype
+     * @param array<string, ?string> $parameters
      */
     public function __construct(private string $type, private string $subtype, private array $parameters = [])
     {
@@ -39,7 +39,7 @@ final class MediaType implements Stringable
     /**
      * Creates the json media type
      *
-     * @param array<non-empty-string, ?string> $parameters
+     * @param array<string, ?string> $parameters
      *
      * @return self
      */
@@ -51,7 +51,7 @@ final class MediaType implements Stringable
     /**
      * Creates the xml media type
      *
-     * @param array<non-empty-string, ?string> $parameters
+     * @param array<string, ?string> $parameters
      *
      * @return self
      */
@@ -63,7 +63,7 @@ final class MediaType implements Stringable
     /**
      * Creates the yaml media type
      *
-     * @param array<non-empty-string, ?string> $parameters
+     * @param array<string, ?string> $parameters
      *
      * @return self
      */
@@ -75,7 +75,7 @@ final class MediaType implements Stringable
     /**
      * Creates the html media type
      *
-     * @param array<non-empty-string, ?string> $parameters
+     * @param array<string, ?string> $parameters
      *
      * @return self
      */
@@ -87,7 +87,7 @@ final class MediaType implements Stringable
     /**
      * Creates the text media type
      *
-     * @param array<non-empty-string, ?string> $parameters
+     * @param array<string, ?string> $parameters
      *
      * @return self
      */
@@ -99,7 +99,7 @@ final class MediaType implements Stringable
     /**
      * Creates the image media range
      *
-     * @param array<non-empty-string, ?string> $parameters
+     * @param array<string, ?string> $parameters
      *
      * @return self
      */
@@ -111,7 +111,7 @@ final class MediaType implements Stringable
     /**
      * Gets the media range type
      *
-     * @return non-empty-string
+     * @return string
      */
     public function getType(): string
     {
@@ -121,7 +121,7 @@ final class MediaType implements Stringable
     /**
      * Gets the media range subtype
      *
-     * @return non-empty-string
+     * @return string
      */
     public function getSubtype(): string
     {
@@ -131,11 +131,21 @@ final class MediaType implements Stringable
     /**
      * Gets the media type parameters
      *
-     * @return array<non-empty-string, ?string>
+     * @return array<string, ?string>
      */
     public function getParameters(): array
     {
         return $this->parameters;
+    }
+
+    /**
+     * Gets the media type quality factor
+     *
+     * @return float
+     */
+    public function getQualityFactor(): float
+    {
+        return (float) ($this->parameters['q'] ?? 1.);
     }
 
     /**
@@ -152,15 +162,27 @@ final class MediaType implements Stringable
     }
 
     /**
-     * @inheritDoc
+     * Build the media type
+     *
+     * @param array<string, ?string> $parameters
+     *
+     * @return string
      */
-    public function __toString(): string
+    public function build(array $parameters = []): string
     {
         $result = sprintf('%s/%s', $this->type, $this->subtype);
-        foreach ($this->parameters as $name => $value) {
+        foreach ($parameters + $this->parameters as $name => $value) {
             $result .= sprintf('; %s="%s"', $name, (string) $value);
         }
 
         return $result;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function __toString(): string
+    {
+        return $this->build();
     }
 }

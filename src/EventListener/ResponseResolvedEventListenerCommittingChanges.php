@@ -17,15 +17,11 @@ use Doctrine\Persistence\ManagerRegistry as EntityManagerRegistryInterface;
 use ReflectionAttribute;
 use Sunrise\Http\Router\Annotation\Commit;
 use Sunrise\Http\Router\Event\ResponseResolvedEvent;
-use Sunrise\Http\Router\Exception\LogicException;
-use Sunrise\Http\Router\ResponseResolving\ResponseResolutioner;
-
-use function sprintf;
 
 /**
  * @since 3.0.0
  */
-final class CommitEventListener
+final class ResponseResolvedEventListenerCommittingChanges
 {
 
     /**
@@ -43,32 +39,20 @@ final class CommitEventListener
      * @param ResponseResolvedEvent $event
      *
      * @return ResponseResolvedEvent
-     *
-     * @throws LogicException
      */
     public function __invoke(ResponseResolvedEvent $event): ResponseResolvedEvent
     {
-        $source = $event->getSource();
-
         /** @var list<ReflectionAttribute<Commit>> $attributes */
-        $attributes = $source->getAttributes(Commit::class);
+        $attributes = $event->getSource()->getAttributes(Commit::class);
         if ($attributes === []) {
             return $event;
         }
 
-        $commit = $attributes[0]->newInstance();
-
-        $entityManagerNames = $this->entityManagerRegistry->getManagerNames();
-        if (isset($commit->em) && !isset($entityManagerNames[$commit->em])) {
-            throw new LogicException(sprintf(
-                'The #[Commit] attribute cannot be applied to the source {%s}, ' .
-                'because the specified entity manager "%s" does not exist.',
-                ResponseResolutioner::stringifySource($source),
-                $commit->em,
-            ));
+        foreach ($attributes as $attribute) {
+            $commit = $attribute->newInstance();
+            $entityManager = $this->entityManagerRegistry->getManager($commit->em);
+            $entityManager->flush();
         }
-
-        $this->entityManagerRegistry->getManager($commit->em)->flush();
 
         return $event;
     }

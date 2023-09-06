@@ -94,7 +94,7 @@ final class BackedEnumTypeConverter implements TypeConverterInterface
         try {
             yield $enumName::from($value);
         } catch (ValueError $e) {
-            $choices = [...$this->getBackedEnumChoices($enumName)];
+            $choices = [...$this->getEnumChoices($enumName)];
 
             throw new InvalidArgumentException(sprintf(
                 'This value must be one of: %s.',
@@ -104,13 +104,13 @@ final class BackedEnumTypeConverter implements TypeConverterInterface
     }
 
     /**
-     * Gets choices from the given backed enum
+     * Gets choices from the given enum
      *
      * @param class-string<BackedEnum> $enumName
      *
      * @return Generator<int, int|string>
      */
-    private function getBackedEnumChoices(string $enumName): Generator
+    private function getEnumChoices(string $enumName): Generator
     {
         /** @var list<BackedEnum> $cases */
         $cases = $enumName::cases();

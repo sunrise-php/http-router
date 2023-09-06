@@ -84,6 +84,7 @@ final class PathVariableParameterResolver implements ParameterResolverInterface
         }
 
         $variable = $attributes[0]->newInstance();
+
         $variableName = $variable->name ?? $parameter->getName();
         /** @var mixed $variableValue */
         $variableValue = $route->getAttribute($variableName);

@@ -30,7 +30,7 @@ class HttpInternalServerErrorException extends HttpException
      * Constructor of the class
      *
      * @param Throwable $error
-     * @param non-empty-string|null $message
+     * @param string|null $message
      * @param int $code
      */
     public function __construct(Throwable $error, ?string $message = null, int $code = 0)

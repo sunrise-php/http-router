@@ -17,12 +17,16 @@ use Generator;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
+use Sunrise\Http\Router\Entity\Language;
 use Sunrise\Http\Router\Entity\MediaType;
 use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\LogicException;
 
+use Sunrise\Http\Router\Helper\HeaderParser;
 use function reset;
+use function sprintf;
+use function strpos;
 use function usort;
 
 /**
@@ -69,34 +73,65 @@ final class ServerRequest implements ServerRequestInterface
     }
 
     /**
-     * Gets a media type that the client produced
-     *
-     * @return MediaType|null
-     */
-    public function getClientProducedMediaType(): ?MediaType
-    {
-        $header = $this->request->getHeaderLine('Content-Type');
-
-        try {
-            return parse_header_with_media_type($header)->current();
-        } catch (InvalidArgumentException $e) {
-            throw new HttpBadRequestException('The Content-Type header is invalid.', previous: $e);
-        }
-    }
-
-    /**
      * Gets media types that the client consumes
      *
      * @return Generator<int, MediaType>
+     *
+     * @throws HttpBadRequestException If the Accept header isn't valid.
      */
     public function getClientConsumesMediaTypes(): Generator
     {
         $header = $this->request->getHeaderLine('Accept');
 
         try {
-            yield from parse_header_with_media_type($header);
+            yield from HeaderParser::parseAcceptHeader($header);
         } catch (InvalidArgumentException $e) {
-            throw new HttpBadRequestException('The Accept header is invalid', previous: $e);
+            throw new HttpBadRequestException(sprintf(
+                'The Accept header is invalid. %s',
+                $e->getMessage(),
+            ), previous: $e);
+        }
+    }
+
+    /**
+     * Gets languages that the client consumes
+     *
+     * @return Generator<int, Language>
+     *
+     * @throws HttpBadRequestException If the Accept-Language header isn't valid.
+     */
+    public function getClientConsumesLanguages(): Generator
+    {
+        $header = $this->request->getHeaderLine('Accept-Language');
+
+        try {
+            yield from HeaderParser::parseAcceptLanguageHeader($header);
+        } catch (InvalidArgumentException $e) {
+            throw new HttpBadRequestException(sprintf(
+                'The Accept-Language header is invalid. %s',
+                $e->getMessage(),
+            ), previous: $e);
+        }
+    }
+
+    /**
+     * Gets a media type that the client produced
+     *
+     * @return MediaType|null
+     *
+     * @throws HttpBadRequestException If the Content-Type header isn't valid.
+     */
+    public function getClientProducedMediaType(): ?MediaType
+    {
+        $header = $this->request->getHeaderLine('Content-Type');
+
+        try {
+            return HeaderParser::parseContentTypeHeader($header);
+        } catch (InvalidArgumentException $e) {
+            throw new HttpBadRequestException(sprintf(
+                'The Content-Type header is invalid. %s',
+                $e->getMessage(),
+            ), previous: $e);
         }
     }
 
@@ -121,6 +156,20 @@ final class ServerRequest implements ServerRequestInterface
         foreach ($serverConsumesMediaTypes as $serverConsumesMediaType) {
             if ($clientProducedMediaType->equals($serverConsumesMediaType)) {
                 return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function clientConsumesMediaType(MediaType ...$serverProducesMediaTypes): bool
+    {
+        $clientConsumesMediaTypes = $this->getClientConsumesMediaTypes();
+        foreach ($clientConsumesMediaTypes as $clientConsumesMediaType) {
+            foreach ($serverProducesMediaTypes as $serverProducesMediaType) {
+                if ($serverProducesMediaType->equals($clientConsumesMediaType)) {
+                    return true;
+                }
             }
         }
 
@@ -152,7 +201,7 @@ final class ServerRequest implements ServerRequestInterface
         }
 
         usort($clientConsumesMediaTypes, static fn(MediaType $a, MediaType $b): int => (
-            ($b->getParameters()['q'] ?? 1.) <=> ($a->getParameters()['q'] ?? 1.)
+            $b->getQualityFactor() <=> $a->getQualityFactor()
         ));
 
         foreach ($clientConsumesMediaTypes as $clientConsumesMediaType) {

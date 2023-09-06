@@ -21,6 +21,14 @@ use Symfony\Component\Validator\ConstraintViolationInterface;
  */
 final class ViolationDto
 {
+
+    /**
+     * Constructor of the class
+     *
+     * @param string $message
+     * @param string $source
+     * @param string $code
+     */
     public function __construct(
         public string $message,
         public string $source,

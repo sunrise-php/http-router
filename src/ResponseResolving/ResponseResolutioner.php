@@ -77,7 +77,7 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
         foreach ($this->resolvers as $resolver) {
             $resolvedResponse = $resolver->resolveResponse($source, $request, $response);
             if ($resolvedResponse instanceof ResponseInterface) {
-                return $this->handleResponse($source, $request, $response);
+                return $this->handleResponse($source, $request, $resolvedResponse);
             }
         }
 
@@ -130,7 +130,7 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
      *
      * @param ReflectionFunction|ReflectionMethod $source
      *
-     * @return non-empty-string
+     * @return string
      */
     public static function stringifySource(ReflectionFunction|ReflectionMethod $source): string
     {

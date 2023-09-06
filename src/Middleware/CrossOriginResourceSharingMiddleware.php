@@ -62,34 +62,23 @@ final class CrossOriginResourceSharingMiddleware implements MiddlewareInterface
 
             case AnalysisResultInterface::TYPE_PRE_FLIGHT_REQUEST:
                 $response = $this->responseFactory->createResponse(200);
-                /** @var array<non-empty-string, string> $preflightResponseHeaders */
-                $preflightResponseHeaders = $requestAnalysisResult->getResponseHeaders();
+                /** @var array<string, string> $preflightHeaders */
+                $preflightHeaders = $requestAnalysisResult->getResponseHeaders();
+                foreach ($preflightHeaders as $fieldName => $fieldValue) {
+                    $response = $response->withHeader($fieldName, $fieldValue);
+                }
 
-                return $this->propagatePreflightResponseHeaders($response, $preflightResponseHeaders);
+                return $response;
 
             default:
                 $response = $handler->handle($request);
-                /** @var array<non-empty-string, string> $preflightResponseHeaders */
-                $preflightResponseHeaders = $requestAnalysisResult->getResponseHeaders();
+                /** @var array<string, string> $preflightHeaders */
+                $preflightHeaders = $requestAnalysisResult->getResponseHeaders();
+                foreach ($preflightHeaders as $fieldName => $fieldValue) {
+                    $response = $response->withHeader($fieldName, $fieldValue);
+                }
 
-                return $this->propagatePreflightResponseHeaders($response, $preflightResponseHeaders);
+                return $response;
         }
-    }
-
-    /**
-     * Propagates the given preflight headers to the given response
-     *
-     * @param ResponseInterface $response
-     * @param array<non-empty-string, string> $headers
-     *
-     * @return ResponseInterface
-     */
-    private function propagatePreflightResponseHeaders(ResponseInterface $response, array $headers): ResponseInterface
-    {
-        foreach ($headers as $name => $value) {
-            $response = $response->withHeader($name, $value);
-        }
-
-        return $response;
     }
 }

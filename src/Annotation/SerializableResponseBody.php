@@ -19,15 +19,15 @@ use Attribute;
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION)]
-final class JsonResponseBody
+final class SerializableResponseBody
 {
 
     /**
      * Constructor of the class
      *
-     * @param int $options
+     * @param array<non-empty-string, mixed> $context Serializing context
      */
-    public function __construct(public int $options = 0)
+    public function __construct(public array $context = [])
     {
     }
 }

@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Exception\Http;
 
+use Stringable;
 use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
@@ -29,8 +30,8 @@ class HttpMethodNotAllowedException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param list<non-empty-string> $allowedMethods
-     * @param non-empty-string|null $message
+     * @param list<Stringable|string> $allowedMethods
+     * @param string|null $message
      * @param int $code
      * @param Throwable|null $previous
      */
@@ -47,7 +48,7 @@ class HttpMethodNotAllowedException extends HttpException
     }
 
     /**
-     * @return list<non-empty-string>
+     * @return list<Stringable|string>
      */
     public function getAllowedMethods(): array
     {

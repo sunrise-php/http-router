@@ -25,16 +25,9 @@ interface HttpExceptionInterface extends ExceptionInterface, StatusCodeInterface
 {
 
     /**
-     * {@inheritDoc}
-     *
-     * @return non-empty-string
-     */
-    public function getMessage(): string;
-
-    /**
      * Gets the error's reason phrase
      *
-     * @return non-empty-string
+     * @return string
      */
     public function getReasonPhrase(): string;
 
@@ -48,7 +41,7 @@ interface HttpExceptionInterface extends ExceptionInterface, StatusCodeInterface
     /**
      * Gets HTTP header fields that will be sent to the client
      *
-     * @return list<array{0: non-empty-string, 1: non-empty-string}>
+     * @return list<array{0: string, 1: string}>
      */
     public function getHeaders(): array;
 

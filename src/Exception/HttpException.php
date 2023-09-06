@@ -33,7 +33,7 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     /**
      * The error's reason phrase
      *
-     * @var non-empty-string
+     * @var string
      */
     private string $reasonPhrase = 'Something went wrong';
 
@@ -47,7 +47,7 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     /**
      * HTTP header fields that will be sent to the client
      *
-     * @var list<array{0: non-empty-string, 1: non-empty-string}>
+     * @var list<array{0: string, 1: string}>
      */
     private array $headers = [];
 
@@ -108,7 +108,7 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     /**
      * Sets the given message to the error
      *
-     * @param non-empty-string $message
+     * @param string $message
      *
      * @return static
      */
@@ -122,7 +122,7 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     /**
      * Sets the given reason phrase to the error
      *
-     * @param non-empty-string $reasonPhrase
+     * @param string $reasonPhrase
      *
      * @return static
      */
@@ -150,14 +150,13 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     /**
      * Adds the given HTTP header field that will be sent to the client
      *
-     * @param non-empty-string $fieldName
-     * @param Stringable|non-empty-string ...$fieldValues
+     * @param string $fieldName
+     * @param Stringable|string ...$fieldValues
      *
      * @return static
      */
     final public function addHeader(string $fieldName, Stringable|string ...$fieldValues): static
     {
-        /** @var non-empty-string $fieldValue */
         $fieldValue = join(', ', $fieldValues);
 
         $this->headers[] = [$fieldName, $fieldValue];

@@ -13,8 +13,15 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\TypeConversion;
 
+use Generator;
 use ReflectionType;
 use Sunrise\Http\Router\Exception\LogicException;
+use Sunrise\Http\Router\TypeConversion\TypeConverter\BackedEnumTypeConverter;
+use Sunrise\Http\Router\TypeConversion\TypeConverter\BoolTypeConverter;
+use Sunrise\Http\Router\TypeConversion\TypeConverter\DateTimeTypeConverter;
+use Sunrise\Http\Router\TypeConversion\TypeConverter\FloatTypeConverter;
+use Sunrise\Http\Router\TypeConversion\TypeConverter\IntTypeConverter;
+use Sunrise\Http\Router\TypeConversion\TypeConverter\StringTypeConverter;
 use Sunrise\Http\Router\TypeConversion\TypeConverter\TypeConverterInterface;
 
 use function get_debug_type;
@@ -60,5 +67,20 @@ final class TypeConversioner implements TypeConversionerInterface
             get_debug_type($value),
             (string) $type,
         ));
+    }
+
+    /**
+     * Returns default type converters
+     *
+     * @return Generator<TypeConverterInterface>
+     */
+    public static function defaultConverters(): Generator
+    {
+        yield new BoolTypeConverter();
+        yield new IntTypeConverter();
+        yield new FloatTypeConverter();
+        yield new StringTypeConverter();
+        yield new BackedEnumTypeConverter();
+        yield new DateTimeTypeConverter();
     }
 }

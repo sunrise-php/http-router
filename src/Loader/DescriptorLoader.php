@@ -104,7 +104,7 @@ final class DescriptorLoader implements LoaderInterface
     private ?CacheInterface $cache;
 
     /**
-     * @var non-empty-string|null
+     * @var string|null
      */
     private ?string $cacheKey = null;
 
@@ -233,7 +233,7 @@ final class DescriptorLoader implements LoaderInterface
     /**
      * Sets the given cache key to the loader
      *
-     * @param non-empty-string|null $cacheKey
+     * @param string|null $cacheKey
      *
      * @return void
      *
@@ -247,7 +247,7 @@ final class DescriptorLoader implements LoaderInterface
     /**
      * Gets the loader cache key
      *
-     * @return non-empty-string
+     * @return string
      *
      * @since 2.10.0
      */
@@ -501,7 +501,7 @@ final class DescriptorLoader implements LoaderInterface
     {
         $flags = FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_PATHNAME;
 
-        /** @var array<non-empty-string, non-empty-string> $filenames */
+        /** @var array<string, string> $filenames */
         // phpcs:ignore Generic.Files.LineLength
         $filenames = iterator_to_array(new RegexIterator(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dirname, $flags)), '/\.php$/'));
 

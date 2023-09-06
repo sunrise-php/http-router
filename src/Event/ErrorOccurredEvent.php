@@ -18,11 +18,11 @@ use Psr\Http\Message\ServerRequestInterface;
 use Throwable;
 
 /**
- * ErrorEvent
+ * ErrorOccurredEvent
  *
  * @since 3.0.0
  */
-final class ErrorEvent extends AbstractEvent
+final class ErrorOccurredEvent extends AbstractEvent
 {
 
     /**

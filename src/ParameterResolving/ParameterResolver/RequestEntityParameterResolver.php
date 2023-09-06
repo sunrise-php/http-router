@@ -119,9 +119,9 @@ final class RequestEntityParameterResolver implements ParameterResolverInterface
         }
 
         $entitySearchFieldName = $entityRequest->findBy ?? $entityIdentifierFieldNames[0];
-        /** @var non-empty-string $routePathVariableName */
         $routePathVariableName = $entityRequest->pathVariable ?? $entitySearchFieldName;
-        /** @var non-empty-string|null $routePathVariableValue */
+
+        /** @var string|null $routePathVariableValue */
         $routePathVariableValue = $route->getAttribute($routePathVariableName);
         if (!isset($routePathVariableValue)) {
             throw new LogicException(sprintf(
