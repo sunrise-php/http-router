@@ -18,7 +18,7 @@ use ReflectionType;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\TypeConversion\TypeConverter\BackedEnumTypeConverter;
 use Sunrise\Http\Router\TypeConversion\TypeConverter\BoolTypeConverter;
-use Sunrise\Http\Router\TypeConversion\TypeConverter\DateTimeTypeConverter;
+use Sunrise\Http\Router\TypeConversion\TypeConverter\TimestampTypeConverter;
 use Sunrise\Http\Router\TypeConversion\TypeConverter\FloatTypeConverter;
 use Sunrise\Http\Router\TypeConversion\TypeConverter\IntTypeConverter;
 use Sunrise\Http\Router\TypeConversion\TypeConverter\StringTypeConverter;
@@ -81,6 +81,6 @@ final class TypeConversioner implements TypeConversionerInterface
         yield new FloatTypeConverter();
         yield new StringTypeConverter();
         yield new BackedEnumTypeConverter();
-        yield new DateTimeTypeConverter();
+        yield new TimestampTypeConverter();
     }
 }

@@ -31,214 +31,233 @@ final class HeaderParser
 {
 
     /**
-     * @param string $header
+     * Parses the given "Accept" header or any other semantically similar header
      *
-     * @return Generator<MediaType>
+     * @param string $header
+     * @param bool $supportRange
+     *
+     * @return Generator<int, MediaType>
      *
      * @throws InvalidArgumentException If the header isn't valid.
      */
-    public static function parseAcceptHeader(string $header): Generator
+    public static function parseAcceptHeader(string $header, bool $supportRange = true): Generator
     {
         $matches = self::parseHeader($header);
-        foreach ($matches as $match) {
-            $range = explode('/', $match[0], 2);
+        foreach ($matches as $index => [$keyword, $parameterNames, $parameterValues]) {
+            $range = explode('/', $keyword, 3);
 
-            yield new MediaType($range[0], $range[1] ?? '*', $match[1]);
+            if ($range[0] === '' || !isset($range[1]) || $range[1] === '' || isset($range[2])) {
+                throw new InvalidArgumentException(sprintf(
+                    'The media type with index %d has an incorrect format.',
+                    $index,
+                ));
+            }
+
+            if ($range[0] === '*' && $range[1] !== '*') {
+                throw new InvalidArgumentException(sprintf(
+                    'The media type with index %d has an incorrect range.',
+                    $index,
+                ));
+            }
+
+            if (!$supportRange && ($range[0] === '*' || $range[1] === '*')) {
+                throw new InvalidArgumentException(sprintf(
+                    'The media type with index %d cannot be a range.',
+                    $index,
+                ));
+            }
+
+            $parameters = [];
+            foreach ($parameterNames as $parameterIndex => $parameterName) {
+                $parameters[$parameterName] = $parameterValues[$parameterIndex] ?? null;
+            }
+
+            yield new MediaType($range[0], $range[1], $parameters);
         }
     }
 
     /**
+     * Parses the given "Accept-Language" header or any other semantically similar header
+     *
      * @param string $header
      *
-     * @return Generator<Language>
+     * @return Generator<int, Language>
      *
      * @throws InvalidArgumentException If the header isn't valid.
      */
     public static function parseAcceptLanguageHeader(string $header): Generator
     {
         $matches = self::parseHeader($header);
-        foreach ($matches as $match) {
-            $tags = explode('-', $match[0]);
+        foreach ($matches as $index => [$keyword, $parameterNames, $parameterValues]) {
+            $tags = explode('-', $keyword);
 
-            $tag = $tags[0];
+            foreach ($tags as $key => $tag) {
+                if ($tag === '') {
+                    throw new InvalidArgumentException(sprintf(
+                        'The language with index %d has an empty tag with index %d.',
+                        $index,
+                        $key,
+                    ));
+                }
+            }
+
+            $code = $tags[0];
             unset($tags[0]);
 
-            yield new Language($tag, [...$tags], $match[1]);
+            $parameters = [];
+            foreach ($parameterNames as $parameterIndex => $parameterName) {
+                $parameters[$parameterName] = $parameterValues[$parameterIndex] ?? null;
+            }
+
+            yield new Language($code, [...$tags], $parameters);
         }
     }
 
     /**
-     * @param string $header
-     *
-     * @return MediaType|null
-     *
-     * @throws InvalidArgumentException If the header isn't valid.
-     */
-    public static function parseContentTypeHeader(string $header): ?MediaType
-    {
-        $matches = self::parseHeader($header);
-        if (!$matches->valid()) {
-            return null;
-        }
-
-        $match = $matches->current();
-
-        $range = explode('/', $match[0], 2);
-
-        return new MediaType($range[0], $range[1] ?? '*', $match[1]);
-    }
-
-    /**
-     * Parses the given header, such as Accept, Content-Type, etc.
+     * Parses the given header, which is semantically similar to the "Accept" header
      *
      * @param string $header
      *
-     * @return Generator<int, array{0: string, 1: array<string, ?string>}>
+     * @return Generator<int, array{0: string, 1: string[], 2: string[]}>
      *
      * @throws InvalidArgumentException If the header isn't valid.
      */
     private static function parseHeader(string $header): Generator
     {
-        /**
-         * Prepares the given match for the return
-         *
-         * @param array{0: string, 1?: array<int, array{0: string, 1?: string}>} $match
-         *
-         * @return array{0: string, 1: array<string, ?string>}
-         */
-        $return = static function (array $match): array {
-            $params = [];
-            foreach ($match[1] ?? [] as $param) {
-                $params[$param[0]] = $param[1] ?? null;
-            }
+        /** @var array{0: ?string, 1: string[], 2: string[]} $match */
+        $match = [null, [], []];
 
-            return [$match[0], $params];
-        };
-
-        /** @var array{0?: string, 1?: array<int, array{0: string, 1?: string}>} $match */
-        $match = [];
-
+        $offset = -1;
         $inKeyword = true;
-        $paramIndex = -1;
-        $inParamName = false;
-        $inParamValue = false;
+        $parameterIndex = -1;
+        $inParameterName = false;
+        $inParameterValue = false;
         $inQuotedString = false;
         $isQuotedChar = false;
 
-        $offset = -1;
         while (isset($header[++$offset])) {
-            // https://tools.ietf.org/html/rfc7230#section-3.2
             if (!isset(Charset::RFC7230_FIELD_VALUE[$header[$offset]])) {
-                throw new InvalidArgumentException(sprintf('Invalid character at position %d.', $offset));
+                throw new InvalidArgumentException(sprintf(
+                    'Unallowed character at position %d.',
+                    $offset,
+                ));
             }
 
-            // en-GB; q=0.9[,]...
-            // ~~~~~~~~~~~~~^~~~~
-            if (!$inQuotedString && $header[$offset] === ',') {
-                if (isset($match[0])) {
-                    yield $return($match);
+            if (!$inQuotedString) {
+                if ($header[$offset] === ',') {
+                    if (!isset($match[0])) {
+                        throw new InvalidArgumentException(sprintf(
+                            'The character "%s" at position %d must be preceded by a non-empty keyword.',
+                            $header[$offset],
+                            $offset,
+                        ));
+                    }
+
+                    yield $match;
+                    $match = [null, [], []];
+                    $inKeyword = true;
+                    $parameterIndex = -1;
+                    $inParameterName = false;
+                    $inParameterValue = false;
+                    continue;
+                }
+                if ($header[$offset] === ';') {
+                    if (!isset($match[0]) || !isset($match[1][$parameterIndex]) && $parameterIndex > -1) {
+                        throw new InvalidArgumentException(sprintf(
+                            'The character "%s" at position %d must be preceded by a non-empty keyword or parameter.',
+                            $header[$offset],
+                            $offset,
+                        ));
+                    }
+
+                    $inKeyword = false;
+                    $parameterIndex++;
+                    $inParameterName = true;
+                    $inParameterValue = false;
+                    continue;
+                }
+                if ($header[$offset] === '=') {
+                    if (!isset($match[1][$parameterIndex]) || $inParameterValue || isset($match[2][$parameterIndex])) {
+                        throw new InvalidArgumentException(sprintf(
+                            'The character "%s" at position %d must be preceded by a non-empty parameter name.',
+                            $header[$offset],
+                            $offset,
+                        ));
+                    }
+
+                    $inParameterName = false;
+                    $inParameterValue = true;
+                    continue;
+                }
+                if ($header[$offset] === '"') {
+                    if (!$inParameterValue || isset($match[2][$parameterIndex])) {
+                        throw new InvalidArgumentException(sprintf(
+                            'The character "%s" at position %d must be the first in a parameter value.',
+                            $header[$offset],
+                            $offset,
+                        ));
+                    }
+
+                    $inQuotedString = true;
+                    continue;
                 }
 
-                $match = [];
-                $inKeyword = true;
-                $paramIndex = 0;
-                $inParamName = false;
-                $inParamValue = false;
-                continue;
-            }
-            // en-GB[;] q=0.9,...
-            // ~~~~~~^~~~~~~~~~~~
-            if (!$inQuotedString && $header[$offset] === ';') {
-                $inKeyword = false;
-                $paramIndex++;
-                $inParamName = true;
-                $inParamValue = false;
-                continue;
-            }
-            // en-GB; q[=]0.9,...
-            // ~~~~~~~~~^~~~~~~~~
-            if ($inParamName && $header[$offset] === '=') {
-                $inParamName = false;
-                $inParamValue = true;
-                continue;
+                if (isset(Charset::RFC7230_OWS[$header[$offset]])) {
+                    if ($inKeyword && isset($match[0])) {
+                        $inKeyword = false;
+                        continue;
+                    }
+                    if ($inParameterName && isset($match[1][$parameterIndex])) {
+                        $inParameterName = false;
+                        continue;
+                    }
+                    if ($inParameterValue && isset($match[2][$parameterIndex])) {
+                        $inParameterValue = false;
+                        continue;
+                    }
+
+                    // any whitespaces must be ignored...
+                    continue;
+                }
             }
 
-            // en-GB[ ]; q=0.9,...
-            // ~~~~~~^~~~~~~~~~~~~
-            if ($inKeyword && isset(Charset::RFC7230_OWS[$header[$offset]]) && isset($match[0])) {
-                $inKeyword = false;
-                continue;
-            }
-            // en-GB; q[ ]=0.9,...
-            // ~~~~~~~~~^~~~~~~~~~
-            if ($inParamName && isset(Charset::RFC7230_OWS[$header[$offset]]) && isset($match[1][$paramIndex][0])) {
-                $inParamName = false;
-                continue;
-            }
-            // en-GB; q=0.9[ ],...
-            // ~~~~~~~~~~~~~^~~~~~
-            // phpcs:ignore Generic.Files.LineLength
-            if ($inParamValue && !$inQuotedString && isset(Charset::RFC7230_OWS[$header[$offset]]) && isset($match[1][$paramIndex][1])) {
-                $inParamValue = false;
-                continue;
+            if ($inQuotedString && !$isQuotedChar) {
+                if ($header[$offset] === '\\') {
+                    $isQuotedChar = true;
+                    continue;
+                }
+                if ($header[$offset] === '"') {
+                    $inQuotedString = false;
+                    $inParameterValue = false;
+                    continue;
+                }
             }
 
-            // [ ]en-GB;[ ]q=[ ]0.9,...
-            // ~^~~~~~~~~^~~~~^~~~~~~~~
-            if (!$inQuotedString && isset(Charset::RFC7230_OWS[$header[$offset]])) {
-                continue;
-            }
-
-            // en-GB; q=["]0.9",...
-            // ~~~~~~~~~~^~~~~~~~~~
-            if ($inParamValue && !$inQuotedString && $header[$offset] === '"' && !isset($match[1][$paramIndex][1])) {
-                $inQuotedString = true;
-                continue;
-            }
-            // en-US; foo="[\\][\"][\*]",...
-            // ~~~~~~~~~~~~~^^~~^^~~^^~~~~~~
-            // phpcs:ignore Generic.Files.LineLength
-            if ($inQuotedString && !$isQuotedChar && $header[$offset] === '\\' && isset($header[$offset + 1]) && ($header[$offset + 1] === '\\' || $header[$offset + 1] === '"' || isset(Charset::RFC7230_QUOTED_STRING[$header[$offset + 1]]))) {
-                $isQuotedChar = true;
-                continue;
-            }
-            // en-GB; q="0.9["],...
-            // ~~~~~~~~~~~~~~^~~~~~
-            if ($inQuotedString && !$isQuotedChar && $header[$offset] === '"') {
-                $inParamValue = false;
-                $inQuotedString = false;
-                continue;
-            }
-
-            // [en-GB]; q=0.9,...
-            // ~^^^^^~~~~~~~~~~~~
-            if ($inKeyword) { // AS IS
+            if ($inKeyword) {
                 $match[0] ??= '';
                 $match[0] .= $header[$offset];
                 continue;
             }
-            // en-GB; [q]=0.9,...
-            // ~~~~~~~~^~~~~~~~~~
-            if ($inParamName && isset(Charset::RFC7230_TOKEN[$header[$offset]]) && isset($match[0])) {
-                $match[1][$paramIndex][0] ??= '';
-                $match[1][$paramIndex][0] .= $header[$offset];
+            if ($inParameterName && isset(Charset::RFC7230_TOKEN[$header[$offset]])) {
+                $match[1][$parameterIndex] ??= '';
+                $match[1][$parameterIndex] .= $header[$offset];
                 continue;
             }
-            // en-GB; q=[0.9],...
-            // ~~~~~~~~~~^^^~~~~~
-            // phpcs:ignore Generic.Files.LineLength
-            if ($inParamValue && (isset(Charset::RFC7230_TOKEN[$header[$offset]]) || ($inQuotedString && isset(Charset::RFC7230_QUOTED_STRING[$header[$offset]])) || $isQuotedChar) && isset($match[1][$paramIndex][0])) {
-                $match[1][$paramIndex][1] ??= '';
-                $match[1][$paramIndex][1] .= $header[$offset];
+            if ($inParameterValue && (isset(Charset::RFC7230_TOKEN[$header[$offset]])) || $inQuotedString) {
+                $match[2][$parameterIndex] ??= '';
+                $match[2][$parameterIndex] .= $header[$offset];
                 $isQuotedChar = false;
                 continue;
             }
 
-            throw new InvalidArgumentException(sprintf('Unexpected character at position %d.', $offset));
+            throw new InvalidArgumentException(sprintf(
+                'Unexpected character at position %d.',
+                $offset,
+            ));
         }
 
         if (isset($match[0])) {
-            yield $return($match);
+            yield $match;
         }
     }
 }

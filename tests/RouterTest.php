@@ -5,10 +5,9 @@ namespace Sunrise\Http\Router\Tests;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Event\RouteEvent;
+use Sunrise\Http\Router\Event\RouteMatchedEvent;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\MethodNotAllowedException;
-use Sunrise\Http\Router\Exception\PageNotFoundException;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
 use Sunrise\Http\Router\Middleware\CallbackMiddleware;
 use Sunrise\Http\Router\Loader\LoaderInterface;
@@ -395,11 +394,11 @@ class RouterTest extends TestCase
         $request = (new ServerRequestFactory)
             ->createServerRequest($routes[0]->getMethods()[0], '/');
 
-        $this->expectException(PageNotFoundException::class);
+        $this->expectException(RouteNotFoundException::class);
 
         try {
             $router->match($request);
-        } catch (PageNotFoundException $e) {
+        } catch (RouteNotFoundException $e) {
             throw $e;
         }
     }
@@ -847,7 +846,7 @@ class RouterTest extends TestCase
             );
 
         $eventDispatcher = new EventDispatcher();
-        $eventDispatcher->addListener(RouteEvent::NAME, function (RouteEvent $event) use ($routes, $request) {
+        $eventDispatcher->addListener(RouteMatchedEvent::NAME, function (RouteMatchedEvent $event) use ($routes, $request) {
             $this->assertSame($routes[1]->getName(), $event->getRoute()->getName());
             $this->assertSame($request, $event->getRequest());
         });
@@ -872,7 +871,7 @@ class RouterTest extends TestCase
             );
 
         $eventDispatcher = new EventDispatcher();
-        $eventDispatcher->addListener(RouteEvent::NAME, function (RouteEvent $event) use ($request) {
+        $eventDispatcher->addListener(RouteMatchedEvent::NAME, function (RouteMatchedEvent $event) use ($request) {
             $event->setRequest($request->withAttribute('foo', 'bar'));
             $this->assertNotSame($request, $event->getRequest());
         });

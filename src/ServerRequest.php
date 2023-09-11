@@ -22,15 +22,14 @@ use Sunrise\Http\Router\Entity\MediaType;
 use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\LogicException;
-
 use Sunrise\Http\Router\Helper\HeaderParser;
-use function reset;
+
+use function current;
 use function sprintf;
-use function strpos;
 use function usort;
 
 /**
- * ServerRequest
+ * Server Request Proxy
  *
  * @since 3.0.0
  */
@@ -73,11 +72,32 @@ final class ServerRequest implements ServerRequestInterface
     }
 
     /**
+     * Gets a media type that the client produced
+     *
+     * @return MediaType|null
+     *
+     * @throws HttpBadRequestException If the "Content-Type" header isn't valid.
+     */
+    public function getClientProducedMediaType(): ?MediaType
+    {
+        $header = $this->request->getHeaderLine('Content-Type');
+
+        try {
+            return HeaderParser::parseAcceptHeader($header, supportRange: false)->current();
+        } catch (InvalidArgumentException $e) {
+            throw new HttpBadRequestException(sprintf(
+                'The "Content-Type" header is invalid: %s',
+                $e->getMessage(),
+            ), previous: $e);
+        }
+    }
+
+    /**
      * Gets media types that the client consumes
      *
      * @return Generator<int, MediaType>
      *
-     * @throws HttpBadRequestException If the Accept header isn't valid.
+     * @throws HttpBadRequestException If the "Accept" header isn't valid.
      */
     public function getClientConsumesMediaTypes(): Generator
     {
@@ -87,7 +107,7 @@ final class ServerRequest implements ServerRequestInterface
             yield from HeaderParser::parseAcceptHeader($header);
         } catch (InvalidArgumentException $e) {
             throw new HttpBadRequestException(sprintf(
-                'The Accept header is invalid. %s',
+                'The "Accept" header is invalid: %s',
                 $e->getMessage(),
             ), previous: $e);
         }
@@ -98,7 +118,7 @@ final class ServerRequest implements ServerRequestInterface
      *
      * @return Generator<int, Language>
      *
-     * @throws HttpBadRequestException If the Accept-Language header isn't valid.
+     * @throws HttpBadRequestException If the "Accept-Language" header isn't valid.
      */
     public function getClientConsumesLanguages(): Generator
     {
@@ -108,31 +128,82 @@ final class ServerRequest implements ServerRequestInterface
             yield from HeaderParser::parseAcceptLanguageHeader($header);
         } catch (InvalidArgumentException $e) {
             throw new HttpBadRequestException(sprintf(
-                'The Accept-Language header is invalid. %s',
+                'The "Accept-Language" header is invalid: %s',
                 $e->getMessage(),
             ), previous: $e);
         }
     }
 
     /**
-     * Gets a media type that the client produced
+     * Gets the client's preferred media type
      *
-     * @return MediaType|null
+     * @param MediaType ...$serverProducesMediaTypes
      *
-     * @throws HttpBadRequestException If the Content-Type header isn't valid.
+     * @return MediaType
+     *
+     * @throws LogicException If the list of produces media types is empty.
      */
-    public function getClientProducedMediaType(): ?MediaType
+    public function getClientPreferredMediaType(MediaType ...$serverProducesMediaTypes): MediaType
     {
-        $header = $this->request->getHeaderLine('Content-Type');
-
-        try {
-            return HeaderParser::parseContentTypeHeader($header);
-        } catch (InvalidArgumentException $e) {
-            throw new HttpBadRequestException(sprintf(
-                'The Content-Type header is invalid. %s',
-                $e->getMessage(),
-            ), previous: $e);
+        if ($serverProducesMediaTypes === []) {
+            throw new LogicException('The media types that the server produces must be provided.');
         }
+
+        /** @var list<MediaType> $clientConsumesMediaTypes */
+        $clientConsumesMediaTypes = [...$this->getClientConsumesMediaTypes()];
+        if ($clientConsumesMediaTypes === []) {
+            return current($serverProducesMediaTypes);
+        }
+
+        usort($clientConsumesMediaTypes, static fn(MediaType $a, MediaType $b): int => (
+            $b->getParameter('q', '1.0') <=> $a->getParameter('q', '1.0')
+        ));
+
+        foreach ($clientConsumesMediaTypes as $clientConsumesMediaType) {
+            foreach ($serverProducesMediaTypes as $serverProducesMediaType) {
+                if ($serverProducesMediaType->equals($clientConsumesMediaType)) {
+                    return $serverProducesMediaType;
+                }
+            }
+        }
+
+        return current($serverProducesMediaTypes);
+    }
+
+    /**
+     * Gets the client's preferred language
+     *
+     * @param Language ...$serverProducesLanguages
+     *
+     * @return Language
+     *
+     * @throws LogicException If the list of produces languages is empty.
+     */
+    public function getClientPreferredLanguage(Language ...$serverProducesLanguages): Language
+    {
+        if ($serverProducesLanguages === []) {
+            throw new LogicException('The languages that the server produces must be provided.');
+        }
+
+        /** @var list<Language> $clientConsumesLanguages */
+        $clientConsumesLanguages = [...$this->getClientConsumesLanguages()];
+        if ($clientConsumesLanguages === []) {
+            return current($serverProducesLanguages);
+        }
+
+        usort($clientConsumesLanguages, static fn(Language $a, Language $b): int => (
+            $b->getParameter('q', '1.0') <=> $a->getParameter('q', '1.0')
+        ));
+
+        foreach ($clientConsumesLanguages as $clientConsumesLanguage) {
+            foreach ($serverProducesLanguages as $serverProducesLanguage) {
+                if ($serverProducesLanguage->equals($clientConsumesLanguage)) {
+                    return $serverProducesLanguage;
+                }
+            }
+        }
+
+        return current($serverProducesLanguages);
     }
 
     /**
@@ -141,11 +212,13 @@ final class ServerRequest implements ServerRequestInterface
      * @param MediaType ...$serverConsumesMediaTypes
      *
      * @return bool
+     *
+     * @throws LogicException If the media types that the server consumes were not provided.
      */
     public function clientProducesMediaType(MediaType ...$serverConsumesMediaTypes): bool
     {
         if ($serverConsumesMediaTypes === []) {
-            return true;
+            throw new LogicException('The media types that the server consumes must be provided.');
         }
 
         $clientProducedMediaType = $this->getClientProducedMediaType();
@@ -162,8 +235,21 @@ final class ServerRequest implements ServerRequestInterface
         return false;
     }
 
+    /**
+     * Checks if the client consumes one of the given media types
+     *
+     * @param MediaType ...$serverProducesMediaTypes
+     *
+     * @return bool
+     *
+     * @throws LogicException If the media types that the server produces were not provided.
+     */
     public function clientConsumesMediaType(MediaType ...$serverProducesMediaTypes): bool
     {
+        if ($serverProducesMediaTypes === []) {
+            throw new LogicException('The media types that the server produces must be provided.');
+        }
+
         $clientConsumesMediaTypes = $this->getClientConsumesMediaTypes();
         foreach ($clientConsumesMediaTypes as $clientConsumesMediaType) {
             foreach ($serverProducesMediaTypes as $serverProducesMediaType) {
@@ -174,45 +260,6 @@ final class ServerRequest implements ServerRequestInterface
         }
 
         return false;
-    }
-
-    /**
-     * Gets the client's preferred media type
-     *
-     * @param MediaType ...$serverProducesMediaTypes
-     *
-     * @return MediaType
-     *
-     * @throws LogicException If the list of produces media types is empty.
-     */
-    public function getClientPreferredMediaType(MediaType ...$serverProducesMediaTypes): MediaType
-    {
-        if ($serverProducesMediaTypes === []) {
-            throw new LogicException(
-                'The list of media types produced by the server is empty, ' .
-                'making it impossible to determine the preferred media type for the client.'
-            );
-        }
-
-        /** @var list<MediaType> $clientConsumesMediaTypes */
-        $clientConsumesMediaTypes = [...$this->getClientConsumesMediaTypes()];
-        if ($clientConsumesMediaTypes === []) {
-            return reset($serverProducesMediaTypes);
-        }
-
-        usort($clientConsumesMediaTypes, static fn(MediaType $a, MediaType $b): int => (
-            $b->getQualityFactor() <=> $a->getQualityFactor()
-        ));
-
-        foreach ($clientConsumesMediaTypes as $clientConsumesMediaType) {
-            foreach ($serverProducesMediaTypes as $serverProducesMediaType) {
-                if ($serverProducesMediaType->equals($clientConsumesMediaType)) {
-                    return $serverProducesMediaType;
-                }
-            }
-        }
-
-        return reset($serverProducesMediaTypes);
     }
 
     /**

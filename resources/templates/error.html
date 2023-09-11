@@ -16,61 +16,57 @@
                 color: #FAFAFA;
             }
         }
-        .content-container {
+        main {
             margin: 20vh 10vw 0 10vw;
         }
-        .violations-container:has(p),
-        .navigation-container {
+        details span {
+            display: inline-block;
+            margin-right: .25em;
+            padding: .25em .5em;
+            border: 1px solid #9E9E9E;
+            border-radius: .25em;
+            font-size: .8em;
+            line-height: 1;
+        }
+        nav {
             margin-top: 2.5em;
         }
-        .violation-property-path-label {
+        nav a {
             display: inline-block;
-            margin-right: 0.25em;
-            padding: 0.25em 0.5em;
-            background-color: #B71C1C;
-            border-radius: 0.25em;
+            margin-right: .75em;
+            padding: .75em 1.5em;
+            background-color: #616161;
+            border-top: 1px solid #616161;
+            box-shadow: #9E9E9E 0 1px 0 0 inset;
+            border-radius: .25em;
             color: #FAFAFA;
-            font-size: .8em;
-            font-weight: 300;
-            line-height: 1;
-        }
-        .navigation-link {
-            display: inline-block;
-            margin-right: 0.5em;
-            padding: 0.75em 1.5em;
-            background-color: #1565C0;
-            border: 1px solid #1565C0;
-            box-shadow: #2196F3 0 1px 0 0 inset;
-            border-radius: 0.25em;
-            color: #FAFAFA;
-            font-size: .9em;
-            font-weight: 600;
             text-decoration: none;
+            font-size: .9em;
+            font-weight: 500;
             line-height: 1;
         }
-        .navigation-link:hover {
-            background-color: #1976D2;
-        }
-        .navigation-link:active {
-            background-color: #1E88E5;
+        nav a:active {
+            box-shadow: none;
         }
     </style>
 </head>
 <body>
-    <div class="content-container">
-        <h1>{{ error.statusCode }} | {{ error.reasonPhrase }}</h1>
+    <main>
+        <h1>{{ error.reasonPhrase }}</h1>
         <p>{{ error.message }}</p>
-        <div class="violations-container">
-            {% for violation in error.violations %}
-                <p><span class="violation-property-path-label">{{ violation.source }}</span> {{ violation.message }}</p>
-            {% endfor %}
-        </div>
-        <div class="navigation-container">
-            <p>
-                <a class="navigation-link" href="/">Home</a>
-                <a class="navigation-link" href="javascript:window.history.go(-1)">Back</a>
-            </p>
-        </div>
-    </div>
+
+        {% if error.violations %}
+            <details>
+                {% for violation in error.violations %}
+                    <p><span>{{ violation.source }}</span> {{ violation.message }}</p>
+                {% endfor %}
+            </details>
+        {% endif %}
+
+        <nav>
+            <a href="/" title="Go home">Home</a>
+            <a href="javascript:window.history.go(-1)" title="Go back">Back</a>
+        </nav>
+    </main>
 </body>
 </html>

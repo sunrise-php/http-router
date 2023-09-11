@@ -25,7 +25,7 @@ final class SerializableResponseBody
     /**
      * Constructor of the class
      *
-     * @param array<non-empty-string, mixed> $context Serializing context
+     * @param array<non-empty-string, mixed> $context
      */
     public function __construct(public array $context = [])
     {

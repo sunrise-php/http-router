@@ -239,8 +239,10 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
                 continue;
             }
 
-            if (!$request->clientProducesMediaType(...$route->getConsumesMediaTypes())) {
-                throw new HttpUnsupportedMediaTypeException($route->getConsumesMediaTypes());
+            $serverConsumesMediaTypes = $route->getConsumesMediaTypes();
+            if (!empty($serverConsumesMediaTypes)) {
+                $request->clientProducesMediaType(...$serverConsumesMediaTypes) or
+                    throw new HttpUnsupportedMediaTypeException($serverConsumesMediaTypes);
             }
 
             /** @var array<string, string> $attributes */

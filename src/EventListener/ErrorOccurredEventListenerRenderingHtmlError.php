@@ -64,13 +64,14 @@ final class ErrorOccurredEventListenerRenderingHtmlError
             $loader->addPath(__DIR__ . '/../../resources/templates');
         }
 
-        $html = $this->twig->render('error.html', [
-            'error' => ErrorDto::fromHttpError($error),
-        ]);
+        $response = $event->getResponse()
+            ->withHeader('Content-Type', 'text/html; charset=UTF-8');
 
-        $response = $event->getResponse();
-        $response = $response->withHeader('Content-Type', MediaType::html()->build(['charset' => 'UTF-8']));
-        $response->getBody()->write($html);
+        $response->getBody()->write(
+            $this->twig->render('error.html', [
+                'error' => ErrorDto::fromHttpError($error),
+            ])
+        );
 
         $event->setResponse($response);
 

@@ -30,7 +30,7 @@ use function trim;
 /**
  * @since 3.0.0
  */
-final class DateTimeTypeConverter implements TypeConverterInterface
+final class TimestampTypeConverter implements TypeConverterInterface
 {
 
     /**

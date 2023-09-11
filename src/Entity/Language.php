@@ -13,37 +13,39 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Entity;
 
+use Stringable;
+
 /**
  * Language
  *
  * @since 3.0.0
  */
-final class Language
+final class Language implements Stringable
 {
 
     /**
      * Constructor of the class
      *
-     * @param string $tag
+     * @param string $code
      * @param list<string> $subtags
      * @param array<string, ?string> $parameters
      */
-    public function __construct(private string $tag, private array $subtags = [], private array $parameters = [])
+    public function __construct(private string $code, private array $subtags = [], private array $parameters = [])
     {
     }
 
     /**
-     * Gets the language's tag
+     * Gets the language code
      *
      * @return string
      */
-    public function getTag(): string
+    public function getCode(): string
     {
-        return $this->tag;
+        return $this->code;
     }
 
     /**
-     * Gets the language's subtags
+     * Gets the language subtags
      *
      * @return list<string>
      */
@@ -53,7 +55,7 @@ final class Language
     }
 
     /**
-     * Gets the language's parameters
+     * Gets the language parameters
      *
      * @return array<string, ?string>
      */
@@ -63,12 +65,41 @@ final class Language
     }
 
     /**
-     * Gets the language's quality factor
+     * Gets the language parameter's value by the given its name or
+     * returns the given default value if the parameter doesn't exist or is empty
      *
-     * @return float
+     * @param string $name
+     * @param ?string $default
+     *
+     * @return ?string
      */
-    public function getQualityFactor(): float
+    public function getParameter(string $name, ?string $default = null): ?string
     {
-        return (float) ($this->parameters['q'] ?? 1);
+        return isset($this->parameters[$name][0]) ? $this->parameters[$name] : $default;
+    }
+
+    /**
+     * Checks if this language equals to the given language
+     *
+     * @param Language $other
+     *
+     * @return bool
+     */
+    public function equals(Language $other): bool
+    {
+        return $this->code === '*' || $other->code === '*' || $this->code === $other->code;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function __toString(): string
+    {
+        $result = $this->code;
+        foreach ($this->subtags as $subtag) {
+            $result .= '-' . $subtag;
+        }
+
+        return $result;
     }
 }

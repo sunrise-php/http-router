@@ -37,7 +37,7 @@ final class MediaType implements Stringable
     }
 
     /**
-     * Creates the json media type
+     * Creates the json media type with the given parameters
      *
      * @param array<string, ?string> $parameters
      *
@@ -49,7 +49,7 @@ final class MediaType implements Stringable
     }
 
     /**
-     * Creates the xml media type
+     * Creates the xml media type with the given parameters
      *
      * @param array<string, ?string> $parameters
      *
@@ -61,7 +61,7 @@ final class MediaType implements Stringable
     }
 
     /**
-     * Creates the yaml media type
+     * Creates the yaml media type with the given parameters
      *
      * @param array<string, ?string> $parameters
      *
@@ -73,7 +73,7 @@ final class MediaType implements Stringable
     }
 
     /**
-     * Creates the html media type
+     * Creates the html media type with the given parameters
      *
      * @param array<string, ?string> $parameters
      *
@@ -85,7 +85,7 @@ final class MediaType implements Stringable
     }
 
     /**
-     * Creates the text media type
+     * Creates the text media type with the given parameters
      *
      * @param array<string, ?string> $parameters
      *
@@ -97,7 +97,7 @@ final class MediaType implements Stringable
     }
 
     /**
-     * Creates the image media range
+     * Creates the image media range with the given parameters
      *
      * @param array<string, ?string> $parameters
      *
@@ -139,13 +139,17 @@ final class MediaType implements Stringable
     }
 
     /**
-     * Gets the media type quality factor
+     * Gets the media type parameter's value by the given its name or
+     * returns the given default value if the parameter doesn't exist or is empty
      *
-     * @return float
+     * @param string $name
+     * @param ?string $default
+     *
+     * @return ?string
      */
-    public function getQualityFactor(): float
+    public function getParameter(string $name, ?string $default = null): ?string
     {
-        return (float) ($this->parameters['q'] ?? 1.);
+        return isset($this->parameters[$name][0]) ? $this->parameters[$name] : $default;
     }
 
     /**
@@ -162,7 +166,7 @@ final class MediaType implements Stringable
     }
 
     /**
-     * Build the media type
+     * Build the media type with the given parameters
      *
      * @param array<string, ?string> $parameters
      *
