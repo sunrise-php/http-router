@@ -16,6 +16,8 @@ namespace Sunrise\Http\Router\Event;
 use Psr\EventDispatcher\StoppableEventInterface;
 
 /**
+ * @internal
+ *
  * @since 3.0.0
  */
 abstract class AbstractEvent implements StoppableEventInterface

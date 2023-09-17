@@ -63,8 +63,18 @@ final class ProvideRouteParameterResolver implements ParameterResolverInterface
             ));
         }
 
+        $routes = $this->router->getRoutes();
         $attribute = $attributes[0]->newInstance();
 
-        yield $this->router->getRoutes()->get($attribute->name);
+        if (!$routes->has($attribute->name) && !$parameter->allowsNull()) {
+            throw new LogicException(sprintf(
+                'The parameter {%1$s} expects a non-existent route "%2$s". ' .
+                'To resolve this issue, simply make this parameter nullable.',
+                ParameterResolutioner::stringifyParameter($parameter),
+                $attribute->name,
+            ));
+        }
+
+        yield $routes->get($attribute->name);
     }
 }

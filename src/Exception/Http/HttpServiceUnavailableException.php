@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Exception\Http;
 
+use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
@@ -40,6 +41,7 @@ class HttpServiceUnavailableException extends HttpException
 
         parent::__construct(self::STATUS_SERVICE_UNAVAILABLE, $message, $code, $previous);
 
+        $this->setSource(ErrorSource::SERVER);
         $this->setReasonPhrase('Service Unavailable');
     }
 }

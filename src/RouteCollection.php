@@ -15,11 +15,8 @@ namespace Sunrise\Http\Router;
 
 use Psr\Http\Server\MiddlewareInterface;
 use Sunrise\Http\Router\Entity\MediaType;
-use Sunrise\Http\Router\Exception\RouteNotFoundException;
-use Iterator;
 
 use function count;
-use function sprintf;
 
 /**
  * RouteCollection
@@ -30,6 +27,8 @@ class RouteCollection implements RouteCollectionInterface
 {
 
     /**
+     * The collection routes
+     *
      * @var array<string, RouteInterface>
      */
     private array $routes = [];
@@ -47,17 +46,7 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * @inheritDoc
      */
-    public function getIterator(): Iterator
-    {
-        foreach ($this->routes as $route) {
-            yield $route;
-        }
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function all(): Iterator
+    public function all(): iterable
     {
         foreach ($this->routes as $route) {
             yield $route;
@@ -75,22 +64,15 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * @inheritDoc
      */
-    public function get(string $name): RouteInterface
+    public function get(string $name): ?RouteInterface
     {
-        if (!isset($this->routes[$name])) {
-            throw new RouteNotFoundException(sprintf(
-                'The collection does not contain a route with the name %s',
-                $name
-            ));
-        }
-
-        return $this->routes[$name];
+        return $this->routes[$name] ?? null;
     }
 
     /**
      * @inheritDoc
      */
-    public function add(RouteInterface ...$routes): RouteCollectionInterface
+    public function add(RouteInterface ...$routes): static
     {
         foreach ($routes as $route) {
             $this->routes[$route->getName()] = $route;
@@ -102,31 +84,7 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * @inheritDoc
      */
-    public function setConsumesMediaTypes(MediaType ...$mediaTypes): RouteCollectionInterface
-    {
-        foreach ($this->routes as $route) {
-            $route->setConsumesMediaTypes(...$mediaTypes);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setProducesMediaTypes(MediaType ...$mediaTypes): RouteCollectionInterface
-    {
-        foreach ($this->routes as $route) {
-            $route->setProducesMediaTypes(...$mediaTypes);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setAttribute(string $name, $value): RouteCollectionInterface
+    public function setAttribute(string $name, mixed $value): static
     {
         foreach ($this->routes as $route) {
             $route->setAttribute($name, $value);
@@ -138,7 +96,19 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * @inheritDoc
      */
-    public function addPrefix(string $prefix): RouteCollectionInterface
+    public function setDeprecation(bool $isDeprecated): static
+    {
+        foreach ($this->routes as $route) {
+            $route->setDeprecation($isDeprecated);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addPrefix(string $prefix): static
     {
         foreach ($this->routes as $route) {
             $route->addPrefix($prefix);
@@ -150,7 +120,7 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * @inheritDoc
      */
-    public function addSuffix(string $suffix): RouteCollectionInterface
+    public function addSuffix(string $suffix): static
     {
         foreach ($this->routes as $route) {
             $route->addSuffix($suffix);
@@ -162,7 +132,7 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * @inheritDoc
      */
-    public function addMethod(string ...$methods): RouteCollectionInterface
+    public function addMethod(string ...$methods): static
     {
         foreach ($this->routes as $route) {
             $route->addMethod(...$methods);
@@ -174,7 +144,7 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * @inheritDoc
      */
-    public function addConsumesMediaType(MediaType ...$mediaTypes): RouteCollectionInterface
+    public function addConsumesMediaType(MediaType ...$mediaTypes): static
     {
         foreach ($this->routes as $route) {
             $route->addConsumesMediaType(...$mediaTypes);
@@ -186,7 +156,7 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * @inheritDoc
      */
-    public function addProducesMediaType(MediaType ...$mediaTypes): RouteCollectionInterface
+    public function addProducesMediaType(MediaType ...$mediaTypes): static
     {
         foreach ($this->routes as $route) {
             $route->addProducesMediaType(...$mediaTypes);
@@ -198,7 +168,7 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * @inheritDoc
      */
-    public function addMiddleware(MiddlewareInterface ...$middlewares): RouteCollectionInterface
+    public function addMiddleware(MiddlewareInterface ...$middlewares): static
     {
         foreach ($this->routes as $route) {
             $route->addMiddleware(...$middlewares);
@@ -210,10 +180,10 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * @inheritDoc
      */
-    public function addPriorityMiddleware(MiddlewareInterface ...$middlewares): RouteCollectionInterface
+    public function addPriorityMiddleware(MiddlewareInterface ...$middlewares): static
     {
         foreach ($this->routes as $route) {
-            $route->addPriorityMiddleware(...$middlewares);
+            $route->setMiddlewares(...$middlewares, ...$route->getMiddlewares());
         }
 
         return $this;
@@ -222,7 +192,7 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * @inheritDoc
      */
-    public function addTag(string ...$tags): RouteCollectionInterface
+    public function addTag(string ...$tags): static
     {
         foreach ($this->routes as $route) {
             $route->addTag(...$tags);

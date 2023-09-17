@@ -64,8 +64,7 @@ final class ErrorOccurredEventListenerRenderingHtmlError
             $loader->addPath(__DIR__ . '/../../resources/templates');
         }
 
-        $response = $event->getResponse()
-            ->withHeader('Content-Type', 'text/html; charset=UTF-8');
+        $response = $event->getResponse()->withHeader('Content-Type', 'text/html; charset=UTF-8');
 
         $response->getBody()->write(
             $this->twig->render('error.html', [

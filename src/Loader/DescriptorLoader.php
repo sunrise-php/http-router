@@ -24,6 +24,7 @@ use ReflectionClass;
 use ReflectionMethod;
 use RegexIterator;
 use Sunrise\Http\Router\Annotation\Consumes;
+use Sunrise\Http\Router\Annotation\Deprecated;
 use Sunrise\Http\Router\Annotation\Description;
 use Sunrise\Http\Router\Annotation\Method;
 use Sunrise\Http\Router\Annotation\Middleware;
@@ -59,6 +60,8 @@ use function is_string;
 use function iterator_to_array;
 use function sprintf;
 use function usort;
+
+use const PHP_EOL;
 
 /**
  * DescriptorLoader
@@ -312,10 +315,10 @@ final class DescriptorLoader implements LoaderInterface
 
             $route->setConsumesMediaTypes(...$descriptor->consumes);
             $route->setProducesMediaTypes(...$descriptor->produces);
-
             $route->setSummary($descriptor->summary);
             $route->setDescription($descriptor->description);
             $route->setTags(...$descriptor->tags);
+            $route->setDeprecation($descriptor->isDeprecated);
 
             $routes->add($route);
         }
@@ -476,17 +479,24 @@ final class DescriptorLoader implements LoaderInterface
 
         $annotations = $this->getAnnotations(Summary::class, $holder);
         foreach ($annotations as $annotation) {
-            $descriptor->summary .= $annotation->value;
+            /** @psalm-suppress PossiblyNullOperand */
+            $descriptor->summary .= PHP_EOL . $annotation->value;
         }
 
         $annotations = $this->getAnnotations(Description::class, $holder);
         foreach ($annotations as $annotation) {
-            $descriptor->description .= $annotation->value;
+            /** @psalm-suppress PossiblyNullOperand */
+            $descriptor->description .= PHP_EOL . $annotation->value;
         }
 
         $annotations = $this->getAnnotations(Tag::class, $holder);
         foreach ($annotations as $annotation) {
             $descriptor->tags[] = $annotation->value;
+        }
+
+        $annotations = $this->getAnnotations(Deprecated::class, $holder);
+        if ($annotations->valid()) {
+            $descriptor->isDeprecated = true;
         }
     }
 

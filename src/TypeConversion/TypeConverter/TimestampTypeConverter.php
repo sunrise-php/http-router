@@ -58,10 +58,12 @@ final class TimestampTypeConverter implements TypeConverterInterface
             throw new InvalidArgumentException('This value must be of a string or an integer type.');
         }
 
+        $value = trim($value);
+
         // As part of the support for HTML forms and other untyped data sources,
         // an instance of DateTime should not be created from an empty string,
         // therefore, such values should be treated as NULL.
-        if (trim($value) === '') {
+        if ($value === '') {
             return $type->allowsNull() ? yield : throw new InvalidArgumentException('This value must not be empty.');
         }
 

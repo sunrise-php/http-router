@@ -19,15 +19,25 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Event\RouteMatchedEvent;
 use Sunrise\Http\Router\Exception\Http\HttpMethodNotAllowedException;
 use Sunrise\Http\Router\Exception\Http\HttpNotFoundException;
 use Sunrise\Http\Router\Exception\Http\HttpUnsupportedMediaTypeException;
+use Sunrise\Http\Router\Exception\InvalidArgumentException;
+use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\Loader\LoaderInterface;
+use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
+use Sunrise\Http\Router\ParameterResolving\ParameterResolutionerInterface;
+use Sunrise\Http\Router\ParameterResolving\ParameterResolver\ParameterResolverInterface;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 
+use Sunrise\Http\Router\ResponseResolving\ResponseResolutioner;
+use Sunrise\Http\Router\ResponseResolving\ResponseResolutionerInterface;
+use Sunrise\Http\Router\ResponseResolving\ResponseResolver\ResponseResolverInterface;
 use function array_keys;
+use function sprintf;
 
 /**
  * Router
@@ -46,6 +56,26 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     ];
 
     /**
+     * @var EventDispatcherInterface|null
+     */
+    private ?EventDispatcherInterface $eventDispatcher = null;
+
+    /**
+     * @var ReferenceResolverInterface
+     */
+    private ReferenceResolverInterface $referenceResolver;
+
+    /**
+     * @var ParameterResolutionerInterface|null
+     */
+    private ?ParameterResolutionerInterface $parameterResolutioner;
+
+    /**
+     * @var ResponseResolutionerInterface|null
+     */
+    private ?ResponseResolutionerInterface $responseResolutioner;
+
+    /**
      * @var RouteCollectionInterface
      */
     private RouteCollectionInterface $routes;
@@ -56,30 +86,88 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     private array $middlewares = [];
 
     /**
-     * @var EventDispatcherInterface|null
-     */
-    private ?EventDispatcherInterface $eventDispatcher = null;
-
-    /**
-     * @var RouteInterface|null
-     */
-    private ?RouteInterface $matchedRoute = null;
-
-    /**
      * Constructor of the class
      *
-     * @param RouteCollectionInterface|null $routes
+     * @param RouteCollectionFactoryInterface|null $collectionFactory
+     * @param ReferenceResolverInterface|null $referenceResolver
+     * @param ParameterResolutionerInterface|null $parameterResolutioner
+     * @param ResponseResolutionerInterface|null $responseResolutioner
      *
      * @since 3.0.0
      */
     public function __construct(
-        ?RouteCollectionInterface $routes = null
+        ?RouteCollectionFactoryInterface $collectionFactory = null,
+        ?ReferenceResolverInterface $referenceResolver = null,
+        ?ParameterResolutionerInterface $parameterResolutioner = null,
+        ?ResponseResolutionerInterface $responseResolutioner = null,
     ) {
-        $this->routes = $routes ?? new RouteCollection();
+        $collectionFactory ??= new RouteCollectionFactory();
+
+        $this->parameterResolutioner = $parameterResolutioner;
+        $this->responseResolutioner = $responseResolutioner;
+
+        $this->referenceResolver = $referenceResolver ?? new ReferenceResolver(
+            $this->parameterResolutioner ??= new ParameterResolutioner(),
+            $this->responseResolutioner ??= new ResponseResolutioner(),
+        );
+
+        $this->routes = $collectionFactory->createCollection();
     }
 
     /**
-     * Loads routes through the given loaders
+     * Adds the given parameter resolver(s) to the parameter resolutioner
+     *
+     * @param ParameterResolverInterface ...$resolvers
+     *
+     * @return void
+     *
+     * @throws LogicException
+     *         If a custom reference resolver has been set,
+     *         but a parameter resolutioner has not been set.
+     *
+     * @since 3.0.0
+     */
+    public function addParameterResolver(ParameterResolverInterface ...$resolvers): void
+    {
+        if (!isset($this->parameterResolutioner)) {
+            throw new LogicException(
+                'The router cannot accept parameter resolvers ' .
+                'because a custom reference resolver has been set, ' .
+                'but a parameter resolutioner has not been set.'
+            );
+        }
+
+        $this->parameterResolutioner->addResolver(...$resolvers);
+    }
+
+    /**
+     * Adds the given response resolver(s) to the response resolutioner
+     *
+     * @param ResponseResolverInterface ...$resolvers
+     *
+     * @return void
+     *
+     * @throws LogicException
+     *         If a custom reference resolver has been set,
+     *         but a response resolutioner has not been set.
+     *
+     * @since 3.0.0
+     */
+    public function addResponseResolver(ResponseResolverInterface ...$resolvers): void
+    {
+        if (!isset($this->responseResolutioner)) {
+            throw new LogicException(
+                'The router cannot accept response resolvers ' .
+                'because a custom reference resolver has been set, ' .
+                'but a response resolutioner has not been set.'
+            );
+        }
+
+        $this->responseResolutioner->addResolver(...$resolvers);
+    }
+
+    /**
+     * Loads routes using the given loaders
      *
      * @param LoaderInterface ...$loaders
      *
@@ -93,13 +181,31 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     }
 
     /**
-     * Gets the router's route collection
+     * Gets the router's routes
      *
      * @return RouteCollectionInterface
      */
     public function getRoutes(): RouteCollectionInterface
     {
         return $this->routes;
+    }
+
+    /**
+     * Gets a route by its given name
+     *
+     * @param string $name
+     *
+     * @return RouteInterface
+     *
+     * @throws InvalidArgumentException If the route doesn't exist.
+     */
+    public function getRoute(string $name): RouteInterface
+    {
+        if ($this->routes->has($name)) {
+            return $this->routes->get($name);
+        }
+
+        throw new InvalidArgumentException(sprintf('The route %s does not exist.', $name));
     }
 
     /**
@@ -125,18 +231,6 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     }
 
     /**
-     * Gets the router's matched route
-     *
-     * @return RouteInterface|null
-     *
-     * @since 2.12.0
-     */
-    public function getMatchedRoute(): ?RouteInterface
-    {
-        return $this->matchedRoute;
-    }
-
-    /**
      * Adds the given patterns to the router
      *
      * @param array<string, string> $patterns
@@ -153,17 +247,29 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     }
 
     /**
-     * Adds the given middleware(s) to the router
+     * Adds the given route(s) to the router
      *
-     * @param MiddlewareInterface ...$middlewares
+     * @param RouteInterface ...$routes
      *
      * @return void
      */
-    public function addMiddleware(MiddlewareInterface ...$middlewares): void
+    public function addRoute(RouteInterface ...$routes) : void
     {
-        foreach ($middlewares as $middleware) {
-            $this->middlewares[] = $middleware;
-        }
+        $this->routes->add(...$routes);
+    }
+
+    /**
+     * Adds the given middleware(s) to the router
+     *
+     * @param mixed ...$middlewares
+     *
+     * @return void
+     */
+    public function addMiddleware(mixed ...$middlewares): void
+    {
+        $middlewares = $this->referenceResolver->resolveMiddlewares($middlewares);
+
+        $this->middlewares = [...$this->middlewares, ...$middlewares];
     }
 
     /**
@@ -216,9 +322,7 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
      */
     public function match(ServerRequestInterface $request): RouteInterface
     {
-        $request = ServerRequest::from($request);
-        $requestUri = $request->getUri();
-        $requestPath = $requestUri->getPath();
+        $requestPath = $request->getUri()->getPath();
         $requestMethod = $request->getMethod();
         $allowedMethods = [];
 
@@ -241,7 +345,7 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
 
             $serverConsumesMediaTypes = $route->getConsumesMediaTypes();
             if (!empty($serverConsumesMediaTypes)) {
-                $request->clientProducesMediaType(...$serverConsumesMediaTypes) or
+                ServerRequest::from($request)->clientProducesMediaType(...$serverConsumesMediaTypes) or
                     throw new HttpUnsupportedMediaTypeException($serverConsumesMediaTypes);
             }
 
@@ -256,7 +360,8 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
             throw new HttpMethodNotAllowedException($allowedMethods);
         }
 
-        throw new HttpNotFoundException();
+        throw (new HttpNotFoundException)
+            ->setSource(ErrorSource::CLIENT_REQUEST_PATH);
     }
 
     /**
@@ -273,7 +378,7 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
         // lazy resolving of the given request...
         $routing = new CallableRequestHandler(
             function (ServerRequestInterface $request): ResponseInterface {
-                $this->matchedRoute = $route = $this->match($request);
+                $route = $this->match($request);
 
                 if (isset($this->eventDispatcher)) {
                     $event = new RouteMatchedEvent($route, $request);
@@ -289,12 +394,9 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
             return $routing->handle($request);
         }
 
-        $requestHandler = new QueueableRequestHandler(
-            $routing,
-            ...$this->middlewares,
-        );
+        $handler = new QueueableRequestHandler($routing, ...$this->middlewares);
 
-        return $requestHandler->handle($request);
+        return $handler->handle($request);
     }
 
     /**
@@ -302,7 +404,7 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $this->matchedRoute = $route = $this->match($request);
+        $route = $this->match($request);
 
         if (isset($this->eventDispatcher)) {
             $event = new RouteMatchedEvent($route, $request);
@@ -314,11 +416,8 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
             return $route->handle($request);
         }
 
-        $requestHandler = new QueueableRequestHandler(
-            $route,
-            ...$this->middlewares,
-        );
+        $handler = new QueueableRequestHandler($route, ...$this->middlewares);
 
-        return $requestHandler->handle($request);
+        return $handler->handle($request);
     }
 }

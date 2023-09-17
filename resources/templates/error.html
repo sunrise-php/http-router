@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ error.reasonPhrase }}</title>
     <style>
+        :root {
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+        }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            font-family: var(--font-family);
             background-color: #FAFAFA;
             color: #212121;
         }
@@ -19,12 +22,13 @@
         main {
             margin: 20vh 10vw 0 10vw;
         }
-        details span {
+        details code {
             display: inline-block;
             margin-right: .25em;
             padding: .25em .5em;
             border: 1px solid #9E9E9E;
             border-radius: .25em;
+            font-family: var(--font-family); /* override the monospace font */
             font-size: .8em;
             line-height: 1;
         }
@@ -54,11 +58,12 @@
     <main>
         <h1>{{ error.reasonPhrase }}</h1>
         <p>{{ error.message }}</p>
+        <p>The error's source: {{ error.source }}</p>
 
         {% if error.violations %}
             <details>
                 {% for violation in error.violations %}
-                    <p><span>{{ violation.source }}</span> {{ violation.message }}</p>
+                    <p><code>{{ violation.source }}</code> {{ violation.message }}</p>
                 {% endfor %}
             </details>
         {% endif %}

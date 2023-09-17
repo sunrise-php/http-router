@@ -30,7 +30,7 @@ class RouteFactory implements RouteFactoryInterface
         array $methods,
         RequestHandlerInterface $requestHandler,
         array $middlewares = [],
-        array $attributes = []
+        array $attributes = [],
     ) : RouteInterface {
         return new Route(
             $name,
@@ -38,7 +38,7 @@ class RouteFactory implements RouteFactoryInterface
             $methods,
             $requestHandler,
             $middlewares,
-            $attributes
+            $attributes,
         );
     }
 }

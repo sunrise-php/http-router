@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Exception\Http;
 
 use Stringable;
+use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
@@ -42,8 +43,8 @@ class HttpUnsupportedMediaTypeException extends HttpException
 
         parent::__construct(self::STATUS_UNSUPPORTED_MEDIA_TYPE, $message, $code, $previous);
 
+        $this->setSource(ErrorSource::CLIENT_REQUEST_BODY);
         $this->setReasonPhrase('Unsupported Media Type');
-
         $this->addHeader('Accept', ...$supportedMediaTypes);
     }
 

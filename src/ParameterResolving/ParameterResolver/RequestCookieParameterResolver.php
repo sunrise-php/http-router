@@ -19,6 +19,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestCookie;
+use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
@@ -81,23 +82,19 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
                 return yield;
             }
 
-            throw new HttpBadRequestException(sprintf(
-                'The cookie %s must be provided.',
-                $cookie->name,
-            ));
+            $message = sprintf('The cookie %s must be provided.', $cookie->name);
+
+            throw (new HttpBadRequestException($message))
+                ->setSource(ErrorSource::CLIENT_REQUEST_COOKIE);
         }
 
         try {
-            yield $this->typeConversioner->castValue(
-                $cookies[$cookie->name],
-                $parameter->getType(),
-            );
+            yield $this->typeConversioner->castValue($cookies[$cookie->name], $parameter->getType());
         } catch (InvalidArgumentException $violation) {
-            throw new HttpBadRequestException(sprintf(
-                'The value of the cookie %s is not valid. %s',
-                $cookie->name,
-                $violation->getMessage(),
-            ), previous: $violation);
+            $message = sprintf('The value of the cookie %s is not valid. %s', $cookie->name, $violation->getMessage());
+
+            throw (new HttpBadRequestException($message, previous: $violation))
+                ->setSource(ErrorSource::CLIENT_REQUEST_COOKIE);
         }
     }
 }

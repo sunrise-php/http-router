@@ -51,16 +51,17 @@ final class Route implements RequestMethodInterface
     /**
      * Constructor of the class
      *
-     * @param  non-empty-string                $name         The route's name
-     * @param  non-empty-string                $path         The route's path
-     * @param  non-empty-string|null           $method       The route's method
-     * @param  list<non-empty-string>          $methods      The route's methods
-     * @param  list<mixed>                     $middlewares  The route's middlewares
-     * @param  array<non-empty-string, mixed>  $attributes   The route's attributes
-     * @param  string                          $summary      The route's summary
-     * @param  string                          $description  The route's description
-     * @param  list<non-empty-string>          $tags         The route's tags
-     * @param  int<min, max>                   $priority     The route's priority (default 0)
+     * @param  non-empty-string                $name          The route's name
+     * @param  non-empty-string                $path          The route's path
+     * @param  non-empty-string|null           $method        The route's method
+     * @param  list<non-empty-string>          $methods       The route's methods
+     * @param  list<mixed>                     $middlewares   The route's middlewares
+     * @param  array<non-empty-string, mixed>  $attributes    The route's attributes
+     * @param  non-empty-string|null           $summary       The route's summary
+     * @param  non-empty-string|null           $description   The route's description
+     * @param  list<non-empty-string>          $tags          The route's tags
+     * @param  bool                            $isDeprecated  The route's deprecation sign
+     * @param  int<min, max>                   $priority      The route's priority (default 0)
      */
     public function __construct(
         public string $name,
@@ -69,9 +70,10 @@ final class Route implements RequestMethodInterface
         public array $methods = [],
         public array $middlewares = [],
         public array $attributes = [],
-        public string $summary = '',
-        public string $description = '',
+        public ?string $summary = null,
+        public ?string $description = null,
         public array $tags = [],
+        public bool $isDeprecated = false,
         public int $priority = 0,
     ) {
         if (isset($method)) {

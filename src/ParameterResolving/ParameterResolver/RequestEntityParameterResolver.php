@@ -20,6 +20,7 @@ use ReflectionAttribute;
 use ReflectionNamedType;
 use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestEntity;
+use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Exception\Http\HttpNotFoundException;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
@@ -84,31 +85,21 @@ final class RequestEntityParameterResolver implements ParameterResolverInterface
             ));
         }
 
-        $entityRequest = $attributes[0]->newInstance();
-        $entityManagerNames = $this->entityManagerRegistry->getManagerNames();
-        if (isset($entityRequest->em) && !isset($entityManagerNames[$entityRequest->em])) {
-            throw new LogicException(sprintf(
-                'The #[RequestEntity] attribute cannot be applied to the parameter {%s}, ' .
-                'because the specified entity manager "%s" does not exist.',
-                ParameterResolutioner::stringifyParameter($parameter),
-                $entityRequest->em,
-            ));
-        }
+        $attribute = $attributes[0]->newInstance();
 
-        $entityName = $type->getName();
-        $entityManager = $this->entityManagerRegistry->getManager($entityRequest->em);
-        $entityMetadata = $entityManager->getClassMetadata($entityName);
-        if (isset($entityRequest->findBy) && !$entityMetadata->hasField($entityRequest->findBy)) {
+        $entityManager = $this->entityManagerRegistry->getManager($attribute->em);
+        $entityMetadata = $entityManager->getClassMetadata($type->getName());
+        if (isset($attribute->findBy) && !$entityMetadata->hasField($attribute->findBy)) {
             throw new LogicException(sprintf(
                 'The #[RequestEntity] attribute cannot be applied to the parameter {%s}, ' .
                 'because the specified field "%s" does not exist.',
                 ParameterResolutioner::stringifyParameter($parameter),
-                $entityRequest->findBy,
+                $attribute->findBy,
             ));
         }
 
         $entityIdentifierFieldNames = $entityMetadata->getIdentifier();
-        if (!isset($entityRequest->findBy) && count($entityIdentifierFieldNames) <> 1) {
+        if (!isset($attribute->findBy) && count($entityIdentifierFieldNames) <> 1) {
             throw new LogicException(sprintf(
                 'The #[RequestEntity] attribute cannot be applied to the parameter {%s}, ' .
                 'because no entity search field name is provided, and automatic detection is not possible ' .
@@ -118,27 +109,26 @@ final class RequestEntityParameterResolver implements ParameterResolverInterface
             ));
         }
 
-        $entitySearchFieldName = $entityRequest->findBy ?? $entityIdentifierFieldNames[0];
-        $routePathVariableName = $entityRequest->pathVariable ?? $entitySearchFieldName;
-
-        /** @var string|null $routePathVariableValue */
-        $routePathVariableValue = $route->getAttribute($routePathVariableName);
-        if (!isset($routePathVariableValue)) {
+        $entityFieldName = $attribute->findBy ?? $entityIdentifierFieldNames[0];
+        $pathVariableName = $attribute->pathVariable ?? $entityFieldName;
+        /** @var string|null $pathVariableValue */
+        $pathVariableValue = $route->getAttribute($pathVariableName);
+        if (!isset($pathVariableValue)) {
             throw new LogicException(sprintf(
                 'The #[RequestEntity] attribute cannot be applied to the parameter {%s}, ' .
-                'because the route is missing the value of variable "%s". ' .
+                'because the route is missing the value for variable {%s}. ' .
                 'To resolve this issue, explicitly specify the variable name within the attribute.',
                 ParameterResolutioner::stringifyParameter($parameter),
-                $routePathVariableName,
+                $pathVariableName,
             ));
         }
 
-        $entitySearchCriteria = $entityRequest->criteria;
-        $entitySearchCriteria[$entitySearchFieldName] = $routePathVariableValue;
-        $entityRepository = $entityManager->getRepository($entityName);
-        $entity = $entityRepository->findOneBy($entitySearchCriteria);
+        $entity = $entityManager->getRepository($entityMetadata->getName())
+            ->findOneBy([$entityFieldName => $pathVariableValue] + $attribute->criteria);
+
         if (!isset($entity)) {
-            throw new HttpNotFoundException();
+            throw (new HttpNotFoundException)
+                ->setSource(ErrorSource::CLIENT_REQUEST_PATH);
         }
 
         yield $entity;

@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Exception\Http;
 
+use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
@@ -35,10 +36,11 @@ class HttpForbiddenException extends HttpException
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
-        $message ??= 'The request couldn‘t be processed due to insufficient permissions for the resource.';
+        $message ??= 'The request couldn‘t be processed due to insufficient permissions.';
 
         parent::__construct(self::STATUS_FORBIDDEN, $message, $code, $previous);
 
+        $this->setSource(ErrorSource::CLIENT_PERMISSIONS);
         $this->setReasonPhrase('Forbidden');
     }
 }

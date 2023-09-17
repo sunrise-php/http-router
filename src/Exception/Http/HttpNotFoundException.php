@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Exception\Http;
 
+use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
@@ -39,6 +40,7 @@ class HttpNotFoundException extends HttpException
 
         parent::__construct(self::STATUS_NOT_FOUND, $message, $code, $previous);
 
+        $this->setSource(ErrorSource::CLIENT_REQUEST_URI);
         $this->setReasonPhrase('Not Found');
     }
 }

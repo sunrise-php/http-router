@@ -15,6 +15,8 @@ namespace Sunrise\Http\Router\Entity;
 
 use Stringable;
 
+use function join;
+
 /**
  * Language
  *
@@ -65,7 +67,7 @@ final class Language implements Stringable
     }
 
     /**
-     * Gets the language parameter's value by the given its name or
+     * Gets the language parameter's value by its given name or
      * returns the given default value if the parameter doesn't exist or is empty
      *
      * @param string $name
@@ -79,7 +81,9 @@ final class Language implements Stringable
     }
 
     /**
-     * Checks if this language equals to the given language
+     * Checks if this language's code equals to the given language's code
+     *
+     * Please note that when comparing languages, their subtags are not factored in.
      *
      * @param Language $other
      *
@@ -95,11 +99,6 @@ final class Language implements Stringable
      */
     public function __toString(): string
     {
-        $result = $this->code;
-        foreach ($this->subtags as $subtag) {
-            $result .= '-' . $subtag;
-        }
-
-        return $result;
+        return join('-', [$this->code, ...$this->subtags]);
     }
 }

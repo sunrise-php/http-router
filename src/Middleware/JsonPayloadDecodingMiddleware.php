@@ -18,22 +18,27 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use SimdJsonException;
+use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Entity\MediaType;
 use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
 use Sunrise\Http\Router\ServerRequest;
 
+use function extension_loaded;
 use function is_array;
 use function json_decode;
+use function simdjson_decode;
 
-use const JSON_BIGINT_AS_STRING;
 use const JSON_THROW_ON_ERROR;
 
 /**
- * Middleware for JSON payload decoding using the JSON extension
+ * JSON payload decoding middleware using the JSON or Simdjson extension
+ *
+ * @link https://www.php.net/manual/en/intro.json.php
+ * @link https://www.php.net/manual/en/intro.simdjson.php
+ * @link https://simdjson.org
  *
  * @since 2.15.0
- *
- * @link https://www.php.net/manual/en/book.json.php
  */
 final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
 {
@@ -62,17 +67,21 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
     private function decodePayload(string $payload): array
     {
         if ($payload === '') {
-            throw new HttpBadRequestException('JSON payload cannot be empty.');
+            throw (new HttpBadRequestException('JSON payload cannot be empty.'))
+                ->setSource(ErrorSource::CLIENT_REQUEST_BODY);
         }
 
         try {
-            $data = json_decode($payload, true, 512, JSON_BIGINT_AS_STRING | JSON_THROW_ON_ERROR);
-        } catch (JsonException $e) {
-            throw new HttpBadRequestException('The JSON payload is invalid and couldn‘t be decoded.', previous: $e);
+            // phpcs:ignore Generic.Files.LineLength
+            $data = extension_loaded('simdjson') ? simdjson_decode($payload, true) : json_decode($payload, true, flags: JSON_THROW_ON_ERROR);
+        } catch (JsonException|SimdJsonException $e) {
+            throw (new HttpBadRequestException('The JSON payload is invalid and couldn‘t be decoded.', previous: $e))
+                ->setSource(ErrorSource::CLIENT_REQUEST_BODY);
         }
 
         if (is_array($data) === false) {
-            throw new HttpBadRequestException('The JSON payload must be in the form of an array or an object.');
+            throw (new HttpBadRequestException('The JSON payload must be in the form of an array or an object.'))
+                ->setSource(ErrorSource::CLIENT_REQUEST_BODY);
         }
 
         return $data;

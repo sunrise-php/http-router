@@ -27,12 +27,14 @@ final class ErrorDto
      * @param int<100, 599> $statusCode
      * @param string $reasonPhrase
      * @param string $message
+     * @param string $source
      * @param list<ViolationDto> $violations
      */
     public function __construct(
         public int $statusCode,
         public string $reasonPhrase,
         public string $message,
+        public string $source,
         public array $violations,
     ) {
     }
@@ -50,6 +52,7 @@ final class ErrorDto
             $error->getStatusCode(),
             $error->getReasonPhrase(),
             $error->getMessage(),
+            $error->getSource(),
             $error->getViolations(),
         );
     }

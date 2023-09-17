@@ -17,10 +17,10 @@ use Generator;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
+use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Entity\Language;
 use Sunrise\Http\Router\Entity\MediaType;
 use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
-use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\Helper\HeaderParser;
 
@@ -83,12 +83,12 @@ final class ServerRequest implements ServerRequestInterface
         $header = $this->request->getHeaderLine('Content-Type');
 
         try {
-            return HeaderParser::parseAcceptHeader($header, supportRange: false)->current();
-        } catch (InvalidArgumentException $e) {
-            throw new HttpBadRequestException(sprintf(
-                'The "Content-Type" header is invalid: %s',
-                $e->getMessage(),
-            ), previous: $e);
+            return HeaderParser::parseAcceptHeader($header, allowRange: false)->current();
+        } catch (\InvalidArgumentException $e) {
+            $message = sprintf('The "Content-Type" header is invalid: %s', $e->getMessage());
+
+            throw (new HttpBadRequestException($message, previous: $e))
+                ->setSource(ErrorSource::CLIENT_REQUEST_HEADER);
         }
     }
 
@@ -105,11 +105,11 @@ final class ServerRequest implements ServerRequestInterface
 
         try {
             yield from HeaderParser::parseAcceptHeader($header);
-        } catch (InvalidArgumentException $e) {
-            throw new HttpBadRequestException(sprintf(
-                'The "Accept" header is invalid: %s',
-                $e->getMessage(),
-            ), previous: $e);
+        } catch (\InvalidArgumentException $e) {
+            $message = sprintf('The "Accept" header is invalid: %s', $e->getMessage());
+
+            throw (new HttpBadRequestException($message, previous: $e))
+                ->setSource(ErrorSource::CLIENT_REQUEST_HEADER);
         }
     }
 
@@ -126,11 +126,11 @@ final class ServerRequest implements ServerRequestInterface
 
         try {
             yield from HeaderParser::parseAcceptLanguageHeader($header);
-        } catch (InvalidArgumentException $e) {
-            throw new HttpBadRequestException(sprintf(
-                'The "Accept-Language" header is invalid: %s',
-                $e->getMessage(),
-            ), previous: $e);
+        } catch (\InvalidArgumentException $e) {
+            $message = sprintf('The "Accept-Language" header is invalid: %s', $e->getMessage());
+
+            throw (new HttpBadRequestException($message, previous: $e))
+                ->setSource(ErrorSource::CLIENT_REQUEST_HEADER);
         }
     }
 

@@ -14,9 +14,11 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router;
 
 use Fig\Http\Message\RequestMethodInterface;
+use Psr\Container\ContainerInterface;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutionerInterface;
+use Sunrise\Http\Router\ParameterResolving\ParameterResolver\DependencyInjectionParameterResolver;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolver\ParameterResolverInterface;
 use Sunrise\Http\Router\ResponseResolving\ResponseResolutioner;
 use Sunrise\Http\Router\ResponseResolving\ResponseResolutionerInterface;
@@ -57,6 +59,7 @@ class RouteCollector
      * @var ResponseResolutionerInterface|null
      */
     private ?ResponseResolutionerInterface $responseResolutioner;
+
     /**
      * Constructor of the class
      *
@@ -71,7 +74,7 @@ class RouteCollector
         ?RouteFactoryInterface $routeFactory = null,
         ?ReferenceResolverInterface $referenceResolver = null,
         ?ParameterResolutionerInterface $parameterResolutioner = null,
-        ?ResponseResolutionerInterface $responseResolutioner = null
+        ?ResponseResolutionerInterface $responseResolutioner = null,
     ) {
         $this->collectionFactory = $collectionFactory ?? new RouteCollectionFactory();
         $this->routeFactory = $routeFactory ?? new RouteFactory();
@@ -81,7 +84,7 @@ class RouteCollector
 
         $this->referenceResolver = $referenceResolver ?? new ReferenceResolver(
             $this->parameterResolutioner ??= new ParameterResolutioner(),
-            $this->responseResolutioner ??= new ResponseResolutioner()
+            $this->responseResolutioner ??= new ResponseResolutioner(),
         );
 
         $this->collection = $this->collectionFactory->createCollection();
@@ -98,6 +101,24 @@ class RouteCollector
     }
 
     /**
+     * Sets the given container to the collector
+     *
+     * @param ContainerInterface $container
+     *
+     * @return void
+     *
+     * @throws LogicException
+     *         If a custom reference resolver has been set,
+     *         but a parameter resolutioner has not been set.
+     *
+     * @since 2.9.0
+     */
+    public function setContainer(ContainerInterface $container): void
+    {
+        $this->addParameterResolver(new DependencyInjectionParameterResolver($container));
+    }
+
+    /**
      * Adds the given parameter resolver(s) to the parameter resolutioner
      *
      * @param ParameterResolverInterface ...$resolvers
@@ -105,7 +126,8 @@ class RouteCollector
      * @return void
      *
      * @throws LogicException
-     *         If a custom reference resolver was setted and a parameter resolutioner wasn't passed.
+     *         If a custom reference resolver has been set,
+     *         but a parameter resolutioner has not been set.
      *
      * @since 3.0.0
      */
@@ -114,8 +136,8 @@ class RouteCollector
         if (!isset($this->parameterResolutioner)) {
             throw new LogicException(
                 'The route collector cannot accept parameter resolvers ' .
-                'because a custom reference resolver was set ' .
-                'and a parameter resolutioner was not passed'
+                'because a custom reference resolver has been set, ' .
+                'but a parameter resolutioner has not been set.'
             );
         }
 
@@ -130,7 +152,8 @@ class RouteCollector
      * @return void
      *
      * @throws LogicException
-     *         If a custom reference resolver was setted and a response resolutioner wasn't passed.
+     *         If a custom reference resolver has been set,
+     *         but a response resolutioner has not been set.
      *
      * @since 3.0.0
      */
@@ -139,8 +162,8 @@ class RouteCollector
         if (!isset($this->responseResolutioner)) {
             throw new LogicException(
                 'The route collector cannot accept response resolvers ' .
-                'because a custom reference resolver was set ' .
-                'and a response resolutioner was not passed'
+                'because a custom reference resolver has been set, ' .
+                'but a response resolutioner has not been set.'
             );
         }
 
@@ -148,7 +171,7 @@ class RouteCollector
     }
 
     /**
-     * Makes a new route from the given parameters
+     * Makes a new route with the given parameters
      *
      * @param string $name
      * @param string $path
@@ -163,9 +186,9 @@ class RouteCollector
         string $name,
         string $path,
         array $methods,
-        $requestHandler,
+        mixed $requestHandler,
         array $middlewares = [],
-        array $attributes = []
+        array $attributes = [],
     ) : RouteInterface {
         $route = $this->routeFactory->createRoute(
             $name,
@@ -173,7 +196,7 @@ class RouteCollector
             $methods,
             $this->referenceResolver->resolveRequestHandler($requestHandler),
             [...$this->referenceResolver->resolveMiddlewares($middlewares)],
-            $attributes
+            $attributes,
         );
 
         $this->collection->add($route);
@@ -195,17 +218,17 @@ class RouteCollector
     public function head(
         string $name,
         string $path,
-        $requestHandler,
+        mixed $requestHandler,
         array $middlewares = [],
-        array $attributes = []
+        array $attributes = [],
     ) : RouteInterface {
         return $this->route(
             $name,
             $path,
-            [RouteInterface::METHOD_HEAD],
+            [RequestMethodInterface::METHOD_HEAD],
             $requestHandler,
             $middlewares,
-            $attributes
+            $attributes,
         );
     }
 
@@ -223,17 +246,17 @@ class RouteCollector
     public function get(
         string $name,
         string $path,
-        $requestHandler,
+        mixed $requestHandler,
         array $middlewares = [],
-        array $attributes = []
+        array $attributes = [],
     ) : RouteInterface {
         return $this->route(
             $name,
             $path,
-            [RouteInterface::METHOD_GET],
+            [RequestMethodInterface::METHOD_GET],
             $requestHandler,
             $middlewares,
-            $attributes
+            $attributes,
         );
     }
 
@@ -251,17 +274,17 @@ class RouteCollector
     public function post(
         string $name,
         string $path,
-        $requestHandler,
+        mixed $requestHandler,
         array $middlewares = [],
-        array $attributes = []
+        array $attributes = [],
     ) : RouteInterface {
         return $this->route(
             $name,
             $path,
-            [RouteInterface::METHOD_POST],
+            [RequestMethodInterface::METHOD_POST],
             $requestHandler,
             $middlewares,
-            $attributes
+            $attributes,
         );
     }
 
@@ -279,17 +302,17 @@ class RouteCollector
     public function put(
         string $name,
         string $path,
-        $requestHandler,
+        mixed $requestHandler,
         array $middlewares = [],
-        array $attributes = []
+        array $attributes = [],
     ) : RouteInterface {
         return $this->route(
             $name,
             $path,
-            [RouteInterface::METHOD_PUT],
+            [RequestMethodInterface::METHOD_PUT],
             $requestHandler,
             $middlewares,
-            $attributes
+            $attributes,
         );
     }
 
@@ -307,17 +330,17 @@ class RouteCollector
     public function patch(
         string $name,
         string $path,
-        $requestHandler,
+        mixed $requestHandler,
         array $middlewares = [],
-        array $attributes = []
+        array $attributes = [],
     ) : RouteInterface {
         return $this->route(
             $name,
             $path,
-            [RouteInterface::METHOD_PATCH],
+            [RequestMethodInterface::METHOD_PATCH],
             $requestHandler,
             $middlewares,
-            $attributes
+            $attributes,
         );
     }
 
@@ -335,17 +358,17 @@ class RouteCollector
     public function delete(
         string $name,
         string $path,
-        $requestHandler,
+        mixed $requestHandler,
         array $middlewares = [],
-        array $attributes = []
+        array $attributes = [],
     ) : RouteInterface {
         return $this->route(
             $name,
             $path,
-            [RouteInterface::METHOD_DELETE],
+            [RequestMethodInterface::METHOD_DELETE],
             $requestHandler,
             $middlewares,
-            $attributes
+            $attributes,
         );
     }
 
@@ -363,9 +386,9 @@ class RouteCollector
     public function purge(
         string $name,
         string $path,
-        $requestHandler,
+        mixed $requestHandler,
         array $middlewares = [],
-        array $attributes = []
+        array $attributes = [],
     ) : RouteInterface {
         return $this->route(
             $name,
@@ -373,7 +396,7 @@ class RouteCollector
             [RequestMethodInterface::METHOD_PURGE],
             $requestHandler,
             $middlewares,
-            $attributes
+            $attributes,
         );
     }
 
@@ -392,7 +415,7 @@ class RouteCollector
             $this->routeFactory,
             $this->referenceResolver,
             $this->parameterResolutioner,
-            $this->responseResolutioner
+            $this->responseResolutioner,
         );
 
         $callback($collector);

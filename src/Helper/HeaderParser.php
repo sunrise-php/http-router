@@ -31,18 +31,18 @@ final class HeaderParser
 {
 
     /**
-     * Parses the given "Accept" header or any other semantically similar header
+     * Parses the given "Accept" header or any other semantically similar header, e.g. "Content-Type"
      *
      * @param string $header
-     * @param bool $supportRange
+     * @param bool $allowRange
      *
      * @return Generator<int, MediaType>
      *
      * @throws InvalidArgumentException If the header isn't valid.
      */
-    public static function parseAcceptHeader(string $header, bool $supportRange = true): Generator
+    public static function parseAcceptHeader(string $header, bool $allowRange = true): Generator
     {
-        $matches = self::parseHeader($header);
+        $matches = self::parseAcceptLikeHeader($header);
         foreach ($matches as $index => [$keyword, $parameterNames, $parameterValues]) {
             $range = explode('/', $keyword, 3);
 
@@ -60,7 +60,7 @@ final class HeaderParser
                 ));
             }
 
-            if (!$supportRange && ($range[0] === '*' || $range[1] === '*')) {
+            if (!$allowRange && ($range[0] === '*' || $range[1] === '*')) {
                 throw new InvalidArgumentException(sprintf(
                     'The media type with index %d cannot be a range.',
                     $index,
@@ -87,7 +87,7 @@ final class HeaderParser
      */
     public static function parseAcceptLanguageHeader(string $header): Generator
     {
-        $matches = self::parseHeader($header);
+        $matches = self::parseAcceptLikeHeader($header);
         foreach ($matches as $index => [$keyword, $parameterNames, $parameterValues]) {
             $tags = explode('-', $keyword);
 
@@ -122,7 +122,7 @@ final class HeaderParser
      *
      * @throws InvalidArgumentException If the header isn't valid.
      */
-    private static function parseHeader(string $header): Generator
+    private static function parseAcceptLikeHeader(string $header): Generator
     {
         /** @var array{0: ?string, 1: string[], 2: string[]} $match */
         $match = [null, [], []];

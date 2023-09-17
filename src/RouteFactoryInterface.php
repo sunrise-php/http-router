@@ -23,7 +23,7 @@ interface RouteFactoryInterface
 {
 
     /**
-     * Creates a new route from the given parameters
+     * Creates a new route from with given parameters
      *
      * @param string $name
      * @param string $path

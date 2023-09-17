@@ -139,7 +139,7 @@ final class MediaType implements Stringable
     }
 
     /**
-     * Gets the media type parameter's value by the given its name or
+     * Gets the media type parameter's value by its given name or
      * returns the given default value if the parameter doesn't exist or is empty
      *
      * @param string $name
@@ -166,16 +166,21 @@ final class MediaType implements Stringable
     }
 
     /**
-     * Build the media type with the given parameters
+     * Builds the media type with the given parameters
      *
-     * @param array<string, ?string> $parameters
+     * @param array<string, ?string>|false|null $parameters
      *
      * @return string
      */
-    public function build(array $parameters = []): string
+    public function build(array|false|null $parameters = null): string
     {
         $result = sprintf('%s/%s', $this->type, $this->subtype);
-        foreach ($parameters + $this->parameters as $name => $value) {
+        if ($parameters === false) {
+            return $result;
+        }
+
+        $parameters ??= $this->parameters;
+        foreach ($parameters as $name => $value) {
             $result .= sprintf('; %s="%s"', $name, (string) $value);
         }
 
@@ -187,6 +192,6 @@ final class MediaType implements Stringable
      */
     public function __toString(): string
     {
-        return $this->build();
+        return $this->build(parameters: false);
     }
 }

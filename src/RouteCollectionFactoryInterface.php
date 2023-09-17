@@ -20,7 +20,7 @@ interface RouteCollectionFactoryInterface
 {
 
     /**
-     * Creates a route collection with the given route(s)
+     * Creates a new collection with the given route(s)
      *
      * @param RouteInterface ...$routes
      *

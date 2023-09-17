@@ -21,7 +21,7 @@ use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\SerializableResponseBody;
 use Sunrise\Http\Router\Entity\MediaType;
-use Sunrise\Http\Router\Exception\LogicException;
+use Sunrise\Http\Router\Exception\RuntimeException;
 use Sunrise\Http\Router\ResponseResolving\ResponseResolutioner;
 use Sunrise\Http\Router\ServerRequest;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -58,7 +58,7 @@ final class SerializableResponseBodyResolver implements ResponseResolverInterfac
     /**
      * @inheritDoc
      *
-     * @throws LogicException If the resolver is used incorrectly.
+     * @throws RuntimeException If the response couldn't be serialized.
      */
     public function resolveResponse(
         ReflectionFunction|ReflectionMethod $source,
@@ -88,16 +88,15 @@ final class SerializableResponseBodyResolver implements ResponseResolverInterfac
         try {
             $payload = $this->serializer->serialize($response, $format, $context);
         } catch (Throwable $e) {
-            throw new LogicException(sprintf(
+            throw new RuntimeException(sprintf(
                 'Unable to encode a response from the source {%s} due to: %s',
                 ResponseResolutioner::stringifySource($source),
                 $e->getMessage(),
             ), previous: $e);
         }
 
-        $result = $this->responseFactory->createResponse(200)
-            ->withHeader('Content-Type', $clientPreferredMediaType->build(['charset' => 'UTF-8']));
-
+        $contentType = $clientPreferredMediaType->build(['charset' => 'UTF-8']);
+        $result = $this->responseFactory->createResponse(200)->withHeader('Content-Type', $contentType);
         $result->getBody()->write($payload);
 
         return $result;

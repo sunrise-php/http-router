@@ -25,7 +25,7 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
 {
 
     /**
-     * A request's attribute name for a route instance
+     * The server request's attribute name for a route instance
      *
      * @var string
      *
@@ -73,7 +73,7 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
     public function getProducesMediaTypes(): array;
 
     /**
-     * Gets the route request handler
+     * Gets the route's request handler
      *
      * @return RequestHandlerInterface
      */
@@ -94,7 +94,8 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
     public function getAttributes(): array;
 
     /**
-     * Gets the route attribute by its given name
+     * Gets the route's attribute value by its given name or
+     * returns the given default value if the parameter doesn't exist
      *
      * @param string $name
      * @param mixed $default
@@ -106,20 +107,20 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
     /**
      * Gets the route summary
      *
-     * @return string
+     * @return string|null
      *
      * @since 2.4.0
      */
-    public function getSummary(): string;
+    public function getSummary(): ?string;
 
     /**
      * Gets the route description
      *
-     * @return string
+     * @return string|null
      *
      * @since 2.4.0
      */
-    public function getDescription(): string;
+    public function getDescription(): ?string;
 
     /**
      * Gets the route tags
@@ -131,80 +132,89 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
     public function getTags(): array;
 
     /**
+     * Checks if the route is deprecated
+     *
+     * @return bool
+     *
+     * @since 3.0.0
+     */
+    public function isDeprecated(): bool;
+
+    /**
      * Sets the given name to the route
      *
      * @param string $name
      *
-     * @return RouteInterface
+     * @return static
      */
-    public function setName(string $name): RouteInterface;
+    public function setName(string $name): static;
 
     /**
      * Sets the given path to the route
      *
      * @param string $path
      *
-     * @return RouteInterface
+     * @return static
      */
-    public function setPath(string $path): RouteInterface;
+    public function setPath(string $path): static;
 
     /**
      * Sets the given method(s) to the route
      *
      * @param string ...$methods
      *
-     * @return RouteInterface
+     * @return static
      */
-    public function setMethods(string ...$methods): RouteInterface;
+    public function setMethods(string ...$methods): static;
 
     /**
      * Sets the given consumes media type(s) to the route
      *
      * @param MediaType ...$mediaTypes
      *
-     * @return RouteInterface
+     * @return static
      *
      * @since 3.0.0
      */
-    public function setConsumesMediaTypes(MediaType ...$mediaTypes): RouteInterface;
+    public function setConsumesMediaTypes(MediaType ...$mediaTypes): static;
 
     /**
      * Sets the given produces media type(s) to the route
      *
      * @param MediaType ...$mediaTypes
      *
-     * @return RouteInterface
+     * @return static
      *
      * @since 3.0.0
      */
-    public function setProducesMediaTypes(MediaType ...$mediaTypes): RouteInterface;
+    public function setProducesMediaTypes(MediaType ...$mediaTypes): static;
 
     /**
      * Sets the given request handler to the route
      *
      * @param RequestHandlerInterface $requestHandler
      *
-     * @return RouteInterface
+     * @return static
      */
-    public function setRequestHandler(RequestHandlerInterface $requestHandler): RouteInterface;
+    public function setRequestHandler(RequestHandlerInterface $requestHandler): static;
 
     /**
      * Sets the given middleware(s) to the route
      *
      * @param MiddlewareInterface ...$middlewares
      *
-     * @return RouteInterface
+     * @return static
      */
-    public function setMiddlewares(MiddlewareInterface ...$middlewares): RouteInterface;
+    public function setMiddlewares(MiddlewareInterface ...$middlewares): static;
 
     /**
      * Sets the given attributes to the route
      *
      * @param array<string, mixed> $attributes
      *
-     * @return RouteInterface
+     * @return static
      */
-    public function setAttributes(array $attributes): RouteInterface;
+    public function setAttributes(array $attributes): static;
 
     /**
      * Sets the given attribute to the route
@@ -212,127 +222,127 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
      * @param string $name
      * @param mixed $value
      *
-     * @return RouteInterface
+     * @return static
      *
      * @since 3.0.0
      */
-    public function setAttribute(string $name, $value): RouteInterface;
+    public function setAttribute(string $name, mixed $value): static;
 
     /**
      * Sets the given summary to the route
      *
-     * @param string $summary
+     * @param string|null $summary
      *
-     * @return RouteInterface
+     * @return static
      *
      * @since 2.4.0
      */
-    public function setSummary(string $summary): RouteInterface;
+    public function setSummary(?string $summary): static;
 
     /**
      * Sets the given description to the route
      *
-     * @param string $description
+     * @param string|null $description
      *
-     * @return RouteInterface
+     * @return static
      *
      * @since 2.4.0
      */
-    public function setDescription(string $description): RouteInterface;
+    public function setDescription(?string $description): static;
 
     /**
      * Sets the given tag(s) to the route
      *
      * @param string ...$tags
      *
-     * @return RouteInterface
+     * @return static
      *
      * @since 2.4.0
      */
-    public function setTags(string ...$tags): RouteInterface;
+    public function setTags(string ...$tags): static;
+
+    /**
+     * Sets the route's deprecation
+     *
+     * @param bool $isDeprecated
+     *
+     * @return static
+     *
+     * @since 3.0.0
+     */
+    public function setDeprecation(bool $isDeprecated): static;
 
     /**
      * Adds the given prefix to the route path
      *
      * @param string $prefix
      *
-     * @return RouteInterface
+     * @return static
      */
-    public function addPrefix(string $prefix): RouteInterface;
+    public function addPrefix(string $prefix): static;
 
     /**
      * Adds the given suffix to the route path
      *
      * @param string $suffix
      *
-     * @return RouteInterface
+     * @return static
      */
-    public function addSuffix(string $suffix): RouteInterface;
+    public function addSuffix(string $suffix): static;
 
     /**
      * Adds the given method(s) to the route
      *
      * @param string ...$methods
      *
-     * @return RouteInterface
+     * @return static
      */
-    public function addMethod(string ...$methods): RouteInterface;
+    public function addMethod(string ...$methods): static;
 
     /**
      * Adds the given consumes media type(s) to the route
      *
      * @param MediaType ...$mediaTypes
      *
-     * @return RouteInterface
+     * @return static
      *
      * @since 3.0.0
      */
-    public function addConsumesMediaType(MediaType ...$mediaTypes): RouteInterface;
+    public function addConsumesMediaType(MediaType ...$mediaTypes): static;
 
     /**
      * Adds the given produces media type(s) to the route
      *
      * @param MediaType ...$mediaTypes
      *
-     * @return RouteInterface
+     * @return static
      *
      * @since 3.0.0
      */
-    public function addProducesMediaType(MediaType ...$mediaTypes): RouteInterface;
+    public function addProducesMediaType(MediaType ...$mediaTypes): static;
 
     /**
      * Adds the given middleware(s) to the route
      *
      * @param MiddlewareInterface ...$middlewares
      *
-     * @return RouteInterface
+     * @return static
      */
-    public function addMiddleware(MiddlewareInterface ...$middlewares): RouteInterface;
-
-    /**
-     * Adds the given priority middleware(s) to the route
-     *
-     * @param MiddlewareInterface ...$middlewares
-     *
-     * @return RouteInterface
-     *
-     * @since 3.0.0
-     */
-    public function addPriorityMiddleware(MiddlewareInterface ...$middlewares): RouteInterface;
+    public function addMiddleware(MiddlewareInterface ...$middlewares): static;
 
     /**
      * Adds the given tag(s) to the route
      *
      * @param string ...$tags
      *
-     * @return RouteInterface
+     * @return static
      *
      * @since 3.0.0
      */
-    public function addTag(string ...$tags): RouteInterface;
+    public function addTag(string ...$tags): static;
 
     /**
-     * Returns the route clone with the given attributes
+     * Returns the route's clone with the given attributes
      *
      * This method MUST NOT change the object state.
      *
@@ -340,5 +350,5 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
      *
      * @return static
      */
-    public function withAddedAttributes(array $attributes): RouteInterface;
+    public function withAddedAttributes(array $attributes): static;
 }

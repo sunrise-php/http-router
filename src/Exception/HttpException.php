@@ -15,6 +15,7 @@ namespace Sunrise\Http\Router\Exception;
 
 use RuntimeException;
 use Stringable;
+use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Dto\ViolationDto;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Symfony\Component\Validator\ConstraintViolationInterface;
@@ -29,6 +30,13 @@ use function join;
  */
 class HttpException extends RuntimeException implements HttpExceptionInterface
 {
+
+    /**
+     * The error's source
+     *
+     * @var string
+     */
+    private string $source = ErrorSource::CLIENT_REQUEST;
 
     /**
      * The error's reason phrase
@@ -76,6 +84,14 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     /**
      * @inheritDoc
      */
+    final public function getSource(): string
+    {
+        return $this->source;
+    }
+
+    /**
+     * @inheritDoc
+     */
     final public function getReasonPhrase(): string
     {
         return $this->reasonPhrase;
@@ -103,6 +119,20 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     final public function getViolations(): array
     {
         return $this->violations;
+    }
+
+    /**
+     * Sets the given source to the error
+     *
+     * @param string $source
+     *
+     * @return static
+     */
+    final public function setSource(string $source): static
+    {
+        $this->source = $source;
+
+        return $this;
     }
 
     /**

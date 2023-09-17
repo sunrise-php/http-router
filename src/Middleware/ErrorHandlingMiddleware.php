@@ -97,7 +97,8 @@ final class ErrorHandlingMiddleware implements MiddlewareInterface
         $clientPreferredMediaType = ServerRequest::from($request)
             ->getClientPreferredMediaType(...$serverProducesMediaTypes);
 
-        $response = $response->withHeader('Content-Type', $clientPreferredMediaType->build(['charset' => 'UTF-8']));
+        $contentType = $clientPreferredMediaType->build(['charset' => 'UTF-8']);
+        $response = $response->withHeader('Content-Type', $contentType);
 
         $response->getBody()->write(
             match ($clientPreferredMediaType) {

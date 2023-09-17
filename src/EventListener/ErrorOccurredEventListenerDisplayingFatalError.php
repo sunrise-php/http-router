@@ -81,15 +81,11 @@ final class ErrorOccurredEventListenerDisplayingFatalError
             $whoops->pushHandler(new XmlResponseHandler());
         }
 
-        $response = $event->getResponse()
-            ->withHeader('Content-Type', $clientPreferredMediaType->build(['charset' => 'UTF-8']));
-
-        $response->getBody()->write(
-            $whoops->handleException($error->getError())
-        );
+        $contentType = $clientPreferredMediaType->build(['charset' => 'UTF-8']);
+        $response = $event->getResponse()->withHeader('Content-Type', $contentType);
+        $response->getBody()->write($whoops->handleException($error->getError()));
 
         $event->setResponse($response);
-        $event->stopPropagation();
 
         return $event;
     }

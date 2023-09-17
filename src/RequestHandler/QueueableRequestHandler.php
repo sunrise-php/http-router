@@ -33,8 +33,10 @@ final class QueueableRequestHandler extends SplQueue implements RequestHandlerIn
      * @param RequestHandlerInterface $requestHandler
      * @param MiddlewareInterface ...$middlewares
      */
-    public function __construct(private RequestHandlerInterface $requestHandler, MiddlewareInterface ...$middlewares)
-    {
+    public function __construct(
+        private RequestHandlerInterface $requestHandler,
+        MiddlewareInterface ...$middlewares
+    ) {
         foreach ($middlewares as $middleware) {
             $this->enqueue($middleware);
         }
@@ -49,6 +51,7 @@ final class QueueableRequestHandler extends SplQueue implements RequestHandlerIn
             return $this->requestHandler->handle($request);
         }
 
-        return ($clone = clone $this)->dequeue()->process($request, $clone);
+        return ($clone = clone $this)->dequeue()
+            ->process($request, $clone);
     }
 }

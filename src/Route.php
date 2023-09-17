@@ -67,7 +67,7 @@ class Route implements RouteInterface
     private array $producesMediaTypes = [];
 
     /**
-     * The route request handler
+     * The route's request handler
      *
      * @var RequestHandlerInterface
      */
@@ -90,16 +90,16 @@ class Route implements RouteInterface
     /**
      * The route summary
      *
-     * @var string
+     * @var string|null
      */
-    private string $summary = '';
+    private ?string $summary = null;
 
     /**
      * The route description
      *
-     * @var string
+     * @var string|null
      */
-    private string $description = '';
+    private ?string $description = null;
 
     /**
      * The route tags
@@ -107,6 +107,13 @@ class Route implements RouteInterface
      * @var list<string>
      */
     private array $tags = [];
+
+    /**
+     * The route's deprecation sign
+     *
+     * @var bool
+     */
+    private bool $isDeprecated = false;
 
     /**
      * Constructor of the class
@@ -124,7 +131,7 @@ class Route implements RouteInterface
         array $methods,
         RequestHandlerInterface $requestHandler,
         array $middlewares = [],
-        array $attributes = []
+        array $attributes = [],
     ) {
         $this->name = $name;
         $this->path = $path;
@@ -209,7 +216,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function getSummary(): string
+    public function getSummary(): ?string
     {
         return $this->summary;
     }
@@ -217,7 +224,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function getDescription(): string
+    public function getDescription(): ?string
     {
         return $this->description;
     }
@@ -233,7 +240,15 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function setName(string $name): RouteInterface
+    public function isDeprecated(): bool
+    {
+        return $this->isDeprecated;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function setName(string $name): static
     {
         $this->name = $name;
 
@@ -243,7 +258,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function setPath(string $path): RouteInterface
+    public function setPath(string $path): static
     {
         $this->path = $path;
 
@@ -253,7 +268,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function setMethods(string ...$methods): RouteInterface
+    public function setMethods(string ...$methods): static
     {
         $this->methods = [];
         foreach ($methods as $method) {
@@ -266,7 +281,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function setConsumesMediaTypes(MediaType ...$mediaTypes): RouteInterface
+    public function setConsumesMediaTypes(MediaType ...$mediaTypes): static
     {
         $this->consumesMediaTypes = [];
         foreach ($mediaTypes as $mediaType) {
@@ -279,7 +294,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function setProducesMediaTypes(MediaType ...$mediaTypes): RouteInterface
+    public function setProducesMediaTypes(MediaType ...$mediaTypes): static
     {
         $this->producesMediaTypes = [];
         foreach ($mediaTypes as $mediaType) {
@@ -292,7 +307,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function setRequestHandler(RequestHandlerInterface $requestHandler): RouteInterface
+    public function setRequestHandler(RequestHandlerInterface $requestHandler): static
     {
         $this->requestHandler = $requestHandler;
 
@@ -302,7 +317,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function setMiddlewares(MiddlewareInterface ...$middlewares): RouteInterface
+    public function setMiddlewares(MiddlewareInterface ...$middlewares): static
     {
         $this->middlewares = [];
         foreach ($middlewares as $middleware) {
@@ -315,7 +330,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function setAttributes(array $attributes): RouteInterface
+    public function setAttributes(array $attributes): static
     {
         $this->attributes = $attributes;
 
@@ -325,7 +340,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function setAttribute(string $name, $value): RouteInterface
+    public function setAttribute(string $name, mixed $value): static
     {
         $this->attributes[$name] = $value;
 
@@ -335,7 +350,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function setSummary(string $summary): RouteInterface
+    public function setSummary(?string $summary): static
     {
         $this->summary = $summary;
 
@@ -345,7 +360,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function setDescription(string $description): RouteInterface
+    public function setDescription(?string $description): static
     {
         $this->description = $description;
 
@@ -355,7 +370,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function setTags(string ...$tags): RouteInterface
+    public function setTags(string ...$tags): static
     {
         $this->tags = [];
         foreach ($tags as $tag) {
@@ -368,7 +383,17 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function addPrefix(string $prefix): RouteInterface
+    public function setDeprecation(bool $isDeprecated): static
+    {
+        $this->isDeprecated = $isDeprecated;
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addPrefix(string $prefix): static
     {
         // https://github.com/sunrise-php/http-router/issues/26
         $prefix = rtrim($prefix, '/');
@@ -381,7 +406,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function addSuffix(string $suffix): RouteInterface
+    public function addSuffix(string $suffix): static
     {
         $this->path .= $suffix;
 
@@ -391,7 +416,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function addMethod(string ...$methods): RouteInterface
+    public function addMethod(string ...$methods): static
     {
         foreach ($methods as $method) {
             $this->methods[] = strtoupper($method);
@@ -403,7 +428,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function addConsumesMediaType(MediaType ...$mediaTypes): RouteInterface
+    public function addConsumesMediaType(MediaType ...$mediaTypes): static
     {
         foreach ($mediaTypes as $mediaType) {
             $this->consumesMediaTypes[] = $mediaType;
@@ -415,7 +440,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function addProducesMediaType(MediaType ...$mediaTypes): RouteInterface
+    public function addProducesMediaType(MediaType ...$mediaTypes): static
     {
         foreach ($mediaTypes as $mediaType) {
             $this->producesMediaTypes[] = $mediaType;
@@ -427,7 +452,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function addMiddleware(MiddlewareInterface ...$middlewares): RouteInterface
+    public function addMiddleware(MiddlewareInterface ...$middlewares): static
     {
         foreach ($middlewares as $middleware) {
             $this->middlewares[] = $middleware;
@@ -439,27 +464,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function addPriorityMiddleware(MiddlewareInterface ...$middlewares): RouteInterface
-    {
-        $newValue = [];
-
-        foreach ($middlewares as $middleware) {
-            $newValue[] = $middleware;
-        }
-
-        foreach ($this->middlewares as $middleware) {
-            $newValue[] = $middleware;
-        }
-
-        $this->middlewares = $newValue;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function addTag(string ...$tags): RouteInterface
+    public function addTag(string ...$tags): static
     {
         foreach ($tags as $tag) {
             $this->tags[] = $tag;
@@ -471,13 +476,13 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function withAddedAttributes(array $attributes): RouteInterface
+    public function withAddedAttributes(array $attributes): static
     {
         $clone = clone $this;
 
         /** @psalm-suppress MixedAssignment */
-        foreach ($attributes as $key => $value) {
-            $clone->attributes[$key] = $value;
+        foreach ($attributes as $name => $value) {
+            $clone->attributes[$name] = $value;
         }
 
         return $clone;
@@ -491,14 +496,16 @@ class Route implements RouteInterface
         $request = $request->withAttribute(self::ATTR_ROUTE, $this);
 
         /** @psalm-suppress MixedAssignment */
-        foreach ($this->attributes as $key => $value) {
-            $request = $request->withAttribute($key, $value);
+        foreach ($this->attributes as $name => $value) {
+            $request = $request->withAttribute($name, $value);
         }
 
         if (empty($this->middlewares)) {
             return $this->requestHandler->handle($request);
         }
 
-        return (new QueueableRequestHandler($this->requestHandler, ...$this->middlewares))->handle($request);
+        $handler = new QueueableRequestHandler($this->requestHandler, ...$this->middlewares);
+
+        return $handler->handle($request);
     }
 }

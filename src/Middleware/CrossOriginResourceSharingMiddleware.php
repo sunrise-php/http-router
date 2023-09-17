@@ -34,12 +34,12 @@ final class CrossOriginResourceSharingMiddleware implements MiddlewareInterface
     /**
      * Constructor of the class
      *
-     * @param AnalyzerInterface $requestAnalyzer
      * @param ResponseFactoryInterface $responseFactory
+     * @param AnalyzerInterface $requestAnalyzer
      */
     public function __construct(
-        private AnalyzerInterface $requestAnalyzer,
         private ResponseFactoryInterface $responseFactory,
+        private AnalyzerInterface $requestAnalyzer,
     ) {
     }
 

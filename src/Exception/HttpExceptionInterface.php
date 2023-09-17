@@ -25,6 +25,13 @@ interface HttpExceptionInterface extends ExceptionInterface, StatusCodeInterface
 {
 
     /**
+     * Gets the error's source
+     *
+     * @return string
+     */
+    public function getSource(): string;
+
+    /**
      * Gets the error's reason phrase
      *
      * @return string

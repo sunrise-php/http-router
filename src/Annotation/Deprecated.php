@@ -18,16 +18,7 @@ use Attribute;
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION | Attribute::IS_REPEATABLE)]
-final class Commit
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
+final class Deprecated
 {
-
-    /**
-     * Constructor of the class
-     *
-     * @param non-empty-string|null $em
-     */
-    public function __construct(public ?string $em = null)
-    {
-    }
 }

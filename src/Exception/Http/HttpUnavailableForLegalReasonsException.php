@@ -35,7 +35,7 @@ class HttpUnavailableForLegalReasonsException extends HttpException
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
-        $message ??= 'The request couldn‘t be processed due to legal restrictions on the resource.';
+        $message ??= 'The request couldn‘t be processed due to legal restrictions.';
 
         parent::__construct(self::STATUS_UNAVAILABLE_FOR_LEGAL_REASONS, $message, $code, $previous);
 

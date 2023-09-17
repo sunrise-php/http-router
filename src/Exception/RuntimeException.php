@@ -11,23 +11,15 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Annotation;
+namespace Sunrise\Http\Router\Exception;
 
-use Attribute;
+use RuntimeException as BaseRuntimeException;
 
 /**
+ * RuntimeException
+ *
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class Description
+class RuntimeException extends BaseRuntimeException implements ExceptionInterface
 {
-
-    /**
-     * Constructor of the class
-     *
-     * @param non-empty-string $value
-     */
-    public function __construct(public string $value)
-    {
-    }
 }

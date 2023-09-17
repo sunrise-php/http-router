@@ -19,6 +19,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestHeader;
+use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
@@ -80,23 +81,20 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
                 return yield;
             }
 
-            throw new HttpBadRequestException(sprintf(
-                'The HTTP header %s must be provided.',
-                $header->name,
-            ));
+            $message = sprintf('The HTTP header %s must be provided.', $header->name);
+
+            throw (new HttpBadRequestException($message))
+                ->setSource(ErrorSource::CLIENT_REQUEST_HEADER);
         }
 
         try {
-            yield $this->typeConversioner->castValue(
-                $context->getHeaderLine($header->name),
-                $parameter->getType(),
-            );
+            yield $this->typeConversioner->castValue($context->getHeaderLine($header->name), $parameter->getType());
         } catch (InvalidArgumentException $violation) {
-            throw new HttpBadRequestException(sprintf(
-                'The value of the HTTP header %s is not valid. %s',
-                $header->name,
-                $violation->getMessage(),
-            ), previous: $violation);
+            // phpcs:ignore Generic.Files.LineLength
+            $message = sprintf('The value of the HTTP header %s is not valid. %s', $header->name, $violation->getMessage());
+
+            throw (new HttpBadRequestException($message, previous: $violation))
+                ->setSource(ErrorSource::CLIENT_REQUEST_HEADER);
         }
     }
 }

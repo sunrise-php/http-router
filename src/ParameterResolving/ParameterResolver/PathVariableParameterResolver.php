@@ -19,6 +19,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\PathVariable;
+use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Exception\Http\HttpNotFoundException;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
@@ -97,7 +98,7 @@ final class PathVariableParameterResolver implements ParameterResolverInterface
             }
 
             throw new LogicException(sprintf(
-                'The parameter {%1$s} expects the value of the variable "%2$s" from the route "%3$s", ' .
+                'The parameter {%1$s} expects the value of the variable {%2$s} from the route "%3$s", ' .
                 'which is missing in the request, most likely, because this variable is optional. ' .
                 'To resolve this issue, make this parameter nullable or assign it a default value.',
                 ParameterResolutioner::stringifyParameter($parameter),
@@ -109,11 +110,11 @@ final class PathVariableParameterResolver implements ParameterResolverInterface
         try {
             yield $this->typeConversioner->castValue($variableValue, $parameter->getType());
         } catch (InvalidArgumentException $violation) {
-            throw new HttpNotFoundException(sprintf(
-                'The request cannot be completed with an invalid %s. %s',
-                $variableName,
-                $violation->getMessage(),
-            ), previous: $violation);
+            // phpcs:ignore Generic.Files.LineLength
+            $message = sprintf('The request cannot be processed with an invalid {%1$s} in the URI path due to: %2$s', $variableName, $violation->getMessage());
+
+            throw (new HttpNotFoundException($message, previous: $violation))
+                ->setSource(ErrorSource::CLIENT_REQUEST_PATH);
         }
     }
 }

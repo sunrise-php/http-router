@@ -28,7 +28,7 @@ final class RequestEntity
      * @param non-empty-string|null $em
      * @param non-empty-string|null $findBy
      * @param non-empty-string|null $pathVariable
-     * @param array<non-empty-string, mixed> $criteria An entity's additional criteria.
+     * @param array<non-empty-string, mixed> $criteria The entity's additional criteria.
      */
     public function __construct(
         public ?string $em = null,

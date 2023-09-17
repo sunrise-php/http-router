@@ -15,25 +15,20 @@ namespace Sunrise\Http\Router;
 
 use Psr\Http\Server\MiddlewareInterface;
 use Sunrise\Http\Router\Entity\MediaType;
-use Sunrise\Http\Router\Exception\RouteNotFoundException;
 use Countable;
-use Iterator;
-use IteratorAggregate;
 
 /**
  * RouteCollectionInterface
- *
- * @extends IteratorAggregate<int, RouteInterface>
  */
-interface RouteCollectionInterface extends Countable, IteratorAggregate
+interface RouteCollectionInterface extends Countable
 {
 
     /**
      * Gets all routes from the collection
      *
-     * @return Iterator<int, RouteInterface>
+     * @return iterable<int, RouteInterface>
      */
-    public function all(): Iterator;
+    public function all(): iterable;
 
     /**
      * Checks by the given name if a route exists in the collection
@@ -51,45 +46,20 @@ interface RouteCollectionInterface extends Countable, IteratorAggregate
      *
      * @param string $name
      *
-     * @return RouteInterface
-     *
-     * @throws RouteNotFoundException
-     *         If the collection doesn't contain a route with the name.
+     * @return RouteInterface|null
      *
      * @since 2.10.0
      */
-    public function get(string $name): RouteInterface;
+    public function get(string $name): ?RouteInterface;
 
     /**
      * Adds the given route(s) to the collection
      *
      * @param RouteInterface ...$routes
      *
-     * @return RouteCollectionInterface
+     * @return static
      */
-    public function add(RouteInterface ...$routes): RouteCollectionInterface;
-
-    /**
-     * Sets the given consumes media type(s) to all routes in the collection
-     *
-     * @param MediaType ...$mediaTypes
-     *
-     * @return RouteCollectionInterface
-     *
-     * @since 3.0.0
-     */
-    public function setConsumesMediaTypes(MediaType ...$mediaTypes): RouteCollectionInterface;
-
-    /**
-     * Sets the given produces media type(s) to all routes in the collection
-     *
-     * @param MediaType ...$mediaTypes
-     *
-     * @return RouteCollectionInterface
-     *
-     * @since 3.0.0
-     */
-    public function setProducesMediaTypes(MediaType ...$mediaTypes): RouteCollectionInterface;
+    public function add(RouteInterface ...$routes): static;
 
     /**
      * Sets the given attribute to all routes in the collection
@@ -97,97 +67,108 @@ interface RouteCollectionInterface extends Countable, IteratorAggregate
      * @param string $name
      * @param mixed $value
      *
-     * @return RouteCollectionInterface
+     * @return static
      *
      * @since 3.0.0
      */
-    public function setAttribute(string $name, $value): RouteCollectionInterface;
+    public function setAttribute(string $name, mixed $value): static;
+
+    /**
+     * Sets the given deprecation sign to all routes in the collection
+     *
+     * @param bool $isDeprecated
+     *
+     * @return static
+     *
+     * @since 3.0.0
+     */
+    public function setDeprecation(bool $isDeprecated): static;
 
     /**
      * Adds the given path prefix to all routes in the collection
      *
      * @param string $prefix
      *
-     * @return RouteCollectionInterface
+     * @return static
      *
      * @since 2.9.0
      */
-    public function addPrefix(string $prefix): RouteCollectionInterface;
+    public function addPrefix(string $prefix): static;
 
     /**
      * Adds the given path suffix to all routes in the collection
      *
      * @param string $suffix
      *
-     * @return RouteCollectionInterface
+     * @return static
      *
      * @since 2.9.0
      */
-    public function addSuffix(string $suffix): RouteCollectionInterface;
+    public function addSuffix(string $suffix): static;
 
     /**
      * Adds the given method(s) to all routes in the collection
      *
      * @param string ...$methods
      *
-     * @return RouteCollectionInterface
+     * @return static
      *
      * @since 2.9.0
      */
-    public function addMethod(string ...$methods): RouteCollectionInterface;
+    public function addMethod(string ...$methods): static;
 
     /**
      * Adds the given consumes media type(s) to all routes in the collection
      *
      * @param MediaType ...$mediaTypes
      *
-     * @return RouteCollectionInterface
+     * @return static
      *
      * @since 3.0.0
      */
-    public function addConsumesMediaType(MediaType ...$mediaTypes): RouteCollectionInterface;
+    public function addConsumesMediaType(MediaType ...$mediaTypes): static;
 
     /**
      * Adds the given produces media type(s) to all routes in the collection
      *
      * @param MediaType ...$mediaTypes
      *
-     * @return RouteCollectionInterface
+     * @return static
      *
      * @since 3.0.0
      */
-    public function addProducesMediaType(MediaType ...$mediaTypes): RouteCollectionInterface;
+    public function addProducesMediaType(MediaType ...$mediaTypes): static;
 
     /**
      * Adds the given middleware(s) to all routes in the collection
      *
      * @param MiddlewareInterface ...$middlewares
      *
-     * @return RouteCollectionInterface
+     * @return static
      *
      * @since 2.9.0
      */
-    public function addMiddleware(MiddlewareInterface ...$middlewares): RouteCollectionInterface;
+    public function addMiddleware(MiddlewareInterface ...$middlewares): static;
 
     /**
      * Adds the given priority middleware(s) to all routes in the collection
      *
      * @param MiddlewareInterface ...$middlewares
      *
-     * @return RouteCollectionInterface
+     * @return static
      *
      * @since 3.0.0
      */
-    public function addPriorityMiddleware(MiddlewareInterface ...$middlewares): RouteCollectionInterface;
+    public function addPriorityMiddleware(MiddlewareInterface ...$middlewares): static;
 
     /**
      * Adds the given tag(s) to all routes in the collection
      *
      * @param string ...$tags
      *
-     * @return RouteCollectionInterface
+     * @return static
      *
      * @since 3.0.0
      */
-    public function addTag(string ...$tags): RouteCollectionInterface;
+    public function addTag(string ...$tags): static;
 }
