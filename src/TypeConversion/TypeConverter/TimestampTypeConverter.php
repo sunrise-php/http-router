@@ -19,7 +19,7 @@ use Exception;
 use Generator;
 use ReflectionNamedType;
 use ReflectionType;
-use Sunrise\Http\Router\Exception\InvalidArgumentException;
+use UnexpectedValueException;
 
 use function ctype_digit;
 use function is_a;
@@ -35,8 +35,6 @@ final class TimestampTypeConverter implements TypeConverterInterface
 
     /**
      * @inheritDoc
-     *
-     * @throws InvalidArgumentException If the value isn't valid.
      */
     public function castValue(mixed $value, ReflectionType $type): Generator
     {
@@ -55,7 +53,7 @@ final class TimestampTypeConverter implements TypeConverterInterface
         }
 
         if (!is_string($value)) {
-            throw new InvalidArgumentException('This value must be of a string or an integer type.');
+            throw new UnexpectedValueException('This value must be of a string or an integer type.');
         }
 
         $value = trim($value);
@@ -64,7 +62,7 @@ final class TimestampTypeConverter implements TypeConverterInterface
         // an instance of DateTime should not be created from an empty string,
         // therefore, such values should be treated as NULL.
         if ($value === '') {
-            return $type->allowsNull() ? yield : throw new InvalidArgumentException('This value must not be empty.');
+            return $type->allowsNull() ? yield : throw new UnexpectedValueException('This value must not be empty.');
         }
 
         if (ctype_digit($value)) {
@@ -79,7 +77,7 @@ final class TimestampTypeConverter implements TypeConverterInterface
         try {
             yield new $className($value);
         } catch (Exception $e) {
-            throw new InvalidArgumentException('This value is not a valid timestamp.', previous: $e);
+            throw new UnexpectedValueException('This value is not a valid timestamp.', previous: $e);
         }
     }
 }

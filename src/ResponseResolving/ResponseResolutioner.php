@@ -82,7 +82,7 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
         }
 
         throw new LogicException(sprintf(
-            'Unable to resolve the response {%s->%s} to PSR-7 response.',
+            'The response {%s->%s} cannot be resolved because it is not supported.',
             self::stringifySource($source),
             get_debug_type($response),
         ));

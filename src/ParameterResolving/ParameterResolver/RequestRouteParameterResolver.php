@@ -52,7 +52,6 @@ final class RequestRouteParameterResolver implements ParameterResolverInterface
 
         /** @var RouteInterface|null $route */
         $route = $context->getAttribute('@route');
-
         if (! $route instanceof RouteInterface && !$parameter->allowsNull()) {
             throw new LogicException(sprintf(
                 'At this level of the application, the current request does not contain a route. ' .

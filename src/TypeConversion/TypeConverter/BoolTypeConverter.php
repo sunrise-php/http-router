@@ -16,7 +16,7 @@ namespace Sunrise\Http\Router\TypeConversion\TypeConverter;
 use Generator;
 use ReflectionNamedType;
 use ReflectionType;
-use Sunrise\Http\Router\Exception\InvalidArgumentException;
+use UnexpectedValueException;
 
 use function filter_var;
 use function is_bool;
@@ -34,8 +34,6 @@ final class BoolTypeConverter implements TypeConverterInterface
 
     /**
      * @inheritDoc
-     *
-     * @throws InvalidArgumentException If the value isn't valid.
      */
     public function castValue(mixed $value, ReflectionType $type): Generator
     {
@@ -49,7 +47,7 @@ final class BoolTypeConverter implements TypeConverterInterface
             // therefore, such values should be treated as NULL.
             if (trim($value) === '') {
                 // phpcs:ignore Generic.Files.LineLength
-                return $type->allowsNull() ? yield : throw new InvalidArgumentException('This value must not be empty.');
+                return $type->allowsNull() ? yield : throw new UnexpectedValueException('This value must not be empty.');
             }
 
             // https://github.com/php/php-src/blob/b7d90f09d4a1688f2692f2fa9067d0a07f78cc7d/ext/filter/logical_filters.c#L273
@@ -57,7 +55,7 @@ final class BoolTypeConverter implements TypeConverterInterface
         }
 
         if (!is_bool($value)) {
-            throw new InvalidArgumentException('This value must be of type boolean.');
+            throw new UnexpectedValueException('This value must be of type boolean.');
         }
 
         yield $value;

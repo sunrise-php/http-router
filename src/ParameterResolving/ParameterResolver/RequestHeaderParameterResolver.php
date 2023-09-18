@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\ParameterResolving\ParameterResolver;
 
 use Generator;
-use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionParameter;
@@ -24,6 +23,7 @@ use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
 use Sunrise\Http\Router\TypeConversion\TypeConversionerInterface;
+use UnexpectedValueException;
 
 use function sprintf;
 
@@ -89,7 +89,7 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
 
         try {
             yield $this->typeConversioner->castValue($context->getHeaderLine($header->name), $parameter->getType());
-        } catch (InvalidArgumentException $violation) {
+        } catch (UnexpectedValueException $violation) {
             // phpcs:ignore Generic.Files.LineLength
             $message = sprintf('The value of the HTTP header %s is not valid. %s', $header->name, $violation->getMessage());
 

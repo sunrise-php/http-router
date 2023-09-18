@@ -16,6 +16,7 @@ namespace Sunrise\Http\Router\TypeConversion;
 use LogicException;
 use ReflectionType;
 use Sunrise\Http\Router\TypeConversion\TypeConverter\TypeConverterInterface;
+use UnexpectedValueException;
 
 /**
  * @since 3.0.0
@@ -41,6 +42,8 @@ interface TypeConversionerInterface
      * @return mixed
      *
      * @throws LogicException If the type isn't supported.
+     *
+     * @throws UnexpectedValueException If the value isn't valid.
      */
     public function castValue(mixed $value, ReflectionType $type): mixed;
 }

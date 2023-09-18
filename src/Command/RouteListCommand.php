@@ -56,8 +56,8 @@ class RouteListCommand extends Command
     {
         if (!isset($this->router)) {
             throw new LogicException(\sprintf(
-                'The %2$s() method MUST return the %1$s class instance. ' .
-                'Pass the %1$s class instance to the constructor or override the %2$s() method.',
+                'The {%2$s()} method MUST return the instance of the {%1$s} class. ' .
+                'To resolve this issue, pass the instance to the constructor or override the method.',
                 Router::class,
                 __METHOD__,
             ));

@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\TypeConversion\TypeConverter;
 
 use Generator;
-use InvalidArgumentException;
 use ReflectionType;
+use UnexpectedValueException;
 
 /**
  * @since 3.0.0
@@ -31,7 +31,7 @@ interface TypeConverterInterface
      *
      * @return Generator<mixed>
      *
-     * @throws InvalidArgumentException If the value isn't valid.
+     * @throws UnexpectedValueException If the value isn't valid.
      */
     public function castValue(mixed $value, ReflectionType $type): Generator;
 }

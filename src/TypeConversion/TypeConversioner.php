@@ -23,6 +23,7 @@ use Sunrise\Http\Router\TypeConversion\TypeConverter\FloatTypeConverter;
 use Sunrise\Http\Router\TypeConversion\TypeConverter\IntTypeConverter;
 use Sunrise\Http\Router\TypeConversion\TypeConverter\StringTypeConverter;
 use Sunrise\Http\Router\TypeConversion\TypeConverter\TypeConverterInterface;
+use Sunrise\Http\Router\TypeConversion\TypeConverter\UidTypeConverter;
 
 use function get_debug_type;
 use function sprintf;
@@ -50,8 +51,6 @@ final class TypeConversioner implements TypeConversionerInterface
 
     /**
      * @inheritDoc
-     *
-     * @throws LogicException If the type isn't supported or cannot be applied to the value.
      */
     public function castValue(mixed $value, ReflectionType $type): mixed
     {
@@ -63,7 +62,7 @@ final class TypeConversioner implements TypeConversionerInterface
         }
 
         throw new LogicException(sprintf(
-            'Unable to convert the value {%s} to the type {%s}.',
+            'The value {%s} cannot be converted to the type {%s} because it is not supported.',
             get_debug_type($value),
             (string) $type,
         ));
@@ -82,5 +81,6 @@ final class TypeConversioner implements TypeConversionerInterface
         yield new StringTypeConverter();
         yield new BackedEnumTypeConverter();
         yield new TimestampTypeConverter();
+        yield new UidTypeConverter();
     }
 }

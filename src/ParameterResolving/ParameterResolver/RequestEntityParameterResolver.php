@@ -92,9 +92,10 @@ final class RequestEntityParameterResolver implements ParameterResolverInterface
         if (isset($attribute->findBy) && !$entityMetadata->hasField($attribute->findBy)) {
             throw new LogicException(sprintf(
                 'The #[RequestEntity] attribute cannot be applied to the parameter {%s}, ' .
-                'because the specified field "%s" does not exist.',
+                'because the specified field "%s" does not exist on the entity %s.',
                 ParameterResolutioner::stringifyParameter($parameter),
                 $attribute->findBy,
+                $entityMetadata->getName(),
             ));
         }
 
@@ -102,7 +103,7 @@ final class RequestEntityParameterResolver implements ParameterResolverInterface
         if (!isset($attribute->findBy) && count($entityIdentifierFieldNames) <> 1) {
             throw new LogicException(sprintf(
                 'The #[RequestEntity] attribute cannot be applied to the parameter {%s}, ' .
-                'because no entity search field name is provided, and automatic detection is not possible ' .
+                'because the entity search field name is not provided and automatic detection is not possible ' .
                 'due to the entity having a composite identifier or no identifier at all. ' .
                 'To resolve this issue, explicitly specify the field name within the attribute.',
                 ParameterResolutioner::stringifyParameter($parameter),
@@ -114,17 +115,26 @@ final class RequestEntityParameterResolver implements ParameterResolverInterface
         /** @var string|null $pathVariableValue */
         $pathVariableValue = $route->getAttribute($pathVariableName);
         if (!isset($pathVariableValue)) {
+            if ($parameter->isDefaultValueAvailable()) {
+                return yield $parameter->getDefaultValue();
+            } elseif ($parameter->allowsNull()) {
+                return yield;
+            }
+
             throw new LogicException(sprintf(
                 'The #[RequestEntity] attribute cannot be applied to the parameter {%s}, ' .
-                'because the route is missing the value for variable {%s}. ' .
-                'To resolve this issue, explicitly specify the variable name within the attribute.',
+                'because the route is missing the value for the variable {%s}, most likely, ' .
+                'because the variable is optional or its name is detected incorrectly. ' .
+                'To resolve this issue, explicitly specify the variable name within the attribute, ' .
+                'either make this parameter nullable or assign it a default value.',
                 ParameterResolutioner::stringifyParameter($parameter),
                 $pathVariableName,
             ));
         }
 
-        $entity = $entityManager->getRepository($entityMetadata->getName())
-            ->findOneBy([$entityFieldName => $pathVariableValue] + $attribute->criteria);
+        $entity = $entityManager->getRepository($entityMetadata->getName())->findOneBy(
+            [$entityFieldName => $pathVariableValue] + $attribute->criteria
+        );
 
         if (!isset($entity)) {
             throw (new HttpNotFoundException)

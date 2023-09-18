@@ -126,7 +126,7 @@ final class ReferenceResolver implements ReferenceResolverInterface
         }
 
         throw new LogicException(sprintf(
-            'Unable to resolve the reference {%s}.',
+            'The reference {%s} cannot be resolved because its format is not supported.',
             self::stringifyReference($reference),
         ));
     }
@@ -183,7 +183,7 @@ final class ReferenceResolver implements ReferenceResolverInterface
         }
 
         throw new LogicException(sprintf(
-            'Unable to resolve the reference {%s}.',
+            'The reference {%s} cannot be resolved because its format is not supported.',
             self::stringifyReference($reference),
         ));
     }

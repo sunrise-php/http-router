@@ -21,15 +21,10 @@ use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\SerializableResponseBody;
 use Sunrise\Http\Router\Entity\MediaType;
-use Sunrise\Http\Router\Exception\RuntimeException;
-use Sunrise\Http\Router\ResponseResolving\ResponseResolutioner;
 use Sunrise\Http\Router\ServerRequest;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\SerializerInterface;
-use Throwable;
-
-use function sprintf;
 
 /**
  * SerializableResponseBodyResolver
@@ -46,7 +41,7 @@ final class SerializableResponseBodyResolver implements ResponseResolverInterfac
      *
      * @param ResponseFactoryInterface $responseFactory
      * @param SerializerInterface $serializer
-     * @param array<non-empty-string, mixed> $context Default serializing context
+     * @param array<non-empty-string, mixed> $context
      */
     public function __construct(
         private ResponseFactoryInterface $responseFactory,
@@ -57,8 +52,6 @@ final class SerializableResponseBodyResolver implements ResponseResolverInterfac
 
     /**
      * @inheritDoc
-     *
-     * @throws RuntimeException If the response couldn't be serialized.
      */
     public function resolveResponse(
         ReflectionFunction|ReflectionMethod $source,
@@ -85,19 +78,9 @@ final class SerializableResponseBodyResolver implements ResponseResolverInterfac
 
         $context = $attribute->context + $this->context;
 
-        try {
-            $payload = $this->serializer->serialize($response, $format, $context);
-        } catch (Throwable $e) {
-            throw new RuntimeException(sprintf(
-                'Unable to encode a response from the source {%s} due to: %s',
-                ResponseResolutioner::stringifySource($source),
-                $e->getMessage(),
-            ), previous: $e);
-        }
-
         $contentType = $clientPreferredMediaType->build(['charset' => 'UTF-8']);
         $result = $this->responseFactory->createResponse(200)->withHeader('Content-Type', $contentType);
-        $result->getBody()->write($payload);
+        $result->getBody()->write($this->serializer->serialize($response, $format, $context));
 
         return $result;
     }

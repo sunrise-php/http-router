@@ -13,8 +13,6 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Dictionary;
 
-use function sprintf;
-
 /**
  * ErrorSource
  *
@@ -32,10 +30,6 @@ final class ErrorSource
     public const CLIENT_REQUEST_COOKIE = 'client.request.cookie';
     public const CLIENT_REQUEST_HEADER = 'client.request.header';
     public const CLIENT_REQUEST_BODY = 'client.request.body';
+    public const DEPENDENCY = 'dependency';
     public const SERVER = 'server';
-
-    public static function dependency(string $name): string
-    {
-        return sprintf('dependency.%s', $name);
-    }
 }

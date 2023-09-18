@@ -18,7 +18,7 @@ use Generator;
 use ReflectionEnum;
 use ReflectionNamedType;
 use ReflectionType;
-use Sunrise\Http\Router\Exception\InvalidArgumentException;
+use UnexpectedValueException;
 use ValueError;
 
 use function filter_var;
@@ -41,8 +41,6 @@ final class BackedEnumTypeConverter implements TypeConverterInterface
 
     /**
      * @inheritDoc
-     *
-     * @throws InvalidArgumentException If the value isn't valid.
      */
     public function castValue(mixed $value, ReflectionType $type): Generator
     {
@@ -72,7 +70,7 @@ final class BackedEnumTypeConverter implements TypeConverterInterface
             // therefore, such values should be treated as NULL.
             if (trim($value) === '') {
                 // phpcs:ignore Generic.Files.LineLength
-                return $type->allowsNull() ? yield : throw new InvalidArgumentException('This value must not be empty.');
+                return $type->allowsNull() ? yield : throw new UnexpectedValueException('This value must not be empty.');
             }
 
             if ($enumTypeName === 'int') {
@@ -83,10 +81,10 @@ final class BackedEnumTypeConverter implements TypeConverterInterface
         }
 
         if ($enumTypeName === 'int' && !is_int($value)) {
-            throw new InvalidArgumentException('This value must be of type integer.');
+            throw new UnexpectedValueException('This value must be of type integer.');
         }
         if ($enumTypeName === 'string' && !is_string($value)) {
-            throw new InvalidArgumentException('This value must be of type string.');
+            throw new UnexpectedValueException('This value must be of type string.');
         }
 
         /** @var int|string $value */
@@ -96,7 +94,7 @@ final class BackedEnumTypeConverter implements TypeConverterInterface
         } catch (ValueError $e) {
             $choices = [...$this->getEnumChoices($enumName)];
 
-            throw new InvalidArgumentException(sprintf(
+            throw new UnexpectedValueException(sprintf(
                 'This value must be one of: %s.',
                 join(', ', $choices),
             ), previous: $e);

@@ -65,6 +65,6 @@ final class CallbackReflector
             return new ReflectionFunction($callback);
         }
 
-        throw new LogicException('Unsupported callback');
+        throw new LogicException('Unsupported callback declaration.');
     }
 }

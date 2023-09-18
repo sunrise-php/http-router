@@ -14,10 +14,10 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Helper;
 
 use Generator;
+use InvalidArgumentException;
 use Sunrise\Http\Router\Dictionary\Charset;
 use Sunrise\Http\Router\Entity\Language;
 use Sunrise\Http\Router\Entity\MediaType;
-use Sunrise\Http\Router\Exception\InvalidArgumentException;
 
 use function explode;
 use function sprintf;

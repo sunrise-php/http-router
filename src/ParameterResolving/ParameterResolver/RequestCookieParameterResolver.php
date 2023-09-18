@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\ParameterResolving\ParameterResolver;
 
 use Generator;
-use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionParameter;
@@ -24,6 +23,7 @@ use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
 use Sunrise\Http\Router\TypeConversion\TypeConversionerInterface;
+use UnexpectedValueException;
 
 use function sprintf;
 
@@ -90,7 +90,7 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
 
         try {
             yield $this->typeConversioner->castValue($cookies[$cookie->name], $parameter->getType());
-        } catch (InvalidArgumentException $violation) {
+        } catch (UnexpectedValueException $violation) {
             $message = sprintf('The value of the cookie %s is not valid. %s', $cookie->name, $violation->getMessage());
 
             throw (new HttpBadRequestException($message, previous: $violation))

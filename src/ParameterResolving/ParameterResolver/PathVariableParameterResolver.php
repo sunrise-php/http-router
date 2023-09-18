@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\ParameterResolving\ParameterResolver;
 
 use Generator;
-use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionParameter;
@@ -25,6 +24,7 @@ use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
 use Sunrise\Http\Router\RouteInterface;
 use Sunrise\Http\Router\TypeConversion\TypeConversionerInterface;
+use UnexpectedValueException;
 
 use function sprintf;
 
@@ -74,7 +74,6 @@ final class PathVariableParameterResolver implements ParameterResolverInterface
         }
 
         $route = $context->getAttribute('@route');
-
         if (! $route instanceof RouteInterface) {
             throw new LogicException(sprintf(
                 'The #[PathVariable] attribute cannot be applied to the parameter {%s}, ' .
@@ -99,7 +98,7 @@ final class PathVariableParameterResolver implements ParameterResolverInterface
 
             throw new LogicException(sprintf(
                 'The parameter {%1$s} expects the value of the variable {%2$s} from the route "%3$s", ' .
-                'which is missing in the request, most likely, because this variable is optional. ' .
+                'which is not present in the request, most likely, because the variable is optional. ' .
                 'To resolve this issue, make this parameter nullable or assign it a default value.',
                 ParameterResolutioner::stringifyParameter($parameter),
                 $variableName,
@@ -109,7 +108,7 @@ final class PathVariableParameterResolver implements ParameterResolverInterface
 
         try {
             yield $this->typeConversioner->castValue($variableValue, $parameter->getType());
-        } catch (InvalidArgumentException $violation) {
+        } catch (UnexpectedValueException $violation) {
             // phpcs:ignore Generic.Files.LineLength
             $message = sprintf('The request cannot be processed with an invalid {%1$s} in the URI path due to: %2$s', $variableName, $violation->getMessage());
 
