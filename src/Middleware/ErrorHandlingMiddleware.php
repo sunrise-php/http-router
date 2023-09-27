@@ -77,7 +77,6 @@ final class ErrorHandlingMiddleware implements MiddlewareInterface
     private function handleHttpError(HttpExceptionInterface $error, ServerRequestInterface $request): ResponseInterface
     {
         $response = $this->responseFactory->createResponse($error->getStatusCode());
-
         foreach ($error->getHeaders() as [$fieldName, $fieldValue]) {
             $response = $response->withHeader($fieldName, $fieldValue);
         }

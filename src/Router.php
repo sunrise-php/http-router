@@ -86,6 +86,11 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     private array $middlewares = [];
 
     /**
+     * @var list<MiddlewareInterface>
+     */
+    private array $routeAwareMiddlewares;
+
+    /**
      * Constructor of the class
      *
      * @param RouteCollectionFactoryInterface|null $collectionFactory
@@ -273,6 +278,20 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     }
 
     /**
+     * Adds the given route-aware middleware(s) to the router
+     *
+     * @param mixed ...$middlewares
+     *
+     * @return void
+     */
+    public function addRouteAwareMiddleware(mixed ...$middlewares): void
+    {
+        $middlewares = $this->referenceResolver->resolveMiddlewares($middlewares);
+
+        $this->routeAwareMiddlewares = [...$this->middlewares, ...$middlewares];
+    }
+
+    /**
      * Sets the given event dispatcher to the router
      *
      * @param EventDispatcherInterface|null $eventDispatcher
@@ -384,6 +403,10 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
                     $event = new RouteMatchedEvent($route, $request);
                     $this->eventDispatcher->dispatch($event);
                     $request = $event->getRequest();
+                }
+
+                if (empty($this->routeAwareMiddlewares)) {
+                    return $route->handle($request);
                 }
 
                 return $route->handle($request);

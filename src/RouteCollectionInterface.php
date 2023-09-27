@@ -13,22 +13,24 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
+use Generator;
 use Psr\Http\Server\MiddlewareInterface;
 use Sunrise\Http\Router\Entity\MediaType;
 use Countable;
+use IteratorAggregate;
 
 /**
  * RouteCollectionInterface
  */
-interface RouteCollectionInterface extends Countable
+interface RouteCollectionInterface extends Countable, IteratorAggregate
 {
 
     /**
      * Gets all routes from the collection
      *
-     * @return iterable<int, RouteInterface>
+     * @return Generator<int, RouteInterface>
      */
-    public function all(): iterable;
+    public function all(): Generator;
 
     /**
      * Checks by the given name if a route exists in the collection

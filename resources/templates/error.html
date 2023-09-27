@@ -22,13 +22,12 @@
         main {
             margin: 20vh 10vw 0 10vw;
         }
-        details code {
+        span.source {
             display: inline-block;
             margin-right: .25em;
             padding: .25em .5em;
             border: 1px solid #9E9E9E;
             border-radius: .25em;
-            font-family: var(--font-family); /* override the monospace font */
             font-size: .8em;
             line-height: 1;
         }
@@ -58,12 +57,12 @@
     <main>
         <h1>{{ error.reasonPhrase }}</h1>
         <p>{{ error.message }}</p>
-        <p>The error's source: {{ error.source }}</p>
+        <p>The error's source: <span class="source">{{ error.source }}</span></p>
 
         {% if error.violations %}
             <details>
                 {% for violation in error.violations %}
-                    <p><code>{{ violation.source }}</code> {{ violation.message }}</p>
+                    <p><span class="source">{{ violation.source }}</span> {{ violation.message }}</p>
                 {% endfor %}
             </details>
         {% endif %}

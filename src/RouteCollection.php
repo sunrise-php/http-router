@@ -13,8 +13,11 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
+use Generator;
+use IteratorIterator;
 use Psr\Http\Server\MiddlewareInterface;
 use Sunrise\Http\Router\Entity\MediaType;
+use Traversable;
 
 use function count;
 
@@ -46,7 +49,7 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * @inheritDoc
      */
-    public function all(): iterable
+    public function all(): Generator
     {
         foreach ($this->routes as $route) {
             yield $route;
@@ -207,5 +210,13 @@ class RouteCollection implements RouteCollectionInterface
     public function count(): int
     {
         return count($this->routes);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getIterator(): Traversable
+    {
+        return new IteratorIterator($this->all());
     }
 }

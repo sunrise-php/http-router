@@ -122,7 +122,7 @@ final class HeaderParser
      *
      * @throws InvalidArgumentException If the header isn't valid.
      */
-    private static function parseAcceptLikeHeader(string $header): Generator
+    public static function parseAcceptLikeHeader(string $header): Generator
     {
         /** @var array{0: ?string, 1: string[], 2: string[]} $match */
         $match = [null, [], []];
