@@ -23,8 +23,10 @@ use Sunrise\Http\Router\Exception\Http\HttpNotFoundException;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
 use Sunrise\Http\Router\RouteInterface;
-use Sunrise\Http\Router\TypeConversion\TypeConversionerInterface;
-use UnexpectedValueException;
+use Sunrise\Hydrator\Exception\InvalidDataException;
+use Sunrise\Hydrator\Exception\InvalidValueException;
+use Sunrise\Hydrator\HydratorInterface;
+use Sunrise\Hydrator\Type;
 
 use function sprintf;
 
@@ -39,9 +41,9 @@ final class PathVariableParameterResolver implements ParameterResolverInterface
     /**
      * Constructor of the class
      *
-     * @param TypeConversionerInterface $typeConversioner
+     * @param HydratorInterface $hydrator
      */
-    public function __construct(private TypeConversionerInterface $typeConversioner)
+    public function __construct(private HydratorInterface $hydrator)
     {
     }
 
@@ -58,13 +60,6 @@ final class PathVariableParameterResolver implements ParameterResolverInterface
         $attributes = $parameter->getAttributes(PathVariable::class);
         if ($attributes === []) {
             return;
-        }
-
-        if (!$parameter->hasType()) {
-            throw new LogicException(sprintf(
-                'To use the #[PathVariable] attribute, the parameter {%s} must be typed.',
-                ParameterResolutioner::stringifyParameter($parameter),
-            ));
         }
 
         if (! $context instanceof ServerRequestInterface) {
@@ -97,23 +92,29 @@ final class PathVariableParameterResolver implements ParameterResolverInterface
             }
 
             throw new LogicException(sprintf(
-                'The parameter {%1$s} expects the value of the variable {%2$s} from the route "%3$s", ' .
+                'The parameter {%1$s} expects the value of the variable {%3$s} from the route "%2$s", ' .
                 'which is not present in the request, most likely, because the variable is optional. ' .
                 'To resolve this issue, make this parameter nullable or assign it a default value.',
                 ParameterResolutioner::stringifyParameter($parameter),
-                $variableName,
                 $route->getName(),
+                $variableName,
             ));
         }
 
         try {
-            yield $this->typeConversioner->castValue($variableValue, $parameter->getType());
-        } catch (UnexpectedValueException $violation) {
-            // phpcs:ignore Generic.Files.LineLength
-            $message = sprintf('The request cannot be processed with an invalid {%1$s} in the URI path due to: %2$s', $variableName, $violation->getMessage());
-
-            throw (new HttpNotFoundException($message, previous: $violation))
-                ->setSource(ErrorSource::CLIENT_REQUEST_PATH);
+            yield $this->hydrator->castValue(
+                $variableValue,
+                Type::fromParameter($parameter),
+                [$variableName],
+            );
+        } catch (InvalidDataException $e) {
+            throw (new HttpNotFoundException(previous: $e))
+                ->setSource(ErrorSource::CLIENT_REQUEST_PATH)
+                ->addHydratorViolation(...$e->getExceptions());
+        } catch (InvalidValueException $e) {
+            throw (new HttpNotFoundException(previous: $e))
+                ->setSource(ErrorSource::CLIENT_REQUEST_PATH)
+                ->addHydratorViolation($e);
         }
     }
 }

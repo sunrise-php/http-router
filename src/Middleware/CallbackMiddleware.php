@@ -73,7 +73,7 @@ final class CallbackMiddleware implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $source = CallbackReflector::reflectCallback($this->callback);
+        $responder = CallbackReflector::reflectCallback($this->callback);
 
         $arguments = $this->parameterResolutioner
             ->withContext($request)
@@ -81,11 +81,11 @@ final class CallbackMiddleware implements MiddlewareInterface
                 new ObjectInjectionParameterResolver($request),
                 new ObjectInjectionParameterResolver($handler),
             )
-            ->resolveParameters(...$source->getParameters());
+            ->resolveParameters(...$responder->getParameters());
 
         /** @var mixed $response */
         $response = ($this->callback)(...$arguments);
 
-        return $this->responseResolutioner->resolveResponse($source, $request, $response);
+        return $this->responseResolutioner->resolveResponse($request, $response, $responder);
     }
 }

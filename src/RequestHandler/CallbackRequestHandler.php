@@ -84,18 +84,18 @@ final class CallbackRequestHandler implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $source = $this->getReflection();
+        $responder = $this->getReflection();
 
         $arguments = $this->parameterResolutioner
             ->withContext($request)
             ->withPriorityResolver(
                 new ObjectInjectionParameterResolver($request),
             )
-            ->resolveParameters(...$source->getParameters());
+            ->resolveParameters(...$responder->getParameters());
 
         /** @var mixed $response */
         $response = ($this->callback)(...$arguments);
 
-        return $this->responseResolutioner->resolveResponse($source, $request, $response);
+        return $this->responseResolutioner->resolveResponse($request, $response, $responder);
     }
 }

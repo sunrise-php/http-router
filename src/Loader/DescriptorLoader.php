@@ -551,15 +551,15 @@ final class DescriptorLoader implements LoaderInterface
      * Gets the named annotations from the given class or method
      *
      * @param class-string<T> $name
-     * @param ReflectionClass|ReflectionMethod $source
+     * @param ReflectionClass|ReflectionMethod $holder
      *
      * @return Generator<int, T>
      *
      * @template T of object
      */
-    private function getAnnotations(string $name, ReflectionClass|ReflectionMethod $source): Generator
+    private function getAnnotations(string $name, ReflectionClass|ReflectionMethod $holder): Generator
     {
-        $attributes = $source->getAttributes($name);
+        $attributes = $holder->getAttributes($name);
         foreach ($attributes as $attribute) {
             yield $attribute->newInstance();
         }

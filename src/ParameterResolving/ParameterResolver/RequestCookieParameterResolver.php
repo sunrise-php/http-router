@@ -21,9 +21,10 @@ use Sunrise\Http\Router\Annotation\RequestCookie;
 use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
 use Sunrise\Http\Router\Exception\LogicException;
-use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
-use Sunrise\Http\Router\TypeConversion\TypeConversionerInterface;
-use UnexpectedValueException;
+use Sunrise\Hydrator\Exception\InvalidDataException;
+use Sunrise\Hydrator\Exception\InvalidValueException;
+use Sunrise\Hydrator\HydratorInterface;
+use Sunrise\Hydrator\Type;
 
 use function sprintf;
 
@@ -38,9 +39,9 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
     /**
      * Constructor of the class
      *
-     * @param TypeConversionerInterface $typeConversioner
+     * @param HydratorInterface $hydrator
      */
-    public function __construct(private TypeConversionerInterface $typeConversioner)
+    public function __construct(private HydratorInterface $hydrator)
     {
     }
 
@@ -59,13 +60,6 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
             return;
         }
 
-        if (!$parameter->hasType()) {
-            throw new LogicException(sprintf(
-                'To use the #[RequestCookie] attribute, the parameter {%s} must be typed.',
-                ParameterResolutioner::stringifyParameter($parameter),
-            ));
-        }
-
         if (! $context instanceof ServerRequestInterface) {
             throw new LogicException(
                 'At this level of the application, any operations with the request are not possible.'
@@ -82,19 +76,24 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
                 return yield;
             }
 
-            $message = sprintf('The cookie %s must be provided.', $cookie->name);
-
-            throw (new HttpBadRequestException($message))
+            throw (new HttpBadRequestException(sprintf('The cookie %s must be provided.', $cookie->name)))
                 ->setSource(ErrorSource::CLIENT_REQUEST_COOKIE);
         }
 
         try {
-            yield $this->typeConversioner->castValue($cookies[$cookie->name], $parameter->getType());
-        } catch (UnexpectedValueException $violation) {
-            $message = sprintf('The value of the cookie %s is not valid. %s', $cookie->name, $violation->getMessage());
-
-            throw (new HttpBadRequestException($message, previous: $violation))
-                ->setSource(ErrorSource::CLIENT_REQUEST_COOKIE);
+            yield $this->hydrator->castValue(
+                $cookies[$cookie->name],
+                Type::fromParameter($parameter),
+                [$cookie->name],
+            );
+        } catch (InvalidDataException $e) {
+            throw (new HttpBadRequestException(previous: $e))
+                ->setSource(ErrorSource::CLIENT_REQUEST_COOKIE)
+                ->addHydratorViolation(...$e->getExceptions());
+        } catch (InvalidValueException $e) {
+            throw (new HttpBadRequestException(previous: $e))
+                ->setSource(ErrorSource::CLIENT_REQUEST_COOKIE)
+                ->addHydratorViolation($e);
         }
     }
 }

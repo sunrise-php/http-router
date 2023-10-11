@@ -52,16 +52,14 @@ final class RouteParser
     public static function parseRoute(string $route): array
     {
         /**
-         * @var list<TRawMatch> $matches
-         *
-         * @template TRawMatch as array{
-         *     name?: string,
-         *     value?: string,
-         *     pattern?: string,
-         *     isOptional?: true,
-         *     optionalLeftPart?: ?string,
-         *     optionalRightPart?: ?string
-         * }
+         * @var list<array{
+         *      name?: string,
+         *      value?: string,
+         *      pattern?: string,
+         *      isOptional?: true,
+         *      optionalLeftPart?: ?string,
+         *      optionalRightPart?: ?string
+         *  }> $matches
          */
         $matches = [];
 

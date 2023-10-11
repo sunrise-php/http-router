@@ -31,9 +31,9 @@ final class RouteResponseResolver implements ResponseResolverInterface
      * @inheritDoc
      */
     public function resolveResponse(
-        ReflectionFunction|ReflectionMethod $source,
         ServerRequestInterface $request,
         mixed $response,
+        ReflectionFunction|ReflectionMethod $responder,
     ) : ?ResponseInterface {
         if ($response instanceof RouteInterface) {
             return $response->handle($request);

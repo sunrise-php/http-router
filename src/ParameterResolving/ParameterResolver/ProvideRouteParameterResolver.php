@@ -54,8 +54,7 @@ final class ProvideRouteParameterResolver implements ParameterResolverInterface
         }
 
         $type = $parameter->getType();
-
-        if (! $type instanceof ReflectionNamedType || $type->getName() !== RouteInterface::class) {
+        if (! $type instanceof ReflectionNamedType || $type->getName() <> RouteInterface::class) {
             throw new LogicException(sprintf(
                 'To use the #[ProvideRoute] attribute, the parameter {%s} must be typed with %s.',
                 ParameterResolutioner::stringifyParameter($parameter),

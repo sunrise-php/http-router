@@ -29,23 +29,15 @@ final class ResponseResolvedEvent extends AbstractEvent
     /**
      * Constructor of the class
      *
-     * @param ReflectionFunction|ReflectionMethod $source
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response
+     * @param ReflectionFunction|ReflectionMethod $responder
      */
     public function __construct(
-        private ReflectionFunction|ReflectionMethod $source,
         private ServerRequestInterface $request,
         private ResponseInterface $response,
+        private ReflectionFunction|ReflectionMethod $responder,
     ) {
-    }
-
-    /**
-     * @return ReflectionMethod|ReflectionFunction
-     */
-    public function getSource(): ReflectionMethod|ReflectionFunction
-    {
-        return $this->source;
     }
 
     /**
@@ -62,6 +54,14 @@ final class ResponseResolvedEvent extends AbstractEvent
     public function getResponse(): ResponseInterface
     {
         return $this->response;
+    }
+
+    /**
+     * @return ReflectionMethod|ReflectionFunction
+     */
+    public function getResponder(): ReflectionMethod|ReflectionFunction
+    {
+        return $this->responder;
     }
 
     /**

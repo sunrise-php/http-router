@@ -43,7 +43,7 @@
         "vimeo/psalm": "^5.15",
         "sunrise/coding-standard": "^1.0",
         "sunrise/http-message": "^3.0",
-        "sunrise/hydrator": "^3.0",
+        "sunrise/hydrator": "^3.4",
         "symfony/console": "^6.0",
         "symfony/validator": "^6.0",
         "monolog/monolog": "^3.4",
@@ -55,7 +55,8 @@
         "symfony/property-access": "^6.3",
         "doctrine/dbal": "^3.6",
         "doctrine/orm": "^2.16",
-        "symfony/uid": "^6.3"
+        "symfony/uid": "^6.3",
+        "ramsey/uuid": "^4.7"
     },
     "autoload": {
         "files": [

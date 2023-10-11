@@ -66,24 +66,24 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
      * @throws LogicException If the response couldn't be resolved to PSR-7 response.
      */
     public function resolveResponse(
-        ReflectionFunction|ReflectionMethod $source,
         ServerRequestInterface $request,
         mixed $response,
+        ReflectionFunction|ReflectionMethod $responder,
     ) : ResponseInterface {
         if ($response instanceof ResponseInterface) {
-            return $this->handleResponse($source, $request, $response);
+            return $this->handleResponse($request, $response, $responder);
         }
 
         foreach ($this->resolvers as $resolver) {
-            $resolvedResponse = $resolver->resolveResponse($source, $request, $response);
-            if ($resolvedResponse instanceof ResponseInterface) {
-                return $this->handleResponse($source, $request, $resolvedResponse);
+            $result = $resolver->resolveResponse($request, $response, $responder);
+            if ($result instanceof ResponseInterface) {
+                return $this->handleResponse($request, $result, $responder);
             }
         }
 
         throw new LogicException(sprintf(
             'The response {%s->%s} cannot be resolved because it is not supported.',
-            self::stringifySource($source),
+            self::stringifySource($responder),
             get_debug_type($response),
         ));
     }
@@ -91,33 +91,33 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
     /**
      * Handles the given response
      *
-     * @param ReflectionFunction|ReflectionMethod $source
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response
+     * @param ReflectionFunction|ReflectionMethod $responder
      *
      * @return ResponseInterface
      */
     private function handleResponse(
-        ReflectionFunction|ReflectionMethod $source,
         ServerRequestInterface $request,
-        mixed $response,
+        ResponseInterface $response,
+        ReflectionFunction|ReflectionMethod $responder,
     ) : ResponseInterface {
         /** @var list<ReflectionAttribute<ResponseStatus>> $attributes */
-        $attributes = $source->getAttributes(ResponseStatus::class);
+        $attributes = $responder->getAttributes(ResponseStatus::class);
         if (isset($attributes[0])) {
             $status = $attributes[0]->newInstance();
             $response = $response->withStatus($status->code);
         }
 
         /** @var list<ReflectionAttribute<ResponseHeader>> $attributes */
-        $attributes = $source->getAttributes(ResponseHeader::class);
+        $attributes = $responder->getAttributes(ResponseHeader::class);
         foreach ($attributes as $attribute) {
             $header = $attribute->newInstance();
             $response = $response->withHeader($header->name, $header->value);
         }
 
         if (isset($this->eventDispatcher)) {
-            $event = new ResponseResolvedEvent($source, $request, $response);
+            $event = new ResponseResolvedEvent($request, $response, $responder);
             $this->eventDispatcher->dispatch($event);
             $response = $event->getResponse();
         }

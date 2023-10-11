@@ -18,25 +18,19 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use SimdJsonException;
 use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Entity\MediaType;
 use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
 use Sunrise\Http\Router\ServerRequest;
 
-use function extension_loaded;
 use function is_array;
 use function json_decode;
-use function simdjson_decode;
 
+use const JSON_BIGINT_AS_STRING;
 use const JSON_THROW_ON_ERROR;
 
 /**
- * JSON payload decoding middleware using the JSON or Simdjson extension
- *
- * @link https://www.php.net/manual/en/intro.json.php
- * @link https://www.php.net/manual/en/intro.simdjson.php
- * @link https://simdjson.org
+ * JSON payload decoding middleware
  *
  * @since 2.15.0
  */
@@ -72,9 +66,8 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
         }
 
         try {
-            // phpcs:ignore Generic.Files.LineLength
-            $data = extension_loaded('simdjson') ? simdjson_decode($payload, true) : json_decode($payload, true, flags: JSON_THROW_ON_ERROR);
-        } catch (JsonException|SimdJsonException $e) {
+            $data = json_decode($payload, true, flags: JSON_BIGINT_AS_STRING | JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
             throw (new HttpBadRequestException('The JSON payload is invalid and couldn‘t be decoded.', previous: $e))
                 ->setSource(ErrorSource::CLIENT_REQUEST_BODY);
         }

@@ -23,7 +23,6 @@ use Sunrise\Http\Router\Exception\Http\HttpUnprocessableEntityException;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
 use Sunrise\Hydrator\Exception\InvalidDataException;
-use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\HydratorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -46,8 +45,10 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
      * @param HydratorInterface $hydrator
      * @param ValidatorInterface|null $validator
      */
-    public function __construct(private HydratorInterface $hydrator, private ?ValidatorInterface $validator = null)
-    {
+    public function __construct(
+        private HydratorInterface $hydrator,
+        private ?ValidatorInterface $validator = null,
+    ) {
     }
 
     /**
@@ -64,7 +65,6 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
         }
 
         $type = $parameter->getType();
-
         if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
             throw new LogicException(sprintf(
                 'To use the #[RequestBody] attribute, the parameter {%s} must be typed with an object.',
@@ -80,8 +80,6 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
 
         try {
             $object = $this->hydrator->hydrate($type->getName(), (array) $context->getParsedBody());
-        } catch (InvalidObjectException $e) {
-            throw new LogicException($e->getMessage(), previous: $e);
         } catch (InvalidDataException $e) {
             throw (new HttpUnprocessableEntityException)
                 ->setSource(ErrorSource::CLIENT_REQUEST_BODY)

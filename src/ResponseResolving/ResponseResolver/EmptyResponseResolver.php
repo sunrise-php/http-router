@@ -40,9 +40,9 @@ final class EmptyResponseResolver implements ResponseResolverInterface
      * @inheritDoc
      */
     public function resolveResponse(
-        ReflectionFunction|ReflectionMethod $source,
         ServerRequestInterface $request,
         mixed $response,
+        ReflectionFunction|ReflectionMethod $responder,
     ) : ?ResponseInterface {
         if ($response === null) {
             return $this->responseFactory->createResponse(204);

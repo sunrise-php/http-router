@@ -29,15 +29,15 @@ interface ResponseResolverInterface
     /**
      * Resolves the given response to PSR-7 response
      *
-     * @param ReflectionFunction|ReflectionMethod $source
      * @param ServerRequestInterface $request
      * @param mixed $response
+     * @param ReflectionFunction|ReflectionMethod $responder
      *
      * @return ResponseInterface|null
      */
     public function resolveResponse(
-        ReflectionFunction|ReflectionMethod $source,
         ServerRequestInterface $request,
         mixed $response,
+        ReflectionFunction|ReflectionMethod $responder,
     ) : ?ResponseInterface;
 }

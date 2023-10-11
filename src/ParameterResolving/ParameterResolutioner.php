@@ -134,7 +134,7 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
                 $parameter->getDeclaringFunction()->getDeclaringClass()->getName(),
                 $parameter->getDeclaringFunction()->getName(),
                 $parameter->getName(),
-                $parameter->getPosition()
+                $parameter->getPosition(),
             );
         }
 
@@ -142,7 +142,7 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
             '%s($%s[%d])',
             $parameter->getDeclaringFunction()->getName(),
             $parameter->getName(),
-            $parameter->getPosition()
+            $parameter->getPosition(),
         );
     }
 }

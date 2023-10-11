@@ -54,12 +54,12 @@ final class SerializableResponseBodyResolver implements ResponseResolverInterfac
      * @inheritDoc
      */
     public function resolveResponse(
-        ReflectionFunction|ReflectionMethod $source,
         ServerRequestInterface $request,
         mixed $response,
+        ReflectionFunction|ReflectionMethod $responder,
     ) : ?ResponseInterface {
         /** @var list<ReflectionAttribute<SerializableResponseBody>> $attributes */
-        $attributes = $source->getAttributes(SerializableResponseBody::class);
+        $attributes = $responder->getAttributes(SerializableResponseBody::class);
         if ($attributes === []) {
             return null;
         }

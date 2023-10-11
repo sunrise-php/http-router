@@ -21,9 +21,10 @@ use Sunrise\Http\Router\Annotation\RequestHeader;
 use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
 use Sunrise\Http\Router\Exception\LogicException;
-use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
-use Sunrise\Http\Router\TypeConversion\TypeConversionerInterface;
-use UnexpectedValueException;
+use Sunrise\Hydrator\Exception\InvalidDataException;
+use Sunrise\Hydrator\Exception\InvalidValueException;
+use Sunrise\Hydrator\HydratorInterface;
+use Sunrise\Hydrator\Type;
 
 use function sprintf;
 
@@ -38,9 +39,9 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
     /**
      * Constructor of the class
      *
-     * @param TypeConversionerInterface $typeConversioner
+     * @param HydratorInterface $hydrator
      */
-    public function __construct(private TypeConversionerInterface $typeConversioner)
+    public function __construct(private HydratorInterface $hydrator)
     {
     }
 
@@ -59,13 +60,6 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
             return;
         }
 
-        if (!$parameter->hasType()) {
-            throw new LogicException(sprintf(
-                'To use the #[RequestHeader] attribute, the parameter {%s} must be typed.',
-                ParameterResolutioner::stringifyParameter($parameter),
-            ));
-        }
-
         if (! $context instanceof ServerRequestInterface) {
             throw new LogicException(
                 'At this level of the application, any operations with the request are not possible.'
@@ -81,20 +75,24 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
                 return yield;
             }
 
-            $message = sprintf('The HTTP header %s must be provided.', $header->name);
-
-            throw (new HttpBadRequestException($message))
+            throw (new HttpBadRequestException(sprintf('The header %s must be provided.', $header->name)))
                 ->setSource(ErrorSource::CLIENT_REQUEST_HEADER);
         }
 
         try {
-            yield $this->typeConversioner->castValue($context->getHeaderLine($header->name), $parameter->getType());
-        } catch (UnexpectedValueException $violation) {
-            // phpcs:ignore Generic.Files.LineLength
-            $message = sprintf('The value of the HTTP header %s is not valid. %s', $header->name, $violation->getMessage());
-
-            throw (new HttpBadRequestException($message, previous: $violation))
-                ->setSource(ErrorSource::CLIENT_REQUEST_HEADER);
+            yield $this->hydrator->castValue(
+                $context->getHeaderLine($header->name),
+                Type::fromParameter($parameter),
+                [$header->name],
+            );
+        } catch (InvalidDataException $e) {
+            throw (new HttpBadRequestException(previous: $e))
+                ->setSource(ErrorSource::CLIENT_REQUEST_HEADER)
+                ->addHydratorViolation(...$e->getExceptions());
+        } catch (InvalidValueException $e) {
+            throw (new HttpBadRequestException(previous: $e))
+                ->setSource(ErrorSource::CLIENT_REQUEST_HEADER)
+                ->addHydratorViolation($e);
         }
     }
 }
