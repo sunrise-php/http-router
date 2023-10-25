@@ -19,7 +19,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionFunction;
 use ReflectionMethod;
-use Sunrise\Http\Router\Annotation\SerializableResponseBody;
+use Sunrise\Http\Router\Annotation\ResponseBody;
 use Sunrise\Http\Router\Entity\MediaType;
 use Sunrise\Http\Router\ServerRequest;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -41,7 +41,7 @@ final class SerializableResponseBodyResolver implements ResponseResolverInterfac
      *
      * @param ResponseFactoryInterface $responseFactory
      * @param SerializerInterface $serializer
-     * @param array<non-empty-string, mixed> $context
+     * @param array<string, mixed> $context
      */
     public function __construct(
         private ResponseFactoryInterface $responseFactory,
@@ -58,8 +58,8 @@ final class SerializableResponseBodyResolver implements ResponseResolverInterfac
         mixed $response,
         ReflectionFunction|ReflectionMethod $responder,
     ) : ?ResponseInterface {
-        /** @var list<ReflectionAttribute<SerializableResponseBody>> $attributes */
-        $attributes = $responder->getAttributes(SerializableResponseBody::class);
+        /** @var list<ReflectionAttribute<ResponseBody>> $attributes */
+        $attributes = $responder->getAttributes(ResponseBody::class);
         if ($attributes === []) {
             return null;
         }

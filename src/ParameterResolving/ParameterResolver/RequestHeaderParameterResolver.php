@@ -66,24 +66,24 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
             );
         }
 
-        $header = $attributes[0]->newInstance();
+        $attribute = $attributes[0]->newInstance();
 
-        if (!$context->hasHeader($header->name)) {
+        if (!$context->hasHeader($attribute->name)) {
             if ($parameter->isDefaultValueAvailable()) {
                 return yield $parameter->getDefaultValue();
             } elseif ($parameter->allowsNull()) {
                 return yield;
             }
 
-            throw (new HttpBadRequestException(sprintf('The header %s must be provided.', $header->name)))
+            throw (new HttpBadRequestException(sprintf('The header %s must be provided.', $attribute->name)))
                 ->setSource(ErrorSource::CLIENT_REQUEST_HEADER);
         }
 
         try {
             yield $this->hydrator->castValue(
-                $context->getHeaderLine($header->name),
+                $context->getHeaderLine($attribute->name),
                 Type::fromParameter($parameter),
-                [$header->name],
+                path: [$attribute->name],
             );
         } catch (InvalidDataException $e) {
             throw (new HttpBadRequestException(previous: $e))

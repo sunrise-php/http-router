@@ -28,7 +28,7 @@ use function str_contains;
 /**
  * Internal callback reflector
  *
- * @internal
+ * @since 3.0.0
  */
 final class CallbackReflector
 {

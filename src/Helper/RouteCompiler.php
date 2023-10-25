@@ -13,31 +13,43 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Helper;
 
+use Sunrise\Http\Router\Router;
+
 use function addcslashes;
 use function str_replace;
 
 /**
  * Internal route compiler
  *
- * @internal
+ * @since 3.0.0
  */
 final class RouteCompiler
 {
+
+    /**
+     * Cached compiled regular expressions
+     *
+     * @var array<string, string>
+     */
+    private static array $regex = [];
+
+    /**
+     * Compiles a regular expression from the given route
+     *
+     * @param string $route
+     *
+     * @return string
+     */
     public static function compileRegex(string $route): string
     {
+        if (isset(self::$regex[$route])) {
+            return self::$regex[$route];
+        }
+
         $matches = RouteParser::parseRoute($route);
 
         foreach ($matches as $match) {
-            $variable = '{' . $match['name'];
-
-            if (isset($match['value'])) {
-                $variable .= '=' . $match['value'];
-            }
-            if (isset($match['pattern'])) {
-                $variable .= '<' . $match['pattern'] . '>';
-            }
-
-            $variable .= '}';
+            $variable = RouteParser::buildVariable($match);
 
             $route = str_replace($variable, '{' . $match['name'] . '}', $route);
         }
@@ -47,11 +59,16 @@ final class RouteCompiler
         $route = str_replace(['(', ')'], ['(?:', ')?'], $route);
 
         foreach ($matches as $match) {
-            $subpattern = '(?<' . $match['name'] . '>' . ($match['pattern'] ?? '[^/]+') . ')';
+            $pattern = $match['pattern'] ?? null;
+            if (isset($pattern, Router::$patterns[$pattern])) {
+                $pattern = Router::$patterns[$pattern];
+            }
+
+            $subpattern = '(?<' . $match['name'] . '>' . ($pattern ?? '[^/]+') . ')';
 
             $route = str_replace('{' . $match['name'] . '}', $subpattern, $route);
         }
 
-        return '#^' . $route . '$#uD';
+        return self::$regex[$route] = '#^' . $route . '$#uD';
     }
 }

@@ -66,25 +66,25 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
             );
         }
 
-        $cookie = $attributes[0]->newInstance();
         $cookies = $context->getCookieParams();
+        $attribute = $attributes[0]->newInstance();
 
-        if (!isset($cookies[$cookie->name])) {
+        if (!isset($cookies[$attribute->name])) {
             if ($parameter->isDefaultValueAvailable()) {
                 return yield $parameter->getDefaultValue();
             } elseif ($parameter->allowsNull()) {
                 return yield;
             }
 
-            throw (new HttpBadRequestException(sprintf('The cookie %s must be provided.', $cookie->name)))
+            throw (new HttpBadRequestException(sprintf('The cookie %s must be provided.', $attribute->name)))
                 ->setSource(ErrorSource::CLIENT_REQUEST_COOKIE);
         }
 
         try {
             yield $this->hydrator->castValue(
-                $cookies[$cookie->name],
+                $cookies[$attribute->name],
                 Type::fromParameter($parameter),
-                [$cookie->name],
+                path: [$attribute->name],
             );
         } catch (InvalidDataException $e) {
             throw (new HttpBadRequestException(previous: $e))

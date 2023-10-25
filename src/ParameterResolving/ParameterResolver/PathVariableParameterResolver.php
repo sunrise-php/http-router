@@ -78,10 +78,9 @@ final class PathVariableParameterResolver implements ParameterResolverInterface
             ));
         }
 
-        $variable = $attributes[0]->newInstance();
+        $attribute = $attributes[0]->newInstance();
 
-        $variableName = $variable->name ?? $parameter->getName();
-        /** @var mixed $variableValue */
+        $variableName = $attribute->name ?? $parameter->getName();
         $variableValue = $route->getAttribute($variableName);
 
         if ($variableValue === null) {
@@ -105,7 +104,7 @@ final class PathVariableParameterResolver implements ParameterResolverInterface
             yield $this->hydrator->castValue(
                 $variableValue,
                 Type::fromParameter($parameter),
-                [$variableName],
+                path: [$variableName],
             );
         } catch (InvalidDataException $e) {
             throw (new HttpNotFoundException(previous: $e))

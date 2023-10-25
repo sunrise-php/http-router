@@ -149,7 +149,10 @@ final class ServerRequest implements ServerRequestInterface
             throw new LogicException('The media types that the server produces must be provided.');
         }
 
-        /** @var list<MediaType> $clientConsumesMediaTypes */
+        /**
+         * @var list<MediaType> $clientConsumesMediaTypes
+         * @psalm-suppress UnnecessaryVarAnnotation
+         */
         $clientConsumesMediaTypes = [...$this->getClientConsumesMediaTypes()];
         if ($clientConsumesMediaTypes === []) {
             return current($serverProducesMediaTypes);
@@ -185,7 +188,10 @@ final class ServerRequest implements ServerRequestInterface
             throw new LogicException('The languages that the server produces must be provided.');
         }
 
-        /** @var list<Language> $clientConsumesLanguages */
+        /**
+         * @var list<Language> $clientConsumesLanguages
+         * @psalm-suppress UnnecessaryVarAnnotation
+         */
         $clientConsumesLanguages = [...$this->getClientConsumesLanguages()];
         if ($clientConsumesLanguages === []) {
             return current($serverProducesLanguages);

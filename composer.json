@@ -61,11 +61,7 @@
     "autoload": {
         "files": [
             "functions/emit.php",
-            "functions/path_build.php",
-            "functions/path_match.php",
-            "functions/path_parse.php",
-            "functions/path_plain.php",
-            "functions/path_regex.php"
+            "functions/path_build.php"
         ],
         "psr-4": {
             "Sunrise\\Http\\Router\\": "src/"
@@ -80,7 +76,7 @@
         "test": [
             "phpcs",
             "psalm --no-cache",
-            "phpstan analyse src --level=5",
+            "phpstan analyse src --level=5 --memory-limit=-1",
             "XDEBUG_MODE=coverage phpunit --coverage-text --colors=always"
         ],
         "build": [

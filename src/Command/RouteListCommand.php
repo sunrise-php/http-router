@@ -20,8 +20,6 @@ use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-use function Sunrise\Http\Router\path_plain;
-
 /**
  * This command will list all routes in your application
  *
@@ -91,7 +89,7 @@ class RouteListCommand extends Command
         foreach ($this->getRouter()->getRoutes()->all() as $route) {
             $table->addRow([
                 $route->getName(),
-                path_plain($route->getPath()),
+                $route->getPath(),
                 \join(', ', $route->getMethods()),
             ]);
         }

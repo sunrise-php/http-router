@@ -34,9 +34,11 @@ use Sunrise\Http\Router\Annotation\Produces;
 use Sunrise\Http\Router\Annotation\Route;
 use Sunrise\Http\Router\Annotation\Summary;
 use Sunrise\Http\Router\Annotation\Tag;
+use Sunrise\Http\Router\CompiledRoute;
 use Sunrise\Http\Router\Entity\MediaType;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\LogicException;
+use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutionerInterface;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolver\DependencyInjectionParameterResolver;
@@ -60,8 +62,6 @@ use function is_string;
 use function iterator_to_array;
 use function sprintf;
 use function usort;
-
-use const PHP_EOL;
 
 /**
  * DescriptorLoader
@@ -320,7 +320,7 @@ final class DescriptorLoader implements LoaderInterface
             $route->setTags(...$descriptor->tags);
             $route->setDeprecation($descriptor->isDeprecated);
 
-            $routes->add($route);
+            $routes->add(new CompiledRoute($route, $descriptor->regex));
         }
 
         return $routes;
@@ -346,6 +346,8 @@ final class DescriptorLoader implements LoaderInterface
         foreach ($this->resources as $resource) {
             $descriptors = $this->getResourceDescriptors($resource);
             foreach ($descriptors as $descriptor) {
+                $descriptor->regex = RouteCompiler::compileRegex($descriptor->path);
+
                 $result[] = $descriptor;
             }
         }
@@ -369,7 +371,7 @@ final class DescriptorLoader implements LoaderInterface
     private function getResourceDescriptors(string $resource): Generator
     {
         if (class_exists($resource)) {
-            yield from $this->getClassDescriptors(new ReflectionClass($resource));
+            return yield from $this->getClassDescriptors(new ReflectionClass($resource));
         }
 
         if (is_dir($resource)) {
@@ -480,13 +482,13 @@ final class DescriptorLoader implements LoaderInterface
         $annotations = $this->getAnnotations(Summary::class, $holder);
         foreach ($annotations as $annotation) {
             /** @psalm-suppress PossiblyNullOperand */
-            $descriptor->summary .= PHP_EOL . $annotation->value;
+            $descriptor->summary .= $annotation->value;
         }
 
         $annotations = $this->getAnnotations(Description::class, $holder);
         foreach ($annotations as $annotation) {
             /** @psalm-suppress PossiblyNullOperand */
-            $descriptor->description .= PHP_EOL . $annotation->value;
+            $descriptor->description .= $annotation->value;
         }
 
         $annotations = $this->getAnnotations(Tag::class, $holder);

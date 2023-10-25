@@ -19,7 +19,7 @@ use Attribute;
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION)]
-final class SerializableResponseBody
+final class ResponseBody
 {
 
     /**

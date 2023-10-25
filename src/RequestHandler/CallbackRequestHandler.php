@@ -93,7 +93,6 @@ final class CallbackRequestHandler implements RequestHandlerInterface
             )
             ->resolveParameters(...$responder->getParameters());
 
-        /** @var mixed $response */
         $response = ($this->callback)(...$arguments);
 
         return $this->responseResolutioner->resolveResponse($request, $response, $responder);

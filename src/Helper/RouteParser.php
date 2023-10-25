@@ -15,52 +15,37 @@ namespace Sunrise\Http\Router\Helper;
 
 use InvalidArgumentException;
 use Sunrise\Http\Router\Dictionary\Charset;
-use Sunrise\Http\Router\Router;
 
 use function sprintf;
 
 /**
  * Internal route parser
  *
- * @internal
+ * @since 3.0.0
  */
 final class RouteParser
 {
 
     /**
-     * Parses the given route
-     *
-     * ```
-     * (/{locale=en<[a-z]{2}>})/post/{id<[1-9][0-9]*>}
-     * ```
+     * Parses the given route and returns its variables
      *
      * @param string $route
      *
-     * @return list<TMatch>
-     *
-     * @throws InvalidArgumentException If the route isn't valid.
-     *
-     * @template TMatch as array{
+     * @return list<array{
      *     name: string,
      *     value?: string,
      *     pattern?: string,
-     *     isOptional?: true,
-     *     optionalLeftPart?: ?string,
-     *     optionalRightPart?: ?string
-     * }
+     *     optional?: true,
+     *     before?: ?string,
+     *     after?: ?string
+     * }>
+     *
+     * @throws InvalidArgumentException If the route isn't valid.
      */
     public static function parseRoute(string $route): array
     {
-        /**
-         * @var list<array{
-         *      name?: string,
-         *      value?: string,
-         *      pattern?: string,
-         *      isOptional?: true,
-         *      optionalLeftPart?: ?string,
-         *      optionalRightPart?: ?string
-         *  }> $matches
-         */
+        // phpcs:ignore Generic.Files.LineLength
+        /** @var list<array{name?: string, value?: string, pattern?: string, optional?: true, before?: ?string, after?: ?string}> $matches */
         $matches = [];
 
         $index = -1;
@@ -76,246 +61,289 @@ final class RouteParser
 
         $offset = -1;
         while (isset($route[++$offset])) {
-            if (!$inVariable) {
-                if ($route[$offset] === '(') {
-                    if ($inOptionalPart) {
-                        throw new InvalidArgumentException(sprintf(
-                            'An attempt to open an optional part at position %d has failed, ' .
-                            'because nested optional parts are not supported.',
-                            $offset,
-                        ));
-                    }
-
-                    $inOptionalPart = true;
-                    continue;
+            if ($route[$offset] === '(' && !$inVariable) {
+                if ($inOptionalPart) {
+                    throw new InvalidArgumentException(sprintf(
+                        'The route %s could not be parsed due to a syntax error. ' .
+                        'An attempt to open an optional part at position %d has failed, ' .
+                        'because nested optional parts are not supported.' .
+                        $route,
+                        $offset,
+                    ));
                 }
-                if ($route[$offset] === ')') {
-                    if (!$inOptionalPart) {
-                        throw new InvalidArgumentException(sprintf(
-                            'An attempt to close an optional part at position %d has failed, ' .
-                            'because an open optional part was not found.',
-                            $offset,
-                        ));
-                    }
 
-                    if ($optionalPartIsOccupied) {
-                        $matches[$index]['isOptional'] = true;
-                        $matches[$index]['optionalLeftPart'] = $optionalPartBeforeVariable;
-                        $matches[$index]['optionalRightPart'] = $optionalPartAfterVariable;
-                    }
-
-                    $inOptionalPart = false;
-                    $optionalPartIsOccupied = false;
-                    $optionalPartBeforeVariable = null;
-                    $optionalPartAfterVariable = null;
-                    continue;
-                }
+                $inOptionalPart = true;
+                continue;
             }
-
-            if (!$inVariablePattern) {
-                if ($route[$offset] === '{') {
-                    if ($inVariable) {
-                        throw new InvalidArgumentException(sprintf(
-                            'An attempt to open a variable at position %d has failed, ' .
-                            'because nested variables are not supported.',
-                            $offset,
-                        ));
-                    }
-                    if ($inOptionalPart && $optionalPartIsOccupied) {
-                        throw new InvalidArgumentException(sprintf(
-                            'An attempt to open a variable at position %d has failed, ' .
-                            'because more than one variable inside an optional part is not allowed',
-                            $offset,
-                        ));
-                    }
-
-                    $index++;
-                    $inVariable = true;
-                    $inVariableName = true;
-                    if ($inOptionalPart) {
-                        $optionalPartIsOccupied = true;
-                    }
-                    continue;
+            if ($route[$offset] === ')' && !$inVariable) {
+                if (!$inOptionalPart) {
+                    throw new InvalidArgumentException(sprintf(
+                        'The route %s could not be parsed due to a syntax error. ' .
+                        'An attempt to close an optional part at position %d has failed, ' .
+                        'because an open optional part was not found.',
+                        $route,
+                        $offset,
+                    ));
                 }
-                if ($route[$offset] === '}') {
-                    if (!$inVariable) {
-                        throw new InvalidArgumentException(sprintf(
-                            'An attempt to close a variable at position %d has failed, ' .
-                            'because an open variable was not found.',
-                            $offset,
-                        ));
-                    }
-                    if (!isset($matches[$index]['name'])) {
-                        throw new InvalidArgumentException(sprintf(
-                            'An attempt to close a variable at position %d has failed, ' .
-                            'because its name is required for its declaration.',
-                            $offset,
-                        ));
-                    }
-
-                    $inVariable = false;
-                    $inVariableName = false;
-                    $inVariableValue = false;
-                    continue;
+                if ($optionalPartIsOccupied) {
+                    $matches[$index]['optional'] = true;
+                    $matches[$index]['before'] = $optionalPartBeforeVariable;
+                    $matches[$index]['after'] = $optionalPartAfterVariable;
                 }
+
+                $inOptionalPart = false;
+                $optionalPartIsOccupied = false;
+                $optionalPartBeforeVariable = null;
+                $optionalPartAfterVariable = null;
+                continue;
             }
-
-            if ($inVariable) {
-                if (!$inVariablePattern) {
-                    if ($route[$offset] === '=') {
-                        if (!$inVariableName) {
-                            throw new InvalidArgumentException(sprintf(
-                                'An attempt to assign a value at position %d has failed, ' .
-                                'because a variable value must be preceded by its name.',
-                                $offset,
-                            ));
-                        }
-
-                        $matches[$index]['value'] = '';
-
-                        $inVariableName = false;
-                        $inVariableValue = true;
-                        continue;
-                    }
+            if ($route[$offset] === '{' && !$inVariablePattern) {
+                if ($inVariable) {
+                    throw new InvalidArgumentException(sprintf(
+                        'The route %s could not be parsed due to a syntax error. ' .
+                        'An attempt to open a variable at position %d has failed, ' .
+                        'because nested variables are not supported.',
+                        $route,
+                        $offset,
+                    ));
                 }
-                if ($route[$offset] === '<') {
-                    if ($inVariablePattern) {
-                        throw new InvalidArgumentException(sprintf(
-                            'An attempt to open a pattern at position %d has failed, ' .
-                            'because nested patterns are not supported.',
-                            $offset,
-                        ));
-                    }
-                    if (isset($matches[$index]['pattern'])) {
-                        throw new InvalidArgumentException(sprintf(
-                            'An attempt to open a pattern at position %d has failed, ' .
-                            'because more than one pattern inside a variable is not allowed.',
-                            $offset,
-                        ));
-                    }
-
-                    $inVariableName = false;
-                    $inVariableValue = false;
-                    $inVariablePattern = true;
-                    continue;
+                if ($inOptionalPart && $optionalPartIsOccupied) {
+                    throw new InvalidArgumentException(sprintf(
+                        'The route %s could not be parsed due to a syntax error. ' .
+                        'An attempt to open a variable at position %d has failed, ' .
+                        'because more than one variable inside an optional part is not allowed.',
+                        $route,
+                        $offset,
+                    ));
                 }
-                if ($route[$offset] === '>') {
-                    if (!$inVariablePattern) {
-                        throw new InvalidArgumentException(sprintf(
-                            'An attempt to close a pattern at position %d has failed, ' .
-                            'because an open pattern was not found.',
-                            $offset,
-                        ));
-                    }
-                    if (!isset($matches[$index]['pattern'])) {
-                        throw new InvalidArgumentException(sprintf(
-                            'An attempt to close a pattern at position %d has failed, ' .
-                            'because its content is required for its declaration.',
-                            $offset,
-                        ));
-                    }
-
-                    if ($matches[$index]['pattern'][0] === '@') {
-                        if (!isset(Router::$patterns[$matches[$index]['pattern']])) {
-                            throw new InvalidArgumentException(sprintf(
-                                'An attempt to close a pattern at position %2$d has failed, ' .
-                                'because the named pattern "%1$s" was not found.',
-                                $matches[$index]['pattern'],
-                                $offset,
-                            ));
-                        }
-
-                        $matches[$index]['pattern'] = Router::$patterns[$matches[$index]['pattern']];
-                    }
-
-                    $inVariablePattern = false;
-                    continue;
+                if ($inOptionalPart) {
+                    $optionalPartIsOccupied = true;
                 }
+
+                $index++;
+                $inVariable = true;
+                $inVariableName = true;
+                continue;
             }
-
-            if ($inVariable) {
-                if ($inVariableName) {
-                    if (isset($matches[$index]['name'][31])) {
-                        throw new InvalidArgumentException(sprintf(
-                            'An extra character was found at position %d. ' .
-                            'Please note that variable names must not exceed 32 characters.',
-                            $offset,
-                        ));
-                    }
-                    if (!isset(Charset::PCRE_SUBPATTERN_NAME[$route[$offset]])) {
-                        throw new InvalidArgumentException(sprintf(
-                            'An invalid character was found at position %d. ' .
-                            'Please note that variable names must consist only of digits, letters and underscores.',
-                            $offset,
-                        ));
-                    }
-                    /** @psalm-suppress InvalidArrayOffset */
-                    if (!isset($matches[$index]['name']) && isset(Charset::DIGIT[$route[$offset]])) {
-                        throw new InvalidArgumentException(sprintf(
-                            'An invalid character was found at position %d. ' .
-                            'Please note that variable names cannot start with digits.',
-                            $offset,
-                        ));
-                    }
-
-                    $matches[$index]['name'] ??= '';
-                    $matches[$index]['name'] .= $route[$offset];
-                    continue;
+            if ($route[$offset] === '}' && !$inVariablePattern) {
+                if (!$inVariable) {
+                    throw new InvalidArgumentException(sprintf(
+                        'The route %s could not be parsed due to a syntax error. ' .
+                        'An attempt to close a variable at position %d has failed, ' .
+                        'because an open variable was not found.',
+                        $route,
+                        $offset,
+                    ));
                 }
-                if ($inVariableValue) {
-                    $matches[$index]['value'] ??= '';
-                    $matches[$index]['value'] .= $route[$offset];
-                    continue;
+                if (!isset($matches[$index]['name'])) {
+                    throw new InvalidArgumentException(sprintf(
+                        'The route %s could not be parsed due to a syntax error. ' .
+                        'An attempt to close a variable at position %d has failed, ' .
+                        'because its name is required for its declaration.',
+                        $route,
+                        $offset,
+                    ));
                 }
+
+                $inVariable = false;
+                $inVariableName = false;
+                $inVariableValue = false;
+                continue;
+            }
+            if ($route[$offset] === '<' && $inVariable) {
                 if ($inVariablePattern) {
-                    if ($route[$offset] === '#') {
-                        throw new InvalidArgumentException(sprintf(
-                            'An unallowed character was found at position %d. ' .
-                            'Please note that variable patterns cannot contain the hash character; ' .
-                            'use an octal or hexadecimal sequence instead.',
-                            $offset,
-                        ));
-                    }
-
-                    $matches[$index]['pattern'] ??= '';
-                    $matches[$index]['pattern'] .= $route[$offset];
-                    continue;
+                    throw new InvalidArgumentException(sprintf(
+                        'The route %s could not be parsed due to a syntax error. ' .
+                        'An attempt to open a pattern at position %d has failed, ' .
+                        'because nested patterns are not supported.',
+                        $route,
+                        $offset,
+                    ));
+                }
+                if (!$inVariableName && !$inVariableValue) {
+                    throw new InvalidArgumentException(sprintf(
+                        'The route %s could not be parsed due to a syntax error. ' .
+                        'An attempt to open a pattern at position %d has failed, ' .
+                        'because a variable pattern must be preceded by its name or value.',
+                        $route,
+                        $offset,
+                    ));
                 }
 
+                $inVariableName = false;
+                $inVariableValue = false;
+                $inVariablePattern = true;
+                continue;
+            }
+            if ($route[$offset] === '>' && $inVariable) {
+                if (!$inVariablePattern) {
+                    throw new InvalidArgumentException(sprintf(
+                        'The route %s could not be parsed due to a syntax error. ' .
+                        'An attempt to close a pattern at position %d has failed, ' .
+                        'because an open pattern was not found.',
+                        $route,
+                        $offset,
+                    ));
+                }
+                if (!isset($matches[$index]['pattern'])) {
+                    throw new InvalidArgumentException(sprintf(
+                        'The route %s could not be parsed due to a syntax error. ' .
+                        'An attempt to close a pattern at position %d has failed, ' .
+                        'because its content is required for its declaration.',
+                        $route,
+                        $offset,
+                    ));
+                }
+
+                $inVariablePattern = false;
+                continue;
+            }
+            if ($route[$offset] === '=' && $inVariable && !$inVariablePattern) {
+                if (!$inVariableName) {
+                    throw new InvalidArgumentException(sprintf(
+                        'The route %s could not be parsed due to a syntax error. ' .
+                        'An attempt to assign a value at position %d has failed, ' .
+                        'because a variable value must be preceded by its name.',
+                        $route,
+                        $offset,
+                    ));
+                }
+
+                $matches[$index]['value'] = '';
+
+                $inVariableName = false;
+                $inVariableValue = true;
+                continue;
+            }
+
+            if ($inVariableName) {
+                /** @psalm-suppress InvalidArrayOffset */
+                if (!isset($matches[$index]['name']) && isset(Charset::DIGIT[$route[$offset]])) {
+                    throw new InvalidArgumentException(sprintf(
+                        'The route %s could not be parsed due to a syntax error. ' .
+                        'An unallowed character was found at position %d. ' .
+                        'Please note that variable names cannot start with digits.',
+                        $route,
+                        $offset,
+                    ));
+                }
+                if (!isset(Charset::PCRE_SUBPATTERN_NAME[$route[$offset]])) {
+                    throw new InvalidArgumentException(sprintf(
+                        'The route %s could not be parsed due to a syntax error. ' .
+                        'An unallowed character was found at position %d. ' .
+                        'Please note that variable names must consist only of digits, letters and underscores.',
+                        $route,
+                        $offset,
+                    ));
+                }
+                if (isset($matches[$index]['name'][31])) {
+                    throw new InvalidArgumentException(sprintf(
+                        'The route %s could not be parsed due to a syntax error. ' .
+                        'An extra character was found at position %d. ' .
+                        'Please note that variable names must not exceed 32 characters.',
+                        $route,
+                        $offset,
+                    ));
+                }
+
+                $matches[$index]['name'] ??= '';
+                $matches[$index]['name'] .= $route[$offset];
+                continue;
+            }
+
+            if ($inVariableValue) {
+                $matches[$index]['value'] ??= '';
+                $matches[$index]['value'] .= $route[$offset];
+                continue;
+            }
+
+            if ($inVariablePattern) {
+                // the char is reserved as a route regex delimiter...
+                if ($route[$offset] === '#') {
+                    throw new InvalidArgumentException(sprintf(
+                        'The route %s could not be parsed due to a syntax error. ' .
+                        'An unallowed character was found at position %d. ' .
+                        'Please note that variable patterns cannot contain the hash character; ' .
+                        'use an octal or hexadecimal sequence instead.',
+                        $route,
+                        $offset,
+                    ));
+                }
+
+                $matches[$index]['pattern'] ??= '';
+                $matches[$index]['pattern'] .= $route[$offset];
+                continue;
+            }
+
+            if ($inVariable) {
                 throw new InvalidArgumentException(sprintf(
+                    'The route %s could not be parsed due to a syntax error. ' .
                     'An unexpected character was found at position %d; ' .
                     'a variable at this position must be closed.',
+                    $route,
                     $offset,
                 ));
             }
 
             if ($inOptionalPart) {
-                if ($optionalPartIsOccupied) {
-                    $optionalPartAfterVariable ??= '';
-                    $optionalPartAfterVariable .= $route[$offset];
-                } else {
+                if (!$optionalPartIsOccupied) {
                     $optionalPartBeforeVariable ??= '';
                     $optionalPartBeforeVariable .= $route[$offset];
+                } else {
+                    $optionalPartAfterVariable ??= '';
+                    $optionalPartAfterVariable .= $route[$offset];
                 }
-
-                continue;
             }
         }
 
-        if ($inOptionalPart) {
-            throw new InvalidArgumentException(
+        if ($inVariable || $inOptionalPart) {
+            throw new InvalidArgumentException(sprintf(
+                'The route %s could not be parsed due to a syntax error. ' .
                 'An attempt to parse the route has failed, ' .
-                'because it contains an unclosed optional part.'
-            );
-        }
-        if ($inVariable) {
-            throw new InvalidArgumentException(
-                'An attempt to parse the route has failed, ' .
-                'because it contains an unclosed variable.'
-            );
+                'because it contains an unclosed optional part or variable.',
+                $route,
+            ));
         }
 
-        /** @var list<TMatch> */
+        // phpcs:ignore Generic.Files.LineLength
+        /** @var list<array{name: string, value?: string, pattern?: string, optional?: true, before?: ?string, after?: ?string}> $matches */
+
         return $matches;
+    }
+
+    /**
+     * Builds a variable from its given metadata
+     *
+     * @param array{
+     *     name: string,
+     *     value?: string,
+     *     pattern?: string,
+     *     optional?: true,
+     *     before?: ?string,
+     *     after?: ?string
+     * } $metadata
+     *
+     * @param bool $withOptionalPart
+     *
+     * @return string
+     */
+    public static function buildVariable(array $metadata, bool $withOptionalPart = false): string
+    {
+        $variable = '{' . $metadata['name'];
+
+        if (isset($metadata['value'])) {
+            $variable .= '=' . $metadata['value'];
+        }
+        if (isset($metadata['pattern'])) {
+            $variable .= '<' . $metadata['pattern'] . '>';
+        }
+
+        $variable .= '}';
+
+        if (isset($metadata['optional']) && $withOptionalPart) {
+            $variable = '(' . ($metadata['before'] ?? '') . $variable . ($metadata['after'] ?? '') . ')';
+        }
+
+        return $variable;
     }
 }

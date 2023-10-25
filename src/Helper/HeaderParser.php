@@ -25,7 +25,7 @@ use function sprintf;
 /**
  * Internal header parser
  *
- * @internal
+ * @since 3.0.0
  */
 final class HeaderParser
 {
@@ -53,16 +53,16 @@ final class HeaderParser
                 ));
             }
 
-            if ($range[0] === '*' && $range[1] !== '*') {
+            if (!$allowRange && ($range[0] === '*' || $range[1] === '*')) {
                 throw new InvalidArgumentException(sprintf(
-                    'The media type with index %d has an incorrect range.',
+                    'The media type with index %d cannot be a range.',
                     $index,
                 ));
             }
 
-            if (!$allowRange && ($range[0] === '*' || $range[1] === '*')) {
+            if ($range[0] === '*' && $range[1] !== '*') {
                 throw new InvalidArgumentException(sprintf(
-                    'The media type with index %d cannot be a range.',
+                    'The media type with index %d has an incorrect range.',
                     $index,
                 ));
             }
@@ -147,8 +147,7 @@ final class HeaderParser
                 if ($header[$offset] === ',') {
                     if (!isset($match[0])) {
                         throw new InvalidArgumentException(sprintf(
-                            'The character "%s" at position %d must be preceded by a non-empty keyword.',
-                            $header[$offset],
+                            'The character (,) at position %d must be preceded by a keyword.',
                             $offset,
                         ));
                     }
@@ -164,8 +163,7 @@ final class HeaderParser
                 if ($header[$offset] === ';') {
                     if (!isset($match[0]) || !isset($match[1][$parameterIndex]) && $parameterIndex > -1) {
                         throw new InvalidArgumentException(sprintf(
-                            'The character "%s" at position %d must be preceded by a non-empty keyword or parameter.',
-                            $header[$offset],
+                            'The character (;) at position %d must be preceded by a keyword or parameter.',
                             $offset,
                         ));
                     }
@@ -176,11 +174,10 @@ final class HeaderParser
                     $inParameterValue = false;
                     continue;
                 }
-                if ($header[$offset] === '=') {
-                    if (!isset($match[1][$parameterIndex]) || $inParameterValue || isset($match[2][$parameterIndex])) {
+                if ($header[$offset] === '=' && $inParameterName) {
+                    if (!isset($match[1][$parameterIndex])) {
                         throw new InvalidArgumentException(sprintf(
-                            'The character "%s" at position %d must be preceded by a non-empty parameter name.',
-                            $header[$offset],
+                            'The character (=) at position %d must be preceded by a parameter‘s name.',
                             $offset,
                         ));
                     }
@@ -189,34 +186,27 @@ final class HeaderParser
                     $inParameterValue = true;
                     continue;
                 }
-                if ($header[$offset] === '"') {
-                    if (!$inParameterValue || isset($match[2][$parameterIndex])) {
+                if ($header[$offset] === '"' && $inParameterValue) {
+                    if (isset($match[2][$parameterIndex])) {
                         throw new InvalidArgumentException(sprintf(
-                            'The character "%s" at position %d must be the first in a parameter value.',
-                            $header[$offset],
+                            'The character (") at position %d must be the first in a parameter‘s value.',
                             $offset,
                         ));
                     }
 
                     $inQuotedString = true;
+                    $match[2][$parameterIndex] = '';
                     continue;
                 }
-
                 if (isset(Charset::RFC7230_OWS[$header[$offset]])) {
                     if ($inKeyword && isset($match[0])) {
                         $inKeyword = false;
-                        continue;
-                    }
-                    if ($inParameterName && isset($match[1][$parameterIndex])) {
+                    } elseif ($inParameterName && isset($match[1][$parameterIndex])) {
                         $inParameterName = false;
-                        continue;
-                    }
-                    if ($inParameterValue && isset($match[2][$parameterIndex])) {
+                    } elseif ($inParameterValue && isset($match[2][$parameterIndex])) {
                         $inParameterValue = false;
-                        continue;
                     }
 
-                    // any whitespaces must be ignored...
                     continue;
                 }
             }
@@ -251,7 +241,8 @@ final class HeaderParser
             }
 
             throw new InvalidArgumentException(sprintf(
-                'Unexpected character at position %d.',
+                'The character "%s" cannot be at position %d.',
+                $header[$offset],
                 $offset,
             ));
         }

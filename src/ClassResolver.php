@@ -72,7 +72,7 @@ final class ClassResolver implements ClassResolverInterface
 
         $class = new ReflectionClass($fqn);
         if (!$class->isInstantiable()) {
-            throw new LogicException(sprintf('The class %s cannot be initialized because it is not instantiable.', $fqn));
+            throw new LogicException(sprintf('The class %s is not instantiable.', $fqn));
         }
 
         $arguments = [];

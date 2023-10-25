@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router;
 
 use Generator;
-use IteratorIterator;
 use Psr\Http\Server\MiddlewareInterface;
 use Sunrise\Http\Router\Entity\MediaType;
 use Traversable;
@@ -217,6 +216,6 @@ class RouteCollection implements RouteCollectionInterface
      */
     public function getIterator(): Traversable
     {
-        return new IteratorIterator($this->all());
+        yield from $this->all();
     }
 }

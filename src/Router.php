@@ -26,18 +26,22 @@ use Sunrise\Http\Router\Exception\Http\HttpNotFoundException;
 use Sunrise\Http\Router\Exception\Http\HttpUnsupportedMediaTypeException;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\LogicException;
+use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutionerInterface;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolver\ParameterResolverInterface;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
-
 use Sunrise\Http\Router\ResponseResolving\ResponseResolutioner;
 use Sunrise\Http\Router\ResponseResolving\ResponseResolutionerInterface;
 use Sunrise\Http\Router\ResponseResolving\ResponseResolver\ResponseResolverInterface;
+
 use function array_keys;
+use function preg_match;
 use function sprintf;
+
+use const PREG_UNMATCHED_AS_NULL;
 
 /**
  * Router
@@ -346,9 +350,12 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
         $allowedMethods = [];
 
         foreach ($this->routes->all() as $route) {
+            // phpcs:ignore Generic.Files.LineLength
+            $routeRegex = ($route instanceof CompiledRoute) ? $route->getRegex() : RouteCompiler::compileRegex($route->getPath());
+
             // https://github.com/sunrise-php/http-router/issues/50
             // https://tools.ietf.org/html/rfc7231#section-6.5.5
-            if (!path_match($route->getPath(), $requestPath, $attributes)) {
+            if (!preg_match($routeRegex, $requestPath, $matches, PREG_UNMATCHED_AS_NULL)) {
                 continue;
             }
 
@@ -369,6 +376,12 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
             }
 
             /** @var array<string, string> $attributes */
+            $attributes = [];
+            foreach ($matches as $key => $value) {
+                if ((string) $key === $key && isset($value)) {
+                    $attributes[$key] = $value;
+                }
+            }
 
             return $route->withAddedAttributes($attributes);
         }

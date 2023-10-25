@@ -25,17 +25,22 @@ final class Route implements RequestMethodInterface
      * The annotation's holder
      *
      * @var mixed
-     *
-     * @internal
      */
-    public mixed $holder = null;
+    public mixed $holder;
+
+    /**
+     * The route's compiled regex
+     *
+     * @var string
+     *
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
+    public string $regex;
 
     /**
      * The route's consumes media types
      *
      * @var list<MediaType>
-     *
-     * @internal
      */
     public array $consumes = [];
 
@@ -43,8 +48,6 @@ final class Route implements RequestMethodInterface
      * The route's produces media types
      *
      * @var list<MediaType>
-     *
-     * @internal
      */
     public array $produces = [];
 

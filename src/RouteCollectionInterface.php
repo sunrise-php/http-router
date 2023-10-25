@@ -13,14 +13,16 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
+use Countable;
 use Generator;
+use IteratorAggregate;
 use Psr\Http\Server\MiddlewareInterface;
 use Sunrise\Http\Router\Entity\MediaType;
-use Countable;
-use IteratorAggregate;
 
 /**
  * RouteCollectionInterface
+ *
+ * @extends IteratorAggregate<int, RouteInterface>
  */
 interface RouteCollectionInterface extends Countable, IteratorAggregate
 {
