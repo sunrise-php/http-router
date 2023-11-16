@@ -30,7 +30,6 @@ use function is_array;
 use function is_callable;
 use function is_string;
 use function is_subclass_of;
-use function method_exists;
 use function sprintf;
 
 /**
@@ -82,11 +81,7 @@ final class ReferenceResolver implements ReferenceResolverInterface
         }
 
         if ($reference instanceof Closure) {
-            return new CallbackRequestHandler(
-                $reference,
-                $this->parameterResolutioner,
-                $this->responseResolutioner,
-            );
+            return new CallbackRequestHandler($reference, $this->parameterResolutioner, $this->responseResolutioner);
         }
 
         // https://github.com/php/php-src/blob/3ed526441400060aa4e618b91b3352371fcd02a8/Zend/zend_API.c#L3884-L3932
@@ -98,27 +93,13 @@ final class ReferenceResolver implements ReferenceResolverInterface
             }
 
             if (is_callable($reference)) {
-                return new CallbackRequestHandler(
-                    $reference,
-                    $this->parameterResolutioner,
-                    $this->responseResolutioner,
-                );
+                // phpcs:ignore Generic.Files.LineLength
+                return new CallbackRequestHandler($reference, $this->parameterResolutioner, $this->responseResolutioner);
             }
         }
 
-        if (is_string($reference) && class_exists($reference)) {
-            if (is_subclass_of($reference, RequestHandlerInterface::class)) {
-                /** @var RequestHandlerInterface */
-                return $this->resolveClass($reference);
-            }
-
-            if (method_exists($reference, '__invoke')) {
-                return new CallbackRequestHandler(
-                    $this->resolveClass($reference),
-                    $this->parameterResolutioner,
-                    $this->responseResolutioner,
-                );
-            }
+        if (is_string($reference) && is_subclass_of($reference, RequestHandlerInterface::class)) {
+            return $this->resolveClass($reference);
         }
 
         throw new LogicException(sprintf(
@@ -139,26 +120,11 @@ final class ReferenceResolver implements ReferenceResolverInterface
         }
 
         if ($reference instanceof Closure) {
-            return new CallbackMiddleware(
-                $reference,
-                $this->parameterResolutioner,
-                $this->responseResolutioner,
-            );
+            return new CallbackMiddleware($reference, $this->parameterResolutioner, $this->responseResolutioner);
         }
 
-        if (is_string($reference) && class_exists($reference)) {
-            if (is_subclass_of($reference, MiddlewareInterface::class)) {
-                /** @var MiddlewareInterface */
-                return $this->resolveClass($reference);
-            }
-
-            if (method_exists($reference, '__invoke')) {
-                return new CallbackMiddleware(
-                    $this->resolveClass($reference),
-                    $this->parameterResolutioner,
-                    $this->responseResolutioner,
-                );
-            }
+        if (is_string($reference) && is_subclass_of($reference, MiddlewareInterface::class)) {
+            return $this->resolveClass($reference);
         }
 
         // https://github.com/php/php-src/blob/3ed526441400060aa4e618b91b3352371fcd02a8/Zend/zend_API.c#L3884-L3932
@@ -170,11 +136,7 @@ final class ReferenceResolver implements ReferenceResolverInterface
             }
 
             if (is_callable($reference)) {
-                return new CallbackMiddleware(
-                    $reference,
-                    $this->parameterResolutioner,
-                    $this->responseResolutioner,
-                );
+                return new CallbackMiddleware($reference, $this->parameterResolutioner, $this->responseResolutioner);
             }
         }
 
