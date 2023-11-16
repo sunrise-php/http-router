@@ -66,29 +66,6 @@ interface RouteCollectionInterface extends Countable, IteratorAggregate
     public function add(RouteInterface ...$routes): static;
 
     /**
-     * Sets the given attribute to all routes in the collection
-     *
-     * @param string $name
-     * @param mixed $value
-     *
-     * @return static
-     *
-     * @since 3.0.0
-     */
-    public function setAttribute(string $name, mixed $value): static;
-
-    /**
-     * Sets the given deprecation sign to all routes in the collection
-     *
-     * @param bool $isDeprecated
-     *
-     * @return static
-     *
-     * @since 3.0.0
-     */
-    public function setDeprecation(bool $isDeprecated): static;
-
-    /**
      * Adds the given path prefix to all routes in the collection
      *
      * @param string $prefix
@@ -175,4 +152,27 @@ interface RouteCollectionInterface extends Countable, IteratorAggregate
      * @since 3.0.0
      */
     public function addTag(string ...$tags): static;
+
+    /**
+     * Sets the given attribute to all routes in the collection
+     *
+     * @param string $name
+     * @param mixed $value
+     *
+     * @return static
+     *
+     * @since 3.0.0
+     */
+    public function setAttribute(string $name, mixed $value): static;
+
+    /**
+     * Sets the given deprecation sign to all routes in the collection
+     *
+     * @param bool $isDeprecated
+     *
+     * @return static
+     *
+     * @since 3.0.0
+     */
+    public function setDeprecation(bool $isDeprecated): static;
 }
