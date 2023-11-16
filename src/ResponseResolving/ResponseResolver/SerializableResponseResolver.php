@@ -19,7 +19,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionFunction;
 use ReflectionMethod;
-use Sunrise\Http\Router\Annotation\ResponseBody;
+use Sunrise\Http\Router\Annotation\SerializableResponse;
 use Sunrise\Http\Router\Entity\MediaType;
 use Sunrise\Http\Router\ServerRequest;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -27,13 +27,13 @@ use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
- * SerializableResponseBodyResolver
+ * SerializableResponseResolver
  *
  * @link https://github.com/symfony/serializer
  *
  * @since 3.0.0
  */
-final class SerializableResponseBodyResolver implements ResponseResolverInterface
+final class SerializableResponseResolver implements ResponseResolverInterface
 {
 
     /**
@@ -58,8 +58,8 @@ final class SerializableResponseBodyResolver implements ResponseResolverInterfac
         mixed $response,
         ReflectionFunction|ReflectionMethod $responder,
     ) : ?ResponseInterface {
-        /** @var list<ReflectionAttribute<ResponseBody>> $attributes */
-        $attributes = $responder->getAttributes(ResponseBody::class);
+        /** @var list<ReflectionAttribute<SerializableResponse>> $attributes */
+        $attributes = $responder->getAttributes(SerializableResponse::class);
         if ($attributes === []) {
             return null;
         }
@@ -67,20 +67,22 @@ final class SerializableResponseBodyResolver implements ResponseResolverInterfac
         $attribute = $attributes[0]->newInstance();
 
         $serverProducesMediaTypes = [MediaType::json(), MediaType::xml()];
-
         $clientPreferredMediaType = ServerRequest::from($request)
-            ->getClientPreferredMediaType(...$serverProducesMediaTypes);
+            ->getClientPreferredMediaType(...$serverProducesMediaTypes)
+                ?? $serverProducesMediaTypes[0];
 
         $format = match ($clientPreferredMediaType) {
             $serverProducesMediaTypes[0] => JsonEncoder::FORMAT,
-            $serverProducesMediaTypes[1] => XmlEncoder::FORMAT,
+            default => XmlEncoder::FORMAT,
         };
 
-        $context = $attribute->context + $this->context;
+        $result = $this->responseFactory->createResponse(200);
 
-        $contentType = $clientPreferredMediaType->build(['charset' => 'UTF-8']);
-        $result = $this->responseFactory->createResponse(200)->withHeader('Content-Type', $contentType);
-        $result->getBody()->write($this->serializer->serialize($response, $format, $context));
+        $mimeType = $clientPreferredMediaType . '; charset=UTF-8';
+        $result = $result->withHeader('Content-Type', $mimeType);
+
+        $payload = $this->serializer->serialize($response, $format, $attribute->context + $this->context);
+        $result->getBody()->write($payload);
 
         return $result;
     }

@@ -18,6 +18,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionFunction;
 use ReflectionMethod;
+use Sunrise\Http\Router\Annotation\EmptyResponse;
 
 /**
  * EmptyResponseResolver
@@ -44,10 +45,10 @@ final class EmptyResponseResolver implements ResponseResolverInterface
         mixed $response,
         ReflectionFunction|ReflectionMethod $responder,
     ) : ?ResponseInterface {
-        if ($response === null) {
-            return $this->responseFactory->createResponse(204);
+        if ($responder->getAttributes(EmptyResponse::class) === []) {
+            return null;
         }
 
-        return null;
+        return $this->responseFactory->createResponse(204);
     }
 }

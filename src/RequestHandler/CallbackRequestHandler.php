@@ -74,7 +74,7 @@ final class CallbackRequestHandler implements RequestHandlerInterface
      *
      * @return ReflectionFunction|ReflectionMethod
      */
-    public function getReflection(): ReflectionFunction|ReflectionMethod
+    public function getCallbackReflection(): ReflectionFunction|ReflectionMethod
     {
         return CallbackReflector::reflectCallback($this->callback);
     }
@@ -84,7 +84,7 @@ final class CallbackRequestHandler implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $responder = $this->getReflection();
+        $responder = $this->getCallbackReflection();
 
         $arguments = $this->parameterResolutioner
             ->withContext($request)

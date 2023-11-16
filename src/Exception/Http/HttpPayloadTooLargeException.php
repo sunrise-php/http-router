@@ -36,11 +36,10 @@ class HttpPayloadTooLargeException extends HttpException
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
-        $message ??= 'The request couldn‘t be processed due to the payload size exceeding limits.';
+        $message ??= 'The request could not be processed due to the payload size exceeding limits.';
 
         parent::__construct(self::STATUS_PAYLOAD_TOO_LARGE, $message, $code, $previous);
 
         $this->setSource(ErrorSource::CLIENT_REQUEST_BODY);
-        $this->setReasonPhrase('Payload Too Large');
     }
 }

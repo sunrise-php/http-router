@@ -37,7 +37,8 @@ final class RouteParser
      *     pattern?: string,
      *     optional?: true,
      *     before?: ?string,
-     *     after?: ?string
+     *     after?: ?string,
+     *     variable: string
      * }>
      *
      * @throws InvalidArgumentException If the route isn't valid.
@@ -61,6 +62,7 @@ final class RouteParser
 
         $offset = -1;
         while (isset($route[++$offset])) {
+            // control chars...
             if ($route[$offset] === '(' && !$inVariable) {
                 if ($inOptionalPart) {
                     throw new InvalidArgumentException(sprintf(
@@ -85,6 +87,7 @@ final class RouteParser
                         $offset,
                     ));
                 }
+
                 if ($optionalPartIsOccupied) {
                     $matches[$index]['optional'] = true;
                     $matches[$index]['before'] = $optionalPartBeforeVariable;
@@ -116,6 +119,7 @@ final class RouteParser
                         $offset,
                     ));
                 }
+
                 if ($inOptionalPart) {
                     $optionalPartIsOccupied = true;
                 }
@@ -140,6 +144,15 @@ final class RouteParser
                         'The route %s could not be parsed due to a syntax error. ' .
                         'An attempt to close a variable at position %d has failed, ' .
                         'because its name is required for its declaration.',
+                        $route,
+                        $offset,
+                    ));
+                }
+                if (isset($matches[$index]['value']) && $matches[$index]['value'] === '') {
+                    throw new InvalidArgumentException(sprintf(
+                        'The route %s could not be parsed due to a syntax error. ' .
+                        'An attempt to close a variable at position %d has failed, ' .
+                        'because its value cannot be empty.',
                         $route,
                         $offset,
                     ));
@@ -221,7 +234,7 @@ final class RouteParser
                 if (!isset($matches[$index]['name']) && isset(Charset::DIGIT[$route[$offset]])) {
                     throw new InvalidArgumentException(sprintf(
                         'The route %s could not be parsed due to a syntax error. ' .
-                        'An unallowed character was found at position %d. ' .
+                        'An invalid character was found at position %d. ' .
                         'Please note that variable names cannot start with digits.',
                         $route,
                         $offset,
@@ -230,7 +243,7 @@ final class RouteParser
                 if (!isset(Charset::PCRE_SUBPATTERN_NAME[$route[$offset]])) {
                     throw new InvalidArgumentException(sprintf(
                         'The route %s could not be parsed due to a syntax error. ' .
-                        'An unallowed character was found at position %d. ' .
+                        'An invalid character was found at position %d. ' .
                         'Please note that variable names must consist only of digits, letters and underscores.',
                         $route,
                         $offset,
@@ -250,19 +263,17 @@ final class RouteParser
                 $matches[$index]['name'] .= $route[$offset];
                 continue;
             }
-
             if ($inVariableValue) {
                 $matches[$index]['value'] ??= '';
                 $matches[$index]['value'] .= $route[$offset];
                 continue;
             }
-
             if ($inVariablePattern) {
                 // the char is reserved as a route regex delimiter...
                 if ($route[$offset] === '#') {
                     throw new InvalidArgumentException(sprintf(
                         'The route %s could not be parsed due to a syntax error. ' .
-                        'An unallowed character was found at position %d. ' .
+                        'An invalid character was found at position %d. ' .
                         'Please note that variable patterns cannot contain the hash character; ' .
                         'use an octal or hexadecimal sequence instead.',
                         $route,
@@ -275,6 +286,8 @@ final class RouteParser
                 continue;
             }
 
+            // {foo<\w+>xxx}
+            // ~~~~~~~~~^^^~
             if ($inVariable) {
                 throw new InvalidArgumentException(sprintf(
                     'The route %s could not be parsed due to a syntax error. ' .
@@ -308,42 +321,22 @@ final class RouteParser
         // phpcs:ignore Generic.Files.LineLength
         /** @var list<array{name: string, value?: string, pattern?: string, optional?: true, before?: ?string, after?: ?string}> $matches */
 
+        foreach ($matches as $index => $match) {
+            $matches[$index]['variable'] = '{' . $match['name'];
+
+            if (isset($match['value'])) {
+                $matches[$index]['variable'] .= '=' . $match['value'];
+            }
+            if (isset($match['pattern'])) {
+                $matches[$index]['variable'] .= '<' . $match['pattern'] . '>';
+            }
+
+            $matches[$index]['variable'] .= '}';
+        }
+
+        // phpcs:ignore Generic.Files.LineLength
+        /** @var list<array{name: string, value?: string, pattern?: string, optional?: true, before?: ?string, after?: ?string, variable: string}> $matches */
+
         return $matches;
-    }
-
-    /**
-     * Builds a variable from its given metadata
-     *
-     * @param array{
-     *     name: string,
-     *     value?: string,
-     *     pattern?: string,
-     *     optional?: true,
-     *     before?: ?string,
-     *     after?: ?string
-     * } $metadata
-     *
-     * @param bool $withOptionalPart
-     *
-     * @return string
-     */
-    public static function buildVariable(array $metadata, bool $withOptionalPart = false): string
-    {
-        $variable = '{' . $metadata['name'];
-
-        if (isset($metadata['value'])) {
-            $variable .= '=' . $metadata['value'];
-        }
-        if (isset($metadata['pattern'])) {
-            $variable .= '<' . $metadata['pattern'] . '>';
-        }
-
-        $variable .= '}';
-
-        if (isset($metadata['optional']) && $withOptionalPart) {
-            $variable = '(' . ($metadata['before'] ?? '') . $variable . ($metadata['after'] ?? '') . ')';
-        }
-
-        return $variable;
     }
 }

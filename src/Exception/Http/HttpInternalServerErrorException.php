@@ -41,7 +41,6 @@ class HttpInternalServerErrorException extends HttpException
         parent::__construct(self::STATUS_INTERNAL_SERVER_ERROR, $message, $code, $error);
 
         $this->setSource(ErrorSource::SERVER);
-        $this->setReasonPhrase('Internal Server Error');
     }
 
     /**

@@ -35,10 +35,8 @@ class HttpTooManyRequestsException extends HttpException
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
-        $message ??= 'The request couldn‘t be processed due to exceeding rate-limiting thresholds.';
+        $message ??= 'The request could not be processed due to exceeding rate-limiting thresholds.';
 
         parent::__construct(self::STATUS_TOO_MANY_REQUESTS, $message, $code, $previous);
-
-        $this->setReasonPhrase('Too Many Requests');
     }
 }

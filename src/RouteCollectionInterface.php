@@ -144,17 +144,6 @@ interface RouteCollectionInterface extends Countable, IteratorAggregate
     public function addProducesMediaType(MediaType ...$mediaTypes): static;
 
     /**
-     * Adds the given middleware(s) to all routes in the collection
-     *
-     * @param MiddlewareInterface ...$middlewares
-     *
-     * @return static
-     *
-     * @since 2.9.0
-     */
-    public function addMiddleware(MiddlewareInterface ...$middlewares): static;
-
-    /**
      * Adds the given priority middleware(s) to all routes in the collection
      *
      * @param MiddlewareInterface ...$middlewares
@@ -164,6 +153,17 @@ interface RouteCollectionInterface extends Countable, IteratorAggregate
      * @since 3.0.0
      */
     public function addPriorityMiddleware(MiddlewareInterface ...$middlewares): static;
+
+    /**
+     * Adds the given middleware(s) to all routes in the collection
+     *
+     * @param MiddlewareInterface ...$middlewares
+     *
+     * @return static
+     *
+     * @since 2.9.0
+     */
+    public function addMiddleware(MiddlewareInterface ...$middlewares): static;
 
     /**
      * Adds the given tag(s) to all routes in the collection

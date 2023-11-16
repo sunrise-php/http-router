@@ -35,10 +35,8 @@ class HttpLockedException extends HttpException
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
-        $message ??= 'The request couldn‘t be processed due to the resource‘s temporary lock and inaccessibility.';
+        $message ??= 'The request could not be processed due to the resource‘s temporary lock and inaccessibility.';
 
         parent::__construct(self::STATUS_LOCKED, $message, $code, $previous);
-
-        $this->setReasonPhrase('Locked');
     }
 }

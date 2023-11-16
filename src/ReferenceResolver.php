@@ -17,6 +17,7 @@ use Closure;
 use Generator;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use ReflectionClass;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\Middleware\CallbackMiddleware;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutionerInterface;
@@ -51,27 +52,22 @@ final class ReferenceResolver implements ReferenceResolverInterface
     private ResponseResolutionerInterface $responseResolutioner;
 
     /**
-     * @var ClassResolverInterface
+     * @var array<class-string, object>
      */
-    private ClassResolverInterface $classResolver;
+    private array $resolvedClasses = [];
 
     /**
      * Constructor of the class
      *
      * @param ParameterResolutionerInterface $parameterResolutioner
      * @param ResponseResolutionerInterface $responseResolutioner
-     * @param ClassResolverInterface|null $classResolver
      */
     public function __construct(
         ParameterResolutionerInterface $parameterResolutioner,
         ResponseResolutionerInterface $responseResolutioner,
-        ?ClassResolverInterface $classResolver = null
     ) {
-        $classResolver ??= new ClassResolver($parameterResolutioner);
-
         $this->parameterResolutioner = $parameterResolutioner;
         $this->responseResolutioner = $responseResolutioner;
-        $this->classResolver = $classResolver;
     }
 
     /**
@@ -98,7 +94,7 @@ final class ReferenceResolver implements ReferenceResolverInterface
             /** @var array{0: class-string|object, 1: non-empty-string} $reference */
 
             if (is_string($reference[0])) {
-                $reference[0] = $this->classResolver->resolveClass($reference[0]);
+                $reference[0] = $this->resolveClass($reference[0]);
             }
 
             if (is_callable($reference)) {
@@ -113,12 +109,12 @@ final class ReferenceResolver implements ReferenceResolverInterface
         if (is_string($reference) && class_exists($reference)) {
             if (is_subclass_of($reference, RequestHandlerInterface::class)) {
                 /** @var RequestHandlerInterface */
-                return $this->classResolver->resolveClass($reference);
+                return $this->resolveClass($reference);
             }
 
             if (method_exists($reference, '__invoke')) {
                 return new CallbackRequestHandler(
-                    $this->classResolver->resolveClass($reference),
+                    $this->resolveClass($reference),
                     $this->parameterResolutioner,
                     $this->responseResolutioner,
                 );
@@ -126,7 +122,7 @@ final class ReferenceResolver implements ReferenceResolverInterface
         }
 
         throw new LogicException(sprintf(
-            'The reference {%s} cannot be resolved because its format is not supported.',
+            'The reference {%s} cannot be resolved.',
             self::stringifyReference($reference),
         ));
     }
@@ -153,12 +149,12 @@ final class ReferenceResolver implements ReferenceResolverInterface
         if (is_string($reference) && class_exists($reference)) {
             if (is_subclass_of($reference, MiddlewareInterface::class)) {
                 /** @var MiddlewareInterface */
-                return $this->classResolver->resolveClass($reference);
+                return $this->resolveClass($reference);
             }
 
             if (method_exists($reference, '__invoke')) {
                 return new CallbackMiddleware(
-                    $this->classResolver->resolveClass($reference),
+                    $this->resolveClass($reference),
                     $this->parameterResolutioner,
                     $this->responseResolutioner,
                 );
@@ -170,7 +166,7 @@ final class ReferenceResolver implements ReferenceResolverInterface
             /** @var array{0: class-string|object, 1: non-empty-string} $reference */
 
             if (is_string($reference[0])) {
-                $reference[0] = $this->classResolver->resolveClass($reference[0]);
+                $reference[0] = $this->resolveClass($reference[0]);
             }
 
             if (is_callable($reference)) {
@@ -183,7 +179,7 @@ final class ReferenceResolver implements ReferenceResolverInterface
         }
 
         throw new LogicException(sprintf(
-            'The reference {%s} cannot be resolved because its format is not supported.',
+            'The reference {%s} cannot be resolved.',
             self::stringifyReference($reference),
         ));
     }
@@ -199,6 +195,43 @@ final class ReferenceResolver implements ReferenceResolverInterface
         foreach ($references as $reference) {
             yield $this->resolveMiddleware($reference);
         }
+    }
+
+    /**
+     * Resolves the given named class
+     *
+     * @param class-string<T> $fqn
+     *
+     * @return T
+     *
+     * @template T of object
+     *
+     * @throws LogicException If the class couldn't be resolved.
+     */
+    private function resolveClass(string $fqn): object
+    {
+        if (isset($this->resolvedClasses[$fqn])) {
+            /** @var T */
+            return $this->resolvedClasses[$fqn];
+        }
+
+        if (!class_exists($fqn)) {
+            throw new LogicException(sprintf('The class {%s} does not exist.', $fqn));
+        }
+
+        $class = new ReflectionClass($fqn);
+        if (!$class->isInstantiable()) {
+            throw new LogicException(sprintf('The class {%s} is not instantiable.', $fqn));
+        }
+
+        $arguments = [];
+        $constructor = $class->getConstructor();
+        if ($constructor?->getNumberOfParameters()) {
+            $arguments = $this->parameterResolutioner->resolveParameters(...$constructor->getParameters());
+        }
+
+        /** @var T */
+        return $this->resolvedClasses[$fqn] = $class->newInstance(...$arguments);
     }
 
     /**

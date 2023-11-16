@@ -38,7 +38,5 @@ class HttpGoneException extends HttpException
         $message ??= 'The resource is no longer available.';
 
         parent::__construct(self::STATUS_GONE, $message, $code, $previous);
-
-        $this->setReasonPhrase('Gone');
     }
 }

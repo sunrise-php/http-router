@@ -26,8 +26,6 @@ use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
 use Sunrise\Hydrator\Type;
 
-use function sprintf;
-
 /**
  * RequestHeaderParameterResolver
  *
@@ -75,7 +73,7 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
                 return yield;
             }
 
-            throw (new HttpBadRequestException(sprintf('The header %s must be provided.', $attribute->name)))
+            throw (new HttpBadRequestException("The header {$attribute->name} must be provided."))
                 ->setSource(ErrorSource::CLIENT_REQUEST_HEADER);
         }
 

@@ -21,11 +21,10 @@ use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\ResponseHeader;
 use Sunrise\Http\Router\Annotation\ResponseStatus;
-use Sunrise\Http\Router\Event\ResponseResolvedEvent;
+use Sunrise\Http\Router\Event\ResponseResolvedEventAbstract;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ResponseResolving\ResponseResolver\ResponseResolverInterface;
 
-use function get_debug_type;
 use function sprintf;
 
 /**
@@ -82,9 +81,8 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
         }
 
         throw new LogicException(sprintf(
-            'The response {%s->%s} cannot be resolved because it is not supported.',
+            'The responder {%s} returned an unsupported response.',
             self::stringifySource($responder),
-            get_debug_type($response),
         ));
     }
 
@@ -106,7 +104,7 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
         $attributes = $responder->getAttributes(ResponseStatus::class);
         if (isset($attributes[0])) {
             $status = $attributes[0]->newInstance();
-            $response = $response->withStatus($status->code);
+            $response = $response->withStatus($status->code, $status->phrase);
         }
 
         /** @var list<ReflectionAttribute<ResponseHeader>> $attributes */
@@ -117,7 +115,7 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
         }
 
         if (isset($this->eventDispatcher)) {
-            $event = new ResponseResolvedEvent($request, $response, $responder);
+            $event = new ResponseResolvedEventAbstract($request, $response, $responder);
             $this->eventDispatcher->dispatch($event);
             $response = $event->getResponse();
         }
@@ -135,9 +133,9 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
     public static function stringifySource(ReflectionFunction|ReflectionMethod $source): string
     {
         if ($source instanceof ReflectionMethod) {
-            return sprintf('%s::%s()', $source->getDeclaringClass()->getName(), $source->getName());
+            return sprintf('%s::%s(...)', $source->getDeclaringClass()->getName(), $source->getName());
         }
 
-        return sprintf('%s()', $source->getName());
+        return sprintf('%s(...)', $source->getName());
     }
 }

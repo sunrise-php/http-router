@@ -29,29 +29,6 @@ final class Route implements RequestMethodInterface
     public mixed $holder;
 
     /**
-     * The route's compiled regex
-     *
-     * @var string
-     *
-     * @psalm-suppress PropertyNotSetInConstructor
-     */
-    public string $regex;
-
-    /**
-     * The route's consumes media types
-     *
-     * @var list<MediaType>
-     */
-    public array $consumes = [];
-
-    /**
-     * The route's produces media types
-     *
-     * @var list<MediaType>
-     */
-    public array $produces = [];
-
-    /**
      * Constructor of the class
      *
      * @param  non-empty-string                $name          The route's name
@@ -60,6 +37,8 @@ final class Route implements RequestMethodInterface
      * @param  list<non-empty-string>          $methods       The route's methods
      * @param  list<mixed>                     $middlewares   The route's middlewares
      * @param  array<non-empty-string, mixed>  $attributes    The route's attributes
+     * @param  list<MediaType>                 $consumes      The route's consumes media types
+     * @param  list<MediaType>                 $produces      The route's produces media types
      * @param  non-empty-string|null           $summary       The route's summary
      * @param  non-empty-string|null           $description   The route's description
      * @param  list<non-empty-string>          $tags          The route's tags
@@ -73,6 +52,8 @@ final class Route implements RequestMethodInterface
         public array $methods = [],
         public array $middlewares = [],
         public array $attributes = [],
+        public array $consumes = [],
+        public array $produces = [],
         public ?string $summary = null,
         public ?string $description = null,
         public array $tags = [],

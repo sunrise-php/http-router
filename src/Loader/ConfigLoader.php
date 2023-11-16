@@ -13,12 +13,10 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Loader;
 
-use Psr\Container\ContainerInterface;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutionerInterface;
-use Sunrise\Http\Router\ParameterResolving\ParameterResolver\DependencyInjectionParameterResolver;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolver\ParameterResolverInterface;
 use Sunrise\Http\Router\ReferenceResolver;
 use Sunrise\Http\Router\ReferenceResolverInterface;
@@ -105,24 +103,6 @@ final class ConfigLoader implements LoaderInterface
     }
 
     /**
-     * Sets the given container to the loader
-     *
-     * @param ContainerInterface $container
-     *
-     * @return void
-     *
-     * @throws LogicException
-     *         If a custom reference resolver has been set,
-     *         but a parameter resolutioner has not been set.
-     *
-     * @since 2.9.0
-     */
-    public function setContainer(ContainerInterface $container): void
-    {
-        $this->addParameterResolver(new DependencyInjectionParameterResolver($container));
-    }
-
-    /**
      * Adds the given parameter resolver(s) to the parameter resolutioner
      *
      * @param ParameterResolverInterface ...$resolvers
@@ -193,6 +173,7 @@ final class ConfigLoader implements LoaderInterface
         }
 
         if (is_dir($resource)) {
+            /** @var list<string> $filenames */
             $filenames = glob($resource . '/*.php');
             foreach ($filenames as $filename) {
                 $this->resources[] = $filename;

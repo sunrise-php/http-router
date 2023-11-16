@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Dto;
 
+use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 
 /**
@@ -24,17 +25,13 @@ final class ErrorDto
     /**
      * Constructor of the class
      *
-     * @param int<100, 599> $statusCode
-     * @param string $reasonPhrase
+     * @param string $source See the {@see ErrorSource} dictionary.
      * @param string $message
-     * @param string $source
      * @param list<ViolationDto> $violations
      */
     public function __construct(
-        public int $statusCode,
-        public string $reasonPhrase,
-        public string $message,
         public string $source,
+        public string $message,
         public array $violations,
     ) {
     }
@@ -49,10 +46,8 @@ final class ErrorDto
     public static function fromHttpError(HttpExceptionInterface $error): self
     {
         return new self(
-            $error->getStatusCode(),
-            $error->getReasonPhrase(),
-            $error->getMessage(),
             $error->getSource(),
+            $error->getMessage(),
             $error->getViolations(),
         );
     }

@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\EventListener;
 
 use Sunrise\Http\Router\Entity\MediaType;
-use Sunrise\Http\Router\Event\ErrorOccurredEvent;
+use Sunrise\Http\Router\Event\ErrorOccurredEventAbstract;
 use Sunrise\Http\Router\Exception\Http\HttpInternalServerErrorException;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ServerRequest;
@@ -26,7 +26,7 @@ use Whoops\Run as Whoops;
 use function class_exists;
 
 /**
- * Renders fatal errors using the Whoops package
+ * Renders fatal errors using the whoops package
  *
  * @link https://github.com/filp/whoops
  *
@@ -53,11 +53,11 @@ final class ErrorOccurredEventListenerDisplayingFatalError
     /**
      * Handles the given event
      *
-     * @param ErrorOccurredEvent $event
+     * @param ErrorOccurredEventAbstract $event
      *
-     * @return ErrorOccurredEvent
+     * @return ErrorOccurredEventAbstract
      */
-    public function __invoke(ErrorOccurredEvent $event): ErrorOccurredEvent
+    public function __invoke(ErrorOccurredEventAbstract $event): ErrorOccurredEventAbstract
     {
         $error = $event->getError();
         if (! $error instanceof HttpInternalServerErrorException) {
@@ -69,9 +69,9 @@ final class ErrorOccurredEventListenerDisplayingFatalError
         $whoops->writeToOutput(false);
 
         $serverProducesMediaTypes = [MediaType::html(), MediaType::json(), MediaType::xml()];
-
         $clientPreferredMediaType = ServerRequest::from($event->getRequest())
-            ->getClientPreferredMediaType(...$serverProducesMediaTypes);
+            ->getClientPreferredMediaType(...$serverProducesMediaTypes)
+                ?? $serverProducesMediaTypes[0];
 
         if ($clientPreferredMediaType === $serverProducesMediaTypes[0]) {
             $whoops->pushHandler(new PrettyPageHandler());
@@ -81,11 +81,12 @@ final class ErrorOccurredEventListenerDisplayingFatalError
             $whoops->pushHandler(new XmlResponseHandler());
         }
 
-        $contentType = $clientPreferredMediaType->build(['charset' => 'UTF-8']);
-        $response = $event->getResponse()->withHeader('Content-Type', $contentType);
+        $mimeType = $clientPreferredMediaType . '; charset=UTF-8';
+        $response = $event->getResponse()->withHeader('Content-Type', $mimeType);
         $response->getBody()->write($whoops->handleException($error->getError()));
 
         $event->setResponse($response);
+        $event->stopPropagation();
 
         return $event;
     }

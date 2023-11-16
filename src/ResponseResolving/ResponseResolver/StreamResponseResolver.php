@@ -45,11 +45,11 @@ final class StreamResponseResolver implements ResponseResolverInterface
         mixed $response,
         ReflectionFunction|ReflectionMethod $responder,
     ) : ?ResponseInterface {
-        if ($response instanceof StreamInterface) {
-            return $this->responseFactory->createResponse(200)
-                ->withBody($response);
+        if (! $response instanceof StreamInterface) {
+            return null;
         }
 
-        return null;
+        return $this->responseFactory->createResponse(200)
+            ->withBody($response);
     }
 }

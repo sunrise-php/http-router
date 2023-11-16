@@ -20,6 +20,8 @@ namespace Sunrise\Http\Router\Dictionary;
  */
 final class Charset
 {
+    public const WILDCARD = '*';
+
     public const DIGIT = [
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
     ];

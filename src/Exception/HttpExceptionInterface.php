@@ -25,20 +25,6 @@ interface HttpExceptionInterface extends ExceptionInterface, StatusCodeInterface
 {
 
     /**
-     * Gets the error's source
-     *
-     * @return string
-     */
-    public function getSource(): string;
-
-    /**
-     * Gets the error's reason phrase
-     *
-     * @return string
-     */
-    public function getReasonPhrase(): string;
-
-    /**
      * Gets HTTP status code that will be sent to the client
      *
      * @return int<100, 599>
@@ -51,6 +37,13 @@ interface HttpExceptionInterface extends ExceptionInterface, StatusCodeInterface
      * @return list<array{0: string, 1: string}>
      */
     public function getHeaders(): array;
+
+    /**
+     * Gets the error's source
+     *
+     * @return string
+     */
+    public function getSource(): string;
 
     /**
      * Gets the list of violations associated with the error

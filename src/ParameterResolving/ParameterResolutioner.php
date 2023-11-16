@@ -114,7 +114,7 @@ final class ParameterResolutioner implements ParameterResolutionerInterface
         }
 
         throw new LogicException(sprintf(
-            'The parameter {%s} cannot be resolved because its declaration is not supported.',
+            'The parameter {%s} cannot be resolved.',
             self::stringifyParameter($parameter)
         ));
     }

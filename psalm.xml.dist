@@ -15,5 +15,6 @@
 
     <issueHandlers>
         <MixedAssignment errorLevel="suppress" />
+        <UnnecessaryVarAnnotation errorLevel="suppress" />
     </issueHandlers>
 </psalm>

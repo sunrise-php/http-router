@@ -26,8 +26,6 @@ use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
 use Sunrise\Hydrator\Type;
 
-use function sprintf;
-
 /**
  * RequestCookieParameterResolver
  *
@@ -76,7 +74,7 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
                 return yield;
             }
 
-            throw (new HttpBadRequestException(sprintf('The cookie %s must be provided.', $attribute->name)))
+            throw (new HttpBadRequestException("The cookie {$attribute->name} must be provided."))
                 ->setSource(ErrorSource::CLIENT_REQUEST_COOKIE);
         }
 

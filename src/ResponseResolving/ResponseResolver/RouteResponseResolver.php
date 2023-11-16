@@ -35,10 +35,10 @@ final class RouteResponseResolver implements ResponseResolverInterface
         mixed $response,
         ReflectionFunction|ReflectionMethod $responder,
     ) : ?ResponseInterface {
-        if ($response instanceof RouteInterface) {
-            return $response->handle($request);
+        if (! $response instanceof RouteInterface) {
+            return null;
         }
 
-        return null;
+        return $response->handle($request);
     }
 }

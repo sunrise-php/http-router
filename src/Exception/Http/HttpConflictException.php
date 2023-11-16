@@ -35,10 +35,8 @@ class HttpConflictException extends HttpException
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
-        $message ??= 'The request couldn‘t be processed due to conflicts with the resource‘s current state.';
+        $message ??= 'The request could not be processed due to conflicts with the resource‘s current state.';
 
         parent::__construct(self::STATUS_CONFLICT, $message, $code, $previous);
-
-        $this->setReasonPhrase('Conflict');
     }
 }

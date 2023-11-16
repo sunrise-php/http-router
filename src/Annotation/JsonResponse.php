@@ -11,24 +11,24 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router;
+namespace Sunrise\Http\Router\Annotation;
+
+use Attribute;
 
 /**
- * ClassResolverInterface
- *
  * @since 3.0.0
- *
- * @template T of object
  */
-interface ClassResolverInterface
+#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION)]
+final class JsonResponse
 {
 
     /**
-     * Resolves the given named class
+     * Constructor of the class
      *
-     * @param class-string<T> $fqn
-     *
-     * @return T
+     * @param int $flags
+     * @param int $depth
      */
-    public function resolveClass(string $fqn): object;
+    public function __construct(public int $flags = 0, public int $depth = 512)
+    {
+    }
 }

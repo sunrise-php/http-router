@@ -39,12 +39,13 @@ class HttpMethodNotAllowedException extends HttpException
     // phpcs:ignore Generic.Files.LineLength
     public function __construct(private array $allowedMethods, ?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
-        $message ??= 'The request couldn‘t be processed using the requested HTTP method.';
+        $message ??= 'The request could not be processed using the requested HTTP method.';
 
         parent::__construct(self::STATUS_METHOD_NOT_ALLOWED, $message, $code, $previous);
 
         $this->setSource(ErrorSource::CLIENT_REQUEST_METHOD);
-        $this->setReasonPhrase('Method Not Allowed');
+
+        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Allow
         $this->addHeader('Allow', ...$allowedMethods);
     }
 

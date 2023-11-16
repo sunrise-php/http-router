@@ -15,14 +15,16 @@ namespace Sunrise\Http\Router\EventListener;
 
 use Sunrise\Http\Router\Dto\ErrorDto;
 use Sunrise\Http\Router\Entity\MediaType;
-use Sunrise\Http\Router\Event\ErrorOccurredEvent;
+use Sunrise\Http\Router\Event\ErrorOccurredEventAbstract;
 use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 use Sunrise\Http\Router\ServerRequest;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 
+use function in_array;
+
 /**
- * Renders errors using the Twig package
+ * Renders errors using the twig package
  *
  * @link https://github.com/twigphp/Twig
  *
@@ -43,11 +45,11 @@ final class ErrorOccurredEventListenerRenderingHtmlError
     /**
      * Handles the given event
      *
-     * @param ErrorOccurredEvent $event
+     * @param ErrorOccurredEventAbstract $event
      *
-     * @return ErrorOccurredEvent
+     * @return ErrorOccurredEventAbstract
      */
-    public function __invoke(ErrorOccurredEvent $event): ErrorOccurredEvent
+    public function __invoke(ErrorOccurredEventAbstract $event): ErrorOccurredEventAbstract
     {
         $error = $event->getError();
         if (! $error instanceof HttpExceptionInterface) {
@@ -61,18 +63,24 @@ final class ErrorOccurredEventListenerRenderingHtmlError
 
         $loader = $this->twig->getLoader();
         if ($loader instanceof FilesystemLoader) {
-            $loader->addPath(__DIR__ . '/../../resources/templates');
+            $dirname = __DIR__ . '/../../resources/templates';
+            if (!in_array($dirname, $loader->getPaths())) {
+                $loader->addPath($dirname);
+            }
         }
 
         $response = $event->getResponse()->withHeader('Content-Type', 'text/html; charset=UTF-8');
 
         $response->getBody()->write(
-            $this->twig->render('error.html', [
+            $this->twig->render('error.twig.html', [
+                'statusCode' => $response->getStatusCode(),
+                'reasonPhrase' => $response->getReasonPhrase(),
                 'error' => ErrorDto::fromHttpError($error),
             ])
         );
 
         $event->setResponse($response);
+        $event->stopPropagation();
 
         return $event;
     }

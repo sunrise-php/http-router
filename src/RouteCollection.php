@@ -170,10 +170,10 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * @inheritDoc
      */
-    public function addMiddleware(MiddlewareInterface ...$middlewares): static
+    public function addPriorityMiddleware(MiddlewareInterface ...$middlewares): static
     {
         foreach ($this->routes as $route) {
-            $route->addMiddleware(...$middlewares);
+            $route->setMiddlewares(...$middlewares, ...$route->getMiddlewares());
         }
 
         return $this;
@@ -182,10 +182,10 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * @inheritDoc
      */
-    public function addPriorityMiddleware(MiddlewareInterface ...$middlewares): static
+    public function addMiddleware(MiddlewareInterface ...$middlewares): static
     {
         foreach ($this->routes as $route) {
-            $route->setMiddlewares(...$middlewares, ...$route->getMiddlewares());
+            $route->addMiddleware(...$middlewares);
         }
 
         return $this;

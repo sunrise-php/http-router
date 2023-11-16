@@ -36,11 +36,10 @@ class HttpUnauthorizedException extends HttpException
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
-        $message ??= 'The request couldn‘t processed due to insufficient or invalid authentication credentials.';
+        $message ??= 'The request could not processed due to insufficient or invalid authentication credentials.';
 
         parent::__construct(self::STATUS_UNAUTHORIZED, $message, $code, $previous);
 
         $this->setSource(ErrorSource::CLIENT_CREDENTIALS);
-        $this->setReasonPhrase('Unauthorized');
     }
 }

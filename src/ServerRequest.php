@@ -24,7 +24,6 @@ use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\Helper\HeaderParser;
 
-use function current;
 use function sprintf;
 use function usort;
 
@@ -139,23 +138,18 @@ final class ServerRequest implements ServerRequestInterface
      *
      * @param MediaType ...$serverProducesMediaTypes
      *
-     * @return MediaType
-     *
-     * @throws LogicException If the list of produces media types is empty.
+     * @return MediaType|null
      */
-    public function getClientPreferredMediaType(MediaType ...$serverProducesMediaTypes): MediaType
+    public function getClientPreferredMediaType(MediaType ...$serverProducesMediaTypes): ?MediaType
     {
         if ($serverProducesMediaTypes === []) {
-            throw new LogicException('The media types that the server produces must be provided.');
+            return null;
         }
 
-        /**
-         * @var list<MediaType> $clientConsumesMediaTypes
-         * @psalm-suppress UnnecessaryVarAnnotation
-         */
+        /** @var list<MediaType> $clientConsumesMediaTypes */
         $clientConsumesMediaTypes = [...$this->getClientConsumesMediaTypes()];
         if ($clientConsumesMediaTypes === []) {
-            return current($serverProducesMediaTypes);
+            return null;
         }
 
         usort($clientConsumesMediaTypes, static fn(MediaType $a, MediaType $b): int => (
@@ -170,7 +164,7 @@ final class ServerRequest implements ServerRequestInterface
             }
         }
 
-        return current($serverProducesMediaTypes);
+        return null;
     }
 
     /**
@@ -178,23 +172,18 @@ final class ServerRequest implements ServerRequestInterface
      *
      * @param Language ...$serverProducesLanguages
      *
-     * @return Language
-     *
-     * @throws LogicException If the list of produces languages is empty.
+     * @return Language|null
      */
-    public function getClientPreferredLanguage(Language ...$serverProducesLanguages): Language
+    public function getClientPreferredLanguage(Language ...$serverProducesLanguages): ?Language
     {
         if ($serverProducesLanguages === []) {
-            throw new LogicException('The languages that the server produces must be provided.');
+            return null;
         }
 
-        /**
-         * @var list<Language> $clientConsumesLanguages
-         * @psalm-suppress UnnecessaryVarAnnotation
-         */
+        /** @var list<Language> $clientConsumesLanguages */
         $clientConsumesLanguages = [...$this->getClientConsumesLanguages()];
         if ($clientConsumesLanguages === []) {
-            return current($serverProducesLanguages);
+            return null;
         }
 
         usort($clientConsumesLanguages, static fn(Language $a, Language $b): int => (
@@ -209,7 +198,7 @@ final class ServerRequest implements ServerRequestInterface
             }
         }
 
-        return current($serverProducesLanguages);
+        return null;
     }
 
     /**
@@ -218,13 +207,11 @@ final class ServerRequest implements ServerRequestInterface
      * @param MediaType ...$serverConsumesMediaTypes
      *
      * @return bool
-     *
-     * @throws LogicException If the media types that the server consumes were not provided.
      */
     public function clientProducesMediaType(MediaType ...$serverConsumesMediaTypes): bool
     {
         if ($serverConsumesMediaTypes === []) {
-            throw new LogicException('The media types that the server consumes must be provided.');
+            return false;
         }
 
         $clientProducedMediaType = $this->getClientProducedMediaType();
@@ -233,7 +220,7 @@ final class ServerRequest implements ServerRequestInterface
         }
 
         foreach ($serverConsumesMediaTypes as $serverConsumesMediaType) {
-            if ($clientProducedMediaType->equals($serverConsumesMediaType)) {
+            if ($serverConsumesMediaType->equals($clientProducedMediaType)) {
                 return true;
             }
         }

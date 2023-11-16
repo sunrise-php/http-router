@@ -19,14 +19,16 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Psr\SimpleCache\CacheInterface;
 use Sunrise\Http\Router\Dictionary\ErrorSource;
-use Sunrise\Http\Router\Event\RouteMatchedEvent;
+use Sunrise\Http\Router\Event\RouteMatchedEventAbstract;
 use Sunrise\Http\Router\Exception\Http\HttpMethodNotAllowedException;
 use Sunrise\Http\Router\Exception\Http\HttpNotFoundException;
 use Sunrise\Http\Router\Exception\Http\HttpUnsupportedMediaTypeException;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\Helper\RouteCompiler;
+use Sunrise\Http\Router\Helper\RouteParser;
 use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutionerInterface;
@@ -60,9 +62,9 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     ];
 
     /**
-     * @var EventDispatcherInterface|null
+     * @var RouteCollectionInterface
      */
-    private ?EventDispatcherInterface $eventDispatcher = null;
+    private RouteCollectionInterface $routes;
 
     /**
      * @var ReferenceResolverInterface
@@ -80,9 +82,9 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     private ?ResponseResolutionerInterface $responseResolutioner;
 
     /**
-     * @var RouteCollectionInterface
+     * @var CacheInterface|null
      */
-    private RouteCollectionInterface $routes;
+    private ?CacheInterface $cache;
 
     /**
      * @var list<MiddlewareInterface>
@@ -95,12 +97,18 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     private array $routeAwareMiddlewares;
 
     /**
+     * @var EventDispatcherInterface|null
+     */
+    private ?EventDispatcherInterface $eventDispatcher = null;
+
+    /**
      * Constructor of the class
      *
      * @param RouteCollectionFactoryInterface|null $collectionFactory
      * @param ReferenceResolverInterface|null $referenceResolver
      * @param ParameterResolutionerInterface|null $parameterResolutioner
      * @param ResponseResolutionerInterface|null $responseResolutioner
+     * @param CacheInterface|null $cache
      *
      * @since 3.0.0
      */
@@ -109,8 +117,11 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
         ?ReferenceResolverInterface $referenceResolver = null,
         ?ParameterResolutionerInterface $parameterResolutioner = null,
         ?ResponseResolutionerInterface $responseResolutioner = null,
+        ?CacheInterface $cache = null,
     ) {
         $collectionFactory ??= new RouteCollectionFactory();
+
+        $this->routes = $collectionFactory->createCollection();
 
         $this->parameterResolutioner = $parameterResolutioner;
         $this->responseResolutioner = $responseResolutioner;
@@ -120,7 +131,7 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
             $this->responseResolutioner ??= new ResponseResolutioner(),
         );
 
-        $this->routes = $collectionFactory->createCollection();
+        $this->cache = $cache;
     }
 
     /**
@@ -186,6 +197,22 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     {
         foreach ($loaders as $loader) {
             $this->routes->add(...$loader->load()->all());
+        }
+    }
+
+    public function warmCache(): void
+    {
+        $data = [];
+        foreach ($this->routes as $route) {
+            $regex = RouteCompiler::compileRegex($route->getPath());
+            $variables = RouteParser::parseRoute($route->getPath());
+
+            $attributes = [];
+            foreach ($variables as $variable) {
+                $attributes[$variable['name']] ??= $variable['value'] ?? null;
+            }
+
+            $data[$route->getName()] = [$regex, $attributes];
         }
     }
 
@@ -413,7 +440,7 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
                 $route = $this->match($request);
 
                 if (isset($this->eventDispatcher)) {
-                    $event = new RouteMatchedEvent($route, $request);
+                    $event = new RouteMatchedEventAbstract($route, $request);
                     $this->eventDispatcher->dispatch($event);
                     $request = $event->getRequest();
                 }
@@ -443,7 +470,7 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
         $route = $this->match($request);
 
         if (isset($this->eventDispatcher)) {
-            $event = new RouteMatchedEvent($route, $request);
+            $event = new RouteMatchedEventAbstract($route, $request);
             $this->eventDispatcher->dispatch($event);
             $request = $event->getRequest();
         }

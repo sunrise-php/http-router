@@ -45,11 +45,11 @@ final class UriResponseResolver implements ResponseResolverInterface
         mixed $response,
         ReflectionFunction|ReflectionMethod $responder,
     ) : ?ResponseInterface {
-        if ($response instanceof UriInterface) {
-            return $this->responseFactory->createResponse(302)
-                ->withHeader('Location', $response->__toString());
+        if (! $response instanceof UriInterface) {
+            return null;
         }
 
-        return null;
+        return $this->responseFactory->createResponse(302)
+            ->withHeader('Location', $response->__toString());
     }
 }

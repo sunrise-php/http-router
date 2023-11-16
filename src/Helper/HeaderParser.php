@@ -42,7 +42,7 @@ final class HeaderParser
      */
     public static function parseAcceptHeader(string $header, bool $allowRange = true): Generator
     {
-        $matches = self::parseAcceptLikeHeader($header);
+        $matches = self::parseHeaderWithAcceptSemantic($header);
         foreach ($matches as $index => [$keyword, $parameterNames, $parameterValues]) {
             $range = explode('/', $keyword, 3);
 
@@ -53,14 +53,14 @@ final class HeaderParser
                 ));
             }
 
-            if (!$allowRange && ($range[0] === '*' || $range[1] === '*')) {
+            if (!$allowRange && ($range[0] === Charset::WILDCARD || $range[1] === Charset::WILDCARD)) {
                 throw new InvalidArgumentException(sprintf(
                     'The media type with index %d cannot be a range.',
                     $index,
                 ));
             }
 
-            if ($range[0] === '*' && $range[1] !== '*') {
+            if ($range[0] === Charset::WILDCARD && $range[1] !== Charset::WILDCARD) {
                 throw new InvalidArgumentException(sprintf(
                     'The media type with index %d has an incorrect range.',
                     $index,
@@ -87,7 +87,7 @@ final class HeaderParser
      */
     public static function parseAcceptLanguageHeader(string $header): Generator
     {
-        $matches = self::parseAcceptLikeHeader($header);
+        $matches = self::parseHeaderWithAcceptSemantic($header);
         foreach ($matches as $index => [$keyword, $parameterNames, $parameterValues]) {
             $tags = explode('-', $keyword);
 
@@ -114,7 +114,7 @@ final class HeaderParser
     }
 
     /**
-     * Parses the given header, which is semantically similar to the "Accept" header
+     * Parses the given header, which is semantically similar to the "Accept" header, according to RFC-7231
      *
      * @param string $header
      *
@@ -122,8 +122,12 @@ final class HeaderParser
      *
      * @throws InvalidArgumentException If the header isn't valid.
      */
-    public static function parseAcceptLikeHeader(string $header): Generator
+    public static function parseHeaderWithAcceptSemantic(string $header): Generator
     {
+        if (isset($header[4096])) {
+            throw new InvalidArgumentException('The header is too long.');
+        }
+
         /** @var array{0: ?string, 1: string[], 2: string[]} $match */
         $match = [null, [], []];
 
@@ -138,7 +142,7 @@ final class HeaderParser
         while (isset($header[++$offset])) {
             if (!isset(Charset::RFC7230_FIELD_VALUE[$header[$offset]])) {
                 throw new InvalidArgumentException(sprintf(
-                    'Unallowed character at position %d.',
+                    'Invalid character at position %d.',
                     $offset,
                 ));
             }
@@ -147,7 +151,7 @@ final class HeaderParser
                 if ($header[$offset] === ',') {
                     if (!isset($match[0])) {
                         throw new InvalidArgumentException(sprintf(
-                            'The character (,) at position %d must be preceded by a keyword.',
+                            'The comma (,) at position %d must be preceded by a keyword.',
                             $offset,
                         ));
                     }
@@ -163,7 +167,7 @@ final class HeaderParser
                 if ($header[$offset] === ';') {
                     if (!isset($match[0]) || !isset($match[1][$parameterIndex]) && $parameterIndex > -1) {
                         throw new InvalidArgumentException(sprintf(
-                            'The character (;) at position %d must be preceded by a keyword or parameter.',
+                            'The semicolon (;) at position %d must be preceded by a keyword or parameter.',
                             $offset,
                         ));
                     }
@@ -177,7 +181,7 @@ final class HeaderParser
                 if ($header[$offset] === '=' && $inParameterName) {
                     if (!isset($match[1][$parameterIndex])) {
                         throw new InvalidArgumentException(sprintf(
-                            'The character (=) at position %d must be preceded by a parameter‘s name.',
+                            'The equal sign (=) at position %d must be preceded by a parameter‘s name.',
                             $offset,
                         ));
                     }
@@ -189,15 +193,16 @@ final class HeaderParser
                 if ($header[$offset] === '"' && $inParameterValue) {
                     if (isset($match[2][$parameterIndex])) {
                         throw new InvalidArgumentException(sprintf(
-                            'The character (") at position %d must be the first in a parameter‘s value.',
+                            'The double quote (") at position %d must be the first in a parameter‘s value.',
                             $offset,
                         ));
                     }
 
-                    $inQuotedString = true;
                     $match[2][$parameterIndex] = '';
+                    $inQuotedString = true;
                     continue;
                 }
+
                 if (isset(Charset::RFC7230_OWS[$header[$offset]])) {
                     if ($inKeyword && isset($match[0])) {
                         $inKeyword = false;
@@ -211,6 +216,7 @@ final class HeaderParser
                 }
             }
 
+            /** @phpstan-ignore-next-line */
             if ($inQuotedString && !$isQuotedChar) {
                 if ($header[$offset] === '\\') {
                     $isQuotedChar = true;
@@ -233,7 +239,7 @@ final class HeaderParser
                 $match[1][$parameterIndex] .= $header[$offset];
                 continue;
             }
-            if ($inParameterValue && (isset(Charset::RFC7230_TOKEN[$header[$offset]])) || $inQuotedString) {
+            if ($inParameterValue && (isset(Charset::RFC7230_TOKEN[$header[$offset]]) || $inQuotedString)) {
                 $match[2][$parameterIndex] ??= '';
                 $match[2][$parameterIndex] .= $header[$offset];
                 $isQuotedChar = false;
@@ -241,7 +247,7 @@ final class HeaderParser
             }
 
             throw new InvalidArgumentException(sprintf(
-                'The character "%s" cannot be at position %d.',
+                'Unexpected character "%s" at position %d.',
                 $header[$offset],
                 $offset,
             ));

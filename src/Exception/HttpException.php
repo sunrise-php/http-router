@@ -32,20 +32,6 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
 {
 
     /**
-     * The error's source
-     *
-     * @var string
-     */
-    private string $source = ErrorSource::CLIENT_REQUEST;
-
-    /**
-     * The error's reason phrase
-     *
-     * @var string
-     */
-    private string $reasonPhrase = 'Something went wrong';
-
-    /**
      * HTTP status code that will be sent to the client
      *
      * @var int<100, 599>
@@ -58,6 +44,13 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
      * @var list<array{0: string, 1: string}>
      */
     private array $headers = [];
+
+    /**
+     * The error's source
+     *
+     * @var string
+     */
+    private string $source = ErrorSource::CLIENT_REQUEST;
 
     /**
      * The list of violations associated with the error
@@ -84,22 +77,6 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     /**
      * @inheritDoc
      */
-    final public function getSource(): string
-    {
-        return $this->source;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function getReasonPhrase(): string
-    {
-        return $this->reasonPhrase;
-    }
-
-    /**
-     * @inheritDoc
-     */
     final public function getStatusCode(): int
     {
         return $this->statusCode;
@@ -116,23 +93,17 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     /**
      * @inheritDoc
      */
-    final public function getViolations(): array
+    final public function getSource(): string
     {
-        return $this->violations;
+        return $this->source;
     }
 
     /**
-     * Sets the given source to the error
-     *
-     * @param string $source
-     *
-     * @return static
+     * @inheritDoc
      */
-    final public function setSource(string $source): static
+    final public function getViolations(): array
     {
-        $this->source = $source;
-
-        return $this;
+        return $this->violations;
     }
 
     /**
@@ -145,20 +116,6 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     final public function setMessage(string $message): static
     {
         $this->message = $message;
-
-        return $this;
-    }
-
-    /**
-     * Sets the given reason phrase to the error
-     *
-     * @param string $reasonPhrase
-     *
-     * @return static
-     */
-    final public function setReasonPhrase(string $reasonPhrase): static
-    {
-        $this->reasonPhrase = $reasonPhrase;
 
         return $this;
     }
@@ -190,6 +147,20 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
         $fieldValue = join(', ', $fieldValues);
 
         $this->headers[] = [$fieldName, $fieldValue];
+
+        return $this;
+    }
+
+    /**
+     * Sets the given source to the error
+     *
+     * @param string $source
+     *
+     * @return static
+     */
+    final public function setSource(string $source): static
+    {
+        $this->source = $source;
 
         return $this;
     }

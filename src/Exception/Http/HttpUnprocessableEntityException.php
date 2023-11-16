@@ -35,10 +35,8 @@ class HttpUnprocessableEntityException extends HttpException
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
-        $message ??= 'The request couldn‘t be processed due to semantic violations.';
+        $message ??= 'The request could not be processed due to semantic violations.';
 
         parent::__construct(self::STATUS_UNPROCESSABLE_ENTITY, $message, $code, $previous);
-
-        $this->setReasonPhrase('Unprocessable Entity');
     }
 }

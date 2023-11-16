@@ -25,14 +25,12 @@ final class ViolationDto
     /**
      * Constructor of the class
      *
-     * @param string $message
      * @param string $source
-     * @param string $code
+     * @param string $message
      */
     public function __construct(
-        public string $message,
         public string $source,
-        public string $code,
+        public string $message,
     ) {
     }
 
@@ -46,9 +44,8 @@ final class ViolationDto
     public static function fromHydratorViolation(InvalidValueException $violation): self
     {
         return new self(
-            $violation->getMessage(),
             $violation->getPropertyPath(),
-            $violation->getErrorCode(),
+            $violation->getMessage(),
         );
     }
 
@@ -62,9 +59,8 @@ final class ViolationDto
     public static function fromValidatorViolation(ConstraintViolationInterface $violation): self
     {
         return new self(
-            (string) $violation->getMessage(),
             $violation->getPropertyPath(),
-            $violation->getCode() ?? '00000000-0000-0000-0000-000000000000',
+            (string) $violation->getMessage(),
         );
     }
 }

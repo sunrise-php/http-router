@@ -15,11 +15,11 @@ namespace Sunrise\Http\Router\Loader;
 
 use FilesystemIterator;
 use Generator;
-use Psr\Container\ContainerInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\SimpleCache\CacheInterface;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
 use RegexIterator;
@@ -34,14 +34,11 @@ use Sunrise\Http\Router\Annotation\Produces;
 use Sunrise\Http\Router\Annotation\Route;
 use Sunrise\Http\Router\Annotation\Summary;
 use Sunrise\Http\Router\Annotation\Tag;
-use Sunrise\Http\Router\CompiledRoute;
 use Sunrise\Http\Router\Entity\MediaType;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
 use Sunrise\Http\Router\Exception\LogicException;
-use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutionerInterface;
-use Sunrise\Http\Router\ParameterResolving\ParameterResolver\DependencyInjectionParameterResolver;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolver\ParameterResolverInterface;
 use Sunrise\Http\Router\ReferenceResolver;
 use Sunrise\Http\Router\ReferenceResolverInterface;
@@ -144,22 +141,6 @@ final class DescriptorLoader implements LoaderInterface
     }
 
     /**
-     * Sets the given container to the loader
-     *
-     * @param ContainerInterface $container
-     *
-     * @return void
-     *
-     * @throws LogicException
-     *         If a custom reference resolver has been set,
-     *         but a parameter resolutioner has not been set.
-     */
-    public function setContainer(ContainerInterface $container): void
-    {
-        $this->addParameterResolver(new DependencyInjectionParameterResolver($container));
-    }
-
-    /**
      * Adds the given parameter resolver(s) to the parameter resolutioner
      *
      * @param ParameterResolverInterface ...$resolvers
@@ -209,28 +190,6 @@ final class DescriptorLoader implements LoaderInterface
         }
 
         $this->responseResolutioner->addResolver(...$resolvers);
-    }
-
-    /**
-     * Sets the given cache to the loader
-     *
-     * @param CacheInterface|null $cache
-     *
-     * @return void
-     */
-    public function setCache(?CacheInterface $cache): void
-    {
-        $this->cache = $cache;
-    }
-
-    /**
-     * Gets the loader cache
-     *
-     * @return CacheInterface|null
-     */
-    public function getCache(): ?CacheInterface
-    {
-        return $this->cache;
     }
 
     /**
@@ -320,7 +279,7 @@ final class DescriptorLoader implements LoaderInterface
             $route->setTags(...$descriptor->tags);
             $route->setDeprecation($descriptor->isDeprecated);
 
-            $routes->add(new CompiledRoute($route, $descriptor->regex));
+            $routes->add($route);
         }
 
         return $routes;
@@ -346,8 +305,6 @@ final class DescriptorLoader implements LoaderInterface
         foreach ($this->resources as $resource) {
             $descriptors = $this->getResourceDescriptors($resource);
             foreach ($descriptors as $descriptor) {
-                $descriptor->regex = RouteCompiler::compileRegex($descriptor->path);
-
                 $result[] = $descriptor;
             }
         }
@@ -395,9 +352,10 @@ final class DescriptorLoader implements LoaderInterface
         }
 
         if ($class->isSubclassOf(RequestHandlerInterface::class)) {
-            $annotations = $this->getAnnotations(Route::class, $class);
-            if ($annotations->valid()) {
-                $descriptor = $annotations->current();
+            /** @var list<ReflectionAttribute<Route>> $annotations */
+            $annotations = $class->getAttributes(Route::class);
+            if (isset($annotations[0])) {
+                $descriptor = $annotations[0]->newInstance();
                 $descriptor->holder = $class->getName();
                 $this->supplementDescriptorFromParentClasses($descriptor, $class);
                 $this->supplementDescriptorFromClassOrMethod($descriptor, $class);
@@ -411,9 +369,10 @@ final class DescriptorLoader implements LoaderInterface
                 continue;
             }
 
-            $annotations = $this->getAnnotations(Route::class, $method);
-            if ($annotations->valid()) {
-                $descriptor = $annotations->current();
+            /** @var list<ReflectionAttribute<Route>> $annotations */
+            $annotations = $method->getAttributes(Route::class);
+            if (isset($annotations[0])) {
+                $descriptor = $annotations[0]->newInstance();
                 $descriptor->holder = [$class->getName(), $method->getName()];
                 $this->supplementDescriptorFromParentClasses($descriptor, $class);
                 $this->supplementDescriptorFromClassOrMethod($descriptor, $class);
@@ -427,13 +386,18 @@ final class DescriptorLoader implements LoaderInterface
      * Supplements the given descriptor from parent classes of the given class
      *
      * @param Route $descriptor
-     * @param ReflectionClass $holder
+     * @param ReflectionClass $child
      *
      * @return void
      */
-    private function supplementDescriptorFromParentClasses(Route $descriptor, ReflectionClass $holder): void
+    private function supplementDescriptorFromParentClasses(Route $descriptor, ReflectionClass $child): void
     {
-        foreach ($this->getClassParents($holder) as $parent) {
+        $parents = [];
+        while ($child = $child->getParentClass()) {
+            $parents = [$child, ...$parents];
+        }
+
+        foreach ($parents as $parent) {
             $this->supplementDescriptorFromClassOrMethod($descriptor, $parent);
         }
     }
@@ -449,55 +413,74 @@ final class DescriptorLoader implements LoaderInterface
     // phpcs:ignore Generic.Files.LineLength
     private function supplementDescriptorFromClassOrMethod(Route $descriptor, ReflectionClass|ReflectionMethod $holder): void
     {
-        $annotations = $this->getAnnotations(Prefix::class, $holder);
-        if ($annotations->valid()) {
-            $descriptor->path = $annotations->current()->value . $descriptor->path;
+        /** @var list<ReflectionAttribute<Prefix>> $annotations */
+        $annotations = $holder->getAttributes(Prefix::class);
+        if (isset($annotations[0])) {
+            $annotation = $annotations[0]->newInstance();
+            $descriptor->path = $annotation->value . $descriptor->path;
         }
 
-        $annotations = $this->getAnnotations(Postfix::class, $holder);
-        if ($annotations->valid()) {
-            $descriptor->path .= $annotations->current()->value;
+        /** @var list<ReflectionAttribute<Postfix>> $annotations */
+        $annotations = $holder->getAttributes(Postfix::class);
+        if (isset($annotations[0])) {
+            $annotation = $annotations[0]->newInstance();
+            $descriptor->path .= $annotation->value;
         }
 
-        $annotations = $this->getAnnotations(Method::class, $holder);
+        /** @var list<ReflectionAttribute<Method>> $annotations */
+        $annotations = $holder->getAttributes(Method::class);
         foreach ($annotations as $annotation) {
+            $annotation = $annotation->newInstance();
             $descriptor->methods[] = $annotation->value;
         }
 
-        $annotations = $this->getAnnotations(Consumes::class, $holder);
+        /** @var list<ReflectionAttribute<Consumes>> $annotations */
+        $annotations = $holder->getAttributes(Consumes::class);
         foreach ($annotations as $annotation) {
+            $annotation = $annotation->newInstance();
             $descriptor->consumes[] = new MediaType($annotation->type, $annotation->subtype);
         }
 
-        $annotations = $this->getAnnotations(Produces::class, $holder);
+        /** @var list<ReflectionAttribute<Produces>> $annotations */
+        $annotations = $holder->getAttributes(Produces::class);
         foreach ($annotations as $annotation) {
+            $annotation = $annotation->newInstance();
             $descriptor->produces[] = new MediaType($annotation->type, $annotation->subtype, $annotation->parameters);
         }
 
-        $annotations = $this->getAnnotations(Middleware::class, $holder);
+        /** @var list<ReflectionAttribute<Middleware>> $annotations */
+        $annotations = $holder->getAttributes(Middleware::class);
         foreach ($annotations as $annotation) {
+            $annotation = $annotation->newInstance();
             $descriptor->middlewares[] = $annotation->value;
         }
 
-        $annotations = $this->getAnnotations(Summary::class, $holder);
+        /** @var list<ReflectionAttribute<Summary>> $annotations */
+        $annotations = $holder->getAttributes(Summary::class);
         foreach ($annotations as $annotation) {
+            $annotation = $annotation->newInstance();
             /** @psalm-suppress PossiblyNullOperand */
             $descriptor->summary .= $annotation->value;
         }
 
-        $annotations = $this->getAnnotations(Description::class, $holder);
+        /** @var list<ReflectionAttribute<Description>> $annotations */
+        $annotations = $holder->getAttributes(Description::class);
         foreach ($annotations as $annotation) {
+            $annotation = $annotation->newInstance();
             /** @psalm-suppress PossiblyNullOperand */
             $descriptor->description .= $annotation->value;
         }
 
-        $annotations = $this->getAnnotations(Tag::class, $holder);
+        /** @var list<ReflectionAttribute<Tag>> $annotations */
+        $annotations = $holder->getAttributes(Tag::class);
         foreach ($annotations as $annotation) {
+            $annotation = $annotation->newInstance();
             $descriptor->tags[] = $annotation->value;
         }
 
-        $annotations = $this->getAnnotations(Deprecated::class, $holder);
-        if ($annotations->valid()) {
+        /** @var list<ReflectionAttribute<Deprecated>> $annotations */
+        $annotations = $holder->getAttributes(Deprecated::class);
+        if (isset($annotations[0])) {
             $descriptor->isDeprecated = true;
         }
     }
@@ -511,11 +494,9 @@ final class DescriptorLoader implements LoaderInterface
      */
     private function getDirectoryClasses(string $dirname): Generator
     {
-        $flags = FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_PATHNAME;
-
         /** @var array<string, string> $filenames */
         // phpcs:ignore Generic.Files.LineLength
-        $filenames = iterator_to_array(new RegexIterator(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dirname, $flags)), '/\.php$/'));
+        $filenames = iterator_to_array(new RegexIterator(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dirname, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_PATHNAME)), '/\.php$/'));
 
         foreach ($filenames as $filename) {
             (static function (string $filename): void {
@@ -529,41 +510,6 @@ final class DescriptorLoader implements LoaderInterface
             if (isset($filenames[$classReflection->getFileName()])) {
                 yield $classReflection;
             }
-        }
-    }
-
-    /**
-     * Gets parents of the given class
-     *
-     * @param ReflectionClass $child
-     *
-     * @return Generator<int, ReflectionClass>
-     */
-    private function getClassParents(ReflectionClass $child): Generator
-    {
-        $ancestors = [];
-        while ($child = $child->getParentClass()) {
-            $ancestors = [$child, ...$ancestors];
-        }
-
-        yield from $ancestors;
-    }
-
-    /**
-     * Gets the named annotations from the given class or method
-     *
-     * @param class-string<T> $name
-     * @param ReflectionClass|ReflectionMethod $holder
-     *
-     * @return Generator<int, T>
-     *
-     * @template T of object
-     */
-    private function getAnnotations(string $name, ReflectionClass|ReflectionMethod $holder): Generator
-    {
-        $attributes = $holder->getAttributes($name);
-        foreach ($attributes as $attribute) {
-            yield $attribute->newInstance();
         }
     }
 }

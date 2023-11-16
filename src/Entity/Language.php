@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Entity;
 
 use Stringable;
+use Sunrise\Http\Router\Dictionary\Charset;
 
 use function join;
 
@@ -91,7 +92,7 @@ final class Language implements Stringable
      */
     public function equals(Language $other): bool
     {
-        return $this->code === '*' || $other->code === '*' || $this->code === $other->code;
+        return $this->code === Charset::WILDCARD || $other->code === Charset::WILDCARD || $this->code === $other->code;
     }
 
     /**

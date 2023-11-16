@@ -19,15 +19,6 @@ use Attribute;
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION)]
-final class ResponseBody
+final class EmptyResponse
 {
-
-    /**
-     * Constructor of the class
-     *
-     * @param array<non-empty-string, mixed> $context
-     */
-    public function __construct(public array $context = [])
-    {
-    }
 }

@@ -13,35 +13,38 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Event;
 
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Sunrise\Http\Router\RouteInterface;
+use Throwable;
 
 /**
- * RouteMatchedEvent
+ * ErrorOccurredEvent
  *
  * @since 3.0.0
  */
-final class RouteMatchedEvent extends AbstractEvent
+final class ErrorOccurredEventAbstract extends AbstractEvent
 {
 
     /**
      * Constructor of the class
      *
-     * @param RouteInterface $route
+     * @param Throwable $error
      * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
      */
     public function __construct(
-        private RouteInterface $route,
+        private Throwable $error,
         private ServerRequestInterface $request,
+        private ResponseInterface $response,
     ) {
     }
 
     /**
-     * @return RouteInterface
+     * @return Throwable
      */
-    public function getRoute(): RouteInterface
+    public function getError(): Throwable
     {
-        return $this->route;
+        return $this->error;
     }
 
     /**
@@ -53,12 +56,20 @@ final class RouteMatchedEvent extends AbstractEvent
     }
 
     /**
-     * @param ServerRequestInterface $request
+     * @return ResponseInterface
+     */
+    public function getResponse(): ResponseInterface
+    {
+        return $this->response;
+    }
+
+    /**
+     * @param ResponseInterface $response
      *
      * @return void
      */
-    public function setRequest(ServerRequestInterface $request): void
+    public function setResponse(ResponseInterface $response): void
     {
-        $this->request = $request;
+        $this->response = $response;
     }
 }

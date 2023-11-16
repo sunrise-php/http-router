@@ -39,12 +39,13 @@ class HttpUnsupportedMediaTypeException extends HttpException
     // phpcs:ignore Generic.Files.LineLength
     public function __construct(private array $supportedMediaTypes, ?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
-        $message ??= 'The request couldn‘t be processed due to an unsupported format of the request payload.';
+        $message ??= 'The request could not be processed due to an unsupported format of the request payload.';
 
         parent::__construct(self::STATUS_UNSUPPORTED_MEDIA_TYPE, $message, $code, $previous);
 
         $this->setSource(ErrorSource::CLIENT_REQUEST_BODY);
-        $this->setReasonPhrase('Unsupported Media Type');
+
+        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept
         $this->addHeader('Accept', ...$supportedMediaTypes);
     }
 

@@ -68,7 +68,7 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
         try {
             $data = json_decode($payload, true, flags: JSON_BIGINT_AS_STRING | JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
-            throw (new HttpBadRequestException('The JSON payload is invalid and couldn‘t be decoded.', previous: $e))
+            throw (new HttpBadRequestException('The JSON payload is invalid and could not be decoded.', previous: $e))
                 ->setSource(ErrorSource::CLIENT_REQUEST_BODY);
         }
 

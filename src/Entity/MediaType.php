@@ -14,11 +14,10 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Entity;
 
 use Stringable;
-
-use function sprintf;
+use Sunrise\Http\Router\Dictionary\Charset;
 
 /**
- * Media Type
+ * MediaType
  *
  * @since 3.0.0
  */
@@ -105,7 +104,7 @@ final class MediaType implements Stringable
      */
     public static function image(array $parameters = []): self
     {
-        return new self('image', '*', $parameters);
+        return new self('image', Charset::WILDCARD, $parameters);
     }
 
     /**
@@ -161,30 +160,9 @@ final class MediaType implements Stringable
      */
     public function equals(MediaType $other): bool
     {
-        return ($this->type === '*' || $other->type === '*' || $this->type === $other->type)
-            && ($this->subtype === '*' || $other->subtype === '*' || $this->subtype === $other->subtype);
-    }
-
-    /**
-     * Builds the media type with the given parameters
-     *
-     * @param array<string, ?string>|false|null $parameters
-     *
-     * @return string
-     */
-    public function build(array|false|null $parameters = null): string
-    {
-        $result = sprintf('%s/%s', $this->type, $this->subtype);
-        if ($parameters === false) {
-            return $result;
-        }
-
-        $parameters ??= $this->parameters;
-        foreach ($parameters as $name => $value) {
-            $result .= sprintf('; %s="%s"', $name, (string) $value);
-        }
-
-        return $result;
+        return ($this->type === Charset::WILDCARD || $other->type === Charset::WILDCARD || $this->type === $other->type)
+            // phpcs:ignore Generic.Files.LineLength
+            && ($this->subtype === Charset::WILDCARD || $other->subtype === Charset::WILDCARD || $this->subtype === $other->subtype);
     }
 
     /**
@@ -192,6 +170,6 @@ final class MediaType implements Stringable
      */
     public function __toString(): string
     {
-        return $this->build(parameters: false);
+        return $this->type . '/' . $this->subtype;
     }
 }

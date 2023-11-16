@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ error.reasonPhrase }}</title>
     <style>
@@ -55,9 +55,9 @@
 </head>
 <body>
     <main>
-        <h1>{{ error.reasonPhrase }}</h1>
-        <p>{{ error.message }}</p>
-        <p>The error's source: <span class="source">{{ error.source }}</span></p>
+        <h1>{{ reasonPhrase }}</h1>
+
+        <p><span class="source">{{ error.source }}</span> {{ error.message }}</p>
 
         {% if error.violations %}
             <details>

@@ -14,22 +14,20 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
-use Fig\Http\Message\StatusCodeInterface;
 
 /**
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION)]
-final class ResponseStatus implements StatusCodeInterface
+final class SerializableResponse
 {
 
     /**
      * Constructor of the class
      *
-     * @param int<100, 599> $code
-     * @param string $phrase See RFC-7231.
+     * @param array<non-empty-string, mixed> $context
      */
-    public function __construct(public int $code, public string $phrase = '')
+    public function __construct(public array $context = [])
     {
     }
 }

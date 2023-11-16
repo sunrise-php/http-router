@@ -21,23 +21,17 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use Sunrise\Http\Router\Dto\ErrorDto;
-use Sunrise\Http\Router\Entity\MediaType;
-use Sunrise\Http\Router\Event\ErrorOccurredEvent;
+use Sunrise\Http\Router\Event\ErrorOccurredEventAbstract;
 use Sunrise\Http\Router\Exception\Http\HttpInternalServerErrorException;
 use Sunrise\Http\Router\Exception\HttpExceptionInterface;
-use Sunrise\Http\Router\ServerRequest;
-use Symfony\Component\Serializer\Encoder\JsonEncode;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Encoder\XmlEncoder;
-use Symfony\Component\Serializer\SerializerInterface;
 use Throwable;
+
+use function json_encode;
 
 use const JSON_PARTIAL_OUTPUT_ON_ERROR;
 
 /**
  * Error handling middleware
- *
- * @link https://github.com/symfony/serializer
  *
  * @since 3.0.0
  */
@@ -48,13 +42,11 @@ final class ErrorHandlingMiddleware implements MiddlewareInterface
      * Constructor of the class
      *
      * @param ResponseFactoryInterface $responseFactory
-     * @param SerializerInterface $serializer
      * @param EventDispatcherInterface|null $eventDispatcher
      * @param LoggerInterface|null $logger
      */
     public function __construct(
         private ResponseFactoryInterface $responseFactory,
-        private SerializerInterface $serializer,
         private ?EventDispatcherInterface $eventDispatcher = null,
         private ?LoggerInterface $logger = null,
     ) {
@@ -82,7 +74,7 @@ final class ErrorHandlingMiddleware implements MiddlewareInterface
         }
 
         if (isset($this->eventDispatcher)) {
-            $event = new ErrorOccurredEvent($error, $request, $response);
+            $event = new ErrorOccurredEventAbstract($error, $request, $response);
             $this->eventDispatcher->dispatch($event);
             $response = $event->getResponse();
         }
@@ -91,20 +83,15 @@ final class ErrorHandlingMiddleware implements MiddlewareInterface
             return $response;
         }
 
-        $serverProducesMediaTypes = [MediaType::json(), MediaType::xml()];
+        $response = $response->withHeader('Content-Type', 'application/json; charset=UTF-8');
 
-        $clientPreferredMediaType = ServerRequest::from($request)
-            ->getClientPreferredMediaType(...$serverProducesMediaTypes);
-
-        $contentType = $clientPreferredMediaType->build(['charset' => 'UTF-8']);
-        $response = $response->withHeader('Content-Type', $contentType);
-
-        $response->getBody()->write(
-            match ($clientPreferredMediaType) {
-                $serverProducesMediaTypes[0] => $this->renderJsonError($error),
-                $serverProducesMediaTypes[1] => $this->renderXmlError($error),
-            }
+        /** @var string $payload */
+        $payload = json_encode(
+            value: ErrorDto::fromHttpError($error),
+            flags: JSON_PARTIAL_OUTPUT_ON_ERROR,
         );
+
+        $response->getBody()->write($payload);
 
         return $response;
     }
@@ -116,23 +103,5 @@ final class ErrorHandlingMiddleware implements MiddlewareInterface
         $httpError = new HttpInternalServerErrorException($error);
 
         return $this->handleHttpError($httpError, $request);
-    }
-
-    private function renderJsonError(HttpExceptionInterface $error): string
-    {
-        $view = ErrorDto::fromHttpError($error);
-
-        return $this->serializer->serialize($view, JsonEncoder::FORMAT, [
-            JsonEncode::OPTIONS => JSON_PARTIAL_OUTPUT_ON_ERROR,
-        ]);
-    }
-
-    private function renderXmlError(HttpExceptionInterface $error): string
-    {
-        $view = ErrorDto::fromHttpError($error);
-
-        return $this->serializer->serialize($view, XmlEncoder::FORMAT, [
-            XmlEncoder::ROOT_NODE_NAME => 'error',
-        ]);
     }
 }

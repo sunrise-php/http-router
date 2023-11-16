@@ -14,11 +14,9 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router;
 
 use Fig\Http\Message\RequestMethodInterface;
-use Psr\Container\ContainerInterface;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutionerInterface;
-use Sunrise\Http\Router\ParameterResolving\ParameterResolver\DependencyInjectionParameterResolver;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolver\ParameterResolverInterface;
 use Sunrise\Http\Router\ResponseResolving\ResponseResolutioner;
 use Sunrise\Http\Router\ResponseResolving\ResponseResolutionerInterface;
@@ -98,24 +96,6 @@ class RouteCollector
     public function getCollection(): RouteCollectionInterface
     {
         return $this->collection;
-    }
-
-    /**
-     * Sets the given container to the collector
-     *
-     * @param ContainerInterface $container
-     *
-     * @return void
-     *
-     * @throws LogicException
-     *         If a custom reference resolver has been set,
-     *         but a parameter resolutioner has not been set.
-     *
-     * @since 2.9.0
-     */
-    public function setContainer(ContainerInterface $container): void
-    {
-        $this->addParameterResolver(new DependencyInjectionParameterResolver($container));
     }
 
     /**
