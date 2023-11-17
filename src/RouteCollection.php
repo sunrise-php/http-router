@@ -182,18 +182,6 @@ class RouteCollection implements RouteCollectionInterface
     /**
      * @inheritDoc
      */
-    public function setAttribute(string $name, mixed $value): static
-    {
-        foreach ($this->routes as $route) {
-            $route->setAttribute($name, $value);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function setDeprecation(bool $isDeprecated): static
     {
         foreach ($this->routes as $route) {
@@ -205,6 +193,8 @@ class RouteCollection implements RouteCollectionInterface
 
     /**
      * @inheritDoc
+     *
+     * @since 3.0.0
      */
     public function count(): int
     {
@@ -213,6 +203,8 @@ class RouteCollection implements RouteCollectionInterface
 
     /**
      * @inheritDoc
+     *
+     * @since 3.0.0
      */
     public function getIterator(): Traversable
     {

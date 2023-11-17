@@ -3,62 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ error.reasonPhrase }}</title>
+    <title>Error {{ statusCode }}</title>
     <style>
-        :root {
-            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-        }
         body {
-            font-family: var(--font-family);
-            background-color: #FAFAFA;
-            color: #212121;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
         }
         @media (prefers-color-scheme: dark) {
             body {
-                background-color: #212121;
-                color: #FAFAFA;
+                background-color: #263238;
+                color: #fff;
             }
         }
         main {
             margin: 20vh 10vw 0 10vw;
         }
+        h1 {
+            color: #f44336;
+        }
         span.source {
             display: inline-block;
-            margin-right: .25em;
             padding: .25em .5em;
-            border: 1px solid #9E9E9E;
+            border: 1px solid #9e9e9e;
             border-radius: .25em;
             font-size: .8em;
             line-height: 1;
         }
         nav {
             margin-top: 2.5em;
+            line-height: 1;
         }
         nav a {
             display: inline-block;
-            margin-right: .75em;
             padding: .75em 1.5em;
-            background-color: #616161;
-            border-top: 1px solid #616161;
-            box-shadow: #9E9E9E 0 1px 0 0 inset;
+            background-color: #1976cd;
+            box-shadow: #2196f3 0 2px 0 0 inset;
             border-radius: .25em;
-            color: #FAFAFA;
+            color: #fff;
             text-decoration: none;
             font-size: .9em;
-            font-weight: 500;
-            line-height: 1;
         }
         nav a:active {
             box-shadow: none;
+        }
+        nav small {
+            display: inline-block;
+            margin: 0 .25em;
+            color: #9e9e9e;
         }
     </style>
 </head>
 <body>
     <main>
-        <h1>{{ reasonPhrase }}</h1>
-
-        <p><span class="source">{{ error.source }}</span> {{ error.message }}</p>
-
+        <h1>Oops! Error {{ statusCode }} &mdash; {{ reasonPhrase }}</h1>
+        <p>{{ error.message }} <span class="source">{{ error.source }}</span></p>
         {% if error.violations %}
             <details>
                 {% for violation in error.violations %}
@@ -66,10 +63,10 @@
                 {% endfor %}
             </details>
         {% endif %}
-
         <nav>
             <a href="/" title="Go home">Home</a>
-            <a href="javascript:window.history.go(-1)" title="Go back">Back</a>
+            <small>or</small>
+            <a href="javascript:window.history.back()" title="Go back">Back</a>
         </nav>
     </main>
 </body>
