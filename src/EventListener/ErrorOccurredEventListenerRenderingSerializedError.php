@@ -15,7 +15,7 @@ namespace Sunrise\Http\Router\EventListener;
 
 use Sunrise\Http\Router\Dto\ErrorDto;
 use Sunrise\Http\Router\Entity\MediaType;
-use Sunrise\Http\Router\Event\ErrorOccurredEventAbstract;
+use Sunrise\Http\Router\Event\ErrorOccurredEvent;
 use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 use Sunrise\Http\Router\ServerRequest;
 use Symfony\Component\Serializer\Encoder\JsonEncode;
@@ -47,11 +47,11 @@ final class ErrorOccurredEventListenerRenderingSerializedError
     /**
      * Handles the given event
      *
-     * @param ErrorOccurredEventAbstract $event
+     * @param ErrorOccurredEvent $event
      *
-     * @return ErrorOccurredEventAbstract
+     * @return ErrorOccurredEvent
      */
-    public function __invoke(ErrorOccurredEventAbstract $event): ErrorOccurredEventAbstract
+    public function __invoke(ErrorOccurredEvent $event): ErrorOccurredEvent
     {
         $error = $event->getError();
         if (! $error instanceof HttpExceptionInterface) {

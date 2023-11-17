@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\EventListener;
 
 use Sunrise\Http\Router\Entity\MediaType;
-use Sunrise\Http\Router\Event\ErrorOccurredEventAbstract;
+use Sunrise\Http\Router\Event\ErrorOccurredEvent;
 use Sunrise\Http\Router\Exception\Http\HttpInternalServerErrorException;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ServerRequest;
@@ -53,11 +53,11 @@ final class ErrorOccurredEventListenerDisplayingFatalError
     /**
      * Handles the given event
      *
-     * @param ErrorOccurredEventAbstract $event
+     * @param ErrorOccurredEvent $event
      *
-     * @return ErrorOccurredEventAbstract
+     * @return ErrorOccurredEvent
      */
-    public function __invoke(ErrorOccurredEventAbstract $event): ErrorOccurredEventAbstract
+    public function __invoke(ErrorOccurredEvent $event): ErrorOccurredEvent
     {
         $error = $event->getError();
         if (! $error instanceof HttpInternalServerErrorException) {

@@ -15,29 +15,36 @@ namespace Sunrise\Http\Router\Event;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use ReflectionFunction;
-use ReflectionMethod;
+use Throwable;
 
 /**
- * ResponseResolvedEvent
+ * ErrorOccurredEvent
  *
  * @since 3.0.0
  */
-final class ResponseResolvedEventAbstract extends AbstractEvent
+final class ErrorOccurredEvent extends AbstractEvent
 {
 
     /**
      * Constructor of the class
      *
+     * @param Throwable $error
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response
-     * @param ReflectionFunction|ReflectionMethod $responder
      */
     public function __construct(
+        private Throwable $error,
         private ServerRequestInterface $request,
         private ResponseInterface $response,
-        private ReflectionFunction|ReflectionMethod $responder,
     ) {
+    }
+
+    /**
+     * @return Throwable
+     */
+    public function getError(): Throwable
+    {
+        return $this->error;
     }
 
     /**
@@ -54,14 +61,6 @@ final class ResponseResolvedEventAbstract extends AbstractEvent
     public function getResponse(): ResponseInterface
     {
         return $this->response;
-    }
-
-    /**
-     * @return ReflectionMethod|ReflectionFunction
-     */
-    public function getResponder(): ReflectionMethod|ReflectionFunction
-    {
-        return $this->responder;
     }
 
     /**

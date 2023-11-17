@@ -21,7 +21,7 @@ use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\ResponseHeader;
 use Sunrise\Http\Router\Annotation\ResponseStatus;
-use Sunrise\Http\Router\Event\ResponseResolvedEventAbstract;
+use Sunrise\Http\Router\Event\ResponseResolvedEvent;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ResponseResolving\ResponseResolver\ResponseResolverInterface;
 
@@ -115,7 +115,7 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
         }
 
         if (isset($this->eventDispatcher)) {
-            $event = new ResponseResolvedEventAbstract($request, $response, $responder);
+            $event = new ResponseResolvedEvent($request, $response, $responder);
             $this->eventDispatcher->dispatch($event);
             $response = $event->getResponse();
         }

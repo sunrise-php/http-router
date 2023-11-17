@@ -21,7 +21,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use Sunrise\Http\Router\Dto\ErrorDto;
-use Sunrise\Http\Router\Event\ErrorOccurredEventAbstract;
+use Sunrise\Http\Router\Event\ErrorOccurredEvent;
 use Sunrise\Http\Router\Exception\Http\HttpInternalServerErrorException;
 use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 use Throwable;
@@ -74,7 +74,7 @@ final class ErrorHandlingMiddleware implements MiddlewareInterface
         }
 
         if (isset($this->eventDispatcher)) {
-            $event = new ErrorOccurredEventAbstract($error, $request, $response);
+            $event = new ErrorOccurredEvent($error, $request, $response);
             $this->eventDispatcher->dispatch($event);
             $response = $event->getResponse();
         }
