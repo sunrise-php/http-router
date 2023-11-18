@@ -45,8 +45,10 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
      * @param HydratorInterface $hydrator
      * @param ValidatorInterface|null $validator
      */
-    public function __construct(private HydratorInterface $hydrator, private ?ValidatorInterface $validator = null)
-    {
+    public function __construct(
+        private HydratorInterface $hydrator,
+        private ?ValidatorInterface $validator = null,
+    ) {
     }
 
     /**

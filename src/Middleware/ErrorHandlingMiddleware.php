@@ -20,15 +20,22 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
+use SimpleXMLElement;
 use Sunrise\Http\Router\Dto\ErrorDto;
+use Sunrise\Http\Router\Entity\MediaType;
 use Sunrise\Http\Router\Event\ErrorOccurredEvent;
 use Sunrise\Http\Router\Exception\Http\HttpInternalServerErrorException;
 use Sunrise\Http\Router\Exception\HttpExceptionInterface;
+use Sunrise\Http\Router\ServerRequest;
 use Throwable;
 
+use function extension_loaded;
 use function json_encode;
 
 use const JSON_PARTIAL_OUTPUT_ON_ERROR;
+use const LIBXML_COMPACT;
+use const LIBXML_NOERROR;
+use const LIBXML_NOWARNING;
 
 /**
  * Error handling middleware
@@ -83,15 +90,24 @@ final class ErrorHandlingMiddleware implements MiddlewareInterface
             return $response;
         }
 
-        $response = $response->withHeader('Content-Type', 'application/json; charset=UTF-8');
+        $serverProducesMediaTypes = [MediaType::json()];
+        if (extension_loaded('simplexml')) {
+            $serverProducesMediaTypes[] = MediaType::xml();
+        }
 
-        /** @var string $payload */
-        $payload = json_encode(
-            value: ErrorDto::fromHttpError($error),
-            flags: JSON_PARTIAL_OUTPUT_ON_ERROR,
+        $clientPreferredMediaType = ServerRequest::from($request)
+            ->getClientPreferredMediaType(...$serverProducesMediaTypes)
+                ?? $serverProducesMediaTypes[0];
+
+        $mimeType = $clientPreferredMediaType . '; charset=UTF-8';
+        $response = $response->withHeader('Content-Type', $mimeType);
+
+        $response->getBody()->write(
+            match ($clientPreferredMediaType) {
+                $serverProducesMediaTypes[0] => $this->renderJsonError($error),
+                default => $this->renderXmlError($error),
+            }
         );
-
-        $response->getBody()->write($payload);
 
         return $response;
     }
@@ -103,5 +119,33 @@ final class ErrorHandlingMiddleware implements MiddlewareInterface
         $httpError = new HttpInternalServerErrorException($error);
 
         return $this->handleHttpError($httpError, $request);
+    }
+
+    private function renderJsonError(HttpExceptionInterface $error): string
+    {
+        $view = ErrorDto::fromHttpError($error);
+
+        /** @var non-empty-string */
+        return json_encode($view, flags: JSON_PARTIAL_OUTPUT_ON_ERROR);
+    }
+
+    private function renderXmlError(HttpExceptionInterface $error): string
+    {
+        $xmlBlank = '<?xml version="1.0" encoding="UTF-8"?><error/>';
+        $xmlOptions = LIBXML_COMPACT | LIBXML_NOERROR | LIBXML_NOWARNING;
+
+        $rootChild = new SimpleXMLElement($xmlBlank, $xmlOptions);
+        $rootChild->addChild('source', $error->getSource());
+        $rootChild->addChild('message', $error->getMessage());
+
+        foreach ($error->getViolations() as $violation) {
+            /** @var SimpleXMLElement $violationChild */
+            $violationChild = $rootChild->addChild('violations');
+            $violationChild->addChild('source', $violation->source);
+            $violationChild->addChild('message', $violation->message);
+        }
+
+        /** @var non-empty-string */
+        return $rootChild->asXML();
     }
 }

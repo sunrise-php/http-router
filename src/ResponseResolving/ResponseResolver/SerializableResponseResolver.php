@@ -77,11 +77,11 @@ final class SerializableResponseResolver implements ResponseResolverInterface
         };
 
         $result = $this->responseFactory->createResponse(200);
-
         $mimeType = $clientPreferredMediaType . '; charset=UTF-8';
         $result = $result->withHeader('Content-Type', $mimeType);
 
-        $payload = $this->serializer->serialize($response, $format, $attribute->context + $this->context);
+        $context = $attribute->context + $this->context;
+        $payload = $this->serializer->serialize($response, $format, $context);
         $result->getBody()->write($payload);
 
         return $result;

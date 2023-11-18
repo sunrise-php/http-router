@@ -20,8 +20,10 @@ use Psr\Http\Server\RequestHandlerInterface;
 use ReflectionClass;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\Middleware\CallbackMiddleware;
+use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutionerInterface;
 use Sunrise\Http\Router\RequestHandler\CallbackRequestHandler;
+use Sunrise\Http\Router\ResponseResolving\ResponseResolutioner;
 use Sunrise\Http\Router\ResponseResolving\ResponseResolutionerInterface;
 
 use function class_exists;
@@ -58,15 +60,15 @@ final class ReferenceResolver implements ReferenceResolverInterface
     /**
      * Constructor of the class
      *
-     * @param ParameterResolutionerInterface $parameterResolutioner
-     * @param ResponseResolutionerInterface $responseResolutioner
+     * @param ParameterResolutionerInterface|null $parameterResolutioner
+     * @param ResponseResolutionerInterface|null $responseResolutioner
      */
     public function __construct(
-        ParameterResolutionerInterface $parameterResolutioner,
-        ResponseResolutionerInterface $responseResolutioner,
+        ?ParameterResolutionerInterface $parameterResolutioner = null,
+        ?ResponseResolutionerInterface $responseResolutioner = null,
     ) {
-        $this->parameterResolutioner = $parameterResolutioner;
-        $this->responseResolutioner = $responseResolutioner;
+        $this->parameterResolutioner = $parameterResolutioner ?? new ParameterResolutioner();
+        $this->responseResolutioner = $responseResolutioner ?? new ResponseResolutioner();
     }
 
     /**

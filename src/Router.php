@@ -26,18 +26,10 @@ use Sunrise\Http\Router\Exception\Http\HttpMethodNotAllowedException;
 use Sunrise\Http\Router\Exception\Http\HttpNotFoundException;
 use Sunrise\Http\Router\Exception\Http\HttpUnsupportedMediaTypeException;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
-use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\Helper\RouteCompiler;
-use Sunrise\Http\Router\Helper\RouteParser;
 use Sunrise\Http\Router\Loader\LoaderInterface;
-use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
-use Sunrise\Http\Router\ParameterResolving\ParameterResolutionerInterface;
-use Sunrise\Http\Router\ParameterResolving\ParameterResolver\ParameterResolverInterface;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
-use Sunrise\Http\Router\ResponseResolving\ResponseResolutioner;
-use Sunrise\Http\Router\ResponseResolving\ResponseResolutionerInterface;
-use Sunrise\Http\Router\ResponseResolving\ResponseResolver\ResponseResolverInterface;
 
 use function array_keys;
 use function preg_match;
@@ -72,16 +64,6 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     private ReferenceResolverInterface $referenceResolver;
 
     /**
-     * @var ParameterResolutionerInterface|null
-     */
-    private ?ParameterResolutionerInterface $parameterResolutioner;
-
-    /**
-     * @var ResponseResolutionerInterface|null
-     */
-    private ?ResponseResolutionerInterface $responseResolutioner;
-
-    /**
      * @var CacheInterface|null
      */
     private ?CacheInterface $cache;
@@ -101,13 +83,13 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
      */
     private ?EventDispatcherInterface $eventDispatcher = null;
 
+    private array $compiledRegularExpressions = [];
+
     /**
      * Constructor of the class
      *
      * @param RouteCollectionFactoryInterface|null $collectionFactory
      * @param ReferenceResolverInterface|null $referenceResolver
-     * @param ParameterResolutionerInterface|null $parameterResolutioner
-     * @param ResponseResolutionerInterface|null $responseResolutioner
      * @param CacheInterface|null $cache
      *
      * @since 3.0.0
@@ -115,75 +97,12 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     public function __construct(
         ?RouteCollectionFactoryInterface $collectionFactory = null,
         ?ReferenceResolverInterface $referenceResolver = null,
-        ?ParameterResolutionerInterface $parameterResolutioner = null,
-        ?ResponseResolutionerInterface $responseResolutioner = null,
         ?CacheInterface $cache = null,
     ) {
         $collectionFactory ??= new RouteCollectionFactory();
-
-        $this->routes = $collectionFactory->createCollection();
-
-        $this->parameterResolutioner = $parameterResolutioner;
-        $this->responseResolutioner = $responseResolutioner;
-
-        $this->referenceResolver = $referenceResolver ?? new ReferenceResolver(
-            $this->parameterResolutioner ??= new ParameterResolutioner(),
-            $this->responseResolutioner ??= new ResponseResolutioner(),
-        );
-
+        $this->referenceResolver = $referenceResolver ?? new ReferenceResolver();
         $this->cache = $cache;
-    }
-
-    /**
-     * Adds the given parameter resolver(s) to the parameter resolutioner
-     *
-     * @param ParameterResolverInterface ...$resolvers
-     *
-     * @return void
-     *
-     * @throws LogicException
-     *         If a custom reference resolver has been set,
-     *         but a parameter resolutioner has not been set.
-     *
-     * @since 3.0.0
-     */
-    public function addParameterResolver(ParameterResolverInterface ...$resolvers): void
-    {
-        if (!isset($this->parameterResolutioner)) {
-            throw new LogicException(
-                'The router cannot accept parameter resolvers ' .
-                'because a custom reference resolver has been set, ' .
-                'but a parameter resolutioner has not been set.'
-            );
-        }
-
-        $this->parameterResolutioner->addResolver(...$resolvers);
-    }
-
-    /**
-     * Adds the given response resolver(s) to the response resolutioner
-     *
-     * @param ResponseResolverInterface ...$resolvers
-     *
-     * @return void
-     *
-     * @throws LogicException
-     *         If a custom reference resolver has been set,
-     *         but a response resolutioner has not been set.
-     *
-     * @since 3.0.0
-     */
-    public function addResponseResolver(ResponseResolverInterface ...$resolvers): void
-    {
-        if (!isset($this->responseResolutioner)) {
-            throw new LogicException(
-                'The router cannot accept response resolvers ' .
-                'because a custom reference resolver has been set, ' .
-                'but a response resolutioner has not been set.'
-            );
-        }
-
-        $this->responseResolutioner->addResolver(...$resolvers);
+        $this->routes = $collectionFactory->createCollection();
     }
 
     /**
@@ -197,22 +116,6 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     {
         foreach ($loaders as $loader) {
             $this->routes->add(...$loader->load()->all());
-        }
-    }
-
-    public function warmCache(): void
-    {
-        $data = [];
-        foreach ($this->routes as $route) {
-            $regex = RouteCompiler::compileRegex($route->getPath());
-            $variables = RouteParser::parseRoute($route->getPath());
-
-            $attributes = [];
-            foreach ($variables as $variable) {
-                $attributes[$variable['name']] ??= $variable['value'] ?? null;
-            }
-
-            $data[$route->getName()] = [$regex, $attributes];
         }
     }
 
@@ -377,12 +280,12 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
         $allowedMethods = [];
 
         foreach ($this->routes->all() as $route) {
-            // phpcs:ignore Generic.Files.LineLength
-            $routeRegex = ($route instanceof CompiledRoute) ? $route->getRegex() : RouteCompiler::compileRegex($route->getPath());
+            $this->compiledRegularExpressions[$route->getName()] ??= RouteCompiler::compileRegex($route->getPath());
 
             // https://github.com/sunrise-php/http-router/issues/50
             // https://tools.ietf.org/html/rfc7231#section-6.5.5
-            if (!preg_match($routeRegex, $requestPath, $matches, PREG_UNMATCHED_AS_NULL)) {
+            // phpcs:ignore Generic.Files.LineLength
+            if (!preg_match($this->compiledRegularExpressions[$route->getName()], $requestPath, $matches, PREG_UNMATCHED_AS_NULL)) {
                 continue;
             }
 

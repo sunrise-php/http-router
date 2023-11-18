@@ -74,6 +74,7 @@ final class ErrorOccurredEventListenerRenderingSerializedError
         );
 
         $event->setResponse($response);
+        $event->stopPropagation();
 
         return $event;
     }

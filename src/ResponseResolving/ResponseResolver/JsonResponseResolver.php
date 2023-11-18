@@ -64,7 +64,7 @@ final class JsonResponseResolver implements ResponseResolverInterface
 
         try {
             /**
-             * ignore the depth...
+             * Ignores the depth...
              * @psalm-suppress ArgumentTypeCoercion
              * @phpstan-ignore-next-line
              */

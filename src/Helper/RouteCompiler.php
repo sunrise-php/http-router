@@ -27,13 +27,6 @@ final class RouteCompiler
 {
 
     /**
-     * Cached compiled regular expressions
-     *
-     * @var array<string, string>
-     */
-    private static array $regex = [];
-
-    /**
      * Compiles a regular expression from the given route
      *
      * @param string $route
@@ -42,10 +35,6 @@ final class RouteCompiler
      */
     public static function compileRegex(string $route): string
     {
-        if (isset(self::$regex[$route])) {
-            return self::$regex[$route];
-        }
-
         $matches = RouteParser::parseRoute($route);
 
         foreach ($matches as $match) {
@@ -66,6 +55,6 @@ final class RouteCompiler
             $route = str_replace('{' . $match['name'] . '}', $subpattern, $route);
         }
 
-        return self::$regex[$route] = '#^' . $route . '$#uD';
+        return '#^' . $route . '$#uD';
     }
 }
