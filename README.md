@@ -681,12 +681,12 @@ composer require symfony/event-dispatcher
 ```
 
 ```php
-use Sunrise\Http\Router\Event\RouteMatchedEventAbstract;
+use Sunrise\Http\Router\Event\RouteMatchedEvent;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 $eventDispatcher = new EventDispatcher();
 
-$eventDispatcher->addListener(RouteMatchedEventAbstract::NAME, function (RouteMatchedEventAbstract $event) {
+$eventDispatcher->addListener(RouteMatchedEvent::NAME, function (RouteMatchedEvent $event) {
     // gets the matched route:
     $event->getRoute();
     // gets the current request:

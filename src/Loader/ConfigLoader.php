@@ -43,21 +43,6 @@ final class ConfigLoader implements LoaderInterface
     private array $resources = [];
 
     /**
-     * @var RouteCollectionFactoryInterface
-     */
-    private RouteCollectionFactoryInterface $collectionFactory;
-
-    /**
-     * @var RouteFactoryInterface
-     */
-    private RouteFactoryInterface $routeFactory;
-
-    /**
-     * @var ReferenceResolverInterface
-     */
-    private ReferenceResolverInterface $referenceResolver;
-
-    /**
      * Constructor of the class
      *
      * @param RouteCollectionFactoryInterface|null $collectionFactory
@@ -65,13 +50,13 @@ final class ConfigLoader implements LoaderInterface
      * @param ReferenceResolverInterface|null $referenceResolver
      */
     public function __construct(
-        ?RouteCollectionFactoryInterface $collectionFactory = null,
-        ?RouteFactoryInterface $routeFactory = null,
-        ?ReferenceResolverInterface $referenceResolver = null,
+        private ?RouteCollectionFactoryInterface $collectionFactory = null,
+        private ?RouteFactoryInterface $routeFactory = null,
+        private ?ReferenceResolverInterface $referenceResolver = null,
     ) {
-        $this->collectionFactory = $collectionFactory ?? new RouteCollectionFactory();
-        $this->routeFactory = $routeFactory ?? new RouteFactory();
-        $this->referenceResolver = $referenceResolver ?? new ReferenceResolver();
+        $this->collectionFactory ??= new RouteCollectionFactory();
+        $this->routeFactory ??= new RouteFactory();
+        $this->referenceResolver ??= new ReferenceResolver();
     }
 
     /**

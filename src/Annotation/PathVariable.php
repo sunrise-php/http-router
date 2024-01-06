@@ -25,7 +25,7 @@ final class PathVariable
     /**
      * Constructor of the class
      *
-     * @param non-empty-string|null $name
+     * @param non-empty-string|null $name If null, the parameter's name will be used.
      */
     public function __construct(public ?string $name = null)
     {

@@ -17,8 +17,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use Sunrise\Http\Router\RouteInterface;
 
 /**
- * RouteMatchedEvent
- *
  * @since 3.0.0
  */
 final class RouteMatchedEvent extends AbstractEvent

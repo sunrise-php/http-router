@@ -27,6 +27,13 @@ class HttpTooManyRequestsException extends HttpException
 {
 
     /**
+     * The error's default message
+     *
+     * @var string
+     */
+    public const DEFAULT_MESSAGE = 'The request could not be processed due to exceeding rate-limiting thresholds.';
+
+    /**
      * Constructor of the class
      *
      * @param string|null $message
@@ -35,8 +42,6 @@ class HttpTooManyRequestsException extends HttpException
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
-        $message ??= 'The request could not be processed due to exceeding rate-limiting thresholds.';
-
-        parent::__construct(self::STATUS_TOO_MANY_REQUESTS, $message, $code, $previous);
+        parent::__construct(self::STATUS_TOO_MANY_REQUESTS, $message ?? self::DEFAULT_MESSAGE, $code, $previous);
     }
 }

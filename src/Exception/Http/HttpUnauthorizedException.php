@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Exception\Http;
 
-use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
@@ -28,6 +27,14 @@ class HttpUnauthorizedException extends HttpException
 {
 
     /**
+     * The error's default message
+     *
+     * @var string
+     */
+    // phpcs:ignore Generic.Files.LineLength
+    public const DEFAULT_MESSAGE = 'The request could not processed due to insufficient or invalid authentication credentials.';
+
+    /**
      * Constructor of the class
      *
      * @param string|null $message
@@ -36,10 +43,6 @@ class HttpUnauthorizedException extends HttpException
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
-        $message ??= 'The request could not processed due to insufficient or invalid authentication credentials.';
-
-        parent::__construct(self::STATUS_UNAUTHORIZED, $message, $code, $previous);
-
-        $this->setSource(ErrorSource::CLIENT_CREDENTIALS);
+        parent::__construct(self::STATUS_UNAUTHORIZED, $message ?? self::DEFAULT_MESSAGE, $code, $previous);
     }
 }

@@ -27,6 +27,8 @@ final class JsonResponse
      *
      * @param int $flags
      * @param int $depth
+     *
+     * @link http://php.net/json_encode
      */
     public function __construct(public int $flags = 0, public int $depth = 512)
     {

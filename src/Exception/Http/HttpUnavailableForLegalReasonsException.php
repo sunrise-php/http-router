@@ -27,6 +27,13 @@ class HttpUnavailableForLegalReasonsException extends HttpException
 {
 
     /**
+     * The error's default message
+     *
+     * @var string
+     */
+    public const DEFAULT_MESSAGE = 'The request could not be processed due to legal restrictions.';
+
+    /**
      * Constructor of the class
      *
      * @param string|null $message
@@ -35,8 +42,7 @@ class HttpUnavailableForLegalReasonsException extends HttpException
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
-        $message ??= 'The request could not be processed due to legal restrictions.';
-
-        parent::__construct(self::STATUS_UNAVAILABLE_FOR_LEGAL_REASONS, $message, $code, $previous);
+        // phpcs:ignore Generic.Files.LineLength
+        parent::__construct(self::STATUS_UNAVAILABLE_FOR_LEGAL_REASONS, $message ?? self::DEFAULT_MESSAGE, $code, $previous);
     }
 }

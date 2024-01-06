@@ -15,16 +15,13 @@ namespace Sunrise\Http\Router\Exception;
 
 use RuntimeException;
 use Stringable;
-use Sunrise\Http\Router\Dictionary\ErrorSource;
-use Sunrise\Http\Router\Dto\ViolationDto;
-use Sunrise\Hydrator\Exception\InvalidValueException;
-use Symfony\Component\Validator\ConstraintViolationInterface;
+use Sunrise\Http\Router\Validation\ConstraintViolationInterface;
 use Throwable;
 
 use function join;
 
 /**
- * Base HTTP exception
+ * The package's base HTTP exception
  *
  * @since 3.0.0
  */
@@ -43,21 +40,14 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
      *
      * @var list<array{0: string, 1: string}>
      */
-    private array $headers = [];
+    private array $headerFields = [];
 
     /**
-     * The error's source
+     * The list of constraint violations associated with the error
      *
-     * @var string
+     * @var list<ConstraintViolationInterface>
      */
-    private string $source = ErrorSource::CLIENT_REQUEST;
-
-    /**
-     * The list of violations associated with the error
-     *
-     * @var list<ViolationDto>
-     */
-    private array $violations = [];
+    private array $constraintViolations = [];
 
     /**
      * Constructor of the class
@@ -85,53 +75,17 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     /**
      * @inheritDoc
      */
-    final public function getHeaders(): array
+    final public function getHeaderFields(): array
     {
-        return $this->headers;
+        return $this->headerFields;
     }
 
     /**
      * @inheritDoc
      */
-    final public function getSource(): string
+    final public function getConstraintViolations(): array
     {
-        return $this->source;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function getViolations(): array
-    {
-        return $this->violations;
-    }
-
-    /**
-     * Sets the given message to the error
-     *
-     * @param string $message
-     *
-     * @return static
-     */
-    final public function setMessage(string $message): static
-    {
-        $this->message = $message;
-
-        return $this;
-    }
-
-    /**
-     * Sets the given HTTP status code that will be sent to the client
-     *
-     * @param int<100, 599> $statusCode
-     *
-     * @return static
-     */
-    final public function setStatusCode(int $statusCode): static
-    {
-        $this->statusCode = $statusCode;
-
-        return $this;
+        return $this->constraintViolations;
     }
 
     /**
@@ -142,72 +96,27 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
      *
      * @return static
      */
-    final public function addHeader(string $fieldName, Stringable|string ...$fieldValues): static
+    final public function addHeaderField(string $fieldName, Stringable|string ...$fieldValues): static
     {
+        // https://datatracker.ietf.org/doc/html/rfc7230#section-7
         $fieldValue = join(', ', $fieldValues);
 
-        $this->headers[] = [$fieldName, $fieldValue];
+        $this->headerFields[] = [$fieldName, $fieldValue];
 
         return $this;
     }
 
     /**
-     * Sets the given source to the error
+     * Adds the given constraint violation(s) to the error
      *
-     * @param string $source
-     *
-     * @return static
-     */
-    final public function setSource(string $source): static
-    {
-        $this->source = $source;
-
-        return $this;
-    }
-
-    /**
-     * Adds the given violation(s) associated with the error
-     *
-     * @param ViolationDto ...$violations
+     * @param ConstraintViolationInterface ...$constraintViolations
      *
      * @return static
      */
-    final public function addViolation(ViolationDto ...$violations): static
+    final public function addConstraintViolation(ConstraintViolationInterface ...$constraintViolations): static
     {
-        foreach ($violations as $violation) {
-            $this->violations[] = $violation;
-        }
-
-        return $this;
-    }
-
-    /**
-     * Adds the given hydrator violation(s) associated with the error
-     *
-     * @param InvalidValueException ...$violations
-     *
-     * @return static
-     */
-    final public function addHydratorViolation(InvalidValueException ...$violations): static
-    {
-        foreach ($violations as $violation) {
-            $this->violations[] = ViolationDto::fromHydratorViolation($violation);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Adds the given validator violation(s) associated with the error
-     *
-     * @param ConstraintViolationInterface ...$violations
-     *
-     * @return static
-     */
-    final public function addValidatorViolation(ConstraintViolationInterface ...$violations): static
-    {
-        foreach ($violations as $violation) {
-            $this->violations[] = ViolationDto::fromValidatorViolation($violation);
+        foreach ($constraintViolations as $constraintViolation) {
+            $this->constraintViolations[] = $constraintViolation;
         }
 
         return $this;

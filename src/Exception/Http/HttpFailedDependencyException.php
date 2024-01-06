@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Exception\Http;
 
-use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
@@ -28,6 +27,14 @@ class HttpFailedDependencyException extends HttpException
 {
 
     /**
+     * The error's default message
+     *
+     * @var string
+     */
+    // phpcs:ignore Generic.Files.LineLength
+    public const DEFAULT_MESSAGE = 'The request could not be processed due to failures with the resource‘s dependencies.';
+
+    /**
      * Constructor of the class
      *
      * @param string|null $message
@@ -36,10 +43,6 @@ class HttpFailedDependencyException extends HttpException
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
-        $message ??= 'The request could not be processed due to failures with the resource‘s dependencies.';
-
-        parent::__construct(self::STATUS_FAILED_DEPENDENCY, $message, $code, $previous);
-
-        $this->setSource(ErrorSource::DEPENDENCY);
+        parent::__construct(self::STATUS_FAILED_DEPENDENCY, $message ?? self::DEFAULT_MESSAGE, $code, $previous);
     }
 }

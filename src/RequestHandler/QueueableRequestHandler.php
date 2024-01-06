@@ -35,7 +35,7 @@ final class QueueableRequestHandler extends SplQueue implements RequestHandlerIn
      */
     public function __construct(
         private RequestHandlerInterface $requestHandler,
-        MiddlewareInterface ...$middlewares
+        MiddlewareInterface ...$middlewares,
     ) {
         foreach ($middlewares as $middleware) {
             $this->enqueue($middleware);

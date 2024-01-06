@@ -42,7 +42,7 @@
         "vimeo/psalm": "^5.15",
         "sunrise/coding-standard": "^1.0",
         "sunrise/http-message": "^3.0",
-        "sunrise/hydrator": "^3.5",
+        "sunrise/hydrator": "^3.7",
         "symfony/console": "^6.0",
         "symfony/validator": "^6.0",
         "monolog/monolog": "^2.9",
@@ -60,8 +60,7 @@
     },
     "autoload": {
         "files": [
-            "functions/emit.php",
-            "functions/path_build.php"
+            "functions/emit.php"
         ],
         "psr-4": {
             "Sunrise\\Http\\Router\\": "src/"

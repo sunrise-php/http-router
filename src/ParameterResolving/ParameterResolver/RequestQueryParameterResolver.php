@@ -18,10 +18,11 @@ use Psr\Http\Message\ServerRequestInterface;
 use ReflectionNamedType;
 use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestQuery;
-use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Exception\Http\HttpUnprocessableEntityException;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
+use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
+use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationProxy;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\HydratorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -82,16 +83,14 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
             $object = $this->hydrator->hydrate($type->getName(), $context->getQueryParams());
         } catch (InvalidDataException $e) {
             throw (new HttpUnprocessableEntityException)
-                ->setSource(ErrorSource::CLIENT_REQUEST_QUERY)
-                ->addHydratorViolation(...$e->getExceptions());
+                ->addConstraintViolation(...HydratorConstraintViolationProxy::create(...$e->getExceptions()));
         }
 
         if (isset($this->validator)) {
             $violations = $this->validator->validate($object);
             if ($violations->count() > 0) {
                 throw (new HttpUnprocessableEntityException)
-                    ->setSource(ErrorSource::CLIENT_REQUEST_QUERY)
-                    ->addValidatorViolation(...$violations);
+                    ->addConstraintViolation(...ValidatorConstraintViolationProxy::create(...$violations));
             }
         }
 

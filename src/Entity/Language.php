@@ -16,11 +16,7 @@ namespace Sunrise\Http\Router\Entity;
 use Stringable;
 use Sunrise\Http\Router\Dictionary\Charset;
 
-use function join;
-
 /**
- * Language
- *
  * @since 3.0.0
  */
 final class Language implements Stringable
@@ -71,6 +67,10 @@ final class Language implements Stringable
      * Gets the language parameter's value by its given name or
      * returns the given default value if the parameter doesn't exist or is empty
      *
+     * <code>
+     *     $language->getParameter('q', '1.0');
+     * </code>
+     *
      * @param string $name
      * @param ?string $default
      *
@@ -84,7 +84,7 @@ final class Language implements Stringable
     /**
      * Checks if this language's code equals to the given language's code
      *
-     * Please note that when comparing languages, their subtags are not factored in.
+     * Please note that when comparing languages, their subtags aren't factored in.
      *
      * @param Language $other
      *
@@ -100,6 +100,12 @@ final class Language implements Stringable
      */
     public function __toString(): string
     {
-        return join('-', [$this->code, ...$this->subtags]);
+        $result = $this->code;
+
+        foreach ($this->subtags as $subtag) {
+            $result .= '-' . $subtag;
+        }
+
+        return $result;
     }
 }

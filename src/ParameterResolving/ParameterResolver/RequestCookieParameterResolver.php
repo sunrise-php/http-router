@@ -18,9 +18,9 @@ use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestCookie;
-use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
 use Sunrise\Http\Router\Exception\LogicException;
+use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
@@ -74,8 +74,7 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
                 return yield;
             }
 
-            throw (new HttpBadRequestException("The cookie {$attribute->name} must be provided."))
-                ->setSource(ErrorSource::CLIENT_REQUEST_COOKIE);
+            throw new HttpBadRequestException("The cookie {$attribute->name} must be provided.");
         }
 
         try {
@@ -86,12 +85,10 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
             );
         } catch (InvalidDataException $e) {
             throw (new HttpBadRequestException(previous: $e))
-                ->setSource(ErrorSource::CLIENT_REQUEST_COOKIE)
-                ->addHydratorViolation(...$e->getExceptions());
+                ->addConstraintViolation(...HydratorConstraintViolationProxy::create(...$e->getExceptions()));
         } catch (InvalidValueException $e) {
             throw (new HttpBadRequestException(previous: $e))
-                ->setSource(ErrorSource::CLIENT_REQUEST_COOKIE)
-                ->addHydratorViolation($e);
+                ->addConstraintViolation(...HydratorConstraintViolationProxy::create($e));
         }
     }
 }

@@ -17,7 +17,6 @@ use Generator;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
-use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Entity\Language;
 use Sunrise\Http\Router\Entity\MediaType;
 use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
@@ -86,8 +85,7 @@ final class ServerRequest implements ServerRequestInterface
         } catch (\InvalidArgumentException $e) {
             $message = sprintf('The "Content-Type" header is invalid: %s', $e->getMessage());
 
-            throw (new HttpBadRequestException($message, previous: $e))
-                ->setSource(ErrorSource::CLIENT_REQUEST_HEADER);
+            throw new HttpBadRequestException($message, previous: $e);
         }
     }
 
@@ -107,8 +105,7 @@ final class ServerRequest implements ServerRequestInterface
         } catch (\InvalidArgumentException $e) {
             $message = sprintf('The "Accept" header is invalid: %s', $e->getMessage());
 
-            throw (new HttpBadRequestException($message, previous: $e))
-                ->setSource(ErrorSource::CLIENT_REQUEST_HEADER);
+            throw new HttpBadRequestException($message, previous: $e);
         }
     }
 
@@ -128,8 +125,7 @@ final class ServerRequest implements ServerRequestInterface
         } catch (\InvalidArgumentException $e) {
             $message = sprintf('The "Accept-Language" header is invalid: %s', $e->getMessage());
 
-            throw (new HttpBadRequestException($message, previous: $e))
-                ->setSource(ErrorSource::CLIENT_REQUEST_HEADER);
+            throw new HttpBadRequestException($message, previous: $e);
         }
     }
 

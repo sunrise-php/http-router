@@ -27,6 +27,13 @@ class HttpUnprocessableEntityException extends HttpException
 {
 
     /**
+     * The error's default message
+     *
+     * @var string
+     */
+    public const DEFAULT_MESSAGE = 'The request could not be processed due to semantic violations.';
+
+    /**
      * Constructor of the class
      *
      * @param string|null $message
@@ -35,8 +42,6 @@ class HttpUnprocessableEntityException extends HttpException
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
-        $message ??= 'The request could not be processed due to semantic violations.';
-
-        parent::__construct(self::STATUS_UNPROCESSABLE_ENTITY, $message, $code, $previous);
+        parent::__construct(self::STATUS_UNPROCESSABLE_ENTITY, $message ?? self::DEFAULT_MESSAGE, $code, $previous);
     }
 }

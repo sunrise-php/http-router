@@ -82,7 +82,7 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
 
         throw new LogicException(sprintf(
             'The responder {%s} returned an unsupported response.',
-            self::stringifySource($responder),
+            self::stringifyResponder($responder),
         ));
     }
 
@@ -124,18 +124,18 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
     }
 
     /**
-     * Stringifies the given source of a response
+     * Stringifies the given responder
      *
-     * @param ReflectionFunction|ReflectionMethod $source
+     * @param ReflectionFunction|ReflectionMethod $responder
      *
      * @return string
      */
-    public static function stringifySource(ReflectionFunction|ReflectionMethod $source): string
+    public static function stringifyResponder(ReflectionFunction|ReflectionMethod $responder): string
     {
-        if ($source instanceof ReflectionMethod) {
-            return sprintf('%s::%s(...)', $source->getDeclaringClass()->getName(), $source->getName());
+        if ($responder instanceof ReflectionMethod) {
+            return sprintf('%s::%s(...)', $responder->getDeclaringClass()->getName(), $responder->getName());
         }
 
-        return sprintf('%s(...)', $source->getName());
+        return sprintf('%s(...)', $responder->getName());
     }
 }

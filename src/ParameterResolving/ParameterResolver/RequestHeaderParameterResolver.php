@@ -18,9 +18,9 @@ use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestHeader;
-use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
 use Sunrise\Http\Router\Exception\LogicException;
+use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
@@ -73,8 +73,7 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
                 return yield;
             }
 
-            throw (new HttpBadRequestException("The header {$attribute->name} must be provided."))
-                ->setSource(ErrorSource::CLIENT_REQUEST_HEADER);
+            throw new HttpBadRequestException("The header {$attribute->name} must be provided.");
         }
 
         try {
@@ -85,12 +84,10 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
             );
         } catch (InvalidDataException $e) {
             throw (new HttpBadRequestException(previous: $e))
-                ->setSource(ErrorSource::CLIENT_REQUEST_HEADER)
-                ->addHydratorViolation(...$e->getExceptions());
+                ->addConstraintViolation(...HydratorConstraintViolationProxy::create(...$e->getExceptions()));
         } catch (InvalidValueException $e) {
             throw (new HttpBadRequestException(previous: $e))
-                ->setSource(ErrorSource::CLIENT_REQUEST_HEADER)
-                ->addHydratorViolation($e);
+                ->addConstraintViolation(...HydratorConstraintViolationProxy::create($e));
         }
     }
 }

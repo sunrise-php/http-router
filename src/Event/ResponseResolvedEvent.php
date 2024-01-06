@@ -19,8 +19,6 @@ use ReflectionFunction;
 use ReflectionMethod;
 
 /**
- * ResponseResolvedEvent
- *
  * @since 3.0.0
  */
 final class ResponseResolvedEvent extends AbstractEvent

@@ -67,26 +67,6 @@ final class DescriptorLoader implements LoaderInterface
     private array $resources = [];
 
     /**
-     * @var RouteCollectionFactoryInterface
-     */
-    private RouteCollectionFactoryInterface $collectionFactory;
-
-    /**
-     * @var RouteFactoryInterface
-     */
-    private RouteFactoryInterface $routeFactory;
-
-    /**
-     * @var ReferenceResolverInterface
-     */
-    private ReferenceResolverInterface $referenceResolver;
-
-    /**
-     * @var CacheInterface|null
-     */
-    private ?CacheInterface $cache;
-
-    /**
      * @var string|null
      */
     private ?string $cacheKey = null;
@@ -100,16 +80,14 @@ final class DescriptorLoader implements LoaderInterface
      * @param CacheInterface|null $cache
      */
     public function __construct(
-        ?RouteCollectionFactoryInterface $collectionFactory = null,
-        ?RouteFactoryInterface $routeFactory = null,
-        ?ReferenceResolverInterface $referenceResolver = null,
-        ?CacheInterface $cache = null,
+        private ?RouteCollectionFactoryInterface $collectionFactory = null,
+        private ?RouteFactoryInterface $routeFactory = null,
+        private ?ReferenceResolverInterface $referenceResolver = null,
+        private ?CacheInterface $cache = null,
     ) {
-        $this->collectionFactory = $collectionFactory ?? new RouteCollectionFactory();
-        $this->routeFactory = $routeFactory ?? new RouteFactory();
-        $this->referenceResolver = $referenceResolver ?? new ReferenceResolver();
-
-        $this->cache = $cache;
+        $this->collectionFactory ??= new RouteCollectionFactory();
+        $this->routeFactory ??= new RouteFactory();
+        $this->referenceResolver ??= new ReferenceResolver();
     }
 
     /**
@@ -415,8 +393,18 @@ final class DescriptorLoader implements LoaderInterface
     private function getDirectoryClasses(string $dirname): Generator
     {
         /** @var array<string, string> $filenames */
-        // phpcs:ignore Generic.Files.LineLength
-        $filenames = iterator_to_array(new RegexIterator(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dirname, FilesystemIterator::KEY_AS_PATHNAME | FilesystemIterator::CURRENT_AS_PATHNAME)), '/\.php$/'));
+        $filenames = iterator_to_array(
+            new RegexIterator(
+                new RecursiveIteratorIterator(
+                    new RecursiveDirectoryIterator(
+                        $dirname,
+                        FilesystemIterator::KEY_AS_PATHNAME |
+                        FilesystemIterator::CURRENT_AS_PATHNAME,
+                    ),
+                ),
+                '/\.php$/',
+            ),
+        );
 
         foreach ($filenames as $filename) {
             (static function (string $filename): void {

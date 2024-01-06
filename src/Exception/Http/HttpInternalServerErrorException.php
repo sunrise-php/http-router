@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Exception\Http;
 
-use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
@@ -28,6 +27,14 @@ class HttpInternalServerErrorException extends HttpException
 {
 
     /**
+     * The error's default message
+     *
+     * @var string
+     */
+    // phpcs:ignore Generic.Files.LineLength
+    public const DEFAULT_MESSAGE = 'The server encountered an unexpected condition that prevented it from fulfilling the request.';
+
+    /**
      * Constructor of the class
      *
      * @param Throwable $error
@@ -36,19 +43,15 @@ class HttpInternalServerErrorException extends HttpException
      */
     public function __construct(Throwable $error, ?string $message = null, int $code = 0)
     {
-        $message ??= 'The server encountered an unexpected condition that prevented it from fulfilling the request.';
-
-        parent::__construct(self::STATUS_INTERNAL_SERVER_ERROR, $message, $code, $error);
-
-        $this->setSource(ErrorSource::SERVER);
+        parent::__construct(self::STATUS_INTERNAL_SERVER_ERROR, $message ?? self::DEFAULT_MESSAGE, $code, $error);
     }
 
     /**
-     * Gets the error
+     * Gets the server error
      *
      * @return Throwable
      */
-    public function getError(): Throwable
+    public function getServerError(): Throwable
     {
         /** @var Throwable */
         return $this->getPrevious();

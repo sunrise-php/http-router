@@ -18,7 +18,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use ReflectionFunction;
 use ReflectionMethod;
-use Sunrise\Http\Router\Helper\CallbackReflector;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutionerInterface;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolver\ObjectInjectionParameterResolver;
 use Sunrise\Http\Router\ResponseResolving\ResponseResolutionerInterface;
@@ -39,34 +38,20 @@ final class CallbackRequestHandler implements RequestHandlerInterface
     private $callback;
 
     /**
-     * The callback's parameter resolutioner
-     *
-     * @var ParameterResolutionerInterface
-     */
-    private ParameterResolutionerInterface $parameterResolutioner;
-
-    /**
-     * The callback's response resolutioner
-     *
-     * @var ResponseResolutionerInterface
-     */
-    private ResponseResolutionerInterface $responseResolutioner;
-
-    /**
      * Constructor of the class
      *
      * @param callable $callback
+     * @param ReflectionFunction|ReflectionMethod $callbackReflection
      * @param ParameterResolutionerInterface $parameterResolutioner
      * @param ResponseResolutionerInterface $responseResolutioner
      */
     public function __construct(
         callable $callback,
-        ParameterResolutionerInterface $parameterResolutioner,
-        ResponseResolutionerInterface $responseResolutioner,
+        private ReflectionFunction|ReflectionMethod $callbackReflection,
+        private ParameterResolutionerInterface $parameterResolutioner,
+        private ResponseResolutionerInterface $responseResolutioner,
     ) {
         $this->callback = $callback;
-        $this->parameterResolutioner = $parameterResolutioner;
-        $this->responseResolutioner = $responseResolutioner;
     }
 
     /**
@@ -76,7 +61,7 @@ final class CallbackRequestHandler implements RequestHandlerInterface
      */
     public function getCallbackReflection(): ReflectionFunction|ReflectionMethod
     {
-        return CallbackReflector::reflectCallback($this->callback);
+        return $this->callbackReflection;
     }
 
     /**
@@ -84,17 +69,14 @@ final class CallbackRequestHandler implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $responder = $this->getCallbackReflection();
-
         $arguments = $this->parameterResolutioner
             ->withContext($request)
             ->withPriorityResolver(
                 new ObjectInjectionParameterResolver($request),
             )
-            ->resolveParameters(...$responder->getParameters());
+            ->resolveParameters(...$this->callbackReflection->getParameters());
 
-        $response = ($this->callback)(...$arguments);
-
-        return $this->responseResolutioner->resolveResponse($request, $response, $responder);
+        // phpcs:ignore Generic.Files.LineLength
+        return $this->responseResolutioner->resolveResponse($request, ($this->callback)(...$arguments), $this->callbackReflection);
     }
 }

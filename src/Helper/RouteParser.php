@@ -35,18 +35,19 @@ final class RouteParser
      *     name: string,
      *     value?: string,
      *     pattern?: string,
-     *     optional?: true,
-     *     before?: ?string,
-     *     after?: ?string,
-     *     variable: string
+     *     isOptional?: true,
+     *     variable: string,
+     *     replaceable: string
      * }>
      *
      * @throws InvalidArgumentException If the route isn't valid.
      */
     public static function parseRoute(string $route): array
     {
+        static $digits = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
         // phpcs:ignore Generic.Files.LineLength
-        /** @var list<array{name?: string, value?: string, pattern?: string, optional?: true, before?: ?string, after?: ?string}> $matches */
+        /** @var list<array{name?: string, value?: string, pattern?: string, isOptional?: true, before?: ?string, after?: ?string}> $matches */
         $matches = [];
 
         $index = -1;
@@ -89,7 +90,7 @@ final class RouteParser
                 }
 
                 if ($optionalPartIsOccupied) {
-                    $matches[$index]['optional'] = true;
+                    $matches[$index]['isOptional'] = true;
                     $matches[$index]['before'] = $optionalPartBeforeVariable;
                     $matches[$index]['after'] = $optionalPartAfterVariable;
                 }
@@ -231,7 +232,7 @@ final class RouteParser
 
             if ($inVariableName) {
                 /** @psalm-suppress InvalidArrayOffset */
-                if (!isset($matches[$index]['name']) && isset(Charset::DIGIT[$route[$offset]])) {
+                if (!isset($matches[$index]['name']) && isset($digits[$route[$offset]])) {
                     throw new InvalidArgumentException(sprintf(
                         'The route %s could not be parsed due to a syntax error. ' .
                         'An invalid character was found at position %d. ' .
@@ -319,7 +320,7 @@ final class RouteParser
         }
 
         // phpcs:ignore Generic.Files.LineLength
-        /** @var list<array{name: string, value?: string, pattern?: string, optional?: true, before?: ?string, after?: ?string}> $matches */
+        /** @var list<array{name: string, value?: string, pattern?: string, isOptional?: true, before?: ?string, after?: ?string}> $matches */
 
         foreach ($matches as $index => $match) {
             $matches[$index]['variable'] = '{' . $match['name'];
@@ -332,10 +333,17 @@ final class RouteParser
             }
 
             $matches[$index]['variable'] .= '}';
+
+            $matches[$index]['replaceable'] = $matches[$index]['variable'];
+
+            if (isset($match['isOptional'])) {
+                // phpcs:ignore Generic.Files.LineLength
+                $matches[$index]['replaceable'] = '(' . ($match['before'] ?? '') . $matches[$index]['variable'] . ($match['after'] ?? '') . ')';
+            }
         }
 
         // phpcs:ignore Generic.Files.LineLength
-        /** @var list<array{name: string, value?: string, pattern?: string, optional?: true, before?: ?string, after?: ?string, variable: string}> $matches */
+        /** @var list<array{name: string, value?: string, pattern?: string, isOptional?: true, variable: string, replaceable: string}> $matches */
 
         return $matches;
     }

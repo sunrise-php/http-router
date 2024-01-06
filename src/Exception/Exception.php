@@ -16,7 +16,7 @@ namespace Sunrise\Http\Router\Exception;
 use Exception as BaseException;
 
 /**
- * The package base exception
+ * The package's base exception
  */
 class Exception extends BaseException implements ExceptionInterface
 {

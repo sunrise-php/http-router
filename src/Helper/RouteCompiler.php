@@ -37,23 +37,30 @@ final class RouteCompiler
     {
         $matches = RouteParser::parseRoute($route);
 
+        $search = [];
+        $replace = [];
         foreach ($matches as $match) {
-            $route = str_replace($match['variable'], '{' . $match['name'] . '}', $route);
+            $search[] = $match['variable'];
+            $replace[] = '{' . $match['name'] . '}';
         }
 
+        $route = str_replace($search, $replace, $route);
         $route = addcslashes($route, '#$*+-.?[\]^|');
         $route = str_replace(['(', ')'], ['(?:', ')?'], $route);
 
+        $search = [];
+        $replace = [];
         foreach ($matches as $match) {
             $pattern = $match['pattern'] ?? '[^/]+';
             if (isset(Router::$patterns[$pattern])) {
                 $pattern = Router::$patterns[$pattern];
             }
 
-            $subpattern = '(?<' . $match['name'] . '>' . $pattern . ')';
-
-            $route = str_replace('{' . $match['name'] . '}', $subpattern, $route);
+            $search[] = '{' . $match['name'] . '}';
+            $replace[] = '(?<' . $match['name'] . '>' . $pattern . ')';
         }
+
+        $route = str_replace($search, $replace, $route);
 
         return '#^' . $route . '$#uD';
     }

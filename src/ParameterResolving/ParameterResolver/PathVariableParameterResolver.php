@@ -18,11 +18,11 @@ use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\PathVariable;
-use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Exception\Http\HttpNotFoundException;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
 use Sunrise\Http\Router\RouteInterface;
+use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
@@ -108,12 +108,10 @@ final class PathVariableParameterResolver implements ParameterResolverInterface
             );
         } catch (InvalidDataException $e) {
             throw (new HttpNotFoundException(previous: $e))
-                ->setSource(ErrorSource::CLIENT_REQUEST_PATH)
-                ->addHydratorViolation(...$e->getExceptions());
+                ->addConstraintViolation(...HydratorConstraintViolationProxy::create(...$e->getExceptions()));
         } catch (InvalidValueException $e) {
             throw (new HttpNotFoundException(previous: $e))
-                ->setSource(ErrorSource::CLIENT_REQUEST_PATH)
-                ->addHydratorViolation($e);
+                ->addConstraintViolation(...HydratorConstraintViolationProxy::create($e));
         }
     }
 }

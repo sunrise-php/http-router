@@ -19,13 +19,12 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Psr\SimpleCache\CacheInterface;
-use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Event\RouteMatchedEvent;
 use Sunrise\Http\Router\Exception\Http\HttpMethodNotAllowedException;
 use Sunrise\Http\Router\Exception\Http\HttpNotFoundException;
 use Sunrise\Http\Router\Exception\Http\HttpUnsupportedMediaTypeException;
 use Sunrise\Http\Router\Exception\InvalidArgumentException;
+use Sunrise\Http\Router\Helper\RouteBuilder;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
@@ -64,11 +63,6 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
     private ReferenceResolverInterface $referenceResolver;
 
     /**
-     * @var CacheInterface|null
-     */
-    private ?CacheInterface $cache;
-
-    /**
      * @var list<MiddlewareInterface>
      */
     private array $middlewares = [];
@@ -83,25 +77,22 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
      */
     private ?EventDispatcherInterface $eventDispatcher = null;
 
-    private array $compiledRegularExpressions = [];
+    private array $routeRegex = [];
 
     /**
      * Constructor of the class
      *
      * @param RouteCollectionFactoryInterface|null $collectionFactory
      * @param ReferenceResolverInterface|null $referenceResolver
-     * @param CacheInterface|null $cache
      *
      * @since 3.0.0
      */
     public function __construct(
         ?RouteCollectionFactoryInterface $collectionFactory = null,
         ?ReferenceResolverInterface $referenceResolver = null,
-        ?CacheInterface $cache = null,
     ) {
         $collectionFactory ??= new RouteCollectionFactory();
         $this->referenceResolver = $referenceResolver ?? new ReferenceResolver();
-        $this->cache = $cache;
         $this->routes = $collectionFactory->createCollection();
     }
 
@@ -140,11 +131,8 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
      */
     public function getRoute(string $name): RouteInterface
     {
-        if ($this->routes->has($name)) {
-            return $this->routes->get($name);
-        }
-
-        throw new InvalidArgumentException(sprintf('The route %s does not exist.', $name));
+        return $this->routes->get($name) ??
+            throw new InvalidArgumentException(sprintf('The route %s does not exist.', $name));
     }
 
     /**
@@ -217,6 +205,8 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
      * @param mixed ...$middlewares
      *
      * @return void
+     *
+     * @since 3.0.0
      */
     public function addRouteAwareMiddleware(mixed ...$middlewares): void
     {
@@ -243,18 +233,17 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
      * Generates a URI for the given named route
      *
      * @param string $name
-     * @param array<string, string> $attributes
-     * @param bool $strict
+     * @param array<string, string> $variables
      *
      * @return string
+     *
+     * @throws \InvalidArgumentException
      */
-    public function generateUri(string $name, array $attributes = [], bool $strict = false): string
+    public function generateUri(string $name, array $variables = []): string
     {
-        $route = $this->routes->get($name);
+        $route = $this->getRoute($name);
 
-        $attributes += $route->getAttributes();
-
-        return path_build($route->getPath(), $attributes, $strict);
+        return RouteBuilder::buildRoute($route->getPath(), $variables);
     }
 
     /**
@@ -280,12 +269,11 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
         $allowedMethods = [];
 
         foreach ($this->routes->all() as $route) {
-            $this->compiledRegularExpressions[$route->getName()] ??= RouteCompiler::compileRegex($route->getPath());
+            $this->routeRegex[$route->getName()] ??= RouteCompiler::compileRegex($route->getPath());
 
             // https://github.com/sunrise-php/http-router/issues/50
             // https://tools.ietf.org/html/rfc7231#section-6.5.5
-            // phpcs:ignore Generic.Files.LineLength
-            if (!preg_match($this->compiledRegularExpressions[$route->getName()], $requestPath, $matches, PREG_UNMATCHED_AS_NULL)) {
+            if (!preg_match($this->routeRegex[$route->getName()], $requestPath, $matches, PREG_UNMATCHED_AS_NULL)) {
                 continue;
             }
 
@@ -308,7 +296,7 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
             /** @var array<string, string> $attributes */
             $attributes = [];
             foreach ($matches as $key => $value) {
-                if ((string) $key === $key && isset($value)) {
+                if (isset($value) && (string) $key === $key) {
                     $attributes[$key] = $value;
                 }
             }
@@ -322,8 +310,7 @@ class Router implements RequestHandlerInterface, RequestMethodInterface
             throw new HttpMethodNotAllowedException($allowedMethods);
         }
 
-        throw (new HttpNotFoundException)
-            ->setSource(ErrorSource::CLIENT_REQUEST_PATH);
+        throw new HttpNotFoundException();
     }
 
     /**

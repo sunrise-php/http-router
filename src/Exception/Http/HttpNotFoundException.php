@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Exception\Http;
 
-use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
@@ -28,6 +27,13 @@ class HttpNotFoundException extends HttpException
 {
 
     /**
+     * The error's default message
+     *
+     * @var string
+     */
+    public const DEFAULT_MESSAGE = 'The requested page or resource could not be found.';
+
+    /**
      * Constructor of the class
      *
      * @param string|null $message
@@ -36,10 +42,6 @@ class HttpNotFoundException extends HttpException
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
-        $message ??= 'The requested page or resource could not be found.';
-
-        parent::__construct(self::STATUS_NOT_FOUND, $message, $code, $previous);
-
-        $this->setSource(ErrorSource::CLIENT_REQUEST_URI);
+        parent::__construct(self::STATUS_NOT_FOUND, $message ?? self::DEFAULT_MESSAGE, $code, $previous);
     }
 }

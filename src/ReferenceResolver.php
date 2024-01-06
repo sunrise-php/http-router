@@ -18,6 +18,8 @@ use Generator;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use ReflectionClass;
+use ReflectionFunction;
+use ReflectionMethod;
 use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\Middleware\CallbackMiddleware;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
@@ -43,16 +45,6 @@ final class ReferenceResolver implements ReferenceResolverInterface
 {
 
     /**
-     * @var ParameterResolutionerInterface
-     */
-    private ParameterResolutionerInterface $parameterResolutioner;
-
-    /**
-     * @var ResponseResolutionerInterface
-     */
-    private ResponseResolutionerInterface $responseResolutioner;
-
-    /**
      * @var array<class-string, object>
      */
     private array $resolvedClasses = [];
@@ -64,11 +56,11 @@ final class ReferenceResolver implements ReferenceResolverInterface
      * @param ResponseResolutionerInterface|null $responseResolutioner
      */
     public function __construct(
-        ?ParameterResolutionerInterface $parameterResolutioner = null,
-        ?ResponseResolutionerInterface $responseResolutioner = null,
+        private ?ParameterResolutionerInterface $parameterResolutioner = null,
+        private ?ResponseResolutionerInterface $responseResolutioner = null,
     ) {
-        $this->parameterResolutioner = $parameterResolutioner ?? new ParameterResolutioner();
-        $this->responseResolutioner = $responseResolutioner ?? new ResponseResolutioner();
+        $this->parameterResolutioner ??= new ParameterResolutioner();
+        $this->responseResolutioner ??= new ResponseResolutioner();
     }
 
     /**
@@ -83,7 +75,12 @@ final class ReferenceResolver implements ReferenceResolverInterface
         }
 
         if ($reference instanceof Closure) {
-            return new CallbackRequestHandler($reference, $this->parameterResolutioner, $this->responseResolutioner);
+            return new CallbackRequestHandler(
+                $reference,
+                new ReflectionFunction($reference),
+                $this->parameterResolutioner,
+                $this->responseResolutioner,
+            );
         }
 
         // https://github.com/php/php-src/blob/3ed526441400060aa4e618b91b3352371fcd02a8/Zend/zend_API.c#L3884-L3932
@@ -95,8 +92,12 @@ final class ReferenceResolver implements ReferenceResolverInterface
             }
 
             if (is_callable($reference)) {
-                // phpcs:ignore Generic.Files.LineLength
-                return new CallbackRequestHandler($reference, $this->parameterResolutioner, $this->responseResolutioner);
+                return new CallbackRequestHandler(
+                    $reference,
+                    new ReflectionMethod($reference[0], $reference[1]),
+                    $this->parameterResolutioner,
+                    $this->responseResolutioner,
+                );
             }
         }
 
@@ -122,7 +123,12 @@ final class ReferenceResolver implements ReferenceResolverInterface
         }
 
         if ($reference instanceof Closure) {
-            return new CallbackMiddleware($reference, $this->parameterResolutioner, $this->responseResolutioner);
+            return new CallbackMiddleware(
+                $reference,
+                new ReflectionFunction($reference),
+                $this->parameterResolutioner,
+                $this->responseResolutioner,
+            );
         }
 
         if (is_string($reference) && is_subclass_of($reference, MiddlewareInterface::class)) {
@@ -138,7 +144,12 @@ final class ReferenceResolver implements ReferenceResolverInterface
             }
 
             if (is_callable($reference)) {
-                return new CallbackMiddleware($reference, $this->parameterResolutioner, $this->responseResolutioner);
+                return new CallbackMiddleware(
+                    $reference,
+                    new ReflectionMethod($reference[0], $reference[1]),
+                    $this->parameterResolutioner,
+                    $this->responseResolutioner,
+                );
             }
         }
 

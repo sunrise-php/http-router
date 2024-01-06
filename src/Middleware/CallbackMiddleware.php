@@ -17,7 +17,8 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Helper\CallbackReflector;
+use ReflectionFunction;
+use ReflectionMethod;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutionerInterface;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolver\ObjectInjectionParameterResolver;
 use Sunrise\Http\Router\ResponseResolving\ResponseResolutionerInterface;
@@ -38,34 +39,20 @@ final class CallbackMiddleware implements MiddlewareInterface
     private $callback;
 
     /**
-     * The callback's parameter resolutioner
-     *
-     * @var ParameterResolutionerInterface
-     */
-    private ParameterResolutionerInterface $parameterResolutioner;
-
-    /**
-     * The callback's response resolutioner
-     *
-     * @var ResponseResolutionerInterface
-     */
-    private ResponseResolutionerInterface $responseResolutioner;
-
-    /**
      * Constructor of the class
      *
      * @param callable $callback
+     * @param ReflectionFunction|ReflectionMethod $callbackReflection
      * @param ParameterResolutionerInterface $parameterResolutioner
      * @param ResponseResolutionerInterface $responseResolutioner
      */
     public function __construct(
         callable $callback,
-        ParameterResolutionerInterface $parameterResolutioner,
-        ResponseResolutionerInterface $responseResolutioner,
+        private ReflectionFunction|ReflectionMethod $callbackReflection,
+        private ParameterResolutionerInterface $parameterResolutioner,
+        private ResponseResolutionerInterface $responseResolutioner,
     ) {
         $this->callback = $callback;
-        $this->parameterResolutioner = $parameterResolutioner;
-        $this->responseResolutioner = $responseResolutioner;
     }
 
     /**
@@ -73,18 +60,15 @@ final class CallbackMiddleware implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $responder = CallbackReflector::reflectCallback($this->callback);
-
         $arguments = $this->parameterResolutioner
             ->withContext($request)
             ->withPriorityResolver(
                 new ObjectInjectionParameterResolver($request),
                 new ObjectInjectionParameterResolver($handler),
             )
-            ->resolveParameters(...$responder->getParameters());
+            ->resolveParameters(...$this->callbackReflection->getParameters());
 
-        $response = ($this->callback)(...$arguments);
-
-        return $this->responseResolutioner->resolveResponse($request, $response, $responder);
+        // phpcs:ignore Generic.Files.LineLength
+        return $this->responseResolutioner->resolveResponse($request, ($this->callback)(...$arguments), $this->callbackReflection);
     }
 }

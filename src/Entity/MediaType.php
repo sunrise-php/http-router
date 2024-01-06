@@ -17,8 +17,6 @@ use Stringable;
 use Sunrise\Http\Router\Dictionary\Charset;
 
 /**
- * MediaType
- *
  * @since 3.0.0
  */
 final class MediaType implements Stringable
@@ -140,6 +138,10 @@ final class MediaType implements Stringable
     /**
      * Gets the media type parameter's value by its given name or
      * returns the given default value if the parameter doesn't exist or is empty
+     *
+     * <code>
+     *     $mediaType->getParameter('q', '1.0');
+     * </code>
      *
      * @param string $name
      * @param ?string $default

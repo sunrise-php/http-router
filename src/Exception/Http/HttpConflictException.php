@@ -27,6 +27,14 @@ class HttpConflictException extends HttpException
 {
 
     /**
+     * The error's default message
+     *
+     * @var string
+     */
+    // phpcs:ignore Generic.Files.LineLength
+    public const DEFAULT_MESSAGE = 'The request could not be processed due to conflicts with the resource‘s current state.';
+
+    /**
      * Constructor of the class
      *
      * @param string|null $message
@@ -35,8 +43,6 @@ class HttpConflictException extends HttpException
      */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
-        $message ??= 'The request could not be processed due to conflicts with the resource‘s current state.';
-
-        parent::__construct(self::STATUS_CONFLICT, $message, $code, $previous);
+        parent::__construct(self::STATUS_CONFLICT, $message ?? self::DEFAULT_MESSAGE, $code, $previous);
     }
 }

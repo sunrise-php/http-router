@@ -14,10 +14,10 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Exception;
 
 use Fig\Http\Message\StatusCodeInterface;
-use Sunrise\Http\Router\Dto\ViolationDto;
+use Sunrise\Http\Router\Validation\ConstraintViolationInterface;
 
 /**
- * Base HTTP exception interface
+ * The package's base HTTP exception interface
  *
  * @since 3.0.0
  */
@@ -26,6 +26,8 @@ interface HttpExceptionInterface extends ExceptionInterface, StatusCodeInterface
 
     /**
      * Gets HTTP status code that will be sent to the client
+     *
+     * See the {@see StatusCodeInterface} dictionary.
      *
      * @return int<100, 599>
      */
@@ -36,19 +38,12 @@ interface HttpExceptionInterface extends ExceptionInterface, StatusCodeInterface
      *
      * @return list<array{0: string, 1: string}>
      */
-    public function getHeaders(): array;
+    public function getHeaderFields(): array;
 
     /**
-     * Gets the error's source
+     * Gets the list of constraint violations associated with the error
      *
-     * @return string
+     * @return list<ConstraintViolationInterface>
      */
-    public function getSource(): string;
-
-    /**
-     * Gets the list of violations associated with the error
-     *
-     * @return list<ViolationDto>
-     */
-    public function getViolations(): array;
+    public function getConstraintViolations(): array;
 }

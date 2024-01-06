@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Exception\Http;
 
 use Stringable;
-use Sunrise\Http\Router\Dictionary\ErrorSource;
 use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
@@ -29,6 +28,14 @@ class HttpUnsupportedMediaTypeException extends HttpException
 {
 
     /**
+     * The error's default message
+     *
+     * @var string
+     */
+    // phpcs:ignore Generic.Files.LineLength
+    public const DEFAULT_MESSAGE = 'The request could not be processed due to an unsupported format of the request payload.';
+
+    /**
      * Constructor of the class
      *
      * @param list<Stringable|string> $supportedMediaTypes
@@ -39,14 +46,10 @@ class HttpUnsupportedMediaTypeException extends HttpException
     // phpcs:ignore Generic.Files.LineLength
     public function __construct(private array $supportedMediaTypes, ?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
-        $message ??= 'The request could not be processed due to an unsupported format of the request payload.';
-
-        parent::__construct(self::STATUS_UNSUPPORTED_MEDIA_TYPE, $message, $code, $previous);
-
-        $this->setSource(ErrorSource::CLIENT_REQUEST_BODY);
+        parent::__construct(self::STATUS_UNSUPPORTED_MEDIA_TYPE, $message ?? self::DEFAULT_MESSAGE, $code, $previous);
 
         // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept
-        $this->addHeader('Accept', ...$supportedMediaTypes);
+        $this->addHeaderField('Accept', ...$supportedMediaTypes);
     }
 
     /**

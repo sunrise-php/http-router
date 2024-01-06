@@ -72,7 +72,7 @@ final class JsonResponseResolver implements ResponseResolverInterface
         } catch (JsonException $e) {
             throw new LogicException(sprintf(
                 'The responder {%s} returned a response that could not be encoded to JSON due to: %s',
-                ResponseResolutioner::stringifySource($responder),
+                ResponseResolutioner::stringifyResponder($responder),
                 $e->getMessage(),
             ));
         }
