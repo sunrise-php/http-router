@@ -11,19 +11,14 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router;
+namespace Sunrise\Http\Router\Entity;
 
 /**
- * RouteCollectionFactory
+ * @since 3.0.0
  */
-class RouteCollectionFactory implements RouteCollectionFactoryInterface
+interface MediaTypeInterface
 {
+    public function getType(): string;
 
-    /**
-     * @inheritDoc
-     */
-    public function createCollection(RouteInterface ...$routes): RouteCollectionInterface
-    {
-        return new RouteCollection(...$routes);
-    }
+    public function getSubtype(): string;
 }

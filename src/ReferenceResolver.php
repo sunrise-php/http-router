@@ -15,17 +15,15 @@ namespace Sunrise\Http\Router;
 
 use Closure;
 use Generator;
+use LogicException;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionMethod;
-use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\Middleware\CallbackMiddleware;
-use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutionerInterface;
 use Sunrise\Http\Router\RequestHandler\CallbackRequestHandler;
-use Sunrise\Http\Router\ResponseResolving\ResponseResolutioner;
 use Sunrise\Http\Router\ResponseResolving\ResponseResolutionerInterface;
 
 use function class_exists;
@@ -43,24 +41,15 @@ use function sprintf;
  */
 final class ReferenceResolver implements ReferenceResolverInterface
 {
-
     /**
      * @var array<class-string, object>
      */
     private array $resolvedClasses = [];
 
-    /**
-     * Constructor of the class
-     *
-     * @param ParameterResolutionerInterface|null $parameterResolutioner
-     * @param ResponseResolutionerInterface|null $responseResolutioner
-     */
     public function __construct(
-        private ?ParameterResolutionerInterface $parameterResolutioner = null,
-        private ?ResponseResolutionerInterface $responseResolutioner = null,
+        private readonly ParameterResolutionerInterface $parameterResolutioner,
+        private readonly ResponseResolutionerInterface $responseResolutioner,
     ) {
-        $this->parameterResolutioner ??= new ParameterResolutioner();
-        $this->responseResolutioner ??= new ResponseResolutioner();
     }
 
     /**

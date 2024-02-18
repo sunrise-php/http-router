@@ -19,25 +19,18 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
- * CallableMiddleware
- *
  * @since 2.8.0
  *
  * @template T as callable(ServerRequestInterface=, RequestHandlerInterface=): ResponseInterface
  */
 final class CallableMiddleware implements MiddlewareInterface
 {
-
     /**
-     * The middleware's callback
-     *
      * @var T
      */
     private $callback;
 
     /**
-     * Constructor of the class
-     *
      * @param T $callback
      */
     public function __construct(callable $callback)

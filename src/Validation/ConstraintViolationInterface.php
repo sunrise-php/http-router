@@ -36,7 +36,7 @@ interface ConstraintViolationInterface
     /**
      * Gets the violation's message placeholders
      *
-     * @return array<string, int|float|string>
+     * @return array<string, mixed>
      */
     public function getMessagePlaceholders(): array;
 

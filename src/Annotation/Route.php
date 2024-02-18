@@ -15,47 +15,43 @@ namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
 use Fig\Http\Message\RequestMethodInterface;
-use Sunrise\Http\Router\Entity\MediaType;
+use Sunrise\Http\Router\Entity\EncodingInterface;
+use Sunrise\Http\Router\Entity\MediaTypeInterface;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
 final class Route implements RequestMethodInterface
 {
-
-    /**
-     * The annotation's holder
-     *
-     * @var mixed
-     */
     public mixed $holder;
 
-    /**
-     * Constructor of the class
-     *
-     * @param  non-empty-string                $name          The route's name
-     * @param  non-empty-string                $path          The route's path
-     * @param  non-empty-string|null           $method        The route's method
-     * @param  list<non-empty-string>          $methods       The route's methods
-     * @param  list<mixed>                     $middlewares   The route's middlewares
-     * @param  array<non-empty-string, mixed>  $attributes    The route's attributes
-     * @param  list<MediaType>                 $consumes      The route's consumes media types
-     * @param  list<MediaType>                 $produces      The route's produces media types
-     * @param  non-empty-string|null           $summary       The route's summary
-     * @param  non-empty-string|null           $description   The route's description
-     * @param  list<non-empty-string>          $tags          The route's tags
-     * @param  bool                            $isDeprecated  The route's deprecation sign
-     * @param  int<min, max>                   $priority      The route's priority (default 0)
-     */
+    /** @var list<string> */
+    public array $prefixes = [];
+
+    /** @var non-empty-string|null */
+    public ?string $pattern = null;
+
     public function __construct(
         public string $name,
         public string $path = '/',
         ?string $method = null,
+        /** @var list<string> */
         public array $methods = [],
+        /** @var list<mixed> */
         public array $middlewares = [],
+        /** @var array<string, mixed> */
         public array $attributes = [],
-        public array $consumes = [],
-        public array $produces = [],
+        /** @var array<string, mixed> */
+        public array $constraints = [],
+        /** @var list<EncodingInterface> */
+        public array $consumesEncodings = [],
+        /** @var list<EncodingInterface> */
+        public array $producesEncodings = [],
+        /** @var list<MediaTypeInterface> */
+        public array $consumesMediaTypes = [],
+        /** @var list<MediaTypeInterface> */
+        public array $producesMediaTypes = [],
         public ?string $summary = null,
         public ?string $description = null,
+        /** @var list<string> */
         public array $tags = [],
         public bool $isDeprecated = false,
         public int $priority = 0,

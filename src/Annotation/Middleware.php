@@ -21,13 +21,8 @@ use Attribute;
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 final class Middleware
 {
-
-    /**
-     * Constructor of the class
-     *
-     * @param mixed $value
-     */
-    public function __construct(public mixed $value)
-    {
+    public function __construct(
+        public readonly mixed $value,
+    ) {
     }
 }

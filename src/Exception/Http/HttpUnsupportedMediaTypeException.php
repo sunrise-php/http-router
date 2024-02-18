@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Exception\Http;
 
 use Stringable;
+use Sunrise\Http\Router\Entity\MediaTypeInterface;
 use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 
@@ -38,14 +39,20 @@ class HttpUnsupportedMediaTypeException extends HttpException
     /**
      * Constructor of the class
      *
-     * @param list<Stringable|string> $supportedMediaTypes
+     * @param list<MediaTypeInterface|Stringable|string> $supportedMediaTypes
      * @param string|null $message
      * @param int $code
      * @param Throwable|null $previous
      */
     // phpcs:ignore Generic.Files.LineLength
-    public function __construct(private array $supportedMediaTypes, ?string $message = null, int $code = 0, ?Throwable $previous = null)
+    public function __construct(private readonly array $supportedMediaTypes, ?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
+        foreach ($supportedMediaTypes as $index => $supportedMediaType) {
+            if ($supportedMediaType instanceof MediaTypeInterface) {
+                $supportedMediaTypes[$index] = $supportedMediaType->getType() . '/' . $supportedMediaType->getSubtype();
+            }
+        }
+
         parent::__construct(self::STATUS_UNSUPPORTED_MEDIA_TYPE, $message ?? self::DEFAULT_MESSAGE, $code, $previous);
 
         // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept

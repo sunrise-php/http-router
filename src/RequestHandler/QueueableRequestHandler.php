@@ -20,22 +20,16 @@ use Psr\Http\Server\RequestHandlerInterface;
 use SplQueue;
 
 /**
- * QueueableRequestHandler
- *
  * @extends SplQueue<MiddlewareInterface>
  */
 final class QueueableRequestHandler extends SplQueue implements RequestHandlerInterface
 {
-
     /**
-     * Constructor of the class
-     *
-     * @param RequestHandlerInterface $requestHandler
-     * @param MiddlewareInterface ...$middlewares
+     * @param array<array-key, MiddlewareInterface> $middlewares
      */
     public function __construct(
-        private RequestHandlerInterface $requestHandler,
-        MiddlewareInterface ...$middlewares,
+        private readonly RequestHandlerInterface $requestHandler,
+        array $middlewares,
     ) {
         foreach ($middlewares as $middleware) {
             $this->enqueue($middleware);
@@ -47,10 +41,8 @@ final class QueueableRequestHandler extends SplQueue implements RequestHandlerIn
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        if ($this->isEmpty()) {
-            return $this->requestHandler->handle($request);
-        }
-
-        return ($clone = clone $this)->dequeue()->process($request, $clone);
+        return ! $this->isEmpty() ?
+            ($clone = clone $this)->dequeue()->process($request, $clone) :
+            $this->requestHandler->handle($request);
     }
 }

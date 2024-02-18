@@ -11,13 +11,15 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Exception;
+namespace Sunrise\Http\Router\Entity;
 
 /**
- * RoutePathProcessingException
- *
  * @since 3.0.0
  */
-class RoutePathProcessingException extends Exception
+final class LanguageComparator
 {
+    public function equals(LanguageInterface $a, LanguageInterface $b): bool
+    {
+        return $a->getCode() === $b->getCode() || $a->getCode() === '*' || $b->getCode() === '*';
+    }
 }

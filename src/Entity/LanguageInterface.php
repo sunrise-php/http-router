@@ -11,15 +11,12 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Exception;
-
-use LogicException as BaseLogicException;
+namespace Sunrise\Http\Router\Entity;
 
 /**
- * LogicException
- *
  * @since 3.0.0
  */
-class LogicException extends BaseLogicException implements ExceptionInterface
+interface LanguageInterface
 {
+    public function getCode(): string;
 }

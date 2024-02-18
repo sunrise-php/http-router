@@ -63,7 +63,7 @@ $collector->get('home', '/', [HomeRequestHandler::class, 'index']);
 $collector->setContainer($container);
 
 $router = new Router();
-$router->addRoute(...$collector->getCollection()->all());
+$router->addRoute(...$collector->getRoutes()->all());
 
 $request = ServerRequestFactory::fromGlobals();
 $response = $router->handle($request);
@@ -244,7 +244,7 @@ $collector->setContainer($container);
 $collector->get('home', '/', new HomeController());
 
 $router = new Router();
-$router->addRoute(...$collector->getCollection()->all());
+$router->addRoute(...$collector->getRoutes()->all());
 
 // if the router matching should be isolated for top middlewares...
 // for example for error handling...
@@ -279,7 +279,7 @@ $collector->get('home', '/', new CallbackRequestHandler(function ($request) {
 }));
 
 $router = new Router();
-$router->addRoute(...$collector->getCollection()->all());
+$router->addRoute(...$collector->getRoutes()->all());
 
 $router->addMiddleware(new CallbackMiddleware(function ($request, $handler) {
     try {

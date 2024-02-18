@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\ResponseResolving;
 
-use Psr\EventDispatcher\EventDispatcherInterface;
+use LogicException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
@@ -21,8 +21,6 @@ use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\ResponseHeader;
 use Sunrise\Http\Router\Annotation\ResponseStatus;
-use Sunrise\Http\Router\Event\ResponseResolvedEvent;
-use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ResponseResolving\ResponseResolver\ResponseResolverInterface;
 
 use function sprintf;
@@ -39,15 +37,6 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
      * @var list<ResponseResolverInterface>
      */
     private array $resolvers = [];
-
-    /**
-     * Constructor of the class
-     *
-     * @param EventDispatcherInterface|null $eventDispatcher
-     */
-    public function __construct(private ?EventDispatcherInterface $eventDispatcher = null)
-    {
-    }
 
     /**
      * @inheritDoc
@@ -112,12 +101,6 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
         foreach ($attributes as $attribute) {
             $header = $attribute->newInstance();
             $response = $response->withHeader($header->name, $header->value);
-        }
-
-        if (isset($this->eventDispatcher)) {
-            $event = new ResponseResolvedEvent($request, $response, $responder);
-            $this->eventDispatcher->dispatch($event);
-            $response = $event->getResponse();
         }
 
         return $response;

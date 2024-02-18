@@ -21,16 +21,9 @@ use Attribute;
 #[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION)]
 final class JsonResponse
 {
-
-    /**
-     * Constructor of the class
-     *
-     * @param int $flags
-     * @param int $depth
-     *
-     * @link http://php.net/json_encode
-     */
-    public function __construct(public int $flags = 0, public int $depth = 512)
-    {
+    public function __construct(
+        public readonly int $flags = 0,
+        public readonly int $depth = 512,
+    ) {
     }
 }

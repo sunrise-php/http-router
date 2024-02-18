@@ -13,201 +13,124 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Loader;
 
-use FilesystemIterator;
 use Generator;
+use InvalidArgumentException;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\SimpleCache\CacheInterface;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
-use RegexIterator;
-use Sunrise\Http\Router\Annotation\Consumes;
+use Sunrise\Http\Router\Annotation\Constraint;
+use Sunrise\Http\Router\Annotation\ConsumesEncoding;
+use Sunrise\Http\Router\Annotation\ConsumesMediaType;
+use Sunrise\Http\Router\Annotation\DefaultAttribute;
 use Sunrise\Http\Router\Annotation\Deprecated;
 use Sunrise\Http\Router\Annotation\Description;
 use Sunrise\Http\Router\Annotation\Method;
 use Sunrise\Http\Router\Annotation\Middleware;
 use Sunrise\Http\Router\Annotation\Postfix;
 use Sunrise\Http\Router\Annotation\Prefix;
-use Sunrise\Http\Router\Annotation\Produces;
-use Sunrise\Http\Router\Annotation\Route;
+use Sunrise\Http\Router\Annotation\ProducesEncoding;
+use Sunrise\Http\Router\Annotation\ProducesMediaType;
+use Sunrise\Http\Router\Annotation\Route as Descriptor;
 use Sunrise\Http\Router\Annotation\Summary;
 use Sunrise\Http\Router\Annotation\Tag;
-use Sunrise\Http\Router\Entity\MediaType;
-use Sunrise\Http\Router\Exception\InvalidArgumentException;
-use Sunrise\Http\Router\ReferenceResolver;
-use Sunrise\Http\Router\ReferenceResolverInterface;
-use Sunrise\Http\Router\RouteCollectionFactory;
-use Sunrise\Http\Router\RouteCollectionFactoryInterface;
-use Sunrise\Http\Router\RouteCollectionInterface;
-use Sunrise\Http\Router\RouteFactory;
-use Sunrise\Http\Router\RouteFactoryInterface;
+use Sunrise\Http\Router\Helper\FilesystemHelper;
+use Sunrise\Http\Router\Helper\RouteCompiler;
+use Sunrise\Http\Router\Route;
 
 use function class_exists;
-use function get_declared_classes;
 use function hash;
 use function is_dir;
-use function is_string;
-use function iterator_to_array;
+use function join;
 use function sprintf;
 use function usort;
 
-/**
- * DescriptorLoader
- */
 final class DescriptorLoader implements LoaderInterface
 {
-
     /**
-     * List of classes or directories
-     *
      * @var list<string>
      */
     private array $resources = [];
 
-    /**
-     * @var string|null
-     */
-    private ?string $cacheKey = null;
-
-    /**
-     * Constructor of the class
-     *
-     * @param RouteCollectionFactoryInterface|null $collectionFactory
-     * @param RouteFactoryInterface|null $routeFactory
-     * @param ReferenceResolverInterface|null $referenceResolver
-     * @param CacheInterface|null $cache
-     */
     public function __construct(
-        private ?RouteCollectionFactoryInterface $collectionFactory = null,
-        private ?RouteFactoryInterface $routeFactory = null,
-        private ?ReferenceResolverInterface $referenceResolver = null,
-        private ?CacheInterface $cache = null,
+        private readonly ?CacheInterface $cache = null,
+        private readonly ?string $cacheKey = null,
     ) {
-        $this->collectionFactory ??= new RouteCollectionFactory();
-        $this->routeFactory ??= new RouteFactory();
-        $this->referenceResolver ??= new ReferenceResolver();
     }
 
     /**
-     * Sets the given cache key to the loader
-     *
-     * @param string|null $cacheKey
-     *
-     * @return void
-     *
-     * @since 2.10.0
+     * @throws InvalidArgumentException If one of the resources isn't valid.
      */
-    public function setCacheKey(?string $cacheKey): void
+    public function attach(string ...$resources): void
     {
-        $this->cacheKey = $cacheKey;
-    }
+        foreach ($resources as $resource) {
+            if (is_dir($resource) || class_exists($resource)) {
+                $this->resources[] = $resource;
+                continue;
+            }
 
-    /**
-     * Gets the loader cache key
-     *
-     * @return string
-     *
-     * @since 2.10.0
-     */
-    public function getCacheKey(): string
-    {
-        return $this->cacheKey ??= hash('md5', $this::class);
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @throws InvalidArgumentException If the resource isn't valid.
-     */
-    public function attach(mixed $resource): void
-    {
-        if (!is_string($resource)) {
-            throw new InvalidArgumentException(
-                'The descriptor route loader only handles string resources.'
-            );
-        }
-
-        if (!class_exists($resource) && !is_dir($resource)) {
             throw new InvalidArgumentException(sprintf(
-                'The descriptor route loader only handles class names or directory paths, ' .
-                'however the given resource "%s" is not one of them.',
+                'The method %s only accepts class or directory names; ' .
+                'however, the resource %s is not one of them.',
+                __METHOD__,
                 $resource,
             ));
         }
-
-        $this->resources[] = $resource;
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @throws InvalidArgumentException If one of the given resources isn't valid.
-     */
-    public function attachArray(array $resources): void
-    {
-        /** @psalm-suppress MixedAssignment */
-        foreach ($resources as $resource) {
-            $this->attach($resource);
-        }
     }
 
     /**
      * @inheritDoc
      */
-    public function load(): RouteCollectionInterface
+    public function load(): Generator
     {
-        $routes = $this->collectionFactory->createCollection();
-        $descriptors = $this->getDescriptors();
-        foreach ($descriptors as $descriptor) {
-            $route = $this->routeFactory->createRoute(
+        foreach ($this->getDescriptors() as $descriptor) {
+            $route = new Route(
                 $descriptor->name,
                 $descriptor->path,
                 $descriptor->methods,
-                $this->referenceResolver->resolveRequestHandler($descriptor->holder),
-                [...$this->referenceResolver->resolveMiddlewares($descriptor->middlewares)],
-                $descriptor->attributes,
+                $descriptor->holder,
             );
 
-            $route->setConsumesMediaTypes(...$descriptor->consumes);
-            $route->setProducesMediaTypes(...$descriptor->produces);
+            $route->setMiddlewares(...$descriptor->middlewares);
+            $route->setAttributes($descriptor->attributes);
+            $route->setConstraints($descriptor->constraints);
+            $route->setConsumesEncodings(...$descriptor->consumesEncodings);
+            $route->setProducesEncodings(...$descriptor->producesEncodings);
+            $route->setConsumesMediaTypes(...$descriptor->consumesMediaTypes);
+            $route->setProducesMediaTypes(...$descriptor->producesMediaTypes);
             $route->setSummary($descriptor->summary);
             $route->setDescription($descriptor->description);
             $route->setTags(...$descriptor->tags);
             $route->setDeprecation($descriptor->isDeprecated);
+            $route->setPattern($descriptor->pattern);
 
-            $routes->add($route);
+            yield $route;
         }
-
-        return $routes;
     }
 
     /**
-     * Gets descriptors from the cache if they are stored in it,
-     * otherwise collects them from the loader resources,
-     * then tries to cache and return them.
-     *
-     * @return list<Route>
+     * @return list<Descriptor>
      */
     private function getDescriptors(): array
     {
-        $cacheKey = $this->getCacheKey();
+        $cacheKey = $this->cacheKey ?? hash('md5', __METHOD__);
 
         if (isset($this->cache) && $this->cache->has($cacheKey)) {
-            /** @var list<Route> */
+            /** @var list<Descriptor> */
             return $this->cache->get($cacheKey);
         }
 
         $result = [];
         foreach ($this->resources as $resource) {
-            $descriptors = $this->getResourceDescriptors($resource);
-            foreach ($descriptors as $descriptor) {
+            foreach ($this->getResourceDescriptors($resource) as $descriptor) {
+                $descriptor->path = join($descriptor->prefixes) . $descriptor->path;
+                $descriptor->pattern = RouteCompiler::compileRoute($descriptor->path, $descriptor->constraints);
                 $result[] = $descriptor;
             }
         }
 
-        usort($result, static fn(Route $a, Route $b): int => $b->priority <=> $a->priority);
+        usort($result, static fn(Descriptor $a, Descriptor $b): int => $b->priority <=> $a->priority);
 
         if (isset($this->cache)) {
             $this->cache->set($cacheKey, $result);
@@ -217,11 +140,7 @@ final class DescriptorLoader implements LoaderInterface
     }
 
     /**
-     * Gets descriptors from the given resource
-     *
-     * @param string $resource
-     *
-     * @return Generator<int, Route>
+     * @return Generator<int, Descriptor>
      */
     private function getResourceDescriptors(string $resource): Generator
     {
@@ -230,18 +149,14 @@ final class DescriptorLoader implements LoaderInterface
         }
 
         if (is_dir($resource)) {
-            foreach ($this->getDirectoryClasses($resource) as $class) {
+            foreach (FilesystemHelper::getDirectoryClasses($resource) as $class) {
                 yield from $this->getClassDescriptors($class);
             }
         }
     }
 
     /**
-     * Gets descriptors from the given class
-     *
-     * @param ReflectionClass $class
-     *
-     * @return Generator<int, Route>
+     * @return Generator<int, Descriptor>
      */
     private function getClassDescriptors(ReflectionClass $class): Generator
     {
@@ -250,8 +165,8 @@ final class DescriptorLoader implements LoaderInterface
         }
 
         if ($class->isSubclassOf(RequestHandlerInterface::class)) {
-            /** @var list<ReflectionAttribute<Route>> $annotations */
-            $annotations = $class->getAttributes(Route::class);
+            /** @var list<ReflectionAttribute<Descriptor>> $annotations */
+            $annotations = $class->getAttributes(Descriptor::class);
             if (isset($annotations[0])) {
                 $descriptor = $annotations[0]->newInstance();
                 $descriptor->holder = $class->getName();
@@ -261,14 +176,15 @@ final class DescriptorLoader implements LoaderInterface
             }
         }
 
-        foreach ($class->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-            // Statical methods must be ignored...
+        $methods = $class->getMethods(ReflectionMethod::IS_PUBLIC);
+        foreach ($methods as $method) {
+            // Static methods aren't supported...
             if ($method->isStatic()) {
                 continue;
             }
 
-            /** @var list<ReflectionAttribute<Route>> $annotations */
-            $annotations = $method->getAttributes(Route::class);
+            /** @var list<ReflectionAttribute<Descriptor>> $annotations */
+            $annotations = $method->getAttributes(Descriptor::class);
             if (isset($annotations[0])) {
                 $descriptor = $annotations[0]->newInstance();
                 $descriptor->holder = [$class->getName(), $method->getName()];
@@ -280,15 +196,7 @@ final class DescriptorLoader implements LoaderInterface
         }
     }
 
-    /**
-     * Supplements the given descriptor from parent classes of the given class
-     *
-     * @param Route $descriptor
-     * @param ReflectionClass $child
-     *
-     * @return void
-     */
-    private function supplementDescriptorFromParentClasses(Route $descriptor, ReflectionClass $child): void
+    private function supplementDescriptorFromParentClasses(Descriptor $descriptor, ReflectionClass $child): void
     {
         $parents = [];
         while ($child = $child->getParentClass()) {
@@ -300,22 +208,14 @@ final class DescriptorLoader implements LoaderInterface
         }
     }
 
-    /**
-     * Supplements the given descriptor from the given class or method
-     *
-     * @param Route $descriptor
-     * @param ReflectionClass|ReflectionMethod $holder
-     *
-     * @return void
-     */
     // phpcs:ignore Generic.Files.LineLength
-    private function supplementDescriptorFromClassOrMethod(Route $descriptor, ReflectionClass|ReflectionMethod $holder): void
+    private function supplementDescriptorFromClassOrMethod(Descriptor $descriptor, ReflectionClass|ReflectionMethod $holder): void
     {
         /** @var list<ReflectionAttribute<Prefix>> $annotations */
         $annotations = $holder->getAttributes(Prefix::class);
         if (isset($annotations[0])) {
             $annotation = $annotations[0]->newInstance();
-            $descriptor->path = $annotation->value . $descriptor->path;
+            $descriptor->prefixes[] = $annotation->value;
         }
 
         /** @var list<ReflectionAttribute<Postfix>> $annotations */
@@ -332,20 +232,6 @@ final class DescriptorLoader implements LoaderInterface
             $descriptor->methods[] = $annotation->value;
         }
 
-        /** @var list<ReflectionAttribute<Consumes>> $annotations */
-        $annotations = $holder->getAttributes(Consumes::class);
-        foreach ($annotations as $annotation) {
-            $annotation = $annotation->newInstance();
-            $descriptor->consumes[] = new MediaType($annotation->type, $annotation->subtype);
-        }
-
-        /** @var list<ReflectionAttribute<Produces>> $annotations */
-        $annotations = $holder->getAttributes(Produces::class);
-        foreach ($annotations as $annotation) {
-            $annotation = $annotation->newInstance();
-            $descriptor->produces[] = new MediaType($annotation->type, $annotation->subtype, $annotation->parameters);
-        }
-
         /** @var list<ReflectionAttribute<Middleware>> $annotations */
         $annotations = $holder->getAttributes(Middleware::class);
         foreach ($annotations as $annotation) {
@@ -353,11 +239,53 @@ final class DescriptorLoader implements LoaderInterface
             $descriptor->middlewares[] = $annotation->value;
         }
 
+        /** @var list<ReflectionAttribute<DefaultAttribute>> $annotations */
+        $annotations = $holder->getAttributes(DefaultAttribute::class);
+        foreach ($annotations as $annotation) {
+            $annotation = $annotation->newInstance();
+            $descriptor->attributes[$annotation->name] = $annotation->value;
+        }
+
+        /** @var list<ReflectionAttribute<Constraint>> $annotations */
+        $annotations = $holder->getAttributes(Constraint::class);
+        foreach ($annotations as $annotation) {
+            $annotation = $annotation->newInstance();
+            $descriptor->constraints[$annotation->name] = $annotation->value;
+        }
+
+        /** @var list<ReflectionAttribute<ConsumesEncoding>> $annotations */
+        $annotations = $holder->getAttributes(ConsumesEncoding::class);
+        foreach ($annotations as $annotation) {
+            $annotation = $annotation->newInstance();
+            $descriptor->consumesEncodings[] = $annotation->value;
+        }
+
+        /** @var list<ReflectionAttribute<ProducesEncoding>> $annotations */
+        $annotations = $holder->getAttributes(ProducesEncoding::class);
+        foreach ($annotations as $annotation) {
+            $annotation = $annotation->newInstance();
+            $descriptor->producesEncodings[] = $annotation->value;
+        }
+
+        /** @var list<ReflectionAttribute<ConsumesMediaType>> $annotations */
+        $annotations = $holder->getAttributes(ConsumesMediaType::class);
+        foreach ($annotations as $annotation) {
+            $annotation = $annotation->newInstance();
+            $descriptor->consumesMediaTypes[] = $annotation->value;
+        }
+
+        /** @var list<ReflectionAttribute<ProducesMediaType>> $annotations */
+        $annotations = $holder->getAttributes(ProducesMediaType::class);
+        foreach ($annotations as $annotation) {
+            $annotation = $annotation->newInstance();
+            $descriptor->producesMediaTypes[] = $annotation->value;
+        }
+
         /** @var list<ReflectionAttribute<Summary>> $annotations */
         $annotations = $holder->getAttributes(Summary::class);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
-            /** @psalm-suppress PossiblyNullOperand */
+            $descriptor->summary ??= '';
             $descriptor->summary .= $annotation->value;
         }
 
@@ -365,7 +293,7 @@ final class DescriptorLoader implements LoaderInterface
         $annotations = $holder->getAttributes(Description::class);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
-            /** @psalm-suppress PossiblyNullOperand */
+            $descriptor->description ??= '';
             $descriptor->description .= $annotation->value;
         }
 
@@ -380,44 +308,6 @@ final class DescriptorLoader implements LoaderInterface
         $annotations = $holder->getAttributes(Deprecated::class);
         if (isset($annotations[0])) {
             $descriptor->isDeprecated = true;
-        }
-    }
-
-    /**
-     * Scans the given directory and returns the found classes
-     *
-     * @param string $dirname
-     *
-     * @return Generator<int, ReflectionClass>
-     */
-    private function getDirectoryClasses(string $dirname): Generator
-    {
-        /** @var array<string, string> $filenames */
-        $filenames = iterator_to_array(
-            new RegexIterator(
-                new RecursiveIteratorIterator(
-                    new RecursiveDirectoryIterator(
-                        $dirname,
-                        FilesystemIterator::KEY_AS_PATHNAME |
-                        FilesystemIterator::CURRENT_AS_PATHNAME,
-                    ),
-                ),
-                '/\.php$/',
-            ),
-        );
-
-        foreach ($filenames as $filename) {
-            (static function (string $filename): void {
-                /** @psalm-suppress UnresolvableInclude */
-                require_once $filename;
-            })($filename);
-        }
-
-        foreach (get_declared_classes() as $className) {
-            $classReflection = new ReflectionClass($className);
-            if (isset($filenames[$classReflection->getFileName()])) {
-                yield $classReflection;
-            }
         }
     }
 }

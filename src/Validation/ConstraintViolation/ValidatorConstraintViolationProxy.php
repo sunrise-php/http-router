@@ -67,7 +67,7 @@ final class ValidatorConstraintViolationProxy implements ConstraintViolationInte
      */
     public function getMessagePlaceholders(): array
     {
-        /** @var array<string, int|float|string> */
+        /** @var array<string, mixed> */
         return $this->validatorConstraintViolation->getParameters();
     }
 

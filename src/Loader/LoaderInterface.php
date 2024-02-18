@@ -13,36 +13,12 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Loader;
 
-use Sunrise\Http\Router\RouteCollectionInterface;
+use Sunrise\Http\Router\RouteInterface;
 
-/**
- * LoaderInterface
- */
 interface LoaderInterface
 {
-
     /**
-     * Attaches the given resource to the loader
-     *
-     * @param mixed $resource
-     *
-     * @return void
+     * @return iterable<mixed, RouteInterface>
      */
-    public function attach(mixed $resource): void;
-
-    /**
-     * Attaches the given resources to the loader
-     *
-     * @param array<array-key, mixed> $resources
-     *
-     * @return void
-     */
-    public function attachArray(array $resources): void;
-
-    /**
-     * Loads routes from previously attached resources
-     *
-     * @return RouteCollectionInterface
-     */
-    public function load(): RouteCollectionInterface;
+    public function load(): iterable;
 }

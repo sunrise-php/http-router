@@ -18,14 +18,12 @@ use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionNamedType;
 use ReflectionParameter;
-use Sunrise\Http\Router\ServerRequest;
+use Sunrise\Http\Router\Router;
 
 /**
- * ServerRequestParameterResolver
- *
  * @since 3.0.0
  */
-final class ServerRequestParameterResolver implements ParameterResolverInterface
+final class RouterParameterResolver implements ParameterResolverInterface
 {
 
     /**
@@ -36,7 +34,7 @@ final class ServerRequestParameterResolver implements ParameterResolverInterface
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
         $type = $parameter->getType();
-        if (! $type instanceof ReflectionNamedType || $type->getName() <> ServerRequest::class) {
+        if (! $type instanceof ReflectionNamedType || $type->getName() <> Router::class) {
             return;
         }
 
@@ -46,6 +44,11 @@ final class ServerRequestParameterResolver implements ParameterResolverInterface
             );
         }
 
-        yield ServerRequest::create($context);
+        $router = $context->getAttribute('@router');
+        if (! $router instanceof Router) {
+            throw new LogicException();
+        }
+
+        yield $router;
     }
 }

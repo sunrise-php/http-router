@@ -18,13 +18,6 @@ use Psr\Http\Message\ResponseInterface;
 use function header;
 use function sprintf;
 
-/**
- * Sends the given response
- *
- * @param ResponseInterface $response
- *
- * @return void
- */
 function emit(ResponseInterface $response): void
 {
     header(sprintf(

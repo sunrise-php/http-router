@@ -13,11 +13,13 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\ResponseResolving\ResponseResolver;
 
+use LogicException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\RouteInterface;
+use Sunrise\Http\Router\Router;
 
 /**
  * RouteResponseResolver
@@ -39,6 +41,11 @@ final class RouteResponseResolver implements ResponseResolverInterface
             return null;
         }
 
-        return $response->handle($request);
+        $router = $request->getAttribute('@router');
+        if (! $router instanceof Router) {
+            throw new LogicException();
+        }
+
+        return $router->runRoute($response, $request);
     }
 }

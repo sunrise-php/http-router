@@ -11,15 +11,19 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Exception;
+namespace Sunrise\Http\Router\Annotation;
 
-use InvalidArgumentException as BaseInvalidArgumentException;
+use Attribute;
+use Sunrise\Http\Router\Entity\EncodingInterface;
 
 /**
- * InvalidArgumentException
- *
- * @since 2.9.0
+ * @since 3.0.0
  */
-class InvalidArgumentException extends BaseInvalidArgumentException implements ExceptionInterface
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
+final class ProducesEncoding
 {
+    public function __construct(
+        public readonly EncodingInterface $value,
+    ) {
+    }
 }

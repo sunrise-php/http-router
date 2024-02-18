@@ -16,24 +16,18 @@ namespace Sunrise\Http\Router\Entity;
 /**
  * @since 3.0.0
  */
-final class Language implements LanguageInterface
+final class Encoding implements EncodingInterface
 {
     public function __construct(
-        private readonly string $code,
-        private readonly string $locale,
+        private readonly string $method,
         /** @var array<string, string> */
         private readonly array $parameters = [],
     ) {
     }
 
-    public function getCode(): string
+    public function getMethod(): string
     {
-        return $this->code;
-    }
-
-    public function getLocale(): string
-    {
-        return $this->locale;
+        return $this->method;
     }
 
     /**

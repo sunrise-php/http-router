@@ -35,13 +35,12 @@ use const JSON_THROW_ON_ERROR;
  */
 final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
 {
-
     /**
      * @inheritDoc
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        if (ServerRequest::from($request)->clientProducesMediaType(MediaType::json())) {
+        if (ServerRequest::create($request)->clientProducesMediaType(new MediaType('application', 'json'))) {
             $request = $request->withParsedBody($this->decodePayload($request->getBody()->__toString()));
         }
 
@@ -49,12 +48,6 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
     }
 
     /**
-     * Tries to decode the given JSON payload
-     *
-     * @param string $payload
-     *
-     * @return array<array-key, mixed>
-     *
      * @throws HttpBadRequestException If the JSON payload couldn't be decoded.
      */
     private function decodePayload(string $payload): array

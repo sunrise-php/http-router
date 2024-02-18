@@ -14,11 +14,11 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\ParameterResolving\ParameterResolver;
 
 use Generator;
+use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
 use ReflectionNamedType;
 use ReflectionParameter;
-use Sunrise\Http\Router\Exception\LogicException;
 
 /**
  * RequestUriParameterResolver

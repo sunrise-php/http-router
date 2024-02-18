@@ -19,16 +19,11 @@ use Attribute;
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class Consumes
+final class DefaultAttribute
 {
-
-    /**
-     * Constructor of the class
-     *
-     * @param non-empty-string $type
-     * @param non-empty-string $subtype
-     */
-    public function __construct(public string $type, public string $subtype)
-    {
+    public function __construct(
+        public readonly string $name,
+        public readonly mixed $value,
+    ) {
     }
 }

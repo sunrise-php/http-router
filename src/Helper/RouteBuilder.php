@@ -13,46 +13,73 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Helper;
 
+use BackedEnum;
 use InvalidArgumentException;
 use Stringable;
 
+use function is_int;
+use function is_string;
+use function sprintf;
 use function str_replace;
+use function substr;
 
 /**
- * Internal route builder
- *
  * @since 3.0.0
  */
 final class RouteBuilder
 {
-
     /**
-     * Builds the given route with the given variables
-     *
-     * @param string $route
-     * @param array<string, int|string|Stringable> $variables
-     *
-     * @return string
-     *
      * @throws InvalidArgumentException
+     *         If the route isn't valid,
+     *         or any of the values are unsupported,
+     *         or any of the required values are missing.
      */
-    public static function buildRoute(string $route, array $variables = []): string
+    public static function buildRoute(string $route, array $values = []): string
     {
-        $matches = RouteParser::parseRoute($route);
+        $variables = RouteParser::parseRoute($route);
 
         $search = [];
         $replace = [];
-        foreach ($matches as $match) {
-            $replacement = $variables[$match['name']] ?? $match['value'] ?? null;
+        foreach ($variables as $variable) {
+            $statement = substr($route, $variable['offset'], $variable['length']);
 
-            if (!isset($replacement) && !isset($match['isOptional'])) {
-                throw new InvalidArgumentException();
+            if (isset($values[$variable['name']])) {
+                $value = $values[$variable['name']];
+
+                if (is_int($value)) {
+                    $value = (string) $value;
+                } elseif ($value instanceof BackedEnum) {
+                    $value = (string) $value->value;
+                } elseif ($value instanceof Stringable) {
+                    $value = $value->__toString();
+                }
+
+                if (is_string($value)) {
+                    $search[] = $statement;
+                    $replace[] = $value;
+                    continue;
+                }
+
+                throw new InvalidArgumentException(sprintf(
+                    'The route %s could not be built with an unsupported value for the variable %s.',
+                    $route,
+                    $variable['name'],
+                ));
             }
 
-            $search[] = $match['replaceable'];
-            $replace[] = (string) $replacement;
+            if (isset($variable['optional'])) {
+                $search[] = '(' . ($variable['left'] ?? '') . $statement . ($variable['right'] ?? '') . ')';
+                $replace[] = '';
+                continue;
+            }
+
+            throw new InvalidArgumentException(sprintf(
+                'The route %s could not be built without a required value for the variable %s.',
+                $route,
+                $variable['name'],
+            ));
         }
 
-        return str_replace($search, $replace, $route);
+        return str_replace([...$search, '(', ')'], $replace, $route);
     }
 }

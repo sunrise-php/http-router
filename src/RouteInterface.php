@@ -13,15 +13,9 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
-use Fig\Http\Message\RequestMethodInterface;
-use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Entity\MediaType;
 
-/**
- * RouteInterface
- */
-interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
+interface RouteInterface
 {
 
     /**
@@ -32,6 +26,10 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
      * @since 2.11.0
      */
     public const ATTR_ROUTE = '@route';
+
+    public function getConstraints(): array;
+
+    public function setConstraints(array $constrains): static;
 
     /**
      * Gets the route name
@@ -55,34 +53,34 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
     public function getMethods(): array;
 
     /**
-     * Gets the route's consumes media types
+     * Gets the route's consumed media types
      *
      * @return list<MediaType>
      *
      * @since 3.0.0
      */
-    public function getConsumesMediaTypes(): array;
+    public function getConsumedMediaTypes(): array;
 
     /**
-     * Gets the route's produces media types
+     * Gets the route's produced media types
      *
      * @return list<MediaType>
      *
      * @since 3.0.0
      */
-    public function getProducesMediaTypes(): array;
+    public function getProducedMediaTypes(): array;
 
     /**
      * Gets the route's request handler
      *
-     * @return RequestHandlerInterface
+     * @return mixed
      */
-    public function getRequestHandler(): RequestHandlerInterface;
+    public function getRequestHandler(): mixed;
 
     /**
      * Gets the route middlewares
      *
-     * @return list<MiddlewareInterface>
+     * @return list<mixed>
      */
     public function getMiddlewares(): array;
 
@@ -94,8 +92,8 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
     public function getAttributes(): array;
 
     /**
-     * Gets the route's attribute value by its given name or
-     * returns the given default value if the parameter doesn't exist
+     * Gets the route's attribute value by its given name
+     * or returns the given default value if the parameter doesn't exist
      *
      * @param string $name
      * @param mixed $default
@@ -168,7 +166,7 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
     public function setMethods(string ...$methods): static;
 
     /**
-     * Sets the given consumes media type(s) to the route
+     * Sets the given consumed media type(s) to the route
      *
      * @param MediaType ...$mediaTypes
      *
@@ -176,10 +174,10 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
      *
      * @since 3.0.0
      */
-    public function setConsumesMediaTypes(MediaType ...$mediaTypes): static;
+    public function setConsumesMediaTypes(string ...$mediaTypes): static;
 
     /**
-     * Sets the given produces media type(s) to the route
+     * Sets the given produced media type(s) to the route
      *
      * @param MediaType ...$mediaTypes
      *
@@ -187,25 +185,25 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
      *
      * @since 3.0.0
      */
-    public function setProducesMediaTypes(MediaType ...$mediaTypes): static;
+    public function setProducesMediaTypes(string ...$mediaTypes): static;
 
     /**
      * Sets the given request handler to the route
      *
-     * @param RequestHandlerInterface $requestHandler
+     * @param mixed $requestHandler
      *
      * @return static
      */
-    public function setRequestHandler(RequestHandlerInterface $requestHandler): static;
+    public function setRequestHandler(mixed $requestHandler): static;
 
     /**
      * Sets the given middleware(s) to the route
      *
-     * @param MiddlewareInterface ...$middlewares
+     * @param mixed ...$middlewares
      *
      * @return static
      */
-    public function setMiddlewares(MiddlewareInterface ...$middlewares): static;
+    public function setMiddlewares(mixed ...$middlewares): static;
 
     /**
      * Sets the given attributes to the route
@@ -300,7 +298,7 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
     public function addMethod(string ...$methods): static;
 
     /**
-     * Adds the given consumes media type(s) to the route
+     * Adds the given consumed media type(s) to the route
      *
      * @param MediaType ...$mediaTypes
      *
@@ -308,10 +306,10 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
      *
      * @since 3.0.0
      */
-    public function addConsumesMediaType(MediaType ...$mediaTypes): static;
+    public function addConsumedMediaType(string ...$mediaTypes): static;
 
     /**
-     * Adds the given produces media type(s) to the route
+     * Adds the given produced media type(s) to the route
      *
      * @param MediaType ...$mediaTypes
      *
@@ -319,16 +317,16 @@ interface RouteInterface extends RequestHandlerInterface, RequestMethodInterface
      *
      * @since 3.0.0
      */
-    public function addProducesMediaType(MediaType ...$mediaTypes): static;
+    public function addProducedMediaType(string ...$mediaTypes): static;
 
     /**
      * Adds the given middleware(s) to the route
      *
-     * @param MiddlewareInterface ...$middlewares
+     * @param mixed ...$middlewares
      *
      * @return static
      */
-    public function addMiddleware(MiddlewareInterface ...$middlewares): static;
+    public function addMiddleware(mixed ...$middlewares): static;
 
     /**
      * Adds the given tag(s) to the route

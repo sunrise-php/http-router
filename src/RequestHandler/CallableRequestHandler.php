@@ -18,23 +18,16 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
- * CallableRequestHandler
- *
  * @template T as callable(ServerRequestInterface=): ResponseInterface
  */
 final class CallableRequestHandler implements RequestHandlerInterface
 {
-
     /**
-     * The request handler's callback
-     *
      * @var T
      */
     private $callback;
 
     /**
-     * Constructor of the class
-     *
      * @param T $callback
      */
     public function __construct(callable $callback)

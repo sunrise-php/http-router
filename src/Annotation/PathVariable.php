@@ -21,13 +21,8 @@ use Attribute;
 #[Attribute(Attribute::TARGET_PARAMETER)]
 final class PathVariable
 {
-
-    /**
-     * Constructor of the class
-     *
-     * @param non-empty-string|null $name If null, the parameter's name will be used.
-     */
-    public function __construct(public ?string $name = null)
-    {
+    public function __construct(
+        public readonly ?string $name = null,
+    ) {
     }
 }

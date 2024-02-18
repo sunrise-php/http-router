@@ -22,14 +22,10 @@ use Fig\Http\Message\StatusCodeInterface;
 #[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION)]
 final class ResponseStatus implements StatusCodeInterface
 {
-
-    /**
-     * Constructor of the class
-     *
-     * @param int<100, 599> $code
-     * @param string $phrase See RFC-7231.
-     */
-    public function __construct(public int $code, public string $phrase = '')
-    {
+    public function __construct(
+        /** @var int<100, 599> */
+        public readonly int $code,
+        public readonly string $phrase = '',
+    ) {
     }
 }

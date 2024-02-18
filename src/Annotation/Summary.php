@@ -21,13 +21,8 @@ use Attribute;
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 final class Summary
 {
-
-    /**
-     * Constructor of the class
-     *
-     * @param non-empty-string $value
-     */
-    public function __construct(public string $value)
-    {
+    public function __construct(
+        public readonly string $value,
+    ) {
     }
 }

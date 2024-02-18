@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\ResponseResolving\ResponseResolver;
 
 use JsonException;
+use LogicException;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -21,7 +22,6 @@ use ReflectionAttribute;
 use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\JsonResponse;
-use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ResponseResolving\ResponseResolutioner;
 
 use function json_encode;

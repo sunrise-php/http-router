@@ -18,12 +18,16 @@ namespace Sunrise\Http\Router\Dictionary;
  */
 final class Charset
 {
-    public const WILDCARD = '*';
-
+    /**
+     * @link https://datatracker.ietf.org/doc/html/rfc7230#section-3.2.3
+     */
     public const RFC7230_OWS = [
         "\x09" => 1, "\x20" => 1,
     ];
 
+    /**
+     * @link https://datatracker.ietf.org/doc/html/rfc7230#section-3.2.6
+     */
     public const RFC7230_TOKEN = [
         "\x21" => 1, "\x23" => 1, "\x24" => 1, "\x25" => 1, "\x26" => 1, "\x27" => 1, "\x2a" => 1, "\x2b" => 1,
         "\x2d" => 1, "\x2e" => 1, "\x5e" => 1, "\x5f" => 1, "\x60" => 1, "\x7c" => 1, "\x7e" => 1, "\x30" => 1,
@@ -37,6 +41,9 @@ final class Charset
         "\x76" => 1, "\x77" => 1, "\x78" => 1, "\x79" => 1, "\x7a" => 1,
     ];
 
+    /**
+     * @link https://datatracker.ietf.org/doc/html/rfc7230#section-3.2.6
+     */
     public const RFC7230_FIELD_VALUE = [
         "\x09" => 1, "\x20" => 1, "\x21" => 1, "\x22" => 1, "\x23" => 1, "\x24" => 1, "\x25" => 1, "\x26" => 1,
         "\x27" => 1, "\x28" => 1, "\x29" => 1, "\x2a" => 1, "\x2b" => 1, "\x2c" => 1, "\x2d" => 1, "\x2e" => 1,
@@ -68,6 +75,9 @@ final class Charset
         "\xf8" => 1, "\xf9" => 1, "\xfa" => 1, "\xfb" => 1, "\xfc" => 1, "\xfd" => 1, "\xfe" => 1, "\xff" => 1,
     ];
 
+    /**
+     * @link https://www.pcre.org/original/doc/html/pcrepattern.html#SEC16
+     */
     public const PCRE_SUBPATTERN_NAME = [
         "\x30" => 1, "\x31" => 1, "\x32" => 1, "\x33" => 1, "\x34" => 1, "\x35" => 1, "\x36" => 1, "\x37" => 1,
         "\x38" => 1, "\x39" => 1, "\x41" => 1, "\x42" => 1, "\x43" => 1, "\x44" => 1, "\x45" => 1, "\x46" => 1,

@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\ParameterResolving;
 
 use Generator;
+use LogicException;
 use ReflectionMethod;
 use ReflectionParameter;
-use Sunrise\Http\Router\Exception\LogicException;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolver\ParameterResolverInterface;
 
 use function sprintf;

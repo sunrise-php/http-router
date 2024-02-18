@@ -24,18 +24,18 @@ final class ConstraintViolation implements ConstraintViolationInterface
      *
      * @param string $message
      * @param string $messageTemplate
-     * @param array<string, int|float|string> $messagePlaceholders
+     * @param array<string, mixed> $messagePlaceholders
      * @param string $propertyPath
      */
     public function __construct(
-        private string $message,
-        private string $messageTemplate,
-        private array $messagePlaceholders,
-        private string $propertyPath,
+        private readonly string $message,
+        private readonly string $messageTemplate,
+        private readonly array $messagePlaceholders,
+        private readonly string $propertyPath,
     ) {
     }
 
-    /**
+    /** readonly
      * @inheritDoc
      */
     public function getMessage(): string

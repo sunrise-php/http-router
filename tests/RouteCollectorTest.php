@@ -65,8 +65,8 @@ class RouteCollectorTest extends TestCase
         $this->assertSame($handler, $route->getRequestHandler());
         $this->assertSame($middlewares, $route->getMiddlewares());
         $this->assertSame($attributes, $route->getAttributes());
-        $this->assertTrue($collector->getCollection()->has($route->getName()));
-        $this->assertSame($route, $collector->getCollection()->get($route->getName()));
+        $this->assertTrue($collector->getRoutes()->has($route->getName()));
+        $this->assertSame($route, $collector->getRoutes()->get($route->getName()));
     }
 
     /**
@@ -100,8 +100,8 @@ class RouteCollectorTest extends TestCase
         $this->assertSame($handler, $route->getRequestHandler());
         $this->assertSame($middlewares, $route->getMiddlewares());
         $this->assertSame($attributes, $route->getAttributes());
-        $this->assertTrue($collector->getCollection()->has($route->getName()));
-        $this->assertSame($route, $collector->getCollection()->get($route->getName()));
+        $this->assertTrue($collector->getRoutes()->has($route->getName()));
+        $this->assertSame($route, $collector->getRoutes()->get($route->getName()));
     }
 
     /**
@@ -135,8 +135,8 @@ class RouteCollectorTest extends TestCase
         $this->assertSame($handler, $route->getRequestHandler());
         $this->assertSame($middlewares, $route->getMiddlewares());
         $this->assertSame($attributes, $route->getAttributes());
-        $this->assertTrue($collector->getCollection()->has($route->getName()));
-        $this->assertSame($route, $collector->getCollection()->get($route->getName()));
+        $this->assertTrue($collector->getRoutes()->has($route->getName()));
+        $this->assertSame($route, $collector->getRoutes()->get($route->getName()));
     }
 
     /**
@@ -170,8 +170,8 @@ class RouteCollectorTest extends TestCase
         $this->assertSame($handler, $route->getRequestHandler());
         $this->assertSame($middlewares, $route->getMiddlewares());
         $this->assertSame($attributes, $route->getAttributes());
-        $this->assertTrue($collector->getCollection()->has($route->getName()));
-        $this->assertSame($route, $collector->getCollection()->get($route->getName()));
+        $this->assertTrue($collector->getRoutes()->has($route->getName()));
+        $this->assertSame($route, $collector->getRoutes()->get($route->getName()));
     }
 
     /**
@@ -205,8 +205,8 @@ class RouteCollectorTest extends TestCase
         $this->assertSame($handler, $route->getRequestHandler());
         $this->assertSame($middlewares, $route->getMiddlewares());
         $this->assertSame($attributes, $route->getAttributes());
-        $this->assertTrue($collector->getCollection()->has($route->getName()));
-        $this->assertSame($route, $collector->getCollection()->get($route->getName()));
+        $this->assertTrue($collector->getRoutes()->has($route->getName()));
+        $this->assertSame($route, $collector->getRoutes()->get($route->getName()));
     }
 
     /**
@@ -240,8 +240,8 @@ class RouteCollectorTest extends TestCase
         $this->assertSame($handler, $route->getRequestHandler());
         $this->assertSame($middlewares, $route->getMiddlewares());
         $this->assertSame($attributes, $route->getAttributes());
-        $this->assertTrue($collector->getCollection()->has($route->getName()));
-        $this->assertSame($route, $collector->getCollection()->get($route->getName()));
+        $this->assertTrue($collector->getRoutes()->has($route->getName()));
+        $this->assertSame($route, $collector->getRoutes()->get($route->getName()));
     }
 
     /**
@@ -275,8 +275,8 @@ class RouteCollectorTest extends TestCase
         $this->assertSame($handler, $route->getRequestHandler());
         $this->assertSame($middlewares, $route->getMiddlewares());
         $this->assertSame($attributes, $route->getAttributes());
-        $this->assertTrue($collector->getCollection()->has($route->getName()));
-        $this->assertSame($route, $collector->getCollection()->get($route->getName()));
+        $this->assertTrue($collector->getRoutes()->has($route->getName()));
+        $this->assertSame($route, $collector->getRoutes()->get($route->getName()));
     }
 
     /**
@@ -310,8 +310,8 @@ class RouteCollectorTest extends TestCase
         $this->assertSame($handler, $route->getRequestHandler());
         $this->assertSame($middlewares, $route->getMiddlewares());
         $this->assertSame($attributes, $route->getAttributes());
-        $this->assertTrue($collector->getCollection()->has($route->getName()));
-        $this->assertSame($route, $collector->getCollection()->get($route->getName()));
+        $this->assertTrue($collector->getRoutes()->has($route->getName()));
+        $this->assertSame($route, $collector->getRoutes()->get($route->getName()));
     }
 
     /**
@@ -340,11 +340,11 @@ class RouteCollectorTest extends TestCase
         });
 
         $this->assertInstanceOf(RouteCollectionInterface::class, $groupCollection);
-        $this->assertTrue($collector->getCollection()->has('foo'));
-        $this->assertSame([], $collector->getCollection()->get('foo')->getMiddlewares());
-        $this->assertTrue($collector->getCollection()->has('bar'));
-        $this->assertSame($middlewares, $collector->getCollection()->get('bar')->getMiddlewares());
-        $this->assertTrue($collector->getCollection()->has('baz'));
-        $this->assertSame($middlewares, $collector->getCollection()->get('baz')->getMiddlewares());
+        $this->assertTrue($collector->getRoutes()->has('foo'));
+        $this->assertSame([], $collector->getRoutes()->get('foo')->getMiddlewares());
+        $this->assertTrue($collector->getRoutes()->has('bar'));
+        $this->assertSame($middlewares, $collector->getRoutes()->get('bar')->getMiddlewares());
+        $this->assertTrue($collector->getRoutes()->has('baz'));
+        $this->assertSame($middlewares, $collector->getRoutes()->get('baz')->getMiddlewares());
     }
 }

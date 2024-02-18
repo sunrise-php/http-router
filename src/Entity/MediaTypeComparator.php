@@ -11,19 +11,16 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Annotation;
-
-use Attribute;
-use Fig\Http\Message\RequestMethodInterface;
+namespace Sunrise\Http\Router\Entity;
 
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class Method implements RequestMethodInterface
+final class MediaTypeComparator
 {
-    public function __construct(
-        public readonly string $value,
-    ) {
+    public function equals(MediaTypeInterface $a, MediaTypeInterface $b): bool
+    {
+        return ($a->getType() === $b->getType() || $a->getType() === '*' || $b->getType() === '*')
+            && ($a->getSubtype() === $b->getSubtype() || $a->getSubtype() === '*' || $b->getSubtype() === '*');
     }
 }

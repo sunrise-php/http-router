@@ -24,33 +24,20 @@ use Sunrise\Http\Router\ParameterResolving\ParameterResolver\ObjectInjectionPara
 use Sunrise\Http\Router\ResponseResolving\ResponseResolutionerInterface;
 
 /**
- * CallbackMiddleware
- *
  * @since 3.0.0
  */
 final class CallbackMiddleware implements MiddlewareInterface
 {
-
     /**
-     * The middleware's callback
-     *
      * @var callable
      */
     private $callback;
 
-    /**
-     * Constructor of the class
-     *
-     * @param callable $callback
-     * @param ReflectionFunction|ReflectionMethod $callbackReflection
-     * @param ParameterResolutionerInterface $parameterResolutioner
-     * @param ResponseResolutionerInterface $responseResolutioner
-     */
     public function __construct(
         callable $callback,
-        private ReflectionFunction|ReflectionMethod $callbackReflection,
-        private ParameterResolutionerInterface $parameterResolutioner,
-        private ResponseResolutionerInterface $responseResolutioner,
+        private readonly ReflectionFunction|ReflectionMethod $callbackReflection,
+        private readonly ParameterResolutionerInterface $parameterResolutioner,
+        private readonly ResponseResolutionerInterface $responseResolutioner,
     ) {
         $this->callback = $callback;
     }

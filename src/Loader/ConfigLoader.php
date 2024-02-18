@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Loader;
 
-use Sunrise\Http\Router\Exception\InvalidArgumentException;
+use InvalidArgumentException;
 use Sunrise\Http\Router\ReferenceResolver;
 use Sunrise\Http\Router\ReferenceResolverInterface;
 use Sunrise\Http\Router\RouteCollectionFactory;
@@ -26,97 +26,51 @@ use Sunrise\Http\Router\RouteFactoryInterface;
 use function glob;
 use function is_dir;
 use function is_file;
-use function is_string;
 use function sprintf;
 
-/**
- * ConfigLoader
- */
 final class ConfigLoader implements LoaderInterface
 {
-
     /**
-     * List of files
-     *
      * @var list<string>
      */
     private array $resources = [];
 
     /**
-     * Constructor of the class
-     *
-     * @param RouteCollectionFactoryInterface|null $collectionFactory
-     * @param RouteFactoryInterface|null $routeFactory
-     * @param ReferenceResolverInterface|null $referenceResolver
+     * @throws InvalidArgumentException If one of the resources isn't valid.
      */
-    public function __construct(
-        private ?RouteCollectionFactoryInterface $collectionFactory = null,
-        private ?RouteFactoryInterface $routeFactory = null,
-        private ?ReferenceResolverInterface $referenceResolver = null,
-    ) {
-        $this->collectionFactory ??= new RouteCollectionFactory();
-        $this->routeFactory ??= new RouteFactory();
-        $this->referenceResolver ??= new ReferenceResolver();
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @throws InvalidArgumentException If the resource isn't valid.
-     */
-    public function attach(mixed $resource): void
+    public function attach(string ...$resources): void
     {
-        if (!is_string($resource)) {
-            throw new InvalidArgumentException(
-                'The config route loader only handles string resources.'
-            );
-        }
-
-        if (is_file($resource)) {
-            $this->resources[] = $resource;
-            return;
-        }
-
-        if (is_dir($resource)) {
-            /** @var list<string> $filenames */
-            $filenames = glob($resource . '/*.php');
-            foreach ($filenames as $filename) {
-                $this->resources[] = $filename;
+        foreach ($resources as $resource) {
+            if (is_file($resource)) {
+                $this->resources[] = $resource;
+                continue;
             }
 
-            return;
-        }
+            if (is_dir($resource)) {
+                /** @var list<string> $filenames */
+                $filenames = glob($resource . '/*.php');
+                foreach ($filenames as $filename) {
+                    $this->resources[] = $filename;
+                }
 
-        throw new InvalidArgumentException(sprintf(
-            'The config route loader only handles file or directory paths, ' .
-            'however the given resource "%s" is not one of them.',
-            $resource,
-        ));
-    }
+                continue;
+            }
 
-    /**
-     * @inheritDoc
-     *
-     * @throws InvalidArgumentException If one of the given resources isn't valid.
-     */
-    public function attachArray(array $resources): void
-    {
-        /** @psalm-suppress MixedAssignment */
-        foreach ($resources as $resource) {
-            $this->attach($resource);
+            throw new InvalidArgumentException(sprintf(
+                'The method %s only accepts file or directory names; ' .
+                'however, the resource %s is not one of them.',
+                __METHOD__,
+                $resource,
+            ));
         }
     }
 
     /**
      * @inheritDoc
      */
-    public function load(): RouteCollectionInterface
+    public function load(): array
     {
-        $collector = new RouteCollector(
-            $this->collectionFactory,
-            $this->routeFactory,
-            $this->referenceResolver,
-        );
+        $collector = new RouteCollector();
 
         foreach ($this->resources as $resource) {
             (function (string $filename): void {
@@ -125,6 +79,6 @@ final class ConfigLoader implements LoaderInterface
             })->call($collector, $resource);
         }
 
-        return $collector->getCollection();
+        return $collector->getRoutes();
     }
 }

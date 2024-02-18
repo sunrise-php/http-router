@@ -14,60 +14,26 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router;
 
 use Fig\Http\Message\RequestMethodInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Sunrise\Http\Router\Entity\MediaType;
+use Sunrise\Http\Router\Loader\LoaderInterface;
 
 /**
  * RouteCollector
  */
-class RouteCollector
+class RouteCollector implements LoaderInterface
 {
+    /**
+     * @var list<RouteInterface>
+     */
+    private array $routes = [];
 
     /**
-     * @var RouteCollectionInterface
+     * @return list<RouteInterface>
      */
-    private RouteCollectionInterface $collection;
-
-    /**
-     * @var RouteCollectionFactoryInterface
-     */
-    private RouteCollectionFactoryInterface $collectionFactory;
-
-    /**
-     * @var RouteFactoryInterface
-     */
-    private RouteFactoryInterface $routeFactory;
-
-    /**
-     * @var ReferenceResolverInterface
-     */
-    private ReferenceResolverInterface $referenceResolver;
-
-    /**
-     * Constructor of the class
-     *
-     * @param RouteCollectionFactoryInterface|null $collectionFactory
-     * @param RouteFactoryInterface|null $routeFactory
-     * @param ReferenceResolverInterface|null $referenceResolver
-     */
-    public function __construct(
-        ?RouteCollectionFactoryInterface $collectionFactory = null,
-        ?RouteFactoryInterface $routeFactory = null,
-        ?ReferenceResolverInterface $referenceResolver = null,
-    ) {
-        $this->collectionFactory = $collectionFactory ?? new RouteCollectionFactory();
-        $this->routeFactory = $routeFactory ?? new RouteFactory();
-        $this->referenceResolver = $referenceResolver ?? new ReferenceResolver();
-
-        $this->collection = $this->collectionFactory->createCollection();
-    }
-
-    /**
-     * Gets the collector's route collection
-     *
-     * @return RouteCollectionInterface
-     */
-    public function getCollection(): RouteCollectionInterface
+    public function getRoutes(): array
     {
-        return $this->collection;
+        return $this->routes;
     }
 
     /**
@@ -90,16 +56,16 @@ class RouteCollector
         array $middlewares = [],
         array $attributes = [],
     ) : RouteInterface {
-        $route = $this->routeFactory->createRoute(
+        $route = new Route(
             $name,
             $path,
             $methods,
-            $this->referenceResolver->resolveRequestHandler($requestHandler),
-            [...$this->referenceResolver->resolveMiddlewares($middlewares)],
+            $requestHandler,
+            $middlewares,
             $attributes,
         );
 
-        $this->collection->add($route);
+        $this->routes[] = $route;
 
         return $route;
     }
@@ -300,30 +266,107 @@ class RouteCollector
         );
     }
 
-    /**
-     * Route grouping logic
-     *
-     * @param callable $callback
-     * @param list<mixed> $middlewares
-     *
-     * @return RouteCollectionInterface
-     */
-    public function group(callable $callback, array $middlewares = []): RouteCollectionInterface
+    public function group(callable $callback, array $middlewares = []): static
     {
-        $collector = new self(
-            $this->collectionFactory,
-            $this->routeFactory,
-            $this->referenceResolver,
-        );
+        $collector = new self();
 
         $callback($collector);
 
-        $collector->collection->addPriorityMiddleware(
-            ...$this->referenceResolver->resolveMiddlewares($middlewares)
-        );
+        $collector->addPriorityMiddleware(...$middlewares);
 
-        $this->collection->add(...$collector->collection->all());
+        foreach ($collector->routes as $route) {
+            $this->routes[] = $route;
+        }
 
-        return $collector->collection;
+        return $collector;
+    }
+
+    public function addPrefix(string $prefix): static
+    {
+        foreach ($this->routes as $route) {
+            $route->addPrefix($prefix);
+        }
+
+        return $this;
+    }
+
+    public function addSuffix(string $suffix): static
+    {
+        foreach ($this->routes as $route) {
+            $route->addSuffix($suffix);
+        }
+
+        return $this;
+    }
+
+    public function addMethod(string ...$methods): static
+    {
+        foreach ($this->routes as $route) {
+            $route->addMethod(...$methods);
+        }
+
+        return $this;
+    }
+
+    public function addConsumesMediaType(MediaType ...$mediaTypes): static
+    {
+        foreach ($this->routes as $route) {
+            $route->addConsumedMediaType(...$mediaTypes);
+        }
+
+        return $this;
+    }
+
+    public function addProducesMediaType(MediaType ...$mediaTypes): static
+    {
+        foreach ($this->routes as $route) {
+            $route->addProducedMediaType(...$mediaTypes);
+        }
+
+        return $this;
+    }
+
+    public function addPriorityMiddleware(MiddlewareInterface ...$middlewares): static
+    {
+        foreach ($this->routes as $route) {
+            $route->setMiddlewares(...$middlewares, ...$route->getMiddlewares());
+        }
+
+        return $this;
+    }
+
+    public function addMiddleware(MiddlewareInterface ...$middlewares): static
+    {
+        foreach ($this->routes as $route) {
+            $route->addMiddleware(...$middlewares);
+        }
+
+        return $this;
+    }
+
+    public function addTag(string ...$tags): static
+    {
+        foreach ($this->routes as $route) {
+            $route->addTag(...$tags);
+        }
+
+        return $this;
+    }
+
+    public function setDeprecation(bool $isDeprecated): static
+    {
+        foreach ($this->routes as $route) {
+            $route->setDeprecation($isDeprecated);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function load(): iterable
+    {
+        return $this->routes;
     }
 }

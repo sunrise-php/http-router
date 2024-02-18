@@ -13,13 +13,6 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Entity\MediaType;
-use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
-
 use function rtrim;
 use function strtoupper;
 
@@ -53,30 +46,30 @@ class Route implements RouteInterface
     private array $methods = [];
 
     /**
-     * The route's consumes media types
+     * The route's consumed media types
      *
-     * @var list<MediaType>
+     * @var list<string>
      */
-    private array $consumesMediaTypes = [];
+    private array $consumedMediaTypes = [];
 
     /**
-     * The route's produces media types
+     * The route's produced media types
      *
-     * @var list<MediaType>
+     * @var list<string>
      */
-    private array $producesMediaTypes = [];
+    private array $producedMediaTypes = [];
 
     /**
      * The route's request handler
      *
-     * @var RequestHandlerInterface
+     * @var mixed
      */
-    private RequestHandlerInterface $requestHandler;
+    private mixed $requestHandler;
 
     /**
      * The route middlewares
      *
-     * @var list<MiddlewareInterface>
+     * @var list<mixed>
      */
     private array $middlewares = [];
 
@@ -115,21 +108,25 @@ class Route implements RouteInterface
      */
     private bool $isDeprecated = false;
 
+    private array $constraints = [];
+
+    private ?string $pattern = null;
+
     /**
      * Constructor of the class
      *
      * @param string $name
      * @param string $path
      * @param list<string> $methods
-     * @param RequestHandlerInterface $requestHandler
-     * @param list<MiddlewareInterface> $middlewares
+     * @param mixed $requestHandler
+     * @param list<mixed> $middlewares
      * @param array<string, mixed> $attributes
      */
     public function __construct(
         string $name,
         string $path,
         array $methods,
-        RequestHandlerInterface $requestHandler,
+        mixed $requestHandler,
         array $middlewares = [],
         array $attributes = [],
     ) {
@@ -168,23 +165,23 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function getConsumesMediaTypes(): array
+    public function getConsumedMediaTypes(): array
     {
-        return $this->consumesMediaTypes;
+        return $this->consumedMediaTypes;
     }
 
     /**
      * @inheritDoc
      */
-    public function getProducesMediaTypes(): array
+    public function getProducedMediaTypes(): array
     {
-        return $this->producesMediaTypes;
+        return $this->producedMediaTypes;
     }
 
     /**
      * @inheritDoc
      */
-    public function getRequestHandler(): RequestHandlerInterface
+    public function getRequestHandler(): mixed
     {
         return $this->requestHandler;
     }
@@ -281,11 +278,11 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function setConsumesMediaTypes(MediaType ...$mediaTypes): static
+    public function setConsumesMediaTypes(string ...$mediaTypes): static
     {
-        $this->consumesMediaTypes = [];
+        $this->consumedMediaTypes = [];
         foreach ($mediaTypes as $mediaType) {
-            $this->consumesMediaTypes[] = $mediaType;
+            $this->consumedMediaTypes[] = $mediaType;
         }
 
         return $this;
@@ -294,11 +291,11 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function setProducesMediaTypes(MediaType ...$mediaTypes): static
+    public function setProducesMediaTypes(string ...$mediaTypes): static
     {
-        $this->producesMediaTypes = [];
+        $this->producedMediaTypes = [];
         foreach ($mediaTypes as $mediaType) {
-            $this->producesMediaTypes[] = $mediaType;
+            $this->producedMediaTypes[] = $mediaType;
         }
 
         return $this;
@@ -307,7 +304,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function setRequestHandler(RequestHandlerInterface $requestHandler): static
+    public function setRequestHandler(mixed $requestHandler): static
     {
         $this->requestHandler = $requestHandler;
 
@@ -317,7 +314,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function setMiddlewares(MiddlewareInterface ...$middlewares): static
+    public function setMiddlewares(mixed ...$middlewares): static
     {
         $this->middlewares = [];
         foreach ($middlewares as $middleware) {
@@ -428,10 +425,10 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function addConsumesMediaType(MediaType ...$mediaTypes): static
+    public function addConsumedMediaType(string ...$mediaTypes): static
     {
         foreach ($mediaTypes as $mediaType) {
-            $this->consumesMediaTypes[] = $mediaType;
+            $this->consumedMediaTypes[] = $mediaType;
         }
 
         return $this;
@@ -440,10 +437,10 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function addProducesMediaType(MediaType ...$mediaTypes): static
+    public function addProducedMediaType(string ...$mediaTypes): static
     {
         foreach ($mediaTypes as $mediaType) {
-            $this->producesMediaTypes[] = $mediaType;
+            $this->producedMediaTypes[] = $mediaType;
         }
 
         return $this;
@@ -452,7 +449,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function addMiddleware(MiddlewareInterface ...$middlewares): static
+    public function addMiddleware(mixed ...$middlewares): static
     {
         foreach ($middlewares as $middleware) {
             $this->middlewares[] = $middleware;
@@ -488,25 +485,27 @@ class Route implements RouteInterface
         return $clone;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function handle(ServerRequestInterface $request): ResponseInterface
+    public function getConstraints(): array
     {
-        $request = $request->withAttribute(self::ATTR_ROUTE, $this);
+        return $this->constraints;
+    }
 
-        /** @psalm-suppress MixedAssignment */
-        foreach ($this->attributes as $name => $value) {
-            $request = $request->withAttribute($name, $value);
-        }
+    public function setConstraints(array $constrains): static
+    {
+        $this->constraints = $constrains;
 
-        if (empty($this->middlewares)) {
-            return $this->requestHandler->handle($request);
-        }
+        return $this;
+    }
 
-        return (new QueueableRequestHandler(
-            $this->requestHandler,
-            ...$this->middlewares,
-        ))->handle($request);
+    public function getPattern(): ?string
+    {
+        return $this->pattern;
+    }
+
+    public function setPattern(?string $pattern): static
+    {
+        $this->pattern = $pattern;
+
+        return $this;
     }
 }
