@@ -11,19 +11,12 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Annotation;
-
-use Attribute;
-use Sunrise\Http\Router\Entity\MediaTypeInterface;
+namespace Sunrise\Http\Router\Entity\Language;
 
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class ProducesMediaType
+interface LanguageInterface
 {
-    public function __construct(
-        public readonly MediaTypeInterface $value,
-    ) {
-    }
+    public function getCode(): string;
 }

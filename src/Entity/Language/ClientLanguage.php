@@ -11,23 +11,29 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Entity;
+namespace Sunrise\Http\Router\Entity\Language;
 
 /**
  * @since 3.0.0
  */
-final class Encoding implements EncodingInterface
+final class ClientLanguage implements LanguageInterface
 {
     public function __construct(
-        private readonly string $method,
+        private readonly string $code,
+        private readonly string $locale,
         /** @var array<string, string> */
-        private readonly array $parameters = [],
+        private readonly array $parameters,
     ) {
     }
 
-    public function getMethod(): string
+    public function getCode(): string
     {
-        return $this->method;
+        return $this->code;
+    }
+
+    public function getLocale(): string
+    {
+        return $this->locale;
     }
 
     /**

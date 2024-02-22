@@ -11,12 +11,16 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Entity;
+namespace Sunrise\Http\Router\Constraint;
 
 /**
  * @since 3.0.0
  */
-interface LanguageInterface
+final class NamedConstraint
 {
-    public function getCode(): string;
+    public function __construct(
+        public readonly string $name,
+        public readonly mixed $value,
+    ) {
+    }
 }

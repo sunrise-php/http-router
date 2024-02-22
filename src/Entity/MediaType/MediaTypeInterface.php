@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Entity;
+namespace Sunrise\Http\Router\Entity\MediaType;
 
 /**
  * @since 3.0.0

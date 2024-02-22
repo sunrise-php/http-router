@@ -11,19 +11,22 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Entity;
+namespace Sunrise\Http\Router\Entity\MediaType;
 
 /**
  * @since 3.0.0
  */
-final class MediaType implements MediaTypeInterface
+final class ServerMediaType implements MediaTypeInterface
 {
     public function __construct(
         private readonly string $type,
         private readonly string $subtype,
-        /** @var array<string, string> */
-        private readonly array $parameters = [],
     ) {
+    }
+
+    public static function json(): self
+    {
+        return new self('application', 'json');
     }
 
     public function getType(): string
@@ -34,13 +37,5 @@ final class MediaType implements MediaTypeInterface
     public function getSubtype(): string
     {
         return $this->subtype;
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    public function getParameters(): array
-    {
-        return $this->parameters;
     }
 }

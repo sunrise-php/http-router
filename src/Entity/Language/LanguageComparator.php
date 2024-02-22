@@ -11,19 +11,15 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Annotation;
-
-use Attribute;
-use Sunrise\Http\Router\Entity\EncodingInterface;
+namespace Sunrise\Http\Router\Entity\Language;
 
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class ProducesEncoding
+final class LanguageComparator
 {
-    public function __construct(
-        public readonly EncodingInterface $value,
-    ) {
+    public function equals(LanguageInterface $a, LanguageInterface $b): bool
+    {
+        return $a->getCode() === $b->getCode() || $a->getCode() === '*' || $b->getCode() === '*';
     }
 }

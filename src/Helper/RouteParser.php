@@ -26,7 +26,11 @@ final class RouteParser
     /**
      * Parses the given route and returns its variables
      *
-     * @return list<array{
+     * @return list<TVariable>
+     *
+     * @throws InvalidArgumentException If the route isn't valid.
+     *
+     * @template TVariable as array{
      *     name: string,
      *     pattern?: string,
      *     optional?: true,
@@ -34,9 +38,7 @@ final class RouteParser
      *     right?: string,
      *     offset: int,
      *     length: int
-     * }>
-     *
-     * @throws InvalidArgumentException If the route isn't valid.
+     * }
      */
     public static function parseRoute(string $route): array
     {
@@ -117,7 +119,8 @@ final class RouteParser
                 }
 
                 $cursor |= $inVariable | $inVariableName;
-                $variables[++$variable]['offset'] = $offset;
+                $variable++;
+                $variables[$variable]['offset'] = $offset;
                 continue;
             }
             if ($route[$offset] === '}' && !($cursor & $inVariablePattern)) {
@@ -193,6 +196,8 @@ final class RouteParser
                 continue;
             }
 
+            // (xxx{foo}xxx)
+            // ~^^^~~~~~^^^~
             if (($cursor & $inOptionalPart) && !($cursor & $inVariable)) {
                 if (!($cursor & $inOccupiedPart)) {
                     $left .= $route[$offset];
@@ -256,13 +261,12 @@ final class RouteParser
                 continue;
             }
 
-            // {foo<\w+>x}
-            // ~~~~~~~~~^~
+            // {foo<\w+>xxx}
+            // ~~~~~~~~~^^^~
             if (($cursor & $inVariable)) {
                 throw new InvalidArgumentException(sprintf(
                     'The route %s could not be parsed due to a syntax error. ' .
-                    'An unexpected character was found at position %d; ' .
-                    'a variable at this position must be closed.',
+                    'An unexpected character was found at position %d; a variable at this position must be closed.',
                     $route,
                     $offset,
                 ));
@@ -272,22 +276,13 @@ final class RouteParser
         if (($cursor & $inVariable) || ($cursor & $inOptionalPart)) {
             throw new InvalidArgumentException(sprintf(
                 'The route %s could not be parsed due to a syntax error. ' .
-                'An attempt to parse the route has failed ' .
-                'because it contains an unclosed optional part or variable.',
+                'An attempt to parse the route has failed because it contains an unclosed optional part or variable.',
                 $route,
             ));
         }
 
         /**
-         * @var list<array{
-         *     name: string,
-         *     pattern?: string,
-         *     optional?: true,
-         *     left?: string,
-         *     right?: string,
-         *     offset: int,
-         *     length: int
-         * }>
+         * @var list<TVariable>
          */
         return $variables;
     }

@@ -17,13 +17,12 @@ use Generator;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
-use Sunrise\Http\Router\Entity\Encoding;
-use Sunrise\Http\Router\Entity\Language;
-use Sunrise\Http\Router\Entity\LanguageComparator;
-use Sunrise\Http\Router\Entity\LanguageInterface;
-use Sunrise\Http\Router\Entity\MediaType;
-use Sunrise\Http\Router\Entity\MediaTypeComparator;
-use Sunrise\Http\Router\Entity\MediaTypeInterface;
+use Sunrise\Http\Router\Entity\Language\ClientLanguage;
+use Sunrise\Http\Router\Entity\Language\LanguageComparator;
+use Sunrise\Http\Router\Entity\Language\LanguageInterface;
+use Sunrise\Http\Router\Entity\MediaType\ClientMediaType;
+use Sunrise\Http\Router\Entity\MediaType\MediaTypeComparator;
+use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 use Sunrise\Http\Router\Helper\HeaderParser;
 
 /**
@@ -58,13 +57,13 @@ final class ServerRequest implements ServerRequestInterface
         return $this->mediaTypeComparator ??= new MediaTypeComparator();
     }
 
-    public function getClientProducedMediaType(): ?MediaType
+    public function getClientProducedMediaType(): ?ClientMediaType
     {
         return HeaderParser::parseContentTypeHeader($this->request->getHeaderLine('Content-Type'));
     }
 
     /**
-     * @return Generator<int<0, max>, MediaType>
+     * @return Generator<int<0, max>, ClientMediaType>
      */
     public function getClientConsumedMediaTypes(): Generator
     {
@@ -72,22 +71,14 @@ final class ServerRequest implements ServerRequestInterface
     }
 
     /**
-     * @return Generator<int<0, max>, Encoding>
-     */
-    public function getClientConsumedEncodings(): Generator
-    {
-        yield from HeaderParser::parseAcceptEncodingHeader($this->request->getHeaderLine('Accept-Encoding'));
-    }
-
-    /**
-     * @return Generator<int<0, max>, Language>
+     * @return Generator<int<0, max>, ClientLanguage>
      */
     public function getClientConsumedLanguages(): Generator
     {
         yield from HeaderParser::parseAcceptLanguageHeader($this->request->getHeaderLine('Accept-Language'));
     }
 
-    public function getClientPreferredMediaType(MediaTypeInterface ...$serverProducedMediaTypes): ?MediaType
+    public function getClientPreferredMediaType(MediaTypeInterface ...$serverProducedMediaTypes): ?ClientMediaType
     {
         if ($serverProducedMediaTypes === []) {
             return null;
@@ -105,7 +96,7 @@ final class ServerRequest implements ServerRequestInterface
         return null;
     }
 
-    public function getClientPreferredLanguage(LanguageInterface ...$serverProducedLanguages): ?Language
+    public function getClientPreferredLanguage(LanguageInterface ...$serverProducedLanguages): ?ClientLanguage
     {
         if ($serverProducedLanguages === []) {
             return null;

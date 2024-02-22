@@ -23,6 +23,7 @@ use RegexIterator;
 
 use function get_declared_classes;
 use function is_dir;
+use function is_file;
 use function sprintf;
 
 /**
@@ -35,7 +36,7 @@ final class FilesystemHelper
      *
      * @throws InvalidArgumentException If the directory doesn't exist.
      */
-    public static function getDirectoryClasses(string $dirname): Generator
+    public static function getDirClasses(string $dirname): Generator
     {
         if (!is_dir($dirname)) {
             throw new InvalidArgumentException(sprintf(
@@ -44,12 +45,12 @@ final class FilesystemHelper
             ));
         }
 
-        /** @var iterable<string, string> $iterator */
-        $iterator = new RegexIterator(
+        /** @var iterable<string, string> $filenames */
+        $filenames = new RegexIterator(
             new RecursiveIteratorIterator(
                 new RecursiveDirectoryIterator(
                     $dirname,
-                    FilesystemIterator::KEY_AS_PATHNAME
+                    FilesystemIterator::KEY_AS_FILENAME
                     | FilesystemIterator::CURRENT_AS_PATHNAME
                     | FilesystemIterator::SKIP_DOTS,
                 ),
@@ -59,19 +60,33 @@ final class FilesystemHelper
             RegexIterator::MATCH,
         );
 
-        /** @var array<string, string> $filenames */
-        $filenames = [...$iterator];
-
         foreach ($filenames as $filename) {
-            (static function (string $filename): void {
-                /** @psalm-suppress UnresolvableInclude */
-                require_once $filename;
-            })($filename);
+            yield from self::getFileClasses($filename);
         }
+    }
+
+    /**
+     * @return Generator<int, ReflectionClass>
+     *
+     * @throws InvalidArgumentException If the file doesn't exist.
+     */
+    public static function getFileClasses(string $filename): Generator
+    {
+        if (!is_file($filename)) {
+            throw new InvalidArgumentException(sprintf(
+                'The file %s could not be scanned because it does not exist.',
+                $filename,
+            ));
+        }
+
+        (static function (string $filename): void {
+            /** @psalm-suppress UnresolvableInclude */
+            require_once $filename;
+        })($filename);
 
         foreach (get_declared_classes() as $className) {
             $classReflection = new ReflectionClass($className);
-            if (isset($filenames[$classReflection->getFileName()])) {
+            if ($classReflection->getFileName() === $filename) {
                 yield $classReflection;
             }
         }

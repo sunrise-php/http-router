@@ -18,11 +18,11 @@ use Attribute;
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
+// phpcs:ignore Generic.Files.LineLength
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::TARGET_PARAMETER | Attribute::IS_REPEATABLE)]
 final class Constraint
 {
     public function __construct(
-        public readonly string $name,
         public readonly mixed $value,
     ) {
     }

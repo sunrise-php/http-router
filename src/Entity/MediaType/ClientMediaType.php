@@ -11,29 +11,29 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Entity;
+namespace Sunrise\Http\Router\Entity\MediaType;
 
 /**
  * @since 3.0.0
  */
-final class Language implements LanguageInterface
+final class ClientMediaType implements MediaTypeInterface
 {
     public function __construct(
-        private readonly string $code,
-        private readonly string $locale,
+        private readonly string $type,
+        private readonly string $subtype,
         /** @var array<string, string> */
-        private readonly array $parameters = [],
+        private readonly array $parameters,
     ) {
     }
 
-    public function getCode(): string
+    public function getType(): string
     {
-        return $this->code;
+        return $this->type;
     }
 
-    public function getLocale(): string
+    public function getSubtype(): string
     {
-        return $this->locale;
+        return $this->subtype;
     }
 
     /**

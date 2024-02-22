@@ -22,7 +22,7 @@ use Attribute;
 final class PathVariable
 {
     public function __construct(
-        public readonly ?string $name = null,
+        public readonly string|null $name = null,
     ) {
     }
 }

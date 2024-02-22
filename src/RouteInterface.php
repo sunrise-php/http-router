@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
-use Sunrise\Http\Router\Entity\MediaType;
+use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 
 interface RouteInterface
 {
@@ -55,7 +55,7 @@ interface RouteInterface
     /**
      * Gets the route's consumed media types
      *
-     * @return list<MediaType>
+     * @return list<MediaTypeInterface>
      *
      * @since 3.0.0
      */
@@ -64,7 +64,7 @@ interface RouteInterface
     /**
      * Gets the route's produced media types
      *
-     * @return list<MediaType>
+     * @return list<MediaTypeInterface>
      *
      * @since 3.0.0
      */
@@ -168,24 +168,24 @@ interface RouteInterface
     /**
      * Sets the given consumed media type(s) to the route
      *
-     * @param MediaType ...$mediaTypes
+     * @param MediaTypeInterface ...$mediaTypes
      *
      * @return static
      *
      * @since 3.0.0
      */
-    public function setConsumesMediaTypes(string ...$mediaTypes): static;
+    public function setConsumesMediaTypes(MediaTypeInterface ...$mediaTypes): static;
 
     /**
      * Sets the given produced media type(s) to the route
      *
-     * @param MediaType ...$mediaTypes
+     * @param MediaTypeInterface ...$mediaTypes
      *
      * @return static
      *
      * @since 3.0.0
      */
-    public function setProducesMediaTypes(string ...$mediaTypes): static;
+    public function setProducesMediaTypes(MediaTypeInterface ...$mediaTypes): static;
 
     /**
      * Sets the given request handler to the route
@@ -300,24 +300,24 @@ interface RouteInterface
     /**
      * Adds the given consumed media type(s) to the route
      *
-     * @param MediaType ...$mediaTypes
+     * @param MediaTypeInterface ...$mediaTypes
      *
      * @return static
      *
      * @since 3.0.0
      */
-    public function addConsumedMediaType(string ...$mediaTypes): static;
+    public function addConsumedMediaType(MediaTypeInterface ...$mediaTypes): static;
 
     /**
      * Adds the given produced media type(s) to the route
      *
-     * @param MediaType ...$mediaTypes
+     * @param MediaTypeInterface ...$mediaTypes
      *
      * @return static
      *
      * @since 3.0.0
      */
-    public function addProducedMediaType(string ...$mediaTypes): static;
+    public function addProducedMediaType(MediaTypeInterface ...$mediaTypes): static;
 
     /**
      * Adds the given middleware(s) to the route

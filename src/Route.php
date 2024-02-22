@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
+use Sunrise\Http\Router\Constraint\NamedConstraint;
+use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
+
 use function rtrim;
 use function strtoupper;
 
@@ -48,14 +51,14 @@ class Route implements RouteInterface
     /**
      * The route's consumed media types
      *
-     * @var list<string>
+     * @var list<MediaTypeInterface>
      */
     private array $consumedMediaTypes = [];
 
     /**
      * The route's produced media types
      *
-     * @var list<string>
+     * @var list<MediaTypeInterface>
      */
     private array $producedMediaTypes = [];
 
@@ -278,7 +281,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function setConsumesMediaTypes(string ...$mediaTypes): static
+    public function setConsumesMediaTypes(MediaTypeInterface ...$mediaTypes): static
     {
         $this->consumedMediaTypes = [];
         foreach ($mediaTypes as $mediaType) {
@@ -291,7 +294,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function setProducesMediaTypes(string ...$mediaTypes): static
+    public function setProducesMediaTypes(MediaTypeInterface ...$mediaTypes): static
     {
         $this->producedMediaTypes = [];
         foreach ($mediaTypes as $mediaType) {
@@ -425,7 +428,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function addConsumedMediaType(string ...$mediaTypes): static
+    public function addConsumedMediaType(MediaTypeInterface ...$mediaTypes): static
     {
         foreach ($mediaTypes as $mediaType) {
             $this->consumedMediaTypes[] = $mediaType;
@@ -437,7 +440,7 @@ class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function addProducedMediaType(string ...$mediaTypes): static
+    public function addProducedMediaType(MediaTypeInterface ...$mediaTypes): static
     {
         foreach ($mediaTypes as $mediaType) {
             $this->producedMediaTypes[] = $mediaType;
@@ -492,7 +495,14 @@ class Route implements RouteInterface
 
     public function setConstraints(array $constrains): static
     {
-        $this->constraints = $constrains;
+        foreach ($constrains as $constrain) {
+            if ($constrain instanceof NamedConstraint) {
+                $this->constraints[$constrain->name] = $constrain->value;
+                continue;
+            }
+
+            $this->constraints[] = $constrains;
+        }
 
         return $this;
     }

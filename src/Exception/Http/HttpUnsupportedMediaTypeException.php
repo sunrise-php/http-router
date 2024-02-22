@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Exception\Http;
 
 use Stringable;
-use Sunrise\Http\Router\Entity\MediaTypeInterface;
+use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 use Sunrise\Http\Router\Exception\HttpException;
 use Throwable;
 

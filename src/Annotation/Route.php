@@ -15,8 +15,7 @@ namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
 use Fig\Http\Message\RequestMethodInterface;
-use Sunrise\Http\Router\Entity\EncodingInterface;
-use Sunrise\Http\Router\Entity\MediaTypeInterface;
+use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
 final class Route implements RequestMethodInterface
@@ -27,30 +26,26 @@ final class Route implements RequestMethodInterface
     public array $prefixes = [];
 
     /** @var non-empty-string|null */
-    public ?string $pattern = null;
+    public string|null $pattern = null;
 
     public function __construct(
         public string $name,
         public string $path = '/',
-        ?string $method = null,
+        string|null $method = null,
         /** @var list<string> */
         public array $methods = [],
         /** @var list<mixed> */
         public array $middlewares = [],
         /** @var array<string, mixed> */
         public array $attributes = [],
-        /** @var array<string, mixed> */
+        /** @var list<mixed> */
         public array $constraints = [],
-        /** @var list<EncodingInterface> */
-        public array $consumesEncodings = [],
-        /** @var list<EncodingInterface> */
-        public array $producesEncodings = [],
         /** @var list<MediaTypeInterface> */
-        public array $consumesMediaTypes = [],
+        public array $consumes = [],
         /** @var list<MediaTypeInterface> */
-        public array $producesMediaTypes = [],
-        public ?string $summary = null,
-        public ?string $description = null,
+        public array $produces = [],
+        public string|null $summary = null,
+        public string|null $description = null,
         /** @var list<string> */
         public array $tags = [],
         public bool $isDeprecated = false,

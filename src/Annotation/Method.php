@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
+use BackedEnum;
 use Fig\Http\Message\RequestMethodInterface;
 
 /**
@@ -23,7 +24,7 @@ use Fig\Http\Message\RequestMethodInterface;
 final class Method implements RequestMethodInterface
 {
     public function __construct(
-        public readonly string $value,
+        public readonly BackedEnum|string $value,
     ) {
     }
 }

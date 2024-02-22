@@ -11,15 +11,19 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Entity;
+namespace Sunrise\Http\Router\Annotation;
+
+use Attribute;
+use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 
 /**
  * @since 3.0.0
  */
-final class LanguageComparator
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
+final class Produces
 {
-    public function equals(LanguageInterface $a, LanguageInterface $b): bool
-    {
-        return $a->getCode() === $b->getCode() || $a->getCode() === '*' || $b->getCode() === '*';
+    public function __construct(
+        public readonly MediaTypeInterface|string $value,
+    ) {
     }
 }
