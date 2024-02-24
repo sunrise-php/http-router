@@ -26,11 +26,7 @@ final class RouteParser
     /**
      * Parses the given route and returns its variables
      *
-     * @return list<TVariable>
-     *
-     * @throws InvalidArgumentException If the route isn't valid.
-     *
-     * @template TVariable as array{
+     * @return list<array{
      *     name: string,
      *     pattern?: string,
      *     optional?: true,
@@ -38,12 +34,12 @@ final class RouteParser
      *     right?: string,
      *     offset: int,
      *     length: int
-     * }
+     * }>
+     *
+     * @throws InvalidArgumentException If the route isn't valid.
      */
     public static function parseRoute(string $route): array
     {
-        $digits = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-
         $inVariable = 1;
         $inVariableName = 2;
         $inVariablePattern = 8;
@@ -84,7 +80,6 @@ final class RouteParser
 
                 if (($cursor & $inOccupiedPart)) {
                     $cursor &= ~$inOccupiedPart;
-                    $variables[$variable]['optional'] = true;
                     $variables[$variable]['left'] = $left;
                     $variables[$variable]['right'] = $right;
                 }
@@ -114,12 +109,14 @@ final class RouteParser
                     ));
                 }
 
+                $variable++;
+
                 if (($cursor & $inOptionalPart)) {
                     $cursor |= $inOccupiedPart;
+                    $variables[$variable]['optional'] = true;
                 }
 
                 $cursor |= $inVariable | $inVariableName;
-                $variable++;
                 $variables[$variable]['offset'] = $offset;
                 continue;
             }
@@ -210,11 +207,12 @@ final class RouteParser
 
             // https://www.pcre.org/original/doc/html/pcrepattern.html#SEC16
             if (($cursor & $inVariableName)) {
-                if (isset($variables[$variable]['name'][31])) {
+                /** @psalm-suppress InvalidArrayOffset */
+                if (!isset($variables[$variable]['name'][0]) && isset(Charset::DIGIT[$route[$offset]])) {
                     throw new InvalidArgumentException(sprintf(
                         'The route %s could not be parsed due to a syntax error. ' .
-                        'An extra character was found at position %d. ' .
-                        'Please note that variable names must not exceed 32 characters.',
+                        'An invalid character was found at position %d. ' .
+                        'Please note that variable names cannot start with digits.',
                         $route,
                         $offset,
                     ));
@@ -228,12 +226,11 @@ final class RouteParser
                         $offset,
                     ));
                 }
-                /** @psalm-suppress InvalidArrayOffset */
-                if (!isset($variables[$variable]['name']) && isset($digits[$route[$offset]])) {
+                if (isset($variables[$variable]['name'][31])) {
                     throw new InvalidArgumentException(sprintf(
                         'The route %s could not be parsed due to a syntax error. ' .
-                        'An invalid character was found at position %d. ' .
-                        'Please note that variable names cannot start with digits.',
+                        'An extra character was found at position %d. ' .
+                        'Please note that variable names must not exceed 32 characters.',
                         $route,
                         $offset,
                     ));
@@ -245,14 +242,15 @@ final class RouteParser
             }
 
             if (($cursor & $inVariablePattern)) {
-                if ($route[$offset] === '#') {
+                if ($route[$offset] === RouteCompiler::PATTERN_DELIMITER) {
                     throw new InvalidArgumentException(sprintf(
                         'The route %s could not be parsed due to a syntax error. ' .
                         'An invalid character was found at position %d. ' .
-                        'Please note that variable patterns cannot contain the hash character; ' .
+                        'Please note that variable patterns cannot contain the %s character; ' .
                         'use an octal or hexadecimal sequence instead.',
                         $route,
                         $offset,
+                        RouteCompiler::PATTERN_DELIMITER,
                     ));
                 }
 
@@ -282,7 +280,15 @@ final class RouteParser
         }
 
         /**
-         * @var list<TVariable>
+         * @var list<array{
+         *     name: string,
+         *     pattern?: string,
+         *     optional?: true,
+         *     left?: string,
+         *     right?: string,
+         *     offset: int,
+         *     length: int
+         * }>
          */
         return $variables;
     }

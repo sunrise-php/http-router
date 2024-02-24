@@ -21,7 +21,7 @@ use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\PathVariable;
 use Sunrise\Http\Router\Exception\Http\HttpNotFoundException;
 use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
-use Sunrise\Http\Router\RouteInterface;
+use Sunrise\Http\Router\Route;
 use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
@@ -69,7 +69,7 @@ final class PathVariableParameterResolver implements ParameterResolverInterface
         }
 
         $route = $context->getAttribute('@route');
-        if (! $route instanceof RouteInterface) {
+        if (! $route instanceof Route) {
             throw new LogicException(sprintf(
                 'The #[PathVariable] attribute cannot be applied to the parameter {%s}, ' .
                 'because the request does not contain information about the requested route, ' .

@@ -29,9 +29,11 @@ use function substr;
 final class RouteBuilder
 {
     /**
+     * @param array<string, mixed> $values
+     *
      * @throws InvalidArgumentException
-     *         If the route isn't valid,
-     *         or any of the values are unsupported,
+     *         If the route isn't valid;
+     *         or any of the values are unsupported;
      *         or any of the required values are missing.
      */
     public static function buildRoute(string $route, array $values = []): string
@@ -54,17 +56,17 @@ final class RouteBuilder
                     $value = $value->__toString();
                 }
 
-                if (is_string($value)) {
-                    $search[] = $statement;
-                    $replace[] = $value;
-                    continue;
+                if (!is_string($value)) {
+                    throw new InvalidArgumentException(sprintf(
+                        'The route %s could not be built with an unsupported value for the variable %s.',
+                        $route,
+                        $variable['name'],
+                    ));
                 }
 
-                throw new InvalidArgumentException(sprintf(
-                    'The route %s could not be built with an unsupported value for the variable %s.',
-                    $route,
-                    $variable['name'],
-                ));
+                $search[] = $statement;
+                $replace[] = $value;
+                continue;
             }
 
             if (isset($variable['optional'])) {

@@ -24,11 +24,6 @@ final class ServerMediaType implements MediaTypeInterface
     ) {
     }
 
-    public static function json(): self
-    {
-        return new self('application', 'json');
-    }
-
     public function getType(): string
     {
         return $this->type;

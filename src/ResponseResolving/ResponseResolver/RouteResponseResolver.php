@@ -18,7 +18,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionFunction;
 use ReflectionMethod;
-use Sunrise\Http\Router\RouteInterface;
+use Sunrise\Http\Router\Route;
 use Sunrise\Http\Router\Router;
 
 /**
@@ -37,7 +37,7 @@ final class RouteResponseResolver implements ResponseResolverInterface
         mixed $response,
         ReflectionFunction|ReflectionMethod $responder,
     ) : ?ResponseInterface {
-        if (! $response instanceof RouteInterface) {
+        if (! $response instanceof Route) {
             return null;
         }
 

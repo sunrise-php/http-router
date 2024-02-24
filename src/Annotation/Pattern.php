@@ -11,16 +11,19 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Constraint;
+namespace Sunrise\Http\Router\Annotation;
+
+use Attribute;
 
 /**
  * @since 3.0.0
  */
-final class NamedConstraint
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
+final class Pattern
 {
     public function __construct(
         public readonly string $name,
-        public readonly mixed $value,
+        public readonly string $value,
     ) {
     }
 }

@@ -13,18 +13,12 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
-use Sunrise\Http\Router\Constraint\NamedConstraint;
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 
 use function rtrim;
 use function strtoupper;
 
-/**
- * Route
- *
- * Use the {@see RouteFactory} factory to create this class.
- */
-class Route implements RouteInterface
+class Route
 {
 
     /**
@@ -70,18 +64,18 @@ class Route implements RouteInterface
     private mixed $requestHandler;
 
     /**
-     * The route middlewares
-     *
-     * @var list<mixed>
-     */
-    private array $middlewares = [];
-
-    /**
      * The route attributes
      *
      * @var array<string, mixed>
      */
     private array $attributes = [];
+
+    /**
+     * The route middlewares
+     *
+     * @var list<mixed>
+     */
+    private array $middlewares = [];
 
     /**
      * The route summary
@@ -112,6 +106,8 @@ class Route implements RouteInterface
     private bool $isDeprecated = false;
 
     private array $constraints = [];
+
+    private array $patterns = [];
 
     private ?string $pattern = null;
 
@@ -495,14 +491,7 @@ class Route implements RouteInterface
 
     public function setConstraints(array $constrains): static
     {
-        foreach ($constrains as $constrain) {
-            if ($constrain instanceof NamedConstraint) {
-                $this->constraints[$constrain->name] = $constrain->value;
-                continue;
-            }
-
-            $this->constraints[] = $constrains;
-        }
+        $this->constraints = $constrains;
 
         return $this;
     }
@@ -517,5 +506,13 @@ class Route implements RouteInterface
         $this->pattern = $pattern;
 
         return $this;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function getPatterns(): array
+    {
+        return $this->patterns;
     }
 }

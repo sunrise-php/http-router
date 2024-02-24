@@ -18,6 +18,8 @@ namespace Sunrise\Http\Router\Dictionary;
  */
 final class Charset
 {
+    public const DIGIT = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
     /**
      * @link https://datatracker.ietf.org/doc/html/rfc7230#section-3.2.3
      */

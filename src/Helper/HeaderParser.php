@@ -89,7 +89,7 @@ final class HeaderParser
     /**
      * @return array<int<0, max>, array{0: string, 1: array<string, string>}>
      */
-    private static function parseHeader(string $header): array
+    public static function parseHeader(string $header): array
     {
         $inIdentifier = 1;
         $inParameterName = 2;

@@ -13,13 +13,9 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Helper;
 
-use BackedEnum;
 use InvalidArgumentException;
-use Stringable;
 
 use function addcslashes;
-use function is_string;
-use function sprintf;
 use function str_replace;
 use function substr;
 
@@ -28,10 +24,14 @@ use function substr;
  */
 final class RouteCompiler
 {
+    public const PATTERN_DELIMITER = '#';
+
     /**
+     * @param array<string, string> $patterns
+     *
      * @return non-empty-string
      *
-     * @throws InvalidArgumentException If the route isn't valid or any of the patterns are unsupported.
+     * @throws InvalidArgumentException If the route isn't valid.
      */
     public static function compileRoute(string $route, array $patterns = []): string
     {
@@ -53,23 +53,8 @@ final class RouteCompiler
         foreach ($variables as $variable) {
             $pattern = $patterns[$variable['name']] ?? $variable['pattern'] ?? '[^/]+';
 
-            if ($pattern instanceof BackedEnum) {
-                $pattern = $pattern->value;
-            } elseif ($pattern instanceof Stringable) {
-                $pattern = $pattern->__toString();
-            }
-
-            if (is_string($pattern)) {
-                $search[] = '{' . $variable['name'] . '}';
-                $replace[] = '(?<' . $variable['name'] . '>' . $pattern . ')';
-                continue;
-            }
-
-            throw new InvalidArgumentException(sprintf(
-                'The route %s could not be compiled with an unsupported pattern for the variable %s.',
-                $route,
-                $variable['name'],
-            ));
+            $search[] = '{' . $variable['name'] . '}';
+            $replace[] = '(?<' . $variable['name'] . '>' . $pattern . ')';
         }
 
         $route = str_replace($search, $replace, $route);

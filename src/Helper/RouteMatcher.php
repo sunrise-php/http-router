@@ -31,9 +31,10 @@ use const PREG_UNMATCHED_AS_NULL;
 final class RouteMatcher
 {
     /**
+     * @param array<string, string> $patterns
      * @param-out array<string, string> $matches
      *
-     * @throws InvalidArgumentException If the route isn't valid or any of the patterns are unsupported.
+     * @throws InvalidArgumentException If the route or one of the patterns isn't valid.
      */
     public static function matchRoute(string $route, array $patterns, string $subject, ?array &$matches = null): bool
     {
@@ -46,7 +47,7 @@ final class RouteMatcher
      * @param non-empty-string $pattern
      * @param-out array<string, string> $matches
      *
-     * @throws InvalidArgumentException If the pattern (read: route) isn't valid.
+     * @throws InvalidArgumentException If the pattern isn't valid.
      */
     public static function matchPattern(string $route, string $pattern, string $subject, ?array &$matches = null): bool
     {
@@ -62,13 +63,8 @@ final class RouteMatcher
         }
 
         foreach ($matches as $key => $match) {
-            if (is_int($key)) {
+            if (is_int($key) || $match === null) {
                 unset($matches[$key]);
-                continue;
-            }
-            if ($match === null) {
-                unset($matches[$key]);
-                continue;
             }
         }
 

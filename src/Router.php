@@ -41,7 +41,7 @@ class Router
     private readonly ReferenceResolver $referenceResolver;
 
     /**
-     * @var array<string, RouteInterface>
+     * @var array<string, Route>
      */
     private array $routes = [];
 
@@ -66,7 +66,7 @@ class Router
     }
 
     /**
-     * @return array<string, RouteInterface>
+     * @return array<string, Route>
      */
     public function getRoutes(): array
     {
@@ -76,7 +76,7 @@ class Router
     /**
      * @throws InvalidArgumentException If the route doesn't exist.
      */
-    public function getRoute(string $name): RouteInterface
+    public function getRoute(string $name): Route
     {
         return $this->routes[$name] ?? throw new InvalidArgumentException(sprintf(
             'The route %s does not exist.',
@@ -84,7 +84,7 @@ class Router
         ));
     }
 
-    public function addRoute(RouteInterface ...$routes) : void
+    public function addRoute(Route ...$routes) : void
     {
         foreach ($routes as $route) {
             $this->routes[$route->getName()] = $route;
@@ -113,7 +113,7 @@ class Router
      *
      * @param ServerRequestInterface $request
      *
-     * @return RouteInterface
+     * @return Route
      *
      * @throws HttpNotFoundException
      *         If the request URI isn't served.
@@ -124,7 +124,7 @@ class Router
      * @throws HttpUnsupportedMediaTypeException
      *         If the client not produces required media types.
      */
-    public function match(ServerRequestInterface $request): RouteInterface
+    public function match(ServerRequestInterface $request): Route
     {
         $allowedMethods = [];
 
@@ -132,7 +132,7 @@ class Router
             $path = $route->getPath();
             $pattern = $route->getPattern();
             if ($pattern === null) {
-                $pattern = RouteCompiler::compileRoute($path, $route->getConstraints());
+                $pattern = RouteCompiler::compileRoute($path, $route->getPatterns());
                 $route->setPattern($pattern);
             }
 
@@ -188,9 +188,9 @@ class Router
     /**
      * @since 3.0.0
      */
-    public function runRoute(RouteInterface|string $route, ServerRequestInterface $request): ResponseInterface
+    public function runRoute(Route|string $route, ServerRequestInterface $request): ResponseInterface
     {
-        if (! $route instanceof RouteInterface) {
+        if (! $route instanceof Route) {
             $route = $this->getRoute($route);
         }
 

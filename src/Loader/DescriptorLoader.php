@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Loader;
 
-use BackedEnum;
 use Generator;
 use InvalidArgumentException;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -28,20 +27,18 @@ use Sunrise\Http\Router\Annotation\Deprecated;
 use Sunrise\Http\Router\Annotation\Description;
 use Sunrise\Http\Router\Annotation\Method;
 use Sunrise\Http\Router\Annotation\Middleware;
+use Sunrise\Http\Router\Annotation\Pattern;
 use Sunrise\Http\Router\Annotation\Postfix;
 use Sunrise\Http\Router\Annotation\Prefix;
 use Sunrise\Http\Router\Annotation\Produces;
 use Sunrise\Http\Router\Annotation\Route as Descriptor;
 use Sunrise\Http\Router\Annotation\Summary;
 use Sunrise\Http\Router\Annotation\Tag;
-use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
-use Sunrise\Http\Router\Entity\MediaType\ServerMediaType;
 use Sunrise\Http\Router\Helper\FilesystemHelper;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Route;
 
 use function class_exists;
-use function explode;
 use function is_dir;
 use function join;
 use function sprintf;
@@ -126,7 +123,7 @@ final class DescriptorLoader implements LoaderInterface
         foreach ($this->resources as $resource) {
             foreach ($this->getResourceDescriptors($resource) as $descriptor) {
                 $descriptor->path = join($descriptor->prefixes) . $descriptor->path;
-                $descriptor->pattern = RouteCompiler::compileRoute($descriptor->path, $descriptor->constraints);
+                $descriptor->pattern = RouteCompiler::compileRoute($descriptor->path, $descriptor->patterns);
                 $result[] = $descriptor;
             }
         }
@@ -230,19 +227,14 @@ final class DescriptorLoader implements LoaderInterface
         $annotations = $holder->getAttributes(Method::class);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
-            if ($annotation->value instanceof BackedEnum) {
-                $descriptor->methods[] = (string) $annotation->value->value;
-                continue;
-            }
-
             $descriptor->methods[] = $annotation->value;
         }
 
-        /** @var list<ReflectionAttribute<Middleware>> $annotations */
-        $annotations = $holder->getAttributes(Middleware::class);
+        /** @var list<ReflectionAttribute<Pattern>> $annotations */
+        $annotations = $holder->getAttributes(Pattern::class);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
-            $descriptor->middlewares[] = $annotation->value;
+            $descriptor->patterns[$annotation->name] = $annotation->value;
         }
 
         /** @var list<ReflectionAttribute<Attribute>> $annotations */
@@ -250,6 +242,13 @@ final class DescriptorLoader implements LoaderInterface
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
             $descriptor->attributes[$annotation->name] = $annotation->value;
+        }
+
+        /** @var list<ReflectionAttribute<Middleware>> $annotations */
+        $annotations = $holder->getAttributes(Middleware::class);
+        foreach ($annotations as $annotation) {
+            $annotation = $annotation->newInstance();
+            $descriptor->middlewares[] = $annotation->value;
         }
 
         /** @var list<ReflectionAttribute<Constraint>> $annotations */
@@ -263,28 +262,14 @@ final class DescriptorLoader implements LoaderInterface
         $annotations = $holder->getAttributes(Consumes::class);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
-            if ($annotation->value instanceof MediaTypeInterface) {
-                $descriptor->consumes[] = $annotation->value;
-                continue;
-            }
-
-            $range = explode('/', $annotation->value, 2);
-
-            $descriptor->consumes[] = new ServerMediaType($range[0], $range[1] ?? '*');
+            $descriptor->consumes[] = $annotation->value;
         }
 
         /** @var list<ReflectionAttribute<Produces>> $annotations */
         $annotations = $holder->getAttributes(Produces::class);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
-            if ($annotation->value instanceof MediaTypeInterface) {
-                $descriptor->produces[] = $annotation->value;
-                continue;
-            }
-
-            $range = explode('/', $annotation->value, 2);
-
-            $descriptor->produces[] = new ServerMediaType($range[0], $range[1] ?? '*');
+            $descriptor->produces[] = $annotation->value;
         }
 
         /** @var list<ReflectionAttribute<Summary>> $annotations */

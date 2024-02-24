@@ -13,12 +13,12 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Loader;
 
-use Sunrise\Http\Router\RouteInterface;
+use Sunrise\Http\Router\Route;
 
 interface LoaderInterface
 {
     /**
-     * @return iterable<mixed, RouteInterface>
+     * @return iterable<mixed, Route>
      */
     public function load(): iterable;
 }

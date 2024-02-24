@@ -34,11 +34,13 @@ final class Route implements RequestMethodInterface
         string|null $method = null,
         /** @var list<string> */
         public array $methods = [],
-        /** @var list<mixed> */
-        public array $middlewares = [],
+        /** @var array<string, string> */
+        public array $patterns = [],
         /** @var array<string, mixed> */
         public array $attributes = [],
         /** @var list<mixed> */
+        public array $middlewares = [],
+        /** @var mixed<mixed> */
         public array $constraints = [],
         /** @var list<MediaTypeInterface> */
         public array $consumes = [],
