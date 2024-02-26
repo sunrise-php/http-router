@@ -15,497 +15,49 @@ namespace Sunrise\Http\Router;
 
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 
-use function rtrim;
-use function strtoupper;
-
-class Route
+final class Route
 {
-
-    /**
-     * The route name
-     *
-     * @var string
-     */
-    private string $name;
-
-    /**
-     * The route path
-     *
-     * @var string
-     */
-    private string $path;
-
-    /**
-     * The route methods
-     *
-     * @var list<string>
-     */
-    private array $methods = [];
-
-    /**
-     * The route's consumed media types
-     *
-     * @var list<MediaTypeInterface>
-     */
-    private array $consumedMediaTypes = [];
-
-    /**
-     * The route's produced media types
-     *
-     * @var list<MediaTypeInterface>
-     */
-    private array $producedMediaTypes = [];
-
-    /**
-     * The route's request handler
-     *
-     * @var mixed
-     */
-    private mixed $requestHandler;
-
-    /**
-     * The route attributes
-     *
-     * @var array<string, mixed>
-     */
-    private array $attributes = [];
-
-    /**
-     * The route middlewares
-     *
-     * @var list<mixed>
-     */
-    private array $middlewares = [];
-
-    /**
-     * The route summary
-     *
-     * @var string|null
-     */
-    private ?string $summary = null;
-
-    /**
-     * The route description
-     *
-     * @var string|null
-     */
-    private ?string $description = null;
-
-    /**
-     * The route tags
-     *
-     * @var list<string>
-     */
-    private array $tags = [];
-
-    /**
-     * The route's deprecation sign
-     *
-     * @var bool
-     */
-    private bool $isDeprecated = false;
-
-    private array $constraints = [];
-
-    private array $patterns = [];
-
-    private ?string $pattern = null;
-
-    /**
-     * Constructor of the class
-     *
-     * @param string $name
-     * @param string $path
-     * @param list<string> $methods
-     * @param mixed $requestHandler
-     * @param list<mixed> $middlewares
-     * @param array<string, mixed> $attributes
-     */
     public function __construct(
-        string $name,
-        string $path,
-        array $methods,
-        mixed $requestHandler,
-        array $middlewares = [],
-        array $attributes = [],
+        private readonly string $name,
+        private readonly string $path,
+        private readonly mixed $requestHandler,
+        /** @var array<string, string> */
+        private readonly array $patterns = [],
+        /** @var list<string> */
+        private readonly array $methods = [],
+        /** @var array<string, mixed> */
+        private array $attributes = [],
+        /** @var list<mixed> */
+        private array $middlewares = [],
+        /** @var list<mixed> */
+        private array $constraints = [],
+        /** @var list<MediaTypeInterface> */
+        private readonly array $consumes = [],
+        /** @var list<MediaTypeInterface> */
+        private readonly array $produces = [],
+        private readonly string $summary = '',
+        private readonly string $description = '',
+        /** @var list<string> */
+        private readonly array $tags = [],
+        private readonly bool $isDeprecated = false,
+        /** @var non-empty-string|null */
+        private readonly ?string $pattern = null,
     ) {
-        $this->name = $name;
-        $this->path = $path;
-        $this->setMethods(...$methods);
-        $this->requestHandler = $requestHandler;
-        $this->setMiddlewares(...$middlewares);
-        $this->attributes = $attributes;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getName(): string
     {
         return $this->name;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getPath(): string
     {
         return $this->path;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getMethods(): array
-    {
-        return $this->methods;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getConsumedMediaTypes(): array
-    {
-        return $this->consumedMediaTypes;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getProducedMediaTypes(): array
-    {
-        return $this->producedMediaTypes;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function getRequestHandler(): mixed
     {
         return $this->requestHandler;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getMiddlewares(): array
-    {
-        return $this->middlewares;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getAttributes(): array
-    {
-        return $this->attributes;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getAttribute(string $name, mixed $default = null): mixed
-    {
-        return $this->attributes[$name] ?? $default;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getSummary(): ?string
-    {
-        return $this->summary;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getDescription(): ?string
-    {
-        return $this->description;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getTags(): array
-    {
-        return $this->tags;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function isDeprecated(): bool
-    {
-        return $this->isDeprecated;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setName(string $name): static
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setPath(string $path): static
-    {
-        $this->path = $path;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setMethods(string ...$methods): static
-    {
-        $this->methods = [];
-        foreach ($methods as $method) {
-            $this->methods[] = strtoupper($method);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setConsumesMediaTypes(MediaTypeInterface ...$mediaTypes): static
-    {
-        $this->consumedMediaTypes = [];
-        foreach ($mediaTypes as $mediaType) {
-            $this->consumedMediaTypes[] = $mediaType;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setProducesMediaTypes(MediaTypeInterface ...$mediaTypes): static
-    {
-        $this->producedMediaTypes = [];
-        foreach ($mediaTypes as $mediaType) {
-            $this->producedMediaTypes[] = $mediaType;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setRequestHandler(mixed $requestHandler): static
-    {
-        $this->requestHandler = $requestHandler;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setMiddlewares(mixed ...$middlewares): static
-    {
-        $this->middlewares = [];
-        foreach ($middlewares as $middleware) {
-            $this->middlewares[] = $middleware;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setAttributes(array $attributes): static
-    {
-        $this->attributes = $attributes;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setAttribute(string $name, mixed $value): static
-    {
-        $this->attributes[$name] = $value;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setSummary(?string $summary): static
-    {
-        $this->summary = $summary;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setDescription(?string $description): static
-    {
-        $this->description = $description;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setTags(string ...$tags): static
-    {
-        $this->tags = [];
-        foreach ($tags as $tag) {
-            $this->tags[] = $tag;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function setDeprecation(bool $isDeprecated): static
-    {
-        $this->isDeprecated = $isDeprecated;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function addPrefix(string $prefix): static
-    {
-        // https://github.com/sunrise-php/http-router/issues/26
-        $prefix = rtrim($prefix, '/');
-
-        $this->path = $prefix . $this->path;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function addSuffix(string $suffix): static
-    {
-        $this->path .= $suffix;
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function addMethod(string ...$methods): static
-    {
-        foreach ($methods as $method) {
-            $this->methods[] = strtoupper($method);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function addConsumedMediaType(MediaTypeInterface ...$mediaTypes): static
-    {
-        foreach ($mediaTypes as $mediaType) {
-            $this->consumedMediaTypes[] = $mediaType;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function addProducedMediaType(MediaTypeInterface ...$mediaTypes): static
-    {
-        foreach ($mediaTypes as $mediaType) {
-            $this->producedMediaTypes[] = $mediaType;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function addMiddleware(mixed ...$middlewares): static
-    {
-        foreach ($middlewares as $middleware) {
-            $this->middlewares[] = $middleware;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function addTag(string ...$tags): static
-    {
-        foreach ($tags as $tag) {
-            $this->tags[] = $tag;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function withAddedAttributes(array $attributes): static
-    {
-        $clone = clone $this;
-
-        /** @psalm-suppress MixedAssignment */
-        foreach ($attributes as $name => $value) {
-            $clone->attributes[$name] = $value;
-        }
-
-        return $clone;
-    }
-
-    public function getConstraints(): array
-    {
-        return $this->constraints;
-    }
-
-    public function setConstraints(array $constrains): static
-    {
-        $this->constraints = $constrains;
-
-        return $this;
-    }
-
-    public function getPattern(): ?string
-    {
-        return $this->pattern;
-    }
-
-    public function setPattern(?string $pattern): static
-    {
-        $this->pattern = $pattern;
-
-        return $this;
     }
 
     /**
@@ -514,5 +66,166 @@ class Route
     public function getPatterns(): array
     {
         return $this->patterns;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function getMethods(): array
+    {
+        return $this->methods;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getAttributes(): array
+    {
+        return $this->attributes;
+    }
+
+    public function getAttribute(string $name, mixed $default = null): mixed
+    {
+        return $this->attributes[$name] ?? $default;
+    }
+
+    public function hasAttribute(string $name): bool
+    {
+        return isset($this->attributes[$name]);
+    }
+
+    /**
+     * @param array<string, mixed> $attributes
+     */
+    public function withAttributes(array $attributes): self
+    {
+        $clone = clone $this;
+        $clone->attributes = $attributes;
+
+        return $clone;
+    }
+
+    /**
+     * @param array<string, mixed> $attributes
+     */
+    public function withAddedAttributes(array $attributes): self
+    {
+        $clone = clone $this;
+        foreach ($attributes as $name => $value) {
+            $clone->attributes[$name] = $value;
+        }
+
+        return $clone;
+    }
+
+    /**
+     * @return list<mixed>
+     */
+    public function getMiddlewares(): array
+    {
+        return $this->middlewares;
+    }
+
+    /**
+     * @param list<mixed> $middlewares
+     */
+    public function withMiddlewares(array $middlewares): self
+    {
+        $clone = clone $this;
+        $clone->middlewares = $middlewares;
+
+        return $clone;
+    }
+
+    /**
+     * @param list<mixed> $middlewares
+     */
+    public function withAddedMiddlewares(array $middlewares): self
+    {
+        $clone = clone $this;
+        foreach ($middlewares as $middleware) {
+            $clone->middlewares[] = $middleware;
+        }
+
+        return $clone;
+    }
+
+    /**
+     * @return list<mixed>
+     */
+    public function getConstraints(): array
+    {
+        return $this->constraints;
+    }
+
+    /**
+     * @param list<mixed> $constraints
+     */
+    public function withConstraints(array $constraints): self
+    {
+        $clone = clone $this;
+        $clone->constraints = $constraints;
+
+        return $clone;
+    }
+
+    /**
+     * @param list<mixed> $constraints
+     */
+    public function withAddedConstraints(array $constraints): self
+    {
+        $clone = clone $this;
+        foreach ($constraints as $constraint) {
+            $clone->constraints[] = $constraint;
+        }
+
+        return $clone;
+    }
+
+    /**
+     * @return list<MediaTypeInterface>
+     */
+    public function getConsumedMediaTypes(): array
+    {
+        return $this->consumes;
+    }
+
+    /**
+     * @return list<MediaTypeInterface>
+     */
+    public function getProducedMediaTypes(): array
+    {
+        return $this->produces;
+    }
+
+    public function getSummary(): string
+    {
+        return $this->summary;
+    }
+
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function getTags(): array
+    {
+        return $this->tags;
+    }
+
+    public function isDeprecated(): bool
+    {
+        return $this->isDeprecated;
+    }
+
+    /**
+     * @return non-empty-string|null
+     */
+    public function getPattern(): ?string
+    {
+        return $this->pattern;
     }
 }

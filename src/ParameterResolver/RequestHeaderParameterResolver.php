@@ -11,27 +11,27 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\ParameterResolving\ParameterResolver;
+namespace Sunrise\Http\Router\ParameterResolver;
 
 use Generator;
 use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionParameter;
-use Sunrise\Http\Router\Annotation\RequestCookie;
+use Sunrise\Http\Router\Annotation\RequestHeader;
 use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
-use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
+use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorErrorProxy;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
 use Sunrise\Hydrator\Type;
 
 /**
- * RequestCookieParameterResolver
+ * RequestHeaderParameterResolver
  *
  * @since 3.0.0
  */
-final class RequestCookieParameterResolver implements ParameterResolverInterface
+final class RequestHeaderParameterResolver implements ParameterResolverInterface
 {
 
     /**
@@ -48,12 +48,12 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
      *
      * @throws LogicException If the resolver is used incorrectly.
      *
-     * @throws HttpBadRequestException If a cookie was missed or invalid.
+     * @throws HttpBadRequestException If a header was missed or invalid.
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
-        /** @var list<ReflectionAttribute<RequestCookie>> $attributes */
-        $attributes = $parameter->getAttributes(RequestCookie::class);
+        /** @var ReflectionAttribute $attributes */
+        $attributes = $parameter->getAttributes(RequestHeader::class);
         if ($attributes === []) {
             return;
         }
@@ -64,31 +64,30 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
             );
         }
 
-        $cookies = $context->getCookieParams();
         $attribute = $attributes[0]->newInstance();
 
-        if (!isset($cookies[$attribute->name])) {
+        if (!$context->hasHeader($attribute->name)) {
             if ($parameter->isDefaultValueAvailable()) {
                 return yield $parameter->getDefaultValue();
             } elseif ($parameter->allowsNull()) {
                 return yield;
             }
 
-            throw new HttpBadRequestException("The cookie {$attribute->name} must be provided.");
+            throw new HttpBadRequestException("The header {$attribute->name} must be provided.");
         }
 
         try {
             yield $this->hydrator->castValue(
-                $cookies[$attribute->name],
+                $context->getHeaderLine($attribute->name),
                 Type::fromParameter($parameter),
                 path: [$attribute->name],
             );
         } catch (InvalidDataException $e) {
             throw (new HttpBadRequestException(previous: $e))
-                ->addConstraintViolation(...HydratorConstraintViolationProxy::create(...$e->getExceptions()));
+                ->addError(...HydratorErrorProxy::create(...$e->getExceptions()));
         } catch (InvalidValueException $e) {
             throw (new HttpBadRequestException(previous: $e))
-                ->addConstraintViolation(...HydratorConstraintViolationProxy::create($e));
+                ->addError(...HydratorErrorProxy::create($e));
         }
     }
 }

@@ -11,23 +11,22 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\ParameterResolving\ParameterResolver;
+namespace Sunrise\Http\Router\ParameterResolver;
 
 use Generator;
 use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionParameter;
-use Sunrise\Http\Router\Annotation\PathVariable;
+use Sunrise\Http\Router\Annotation\RequestVariable;
 use Sunrise\Http\Router\Exception\Http\HttpNotFoundException;
-use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
+use Sunrise\Http\Router\ParameterResolver;
 use Sunrise\Http\Router\Route;
-use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
+use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorErrorProxy;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
 use Sunrise\Hydrator\Type;
-
 use function sprintf;
 
 /**
@@ -35,7 +34,7 @@ use function sprintf;
  *
  * @since 3.0.0
  */
-final class PathVariableParameterResolver implements ParameterResolverInterface
+final class RequestVariableParameterResolver implements ParameterResolverInterface
 {
 
     /**
@@ -56,8 +55,8 @@ final class PathVariableParameterResolver implements ParameterResolverInterface
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
-        /** @var list<ReflectionAttribute<PathVariable>> $attributes */
-        $attributes = $parameter->getAttributes(PathVariable::class);
+        /** @var ReflectionAttribute $attributes */
+        $attributes = $parameter->getAttributes(RequestVariable::class);
         if ($attributes === []) {
             return;
         }
@@ -74,7 +73,7 @@ final class PathVariableParameterResolver implements ParameterResolverInterface
                 'The #[PathVariable] attribute cannot be applied to the parameter {%s}, ' .
                 'because the request does not contain information about the requested route, ' .
                 'at least at this level of the application.',
-                ParameterResolutioner::stringifyParameter($parameter),
+                ParameterResolver::stringifyParameter($parameter),
             ));
         }
 
@@ -94,7 +93,7 @@ final class PathVariableParameterResolver implements ParameterResolverInterface
                 'The parameter {%1$s} expects the value of the variable {%3$s} from the route "%2$s", ' .
                 'which is not present in the request, most likely, because the variable is optional. ' .
                 'To resolve this issue, make this parameter nullable or assign it a default value.',
-                ParameterResolutioner::stringifyParameter($parameter),
+                ParameterResolver::stringifyParameter($parameter),
                 $route->getName(),
                 $variableName,
             ));
@@ -108,10 +107,10 @@ final class PathVariableParameterResolver implements ParameterResolverInterface
             );
         } catch (InvalidDataException $e) {
             throw (new HttpNotFoundException(previous: $e))
-                ->addConstraintViolation(...HydratorConstraintViolationProxy::create(...$e->getExceptions()));
+                ->addError(...HydratorErrorProxy::create(...$e->getExceptions()));
         } catch (InvalidValueException $e) {
             throw (new HttpNotFoundException(previous: $e))
-                ->addConstraintViolation(...HydratorConstraintViolationProxy::create($e));
+                ->addError(...HydratorErrorProxy::create($e));
         }
     }
 }

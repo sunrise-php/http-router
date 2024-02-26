@@ -113,7 +113,7 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
      *
      * @return static
      */
-    final public function addConstraintViolation(ConstraintViolationInterface ...$constraintViolations): static
+    final public function addError(ConstraintViolationInterface ...$constraintViolations): static
     {
         foreach ($constraintViolations as $constraintViolation) {
             $this->constraintViolations[] = $constraintViolation;

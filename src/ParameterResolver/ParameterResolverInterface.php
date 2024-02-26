@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\ParameterResolving\ParameterResolver;
+namespace Sunrise\Http\Router\ParameterResolver;
 
 use Generator;
 use ReflectionParameter;

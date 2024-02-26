@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\ResponseResolving;
+namespace Sunrise\Http\Router;
 
 use LogicException;
 use Psr\Http\Message\ResponseInterface;
@@ -21,16 +21,14 @@ use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\ResponseHeader;
 use Sunrise\Http\Router\Annotation\ResponseStatus;
-use Sunrise\Http\Router\ResponseResolving\ResponseResolver\ResponseResolverInterface;
+use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
 
 use function sprintf;
 
 /**
- * ResponseResolutioner
- *
  * @since 3.0.0
  */
-final class ResponseResolutioner implements ResponseResolutionerInterface
+final class ResponseResolver
 {
 
     /**
@@ -89,14 +87,14 @@ final class ResponseResolutioner implements ResponseResolutionerInterface
         ResponseInterface $response,
         ReflectionFunction|ReflectionMethod $responder,
     ) : ResponseInterface {
-        /** @var list<ReflectionAttribute<ResponseStatus>> $attributes */
+        /** @var ReflectionAttribute $attributes */
         $attributes = $responder->getAttributes(ResponseStatus::class);
         if (isset($attributes[0])) {
             $status = $attributes[0]->newInstance();
             $response = $response->withStatus($status->code, $status->phrase);
         }
 
-        /** @var list<ReflectionAttribute<ResponseHeader>> $attributes */
+        /** @var ReflectionAttribute $attributes */
         $attributes = $responder->getAttributes(ResponseHeader::class);
         foreach ($attributes as $attribute) {
             $header = $attribute->newInstance();

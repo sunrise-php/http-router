@@ -11,30 +11,20 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\ResponseResolving;
+namespace Sunrise\Http\Router\ResponseResolver;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionFunction;
 use ReflectionMethod;
-use Sunrise\Http\Router\ResponseResolving\ResponseResolver\ResponseResolverInterface;
 
 /**
- * ResponseResolutionerInterface
+ * ResponseResolverInterface
  *
  * @since 3.0.0
  */
-interface ResponseResolutionerInterface
+interface ResponseResolverInterface
 {
-
-    /**
-     * Adds the given response resolver(s) to the resolutioner
-     *
-     * @param ResponseResolverInterface ...$resolvers
-     *
-     * @return void
-     */
-    public function addResolver(ResponseResolverInterface ...$resolvers): void;
 
     /**
      * Resolves the given response to PSR-7 response
@@ -43,11 +33,11 @@ interface ResponseResolutionerInterface
      * @param mixed $response
      * @param ReflectionFunction|ReflectionMethod $responder
      *
-     * @return ResponseInterface
+     * @return ResponseInterface|null
      */
     public function resolveResponse(
         ServerRequestInterface $request,
         mixed $response,
         ReflectionFunction|ReflectionMethod $responder,
-    ) : ResponseInterface;
+    ) : ?ResponseInterface;
 }

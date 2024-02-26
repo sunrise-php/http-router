@@ -11,20 +11,19 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Annotation;
-
-use Attribute;
+namespace Sunrise\Http\Router\Dictionary;
 
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION)]
-final class ResponseStatus
+final class RequestMethod
 {
-    public function __construct(
-        /** @var int<100, 599> */
-        public readonly int $code,
-        public readonly string $phrase = '',
-    ) {
-    }
+    public const OPTIONS = 'OPTIONS';
+    public const HEAD = 'HEAD';
+    public const GET = 'GET';
+    public const POST = 'POST';
+    public const PUT = 'PUT';
+    public const PATCH = 'PATCH';
+    public const DELETE = 'DELETE';
+    public const PURGE = 'PURGE';
 }

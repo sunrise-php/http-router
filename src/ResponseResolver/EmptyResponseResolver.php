@@ -11,33 +11,44 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\ResponseResolving\ResponseResolver;
+namespace Sunrise\Http\Router\ResponseResolver;
 
+use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionFunction;
 use ReflectionMethod;
+use Sunrise\Http\Router\Annotation\EmptyResponse;
 
 /**
- * ResponseResolverInterface
+ * EmptyResponseResolver
  *
  * @since 3.0.0
  */
-interface ResponseResolverInterface
+final class EmptyResponseResolver implements ResponseResolverInterface
 {
 
     /**
-     * Resolves the given response to PSR-7 response
+     * Constructor of the class
      *
-     * @param ServerRequestInterface $request
-     * @param mixed $response
-     * @param ReflectionFunction|ReflectionMethod $responder
-     *
-     * @return ResponseInterface|null
+     * @param ResponseFactoryInterface $responseFactory
+     */
+    public function __construct(private ResponseFactoryInterface $responseFactory)
+    {
+    }
+
+    /**
+     * @inheritDoc
      */
     public function resolveResponse(
         ServerRequestInterface $request,
         mixed $response,
         ReflectionFunction|ReflectionMethod $responder,
-    ) : ?ResponseInterface;
+    ) : ?ResponseInterface {
+        if ($responder->getAttributes(EmptyResponse::class) === []) {
+            return null;
+        }
+
+        return $this->responseFactory->createResponse(204);
+    }
 }

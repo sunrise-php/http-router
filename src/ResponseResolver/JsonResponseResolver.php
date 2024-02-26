@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\ResponseResolving\ResponseResolver;
+namespace Sunrise\Http\Router\ResponseResolver;
 
 use JsonException;
 use LogicException;
@@ -22,11 +22,9 @@ use ReflectionAttribute;
 use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\JsonResponse;
-use Sunrise\Http\Router\ResponseResolving\ResponseResolutioner;
-
+use Sunrise\Http\Router\ResponseResolver;
 use function json_encode;
 use function sprintf;
-
 use const JSON_THROW_ON_ERROR;
 
 /**
@@ -54,7 +52,7 @@ final class JsonResponseResolver implements ResponseResolverInterface
         mixed $response,
         ReflectionFunction|ReflectionMethod $responder,
     ) : ?ResponseInterface {
-        /** @var list<ReflectionAttribute<JsonResponse>> $attributes */
+        /** @var ReflectionAttribute $attributes */
         $attributes = $responder->getAttributes(JsonResponse::class);
         if ($attributes === []) {
             return null;
@@ -72,7 +70,7 @@ final class JsonResponseResolver implements ResponseResolverInterface
         } catch (JsonException $e) {
             throw new LogicException(sprintf(
                 'The responder {%s} returned a response that could not be encoded to JSON due to: %s',
-                ResponseResolutioner::stringifyResponder($responder),
+                ResponseResolver::stringifyResponder($responder),
                 $e->getMessage(),
             ));
         }

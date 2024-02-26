@@ -11,22 +11,20 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\ParameterResolving;
+namespace Sunrise\Http\Router;
 
 use Generator;
 use LogicException;
 use ReflectionMethod;
 use ReflectionParameter;
-use Sunrise\Http\Router\ParameterResolving\ParameterResolver\ParameterResolverInterface;
+use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
 
 use function sprintf;
 
 /**
- * ParameterResolutioner
- *
  * @since 3.0.0
  */
-final class ParameterResolutioner implements ParameterResolutionerInterface
+final class ParameterResolver
 {
 
     /**

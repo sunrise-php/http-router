@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\ResponseResolving\ResponseResolver;
+namespace Sunrise\Http\Router\ResponseResolver;
 
 use LogicException;
 use Psr\Http\Message\ResponseInterface;

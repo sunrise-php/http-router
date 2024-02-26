@@ -18,9 +18,9 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use ReflectionFunction;
 use ReflectionMethod;
-use Sunrise\Http\Router\ParameterResolving\ParameterResolutionerInterface;
-use Sunrise\Http\Router\ParameterResolving\ParameterResolver\ObjectInjectionParameterResolver;
-use Sunrise\Http\Router\ResponseResolving\ResponseResolutionerInterface;
+use Sunrise\Http\Router\ParameterResolver;
+use Sunrise\Http\Router\ParameterResolver\ObjectInjectionParameterResolver;
+use Sunrise\Http\Router\ResponseResolver;
 
 /**
  * @since 3.0.0
@@ -35,8 +35,8 @@ final class CallbackRequestHandler implements RequestHandlerInterface
     public function __construct(
         callable $callback,
         private readonly ReflectionFunction|ReflectionMethod $callbackReflection,
-        private readonly ParameterResolutionerInterface $parameterResolutioner,
-        private readonly ResponseResolutionerInterface $responseResolutioner,
+        private readonly ParameterResolver $parameterResolver,
+        private readonly ResponseResolver $responseResolver,
     ) {
         $this->callback = $callback;
     }
@@ -56,7 +56,7 @@ final class CallbackRequestHandler implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $arguments = $this->parameterResolutioner
+        $arguments = $this->parameterResolver
             ->withContext($request)
             ->withPriorityResolver(
                 new ObjectInjectionParameterResolver($request),
@@ -64,6 +64,6 @@ final class CallbackRequestHandler implements RequestHandlerInterface
             ->resolveParameters(...$this->callbackReflection->getParameters());
 
         // phpcs:ignore Generic.Files.LineLength
-        return $this->responseResolutioner->resolveResponse($request, ($this->callback)(...$arguments), $this->callbackReflection);
+        return $this->responseResolver->resolveResponse($request, ($this->callback)(...$arguments), $this->callbackReflection);
     }
 }

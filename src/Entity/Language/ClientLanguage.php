@@ -20,6 +20,7 @@ final class ClientLanguage implements LanguageInterface
 {
     public function __construct(
         private readonly string $code,
+        // One of the Accept-Language header's identifiers
         private readonly string $locale,
         /** @var array<string, string> */
         private readonly array $parameters,

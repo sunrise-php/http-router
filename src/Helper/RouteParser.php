@@ -207,8 +207,7 @@ final class RouteParser
 
             // https://www.pcre.org/original/doc/html/pcrepattern.html#SEC16
             if (($cursor & $inVariableName)) {
-                /** @psalm-suppress InvalidArrayOffset */
-                if (!isset($variables[$variable]['name'][0]) && isset(Charset::DIGIT[$route[$offset]])) {
+                if (!isset($variables[$variable]['name']) && $route[$offset] >= '0' && $route[$offset] <= '9') {
                     throw new InvalidArgumentException(sprintf(
                         'The route %s could not be parsed due to a syntax error. ' .
                         'An invalid character was found at position %d. ' .

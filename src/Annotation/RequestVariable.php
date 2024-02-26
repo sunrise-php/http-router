@@ -19,7 +19,7 @@ use Attribute;
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_PARAMETER)]
-final class PathVariable
+final class RequestVariable
 {
     public function __construct(
         public readonly string|null $name = null,

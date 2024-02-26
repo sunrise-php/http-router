@@ -11,21 +11,21 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\ResponseResolving\ResponseResolver;
+namespace Sunrise\Http\Router\ResponseResolver;
 
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\UriInterface;
 use ReflectionFunction;
 use ReflectionMethod;
-use Sunrise\Http\Router\Annotation\EmptyResponse;
 
 /**
- * EmptyResponseResolver
+ * UriResponseResolver
  *
  * @since 3.0.0
  */
-final class EmptyResponseResolver implements ResponseResolverInterface
+final class UriResponseResolver implements ResponseResolverInterface
 {
 
     /**
@@ -45,10 +45,11 @@ final class EmptyResponseResolver implements ResponseResolverInterface
         mixed $response,
         ReflectionFunction|ReflectionMethod $responder,
     ) : ?ResponseInterface {
-        if ($responder->getAttributes(EmptyResponse::class) === []) {
+        if (! $response instanceof UriInterface) {
             return null;
         }
 
-        return $this->responseFactory->createResponse(204);
+        return $this->responseFactory->createResponse(302)
+            ->withHeader('Location', $response->__toString());
     }
 }

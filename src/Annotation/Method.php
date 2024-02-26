@@ -14,13 +14,15 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
-use Fig\Http\Message\RequestMethodInterface;
+use Sunrise\Http\Router\Dictionary\RequestMethod;
 
 /**
+ * Pay attention to the {@see RequestMethod} dictionary.
+ *
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class Method implements RequestMethodInterface
+final class Method
 {
     public function __construct(
         public readonly string $value,

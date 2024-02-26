@@ -24,16 +24,9 @@ use SplQueue;
  */
 final class QueueableRequestHandler extends SplQueue implements RequestHandlerInterface
 {
-    /**
-     * @param array<array-key, MiddlewareInterface> $middlewares
-     */
     public function __construct(
-        private readonly RequestHandlerInterface $requestHandler,
-        array $middlewares,
+        private readonly RequestHandlerInterface $endpoint,
     ) {
-        foreach ($middlewares as $middleware) {
-            $this->enqueue($middleware);
-        }
     }
 
     /**
@@ -41,8 +34,8 @@ final class QueueableRequestHandler extends SplQueue implements RequestHandlerIn
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        return ! $this->isEmpty() ?
-            ($clone = clone $this)->dequeue()->process($request, $clone) :
-            $this->requestHandler->handle($request);
+        return $this->isEmpty() ?
+            $this->endpoint->handle($request) :
+            ($queue = clone $this)->dequeue()->process($request, $queue);
     }
 }

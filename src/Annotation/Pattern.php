@@ -14,8 +14,11 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
+use Sunrise\Http\Router\Dictionary\VariablePattern;
 
 /**
+ * Pay attention to the {@see VariablePattern} dictionary.
+ *
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]

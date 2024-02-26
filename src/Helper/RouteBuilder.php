@@ -13,12 +13,8 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Helper;
 
-use BackedEnum;
 use InvalidArgumentException;
-use Stringable;
 
-use function is_int;
-use function is_string;
 use function sprintf;
 use function str_replace;
 use function substr;
@@ -29,12 +25,9 @@ use function substr;
 final class RouteBuilder
 {
     /**
-     * @param array<string, mixed> $values
+     * @param array<string, string> $values
      *
-     * @throws InvalidArgumentException
-     *         If the route isn't valid;
-     *         or any of the values are unsupported;
-     *         or any of the required values are missing.
+     * @throws InvalidArgumentException If the route isn't valid or any of the required values are missing.
      */
     public static function buildRoute(string $route, array $values = []): string
     {
@@ -46,26 +39,8 @@ final class RouteBuilder
             $statement = substr($route, $variable['offset'], $variable['length']);
 
             if (isset($values[$variable['name']])) {
-                $value = $values[$variable['name']];
-
-                if (is_int($value)) {
-                    $value = (string) $value;
-                } elseif ($value instanceof BackedEnum) {
-                    $value = (string) $value->value;
-                } elseif ($value instanceof Stringable) {
-                    $value = $value->__toString();
-                }
-
-                if (!is_string($value)) {
-                    throw new InvalidArgumentException(sprintf(
-                        'The route %s could not be built with an unsupported value for the variable %s.',
-                        $route,
-                        $variable['name'],
-                    ));
-                }
-
                 $search[] = $statement;
-                $replace[] = $value;
+                $replace[] = $values[$variable['name']];
                 continue;
             }
 
@@ -82,6 +57,9 @@ final class RouteBuilder
             ));
         }
 
-        return str_replace([...$search, '(', ')'], $replace, $route);
+        $search[] = '(';
+        $search[] = ')';
+
+        return str_replace($search, $replace, $route);
     }
 }

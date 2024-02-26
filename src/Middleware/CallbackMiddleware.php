@@ -19,9 +19,9 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use ReflectionFunction;
 use ReflectionMethod;
-use Sunrise\Http\Router\ParameterResolving\ParameterResolutionerInterface;
-use Sunrise\Http\Router\ParameterResolving\ParameterResolver\ObjectInjectionParameterResolver;
-use Sunrise\Http\Router\ResponseResolving\ResponseResolutionerInterface;
+use Sunrise\Http\Router\ParameterResolver;
+use Sunrise\Http\Router\ParameterResolver\ObjectInjectionParameterResolver;
+use Sunrise\Http\Router\ResponseResolver;
 
 /**
  * @since 3.0.0
@@ -36,8 +36,8 @@ final class CallbackMiddleware implements MiddlewareInterface
     public function __construct(
         callable $callback,
         private readonly ReflectionFunction|ReflectionMethod $callbackReflection,
-        private readonly ParameterResolutionerInterface $parameterResolutioner,
-        private readonly ResponseResolutionerInterface $responseResolutioner,
+        private readonly ParameterResolver $parameterResolver,
+        private readonly ResponseResolver $responseResolver,
     ) {
         $this->callback = $callback;
     }
@@ -47,7 +47,7 @@ final class CallbackMiddleware implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $arguments = $this->parameterResolutioner
+        $arguments = $this->parameterResolver
             ->withContext($request)
             ->withPriorityResolver(
                 new ObjectInjectionParameterResolver($request),
@@ -56,6 +56,6 @@ final class CallbackMiddleware implements MiddlewareInterface
             ->resolveParameters(...$this->callbackReflection->getParameters());
 
         // phpcs:ignore Generic.Files.LineLength
-        return $this->responseResolutioner->resolveResponse($request, ($this->callback)(...$arguments), $this->callbackReflection);
+        return $this->responseResolver->resolveResponse($request, ($this->callback)(...$arguments), $this->callbackReflection);
     }
 }

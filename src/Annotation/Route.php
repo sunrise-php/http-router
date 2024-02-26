@@ -14,11 +14,10 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
-use Fig\Http\Message\RequestMethodInterface;
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
-final class Route implements RequestMethodInterface
+final class Route
 {
     public mixed $holder;
 
@@ -30,33 +29,27 @@ final class Route implements RequestMethodInterface
 
     public function __construct(
         public string $name,
-        public string $path = '/',
-        string|null $method = null,
-        /** @var list<string> */
-        public array $methods = [],
+        public string $path,
         /** @var array<string, string> */
         public array $patterns = [],
+        /** @var list<string> */
+        public array $methods = [],
         /** @var array<string, mixed> */
         public array $attributes = [],
         /** @var list<mixed> */
         public array $middlewares = [],
-        /** @var mixed<mixed> */
+        /** @var list<mixed> */
         public array $constraints = [],
         /** @var list<MediaTypeInterface> */
         public array $consumes = [],
         /** @var list<MediaTypeInterface> */
         public array $produces = [],
-        public string|null $summary = null,
-        public string|null $description = null,
+        public string $summary = '',
+        public string $description = '',
         /** @var list<string> */
         public array $tags = [],
         public bool $isDeprecated = false,
         public int $priority = 0,
     ) {
-        if (isset($method)) {
-            $this->methods[] = $method;
-        } elseif (empty($this->methods)) {
-            $this->methods[] = self::METHOD_GET;
-        }
     }
 }

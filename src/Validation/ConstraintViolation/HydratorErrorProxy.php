@@ -20,7 +20,7 @@ use Sunrise\Hydrator\Exception\InvalidValueException as HydratorConstraintViolat
 /**
  * @since 3.0.0
  */
-final class HydratorConstraintViolationProxy implements ConstraintViolationInterface
+final class HydratorErrorProxy implements ConstraintViolationInterface
 {
 
     /**

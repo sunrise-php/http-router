@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router;
 
 use Closure;
-use Generator;
 use LogicException;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -22,9 +21,7 @@ use ReflectionClass;
 use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\Middleware\CallbackMiddleware;
-use Sunrise\Http\Router\ParameterResolving\ParameterResolutionerInterface;
 use Sunrise\Http\Router\RequestHandler\CallbackRequestHandler;
-use Sunrise\Http\Router\ResponseResolving\ResponseResolutionerInterface;
 
 use function class_exists;
 use function get_debug_type;
@@ -35,11 +32,9 @@ use function is_subclass_of;
 use function sprintf;
 
 /**
- * ReferenceResolver
- *
  * @since 2.10.0
  */
-final class ReferenceResolver implements ReferenceResolverInterface
+final class ReferenceResolver
 {
     /**
      * @var array<class-string, object>
@@ -47,8 +42,8 @@ final class ReferenceResolver implements ReferenceResolverInterface
     private array $resolvedClasses = [];
 
     public function __construct(
-        private readonly ParameterResolutionerInterface $parameterResolutioner,
-        private readonly ResponseResolutionerInterface $responseResolutioner,
+        private readonly ParameterResolver $parameterResolver,
+        private readonly ResponseResolver $responseResolver,
     ) {
     }
 
@@ -67,8 +62,8 @@ final class ReferenceResolver implements ReferenceResolverInterface
             return new CallbackRequestHandler(
                 $reference,
                 new ReflectionFunction($reference),
-                $this->parameterResolutioner,
-                $this->responseResolutioner,
+                $this->parameterResolver,
+                $this->responseResolver,
             );
         }
 
@@ -84,8 +79,8 @@ final class ReferenceResolver implements ReferenceResolverInterface
                 return new CallbackRequestHandler(
                     $reference,
                     new ReflectionMethod($reference[0], $reference[1]),
-                    $this->parameterResolutioner,
-                    $this->responseResolutioner,
+                    $this->parameterResolver,
+                    $this->responseResolver,
                 );
             }
         }
@@ -115,8 +110,8 @@ final class ReferenceResolver implements ReferenceResolverInterface
             return new CallbackMiddleware(
                 $reference,
                 new ReflectionFunction($reference),
-                $this->parameterResolutioner,
-                $this->responseResolutioner,
+                $this->parameterResolver,
+                $this->responseResolver,
             );
         }
 
@@ -136,8 +131,8 @@ final class ReferenceResolver implements ReferenceResolverInterface
                 return new CallbackMiddleware(
                     $reference,
                     new ReflectionMethod($reference[0], $reference[1]),
-                    $this->parameterResolutioner,
-                    $this->responseResolutioner,
+                    $this->parameterResolver,
+                    $this->responseResolver,
                 );
             }
         }
@@ -146,19 +141,6 @@ final class ReferenceResolver implements ReferenceResolverInterface
             'The reference {%s} cannot be resolved.',
             self::stringifyReference($reference),
         ));
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @throws LogicException If one of the references couldn't be resolved.
-     */
-    public function resolveMiddlewares(array $references): Generator
-    {
-        /** @psalm-suppress MixedAssignment */
-        foreach ($references as $reference) {
-            yield $this->resolveMiddleware($reference);
-        }
     }
 
     /**
@@ -191,7 +173,7 @@ final class ReferenceResolver implements ReferenceResolverInterface
         $arguments = [];
         $constructor = $class->getConstructor();
         if ($constructor?->getNumberOfParameters()) {
-            $arguments = $this->parameterResolutioner->resolveParameters(...$constructor->getParameters());
+            $arguments = $this->parameterResolver->resolveParameters(...$constructor->getParameters());
         }
 
         /** @var T */

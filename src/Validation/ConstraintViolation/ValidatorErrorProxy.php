@@ -20,7 +20,7 @@ use Symfony\Component\Validator\ConstraintViolationInterface as ValidatorConstra
 /**
  * @since 3.0.0
  */
-final class ValidatorConstraintViolationProxy implements ConstraintViolationInterface
+final class ValidatorErrorProxy implements ConstraintViolationInterface
 {
 
     /**

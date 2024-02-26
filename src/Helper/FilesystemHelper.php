@@ -24,6 +24,8 @@ use RegexIterator;
 use function get_declared_classes;
 use function is_dir;
 use function is_file;
+use function iterator_to_array;
+use function realpath;
 use function sprintf;
 
 /**
@@ -45,23 +47,33 @@ final class FilesystemHelper
             ));
         }
 
-        /** @var iterable<string, string> $filenames */
-        $filenames = new RegexIterator(
-            new RecursiveIteratorIterator(
-                new RecursiveDirectoryIterator(
-                    $dirname,
-                    FilesystemIterator::KEY_AS_FILENAME
-                    | FilesystemIterator::CURRENT_AS_PATHNAME
-                    | FilesystemIterator::SKIP_DOTS,
+        /** @var array<string, string> $filenames */
+        $filenames = iterator_to_array(
+            new RegexIterator(
+                new RecursiveIteratorIterator(
+                    new RecursiveDirectoryIterator(
+                        $dirname,
+                        FilesystemIterator::KEY_AS_PATHNAME
+                        | FilesystemIterator::CURRENT_AS_PATHNAME
+                        | FilesystemIterator::SKIP_DOTS,
+                    ),
                 ),
-                RecursiveIteratorIterator::LEAVES_ONLY,
-            ),
-            '/\.php$/',
-            RegexIterator::MATCH,
+                '/\.php$/',
+            )
         );
 
         foreach ($filenames as $filename) {
-            yield from self::getFileClasses($filename);
+            (static function (string $filename): void {
+                /** @psalm-suppress UnresolvableInclude */
+                require_once $filename;
+            })($filename);
+        }
+
+        foreach (get_declared_classes() as $className) {
+            $classReflection = new ReflectionClass($className);
+            if (isset($filenames[$classReflection->getFileName()])) {
+                yield $classReflection;
+            }
         }
     }
 
@@ -78,6 +90,8 @@ final class FilesystemHelper
                 $filename,
             ));
         }
+
+        $filename = realpath($filename);
 
         (static function (string $filename): void {
             /** @psalm-suppress UnresolvableInclude */

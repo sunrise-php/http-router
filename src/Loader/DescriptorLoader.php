@@ -14,12 +14,14 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Loader;
 
 use Generator;
-use InvalidArgumentException;
+use LogicException;
 use Psr\Http\Server\RequestHandlerInterface;
+use Psr\SimpleCache\CacheException;
 use Psr\SimpleCache\CacheInterface;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
+use SplStack;
 use Sunrise\Http\Router\Annotation\Attribute;
 use Sunrise\Http\Router\Annotation\Constraint;
 use Sunrise\Http\Router\Annotation\Consumes;
@@ -38,10 +40,14 @@ use Sunrise\Http\Router\Helper\FilesystemHelper;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Route;
 
+use function array_map;
 use function class_exists;
 use function is_dir;
+use function is_file;
 use function join;
+use function rtrim;
 use function sprintf;
+use function strtoupper;
 use function usort;
 
 final class DescriptorLoader implements LoaderInterface
@@ -55,102 +61,116 @@ final class DescriptorLoader implements LoaderInterface
 
     public function __construct(
         private readonly ?CacheInterface $cache = null,
-        private readonly ?string $cacheKey = null,
+        private readonly string $cacheKey = self::DEFAULT_CACHE_KEY,
     ) {
     }
 
-    /**
-     * @throws InvalidArgumentException If one of the resources isn't valid.
-     */
     public function attach(string ...$resources): void
     {
         foreach ($resources as $resource) {
-            if (is_dir($resource) || class_exists($resource)) {
-                $this->resources[] = $resource;
-                continue;
-            }
-
-            throw new InvalidArgumentException(sprintf(
-                'The method %s only accepts class or directory names; ' .
-                'however, the resource %s is not one of them.',
-                __METHOD__,
-                $resource,
-            ));
+            $this->resources[] = $resource;
         }
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws LogicException If one of the resources isn't supported.
+     *
+     * @throws CacheException If something went wrong while working with the cache.
      */
     public function load(): Generator
     {
         foreach ($this->getDescriptors() as $descriptor) {
-            $route = new Route(
+            yield new Route(
                 $descriptor->name,
                 $descriptor->path,
-                $descriptor->methods,
                 $descriptor->holder,
+                $descriptor->patterns,
+                $descriptor->methods,
+                $descriptor->attributes,
+                $descriptor->middlewares,
+                $descriptor->constraints,
+                $descriptor->consumes,
+                $descriptor->produces,
+                $descriptor->summary,
+                $descriptor->description,
+                $descriptor->tags,
+                $descriptor->isDeprecated,
+                $descriptor->pattern,
             );
-
-            $route->setMiddlewares(...$descriptor->middlewares);
-            $route->setAttributes($descriptor->attributes);
-            $route->setConstraints($descriptor->constraints);
-            $route->setConsumesMediaTypes(...$descriptor->consumes);
-            $route->setProducesMediaTypes(...$descriptor->produces);
-            $route->setSummary($descriptor->summary);
-            $route->setDescription($descriptor->description);
-            $route->setTags(...$descriptor->tags);
-            $route->setDeprecation($descriptor->isDeprecated);
-            $route->setPattern($descriptor->pattern);
-
-            yield $route;
         }
     }
 
     /**
      * @return list<Descriptor>
+     *
+     * @throws LogicException If one of the resources isn't supported.
+     *
+     * @throws CacheException If something went wrong while working with the cache.
      */
     private function getDescriptors(): array
     {
-        $cacheKey = $this->cacheKey ?? self::DEFAULT_CACHE_KEY;
-
-        if (isset($this->cache) && $this->cache->has($cacheKey)) {
-            /** @var list<Descriptor> */
-            return $this->cache->get($cacheKey);
+        /** @var list<Descriptor>|null $descriptors */
+        $descriptors = $this->cache?->get($this->cacheKey);
+        if (isset($descriptors)) {
+            return $descriptors;
         }
 
-        $result = [];
+        $descriptors = [];
         foreach ($this->resources as $resource) {
             foreach ($this->getResourceDescriptors($resource) as $descriptor) {
                 $descriptor->path = join($descriptor->prefixes) . $descriptor->path;
+                $descriptor->methods = array_map(strtoupper(...), $descriptor->methods);
                 $descriptor->pattern = RouteCompiler::compileRoute($descriptor->path, $descriptor->patterns);
-                $result[] = $descriptor;
+                $descriptors[] = $descriptor;
             }
         }
 
-        usort($result, static fn(Descriptor $a, Descriptor $b): int => $b->priority <=> $a->priority);
+        usort($descriptors, static fn(Descriptor $a, Descriptor $b): int => $b->priority <=> $a->priority);
 
-        if (isset($this->cache)) {
-            $this->cache->set($cacheKey, $result);
-        }
+        $this->cache?->set($this->cacheKey, $descriptors);
 
-        return $result;
+        return $descriptors;
     }
 
     /**
      * @return Generator<int, Descriptor>
+     *
+     * @throws LogicException If the resource isn't supported.
      */
     private function getResourceDescriptors(string $resource): Generator
     {
-        if (class_exists($resource)) {
-            return yield from $this->getClassDescriptors(new ReflectionClass($resource));
-        }
-
         if (is_dir($resource)) {
             foreach (FilesystemHelper::getDirClasses($resource) as $class) {
                 yield from $this->getClassDescriptors($class);
             }
+
+            return;
         }
+
+        if (is_file($resource)) {
+            foreach (FilesystemHelper::getFileClasses($resource) as $class) {
+                yield from $this->getClassDescriptors($class);
+            }
+
+            return;
+        }
+
+        if (class_exists($resource)) {
+            yield from $this->getClassDescriptors(
+                new ReflectionClass($resource)
+            );
+
+            return;
+        }
+
+        throw new LogicException(sprintf(
+            'The loader %s only accepts directory, file or class names; ' .
+            'however, the resource %s is not one of them.',
+            __CLASS__,
+            $resource,
+        ));
     }
 
     /**
@@ -174,10 +194,8 @@ final class DescriptorLoader implements LoaderInterface
             }
         }
 
-        $methods = $class->getMethods(ReflectionMethod::IS_PUBLIC);
-        foreach ($methods as $method) {
-            // Static methods aren't supported...
-            if ($method->isStatic()) {
+        foreach ($class->getMethods() as $method) {
+            if (!$method->isPublic() || $method->isStatic()) {
                 continue;
             }
 
@@ -194,11 +212,12 @@ final class DescriptorLoader implements LoaderInterface
         }
     }
 
-    private function supplementDescriptorFromParentClasses(Descriptor $descriptor, ReflectionClass $child): void
+    private function supplementDescriptorFromParentClasses(Descriptor $descriptor, ReflectionClass $class): void
     {
-        $parents = [];
-        while ($child = $child->getParentClass()) {
-            $parents = [$child, ...$parents];
+        /** @var SplStack<ReflectionClass> $parents */
+        $parents = new SplStack();
+        while ($class = $class->getParentClass()) {
+            $parents->push($class);
         }
 
         foreach ($parents as $parent) {
@@ -207,96 +226,95 @@ final class DescriptorLoader implements LoaderInterface
     }
 
     // phpcs:ignore Generic.Files.LineLength
-    private function supplementDescriptorFromClassOrMethod(Descriptor $descriptor, ReflectionClass|ReflectionMethod $holder): void
+    private function supplementDescriptorFromClassOrMethod(Descriptor $descriptor, ReflectionClass|ReflectionMethod $classOrMethod): void
     {
         /** @var list<ReflectionAttribute<Prefix>> $annotations */
-        $annotations = $holder->getAttributes(Prefix::class);
+        $annotations = $classOrMethod->getAttributes(Prefix::class);
         if (isset($annotations[0])) {
             $annotation = $annotations[0]->newInstance();
-            $descriptor->prefixes[] = $annotation->value;
+            // https://github.com/sunrise-php/http-router/issues/26
+            $descriptor->prefixes[] = rtrim($annotation->value, '/');
         }
 
         /** @var list<ReflectionAttribute<Postfix>> $annotations */
-        $annotations = $holder->getAttributes(Postfix::class);
+        $annotations = $classOrMethod->getAttributes(Postfix::class);
         if (isset($annotations[0])) {
             $annotation = $annotations[0]->newInstance();
             $descriptor->path .= $annotation->value;
         }
 
-        /** @var list<ReflectionAttribute<Method>> $annotations */
-        $annotations = $holder->getAttributes(Method::class);
-        foreach ($annotations as $annotation) {
-            $annotation = $annotation->newInstance();
-            $descriptor->methods[] = $annotation->value;
-        }
-
         /** @var list<ReflectionAttribute<Pattern>> $annotations */
-        $annotations = $holder->getAttributes(Pattern::class);
+        $annotations = $classOrMethod->getAttributes(Pattern::class);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
             $descriptor->patterns[$annotation->name] = $annotation->value;
         }
 
+        /** @var list<ReflectionAttribute<Method>> $annotations */
+        $annotations = $classOrMethod->getAttributes(Method::class);
+        foreach ($annotations as $annotation) {
+            $annotation = $annotation->newInstance();
+            $descriptor->methods[] = $annotation->value;
+        }
+
         /** @var list<ReflectionAttribute<Attribute>> $annotations */
-        $annotations = $holder->getAttributes(Attribute::class);
+        $annotations = $classOrMethod->getAttributes(Attribute::class);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
             $descriptor->attributes[$annotation->name] = $annotation->value;
         }
 
         /** @var list<ReflectionAttribute<Middleware>> $annotations */
-        $annotations = $holder->getAttributes(Middleware::class);
+        $annotations = $classOrMethod->getAttributes(Middleware::class);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
             $descriptor->middlewares[] = $annotation->value;
         }
 
         /** @var list<ReflectionAttribute<Constraint>> $annotations */
-        $annotations = $holder->getAttributes(Constraint::class);
+        $annotations = $classOrMethod->getAttributes(Constraint::class);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
             $descriptor->constraints[] = $annotation->value;
         }
 
         /** @var list<ReflectionAttribute<Consumes>> $annotations */
-        $annotations = $holder->getAttributes(Consumes::class);
+        $annotations = $classOrMethod->getAttributes(Consumes::class);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
             $descriptor->consumes[] = $annotation->value;
         }
 
         /** @var list<ReflectionAttribute<Produces>> $annotations */
-        $annotations = $holder->getAttributes(Produces::class);
+        $annotations = $classOrMethod->getAttributes(Produces::class);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
             $descriptor->produces[] = $annotation->value;
         }
 
         /** @var list<ReflectionAttribute<Summary>> $annotations */
-        $annotations = $holder->getAttributes(Summary::class);
+        $annotations = $classOrMethod->getAttributes(Summary::class);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
-            $descriptor->summary ??= '';
             $descriptor->summary .= $annotation->value;
         }
 
         /** @var list<ReflectionAttribute<Description>> $annotations */
-        $annotations = $holder->getAttributes(Description::class);
+        $annotations = $classOrMethod->getAttributes(Description::class);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
-            $descriptor->description ??= '';
             $descriptor->description .= $annotation->value;
         }
 
         /** @var list<ReflectionAttribute<Tag>> $annotations */
-        $annotations = $holder->getAttributes(Tag::class);
+        $annotations = $classOrMethod->getAttributes(Tag::class);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
             $descriptor->tags[] = $annotation->value;
         }
 
         /** @var list<ReflectionAttribute<Deprecated>> $annotations */
-        $annotations = $holder->getAttributes(Deprecated::class);
+        $annotations = $classOrMethod->getAttributes(Deprecated::class);
         if (isset($annotations[0])) {
             $descriptor->isDeprecated = true;
         }

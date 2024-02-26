@@ -25,12 +25,10 @@ use Sunrise\Http\Router\Helper\RouteBuilder;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Helper\RouteMatcher;
 use Sunrise\Http\Router\Loader\LoaderInterface;
-use Sunrise\Http\Router\ParameterResolving\ParameterResolutioner;
-use Sunrise\Http\Router\ParameterResolving\ParameterResolutionerInterface;
+use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
-use Sunrise\Http\Router\ResponseResolving\ResponseResolutioner;
-use Sunrise\Http\Router\ResponseResolving\ResponseResolutionerInterface;
+use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
 
 use function array_keys;
 use function count;
@@ -38,6 +36,8 @@ use function sprintf;
 
 class Router
 {
+    private readonly ParameterResolver $parameterResolver;
+    private readonly ResponseResolver $responseResolver;
     private readonly ReferenceResolver $referenceResolver;
 
     /**
@@ -56,13 +56,19 @@ class Router
     private array $requestHandlers = [];
 
     /**
+     * @var array<string, string>
+     */
+    private array $routePatterns = [];
+
+    /**
      * @since 3.0.0
      */
-    public function __construct(
-        ParameterResolutionerInterface $parameterResolutioner = new ParameterResolutioner(),
-        ResponseResolutionerInterface $responseResolutioner = new ResponseResolutioner(),
-    ) {
-        $this->referenceResolver = new ReferenceResolver($parameterResolutioner, $responseResolutioner);
+    public function __construct()
+    {
+        $this->referenceResolver = new ReferenceResolver(
+            $this->parameterResolver = new ParameterResolver(),
+            $this->responseResolver = new ResponseResolver(),
+        );
     }
 
     /**
@@ -102,10 +108,19 @@ class Router
 
     public function addMiddleware(mixed ...$middlewares): void
     {
-        $middlewares = $this->referenceResolver->resolveMiddlewares($middlewares);
         foreach ($middlewares as $middleware) {
-            $this->middlewares[] = $middleware;
+            $this->middlewares[] = $this->referenceResolver->resolveMiddleware($middleware);
         }
+    }
+
+    public function addParameterResolver(ParameterResolverInterface ...$resolvers): void
+    {
+        $this->parameterResolver->addResolver(...$resolvers);
+    }
+
+    public function addResponseResolver(ResponseResolverInterface ...$resolvers): void
+    {
+        $this->responseResolver->addResolver(...$resolvers);
     }
 
     /**
@@ -126,19 +141,19 @@ class Router
      */
     public function match(ServerRequestInterface $request): Route
     {
+        $requestPath = $request->getUri()->getPath();
+        $requestMethod = $request->getMethod();
         $allowedMethods = [];
 
         foreach ($this->routes as $route) {
-            $path = $route->getPath();
-            $pattern = $route->getPattern();
-            if ($pattern === null) {
-                $pattern = RouteCompiler::compileRoute($path, $route->getPatterns());
-                $route->setPattern($pattern);
-            }
+            $routeName = $route->getName();
+            $routePath = $route->getPath();
+
+            $this->routePatterns[$routeName] ??= $route->getPattern() ?? RouteCompiler::compileRoute($routePath, $route->getPatterns());
 
             // https://github.com/sunrise-php/http-router/issues/50
             // https://tools.ietf.org/html/rfc7231#section-6.5.5
-            if (!RouteMatcher::matchPattern($path, $pattern, $request->getUri()->getPath(), $matches)) {
+            if (!RouteMatcher::matchPattern($routePath, $this->routePatterns[$routeName], $requestPath, $matches)) {
                 continue;
             }
 
@@ -148,13 +163,12 @@ class Router
                 $allowedMethods[$routeMethod] = true;
             }
 
-            if (!isset($routeMethods[$request->getMethod()])) {
+            if (!empty($routeMethods) && !isset($routeMethods[$requestMethod])) {
                 continue;
             }
 
-            $serverConsumedMediaTypes = $route->getConsumedMediaTypes();
-            if (!ServerRequest::create($request)->clientProducesMediaType(...$serverConsumedMediaTypes)) {
-                throw new HttpUnsupportedMediaTypeException($serverConsumedMediaTypes);
+            if (!ServerRequest::create($request)->clientProducesMediaType(...$route->getConsumedMediaTypes())) {
+                throw new HttpUnsupportedMediaTypeException($route->getConsumedMediaTypes());
             }
 
             return $route->withAddedAttributes($matches);
@@ -179,10 +193,15 @@ class Router
         );
 
         if (count($this->middlewares) > 0) {
-            $handler = new QueueableRequestHandler($handler, $this->middlewares);
+            $handler = new QueueableRequestHandler($handler);
+            foreach ($this->middlewares as $middleware) {
+                $handler->enqueue($middleware);
+            }
         }
 
-        return $handler->handle($request->withAttribute('@router', $this));
+        return $handler->handle(
+            $request->withAttribute('@router', $this)
+        );
     }
 
     /**
@@ -199,15 +218,24 @@ class Router
             $request = $request->withAttribute($name, $value);
         }
 
-        $this->requestHandlers[$route->getName()] ??= new QueueableRequestHandler(
-            $this->referenceResolver->resolveRequestHandler($route->getRequestHandler()),
-            [...$this->referenceResolver->resolveMiddlewares($route->getMiddlewares())],
-        );
+        $handler = &$this->requestHandlers[$route->getName()];
 
-        return $this->requestHandlers[$route->getName()]->handle($request);
+        if (!isset($handler)) {
+            $handler = new QueueableRequestHandler(
+                $this->referenceResolver->resolveRequestHandler($route->getRequestHandler())
+            );
+
+            foreach ($route->getMiddlewares() as $middleware) {
+                $handler->enqueue($this->referenceResolver->resolveMiddleware($middleware));
+            }
+        }
+
+        return $handler->handle($request);
     }
 
     /**
+     * @param array<string, string> $values
+     *
      * @throws InvalidArgumentException
      */
     public function generateUri(string $name, array $values = []): string

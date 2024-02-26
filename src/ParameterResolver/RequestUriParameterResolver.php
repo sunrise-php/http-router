@@ -11,21 +11,21 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\ParameterResolving\ParameterResolver;
+namespace Sunrise\Http\Router\ParameterResolver;
 
 use Generator;
 use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\UriInterface;
 use ReflectionNamedType;
 use ReflectionParameter;
 
 /**
- * RequestStreamParameterResolver
+ * RequestUriParameterResolver
  *
  * @since 3.0.0
  */
-final class RequestStreamParameterResolver implements ParameterResolverInterface
+final class RequestUriParameterResolver implements ParameterResolverInterface
 {
 
     /**
@@ -36,7 +36,7 @@ final class RequestStreamParameterResolver implements ParameterResolverInterface
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
         $type = $parameter->getType();
-        if (! $type instanceof ReflectionNamedType || $type->getName() <> StreamInterface::class) {
+        if (! $type instanceof ReflectionNamedType || $type->getName() <> UriInterface::class) {
             return;
         }
 
@@ -46,6 +46,6 @@ final class RequestStreamParameterResolver implements ParameterResolverInterface
             );
         }
 
-        yield $context->getBody();
+        yield $context->getUri();
     }
 }
