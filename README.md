@@ -8,6 +8,7 @@
 [![Total Downloads](https://poser.pugx.org/sunrise/http-router/downloads?format=flat)](https://packagist.org/packages/sunrise/http-router)
 [![Latest Stable Version](https://poser.pugx.org/sunrise/http-router/v/stable?format=flat)](https://packagist.org/packages/sunrise/http-router)
 [![License](https://poser.pugx.org/sunrise/http-router/license?format=flat)](https://packagist.org/packages/sunrise/http-router)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fsunrise-php%2Fhttp-router.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fsunrise-php%2Fhttp-router?ref=badge_shield)
 
 ---
 
@@ -712,3 +713,7 @@ composer test
 * https://www.php-fig.org/psr/psr-15/
 * https://github.com/sunrise-php/awesome-skeleton
 * https://github.com/middlewares
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fsunrise-php%2Fhttp-router.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fsunrise-php%2Fhttp-router?ref=badge_large)
