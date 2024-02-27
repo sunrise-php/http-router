@@ -88,14 +88,6 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
         return $this->constraintViolations;
     }
 
-    /**
-     * Adds the given HTTP header field that will be sent to the client
-     *
-     * @param string $fieldName
-     * @param Stringable|string ...$fieldValues
-     *
-     * @return static
-     */
     final public function addHeaderField(string $fieldName, Stringable|string ...$fieldValues): static
     {
         // https://datatracker.ietf.org/doc/html/rfc7230#section-7
@@ -106,14 +98,7 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
         return $this;
     }
 
-    /**
-     * Adds the given constraint violation(s) to the error
-     *
-     * @param ConstraintViolationInterface ...$constraintViolations
-     *
-     * @return static
-     */
-    final public function addError(ConstraintViolationInterface ...$constraintViolations): static
+    final public function addConstraintViolation(ConstraintViolationInterface ...$constraintViolations): static
     {
         foreach ($constraintViolations as $constraintViolation) {
             $this->constraintViolations[] = $constraintViolation;

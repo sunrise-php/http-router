@@ -20,37 +20,26 @@ use ReflectionParameter;
 use function is_a;
 
 /**
- * ObjectInjectionParameterResolver
- *
  * @since 3.0.0
  */
 final class ObjectInjectionParameterResolver implements ParameterResolverInterface
 {
-
-    /**
-     * Constructor of the class
-     *
-     * @param object $object
-     */
-    public function __construct(private object $object)
+    public function __construct(private readonly object $object)
     {
     }
 
     /**
      * @inheritDoc
      */
-    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
+    public function resolveParameter(ReflectionParameter $parameter, mixed $request): Generator
     {
         $type = $parameter->getType();
-
         if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
             return;
         }
 
-        if (!is_a($this->object, $type->getName())) {
-            return;
+        if (is_a($this->object, $type->getName())) {
+            yield $this->object;
         }
-
-        yield $this->object;
     }
 }

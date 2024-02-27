@@ -14,40 +14,36 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\ParameterResolver;
 
 use Generator;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use Psr\Http\Message\RequestInterface;
 use ReflectionNamedType;
 use ReflectionParameter;
 
 /**
- * DependencyInjectionParameterResolver
- *
  * @since 3.0.0
  */
 final class DependencyInjectionParameterResolver implements ParameterResolverInterface
 {
-
-    /**
-     * Constructor of the class
-     *
-     * @param ContainerInterface $container
-     */
-    public function __construct(private ContainerInterface $container)
+    public function __construct(private readonly ContainerInterface $container)
     {
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws ContainerExceptionInterface If something went wrong while working with the container.
      */
-    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
+    public function resolveParameter(ReflectionParameter $parameter, ?RequestInterface $request): Generator
     {
         $type = $parameter->getType();
-
         if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
             return;
         }
 
-        if ($this->container->has($type->getName())) {
-            yield $this->container->get($type->getName());
+        $typeName = $type->getName();
+        if ($this->container->has($typeName)) {
+            yield $this->container->get($typeName);
         }
     }
 }

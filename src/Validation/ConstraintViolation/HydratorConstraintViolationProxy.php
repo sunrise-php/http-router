@@ -20,24 +20,16 @@ use Sunrise\Hydrator\Exception\InvalidValueException as HydratorConstraintViolat
 /**
  * @since 3.0.0
  */
-final class HydratorErrorProxy implements ConstraintViolationInterface
+final class HydratorConstraintViolationProxy implements ConstraintViolationInterface
 {
-
-    /**
-     * Constructor of the class
-     *
-     * @param HydratorConstraintViolation $hydratorConstraintViolation
-     */
-    public function __construct(private HydratorConstraintViolation $hydratorConstraintViolation)
+    public function __construct(private readonly HydratorConstraintViolation $hydratorConstraintViolation)
     {
     }
 
     /**
      * Creates the {@see ConstraintViolationInterface} object(s) from the given hydrator's constraint violation(s)
      *
-     * @param HydratorConstraintViolation ...$hydratorConstraintViolations
-     *
-     * @return Generator<array-key, ConstraintViolationInterface>
+     * @return Generator<int, ConstraintViolationInterface>
      */
     public static function create(HydratorConstraintViolation ...$hydratorConstraintViolations): Generator
     {
@@ -46,17 +38,11 @@ final class HydratorErrorProxy implements ConstraintViolationInterface
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getMessage(): string
     {
         return $this->hydratorConstraintViolation->getMessage();
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getMessageTemplate(): string
     {
         return $this->hydratorConstraintViolation->getMessageTemplate();
@@ -70,9 +56,6 @@ final class HydratorErrorProxy implements ConstraintViolationInterface
         return $this->hydratorConstraintViolation->getMessagePlaceholders();
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getPropertyPath(): string
     {
         return $this->hydratorConstraintViolation->getPropertyPath();

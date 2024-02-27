@@ -25,19 +25,9 @@ use ReflectionMethod;
  */
 interface ResponseResolverInterface
 {
-
-    /**
-     * Resolves the given response to PSR-7 response
-     *
-     * @param ServerRequestInterface $request
-     * @param mixed $response
-     * @param ReflectionFunction|ReflectionMethod $responder
-     *
-     * @return ResponseInterface|null
-     */
     public function resolveResponse(
         ServerRequestInterface $request,
         mixed $response,
-        ReflectionFunction|ReflectionMethod $responder,
+        ReflectionMethod|ReflectionFunction $responder,
     ) : ?ResponseInterface;
 }

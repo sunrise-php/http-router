@@ -15,6 +15,9 @@ namespace Sunrise\Http\Router;
 
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 
+use function array_key_exists;
+use function in_array;
+
 final class Route
 {
     public function __construct(
@@ -76,6 +79,15 @@ final class Route
         return $this->methods;
     }
 
+    public function listensMethod(string $method): bool
+    {
+        if ($this->methods === []) {
+            return true;
+        }
+
+        return in_array($method, $this->methods, true);
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -86,12 +98,12 @@ final class Route
 
     public function getAttribute(string $name, mixed $default = null): mixed
     {
-        return $this->attributes[$name] ?? $default;
+        return array_key_exists($name, $this->attributes) ? $this->attributes[$name] : $default;
     }
 
     public function hasAttribute(string $name): bool
     {
-        return isset($this->attributes[$name]);
+        return array_key_exists($name, $this->attributes);
     }
 
     /**

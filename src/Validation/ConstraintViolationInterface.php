@@ -18,32 +18,14 @@ namespace Sunrise\Http\Router\Validation;
  */
 interface ConstraintViolationInterface
 {
-
-    /**
-     * Gets the violation's interpolated message
-     *
-     * @return string
-     */
     public function getMessage(): string;
 
-    /**
-     * Gets the violation's message template
-     *
-     * @return string
-     */
     public function getMessageTemplate(): string;
 
     /**
-     * Gets the violation's message placeholders
-     *
      * @return array<string, mixed>
      */
     public function getMessagePlaceholders(): array;
 
-    /**
-     * Gets the violation's property path
-     *
-     * @return string
-     */
     public function getPropertyPath(): string;
 }

@@ -18,6 +18,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Router\Dictionary\AttributeName;
 use Sunrise\Http\Router\Exception\Http\HttpMethodNotAllowedException;
 use Sunrise\Http\Router\Exception\Http\HttpNotFoundException;
 use Sunrise\Http\Router\Exception\Http\HttpUnsupportedMediaTypeException;
@@ -30,8 +31,9 @@ use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
 use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
 
+use function array_flip;
 use function array_keys;
-use function count;
+use function rawurldecode;
 use function sprintf;
 
 class Router
@@ -46,6 +48,11 @@ class Router
     private array $routes = [];
 
     /**
+     * @var array<string, non-empty-string>
+     */
+    private array $patterns = [];
+
+    /**
      * @var list<MiddlewareInterface>
      */
     private array $middlewares = [];
@@ -53,12 +60,9 @@ class Router
     /**
      * @var array<string, RequestHandlerInterface>
      */
-    private array $requestHandlers = [];
+    private array $routeRequestHandlers = [];
 
-    /**
-     * @var array<string, string>
-     */
-    private array $routePatterns = [];
+    private ?RequestHandlerInterface $routerRequestHandler = null;
 
     /**
      * @since 3.0.0
@@ -97,7 +101,7 @@ class Router
         }
     }
 
-    public function load(LoaderInterface ...$loaders): void
+    public function loadRoutes(LoaderInterface ...$loaders): void
     {
         foreach ($loaders as $loader) {
             foreach ($loader->load() as $route) {
@@ -141,29 +145,19 @@ class Router
      */
     public function match(ServerRequestInterface $request): Route
     {
-        $requestPath = $request->getUri()->getPath();
-        $requestMethod = $request->getMethod();
+        $requestPath = rawurldecode($request->getUri()->getPath());
         $allowedMethods = [];
-
         foreach ($this->routes as $route) {
-            $routeName = $route->getName();
-            $routePath = $route->getPath();
-
-            $this->routePatterns[$routeName] ??= $route->getPattern() ?? RouteCompiler::compileRoute($routePath, $route->getPatterns());
+            $routePattern = $this->compileRoutePattern($route);
 
             // https://github.com/sunrise-php/http-router/issues/50
             // https://tools.ietf.org/html/rfc7231#section-6.5.5
-            if (!RouteMatcher::matchPattern($routePath, $this->routePatterns[$routeName], $requestPath, $matches)) {
+            if (!RouteMatcher::matchPattern($route->getPath(), $routePattern, $requestPath, $matches)) {
                 continue;
             }
 
-            $routeMethods = [];
-            foreach ($route->getMethods() as $routeMethod) {
-                $routeMethods[$routeMethod] = true;
-                $allowedMethods[$routeMethod] = true;
-            }
-
-            if (!empty($routeMethods) && !isset($routeMethods[$requestMethod])) {
+            if (!$route->listensMethod($request->getMethod())) {
+                $allowedMethods += array_flip($route->getMethods());
                 continue;
             }
 
@@ -175,9 +169,7 @@ class Router
         }
 
         if (!empty($allowedMethods)) {
-            $allowedMethods = array_keys($allowedMethods);
-
-            throw new HttpMethodNotAllowedException($allowedMethods);
+            throw new HttpMethodNotAllowedException(array_keys($allowedMethods));
         }
 
         throw new HttpNotFoundException();
@@ -188,19 +180,8 @@ class Router
      */
     public function run(ServerRequestInterface $request): ResponseInterface
     {
-        $handler = new CallableRequestHandler(
-            fn(ServerRequestInterface $request): ResponseInterface => $this->runRoute($this->match($request), $request)
-        );
-
-        if (count($this->middlewares) > 0) {
-            $handler = new QueueableRequestHandler($handler);
-            foreach ($this->middlewares as $middleware) {
-                $handler->enqueue($middleware);
-            }
-        }
-
-        return $handler->handle(
-            $request->withAttribute('@router', $this)
+        return $this->getRouterRequestHandler()->handle(
+            $request->withAttribute(AttributeName::ROUTER, $this)
         );
     }
 
@@ -213,36 +194,97 @@ class Router
             $route = $this->getRoute($route);
         }
 
-        $request = $request->withAttribute('@route', $route);
         foreach ($route->getAttributes() as $name => $value) {
             $request = $request->withAttribute($name, $value);
         }
 
-        $handler = &$this->requestHandlers[$route->getName()];
-
-        if (!isset($handler)) {
-            $handler = new QueueableRequestHandler(
-                $this->referenceResolver->resolveRequestHandler($route->getRequestHandler())
-            );
-
-            foreach ($route->getMiddlewares() as $middleware) {
-                $handler->enqueue($this->referenceResolver->resolveMiddleware($middleware));
-            }
-        }
-
-        return $handler->handle($request);
+        return $this->getRouteRequestHandler($route)->handle(
+            $request->withAttribute(AttributeName::ROUTE, $route)
+        );
     }
 
     /**
-     * @param array<string, string> $values
+     * @since 3.0.0
+     */
+    public function getRouterRequestHandler(): RequestHandlerInterface
+    {
+        if (isset($this->routerRequestHandler)) {
+            return $this->routerRequestHandler;
+        }
+
+        $this->routerRequestHandler = new CallableRequestHandler(
+            function (ServerRequestInterface $request): ResponseInterface {
+                return $this->runRoute($this->match($request), $request);
+            }
+        );
+
+        if ($this->middlewares === []) {
+            return $this->routerRequestHandler;
+        }
+
+        $this->routerRequestHandler = new QueueableRequestHandler($this->routerRequestHandler);
+        foreach ($this->middlewares as $middleware) {
+            $this->routerRequestHandler->enqueue($middleware);
+        }
+
+        return $this->routerRequestHandler;
+    }
+
+    /**
+     * @since 3.0.0
+     */
+    public function getRouteRequestHandler(Route|string $route): RequestHandlerInterface
+    {
+        if (! $route instanceof Route) {
+            $route = $this->getRoute($route);
+        }
+
+        $routeName = $route->getName();
+        if (isset($this->routeRequestHandlers[$routeName])) {
+            return $this->routeRequestHandlers[$routeName];
+        }
+
+        // phpcs:ignore Generic.Files.LineLength
+        $this->routeRequestHandlers[$routeName] = $this->referenceResolver->resolveRequestHandler($route->getRequestHandler());
+
+        $middlewares = $route->getMiddlewares();
+        if ($middlewares === []) {
+            return $this->routeRequestHandlers[$routeName];
+        }
+
+        $this->routeRequestHandlers[$routeName] = new QueueableRequestHandler($this->routeRequestHandlers[$routeName]);
+        foreach ($middlewares as $middleware) {
+            $this->routeRequestHandlers[$routeName]->enqueue($this->referenceResolver->resolveMiddleware($middleware));
+        }
+
+        return $this->routeRequestHandlers[$routeName];
+    }
+
+    /**
+     * @param array<string, mixed> $values
      *
      * @throws InvalidArgumentException
      */
-    public function generateUri(string $name, array $values = []): string
+    public function buildRoutePath(Route|string $route, array $values = []): string
     {
-        $route = $this->getRoute($name);
-        $values += $route->getAttributes();
+        if (! $route instanceof Route) {
+            $route = $this->getRoute($route);
+        }
 
-        return RouteBuilder::buildRoute($route->getPath(), $values);
+        return RouteBuilder::buildRoute($route->getPath(), $values + $route->getAttributes());
+    }
+
+    /**
+     * @return non-empty-string
+     *
+     * @throws InvalidArgumentException
+     */
+    public function compileRoutePattern(Route|string $route): string
+    {
+        if (! $route instanceof Route) {
+            $route = $this->getRoute($route);
+        }
+
+        return $this->patterns[$route->getName()] ??= $route->getPattern() ?? RouteCompiler::compileRoute($route->getPath(), $route->getPatterns());
     }
 }

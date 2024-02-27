@@ -21,8 +21,8 @@ use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestQuery;
 use Sunrise\Http\Router\Exception\Http\HttpUnprocessableEntityException;
 use Sunrise\Http\Router\ParameterResolver;
-use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorErrorProxy;
-use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorErrorProxy;
+use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
+use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationProxy;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\HydratorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -58,7 +58,7 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
      *
      * @throws HttpUnprocessableEntityException If the request's query parameters isn't valid.
      */
-    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
+    public function resolveParameter(ReflectionParameter $parameter, mixed $request): Generator
     {
         if ($parameter->getAttributes(RequestQuery::class) === []) {
             return;
@@ -72,24 +72,24 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
             ));
         }
 
-        if (! $context instanceof ServerRequestInterface) {
+        if (! $request instanceof ServerRequestInterface) {
             throw new LogicException(
                 'At this level of the application, any operations with the request are not possible.'
             );
         }
 
         try {
-            $object = $this->hydrator->hydrate($type->getName(), $context->getQueryParams());
+            $object = $this->hydrator->hydrate($type->getName(), $request->getQueryParams());
         } catch (InvalidDataException $e) {
             throw (new HttpUnprocessableEntityException)
-                ->addError(...HydratorErrorProxy::create(...$e->getExceptions()));
+                ->addConstraintViolation(...HydratorConstraintViolationProxy::create(...$e->getExceptions()));
         }
 
         if (isset($this->validator)) {
             $violations = $this->validator->validate($object);
             if ($violations->count() > 0) {
                 throw (new HttpUnprocessableEntityException)
-                    ->addError(...ValidatorErrorProxy::create(...$violations));
+                    ->addConstraintViolation(...ValidatorConstraintViolationProxy::create(...$violations));
             }
         }
 

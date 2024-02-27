@@ -26,7 +26,7 @@ use function join;
  * @since 2.9.0
  */
 #[AsCommand('router:route-list', 'Lists all routes.')]
-class RouteListCommand extends Command
+final class RouteListCommand extends Command
 {
     public function __construct(private readonly Router $router)
     {
@@ -36,7 +36,7 @@ class RouteListCommand extends Command
     /**
      * @inheritDoc
      */
-    final protected function execute(InputInterface $input, OutputInterface $output): int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $table = new Table($output);
 

@@ -21,8 +21,8 @@ use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\Constraint;
 use Sunrise\Http\Router\Annotation\RequestCookie;
 use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
-use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorErrorProxy;
-use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorErrorProxy;
+use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
+use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationProxy;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
@@ -58,7 +58,7 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
      *
      * @throws HttpBadRequestException If a cookie was missed or invalid.
      */
-    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
+    public function resolveParameter(ReflectionParameter $parameter, mixed $request): Generator
     {
         /** @var list<ReflectionAttribute<RequestCookie>> $attributes */
         $attributes = $parameter->getAttributes(RequestCookie::class);
@@ -66,13 +66,13 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
             return;
         }
 
-        if (! $context instanceof ServerRequestInterface) {
+        if (! $request instanceof ServerRequestInterface) {
             throw new LogicException(
                 'At this level of the application, any operations with the request are not possible.',
             );
         }
 
-        $cookies = $context->getCookieParams();
+        $cookies = $request->getCookieParams();
         $attribute = $attributes[0]->newInstance();
 
         if (!isset($cookies[$attribute->name])) {
@@ -93,10 +93,10 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
             );
         } catch (InvalidDataException $e) {
             throw (new HttpBadRequestException(previous: $e))
-                ->addError(...HydratorErrorProxy::create(...$e->getExceptions()));
+                ->addConstraintViolation(...HydratorConstraintViolationProxy::create(...$e->getExceptions()));
         } catch (InvalidValueException $e) {
             throw (new HttpBadRequestException(previous: $e))
-                ->addError(...HydratorErrorProxy::create($e));
+                ->addConstraintViolation(...HydratorConstraintViolationProxy::create($e));
         }
 
         $constraints = [];
@@ -110,7 +110,7 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
 
         if (count($constraints) > 0 && count($violations = $this->validator?->validate($value, $constraints) ?? []) > 0) {
             throw (new HttpBadRequestException())
-                ->addError(...ValidatorErrorProxy::create(...$violations));
+                ->addConstraintViolation(...ValidatorConstraintViolationProxy::create(...$violations));
         }
 
         yield $value;

@@ -34,19 +34,14 @@ final class CallbackRequestHandler implements RequestHandlerInterface
 
     public function __construct(
         callable $callback,
-        private readonly ReflectionFunction|ReflectionMethod $callbackReflection,
+        private readonly ReflectionMethod|ReflectionFunction $callbackReflection,
         private readonly ParameterResolver $parameterResolver,
         private readonly ResponseResolver $responseResolver,
     ) {
         $this->callback = $callback;
     }
 
-    /**
-     * Gets the callback's reflection
-     *
-     * @return ReflectionFunction|ReflectionMethod
-     */
-    public function getCallbackReflection(): ReflectionFunction|ReflectionMethod
+    public function getCallbackReflection(): ReflectionMethod|ReflectionFunction
     {
         return $this->callbackReflection;
     }

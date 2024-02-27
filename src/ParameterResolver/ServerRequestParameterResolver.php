@@ -33,19 +33,19 @@ final class ServerRequestParameterResolver implements ParameterResolverInterface
      *
      * @throws LogicException If the resolver is used incorrectly.
      */
-    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
+    public function resolveParameter(ReflectionParameter $parameter, mixed $request): Generator
     {
         $type = $parameter->getType();
         if (! $type instanceof ReflectionNamedType || $type->getName() <> ServerRequest::class) {
             return;
         }
 
-        if (! $context instanceof ServerRequestInterface) {
+        if (! $request instanceof ServerRequestInterface) {
             throw new LogicException(
                 'At this level of the application, any operations with the request are not possible.'
             );
         }
 
-        yield ServerRequest::create($context);
+        yield ServerRequest::create($request);
     }
 }

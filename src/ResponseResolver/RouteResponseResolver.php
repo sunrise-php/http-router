@@ -18,6 +18,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionFunction;
 use ReflectionMethod;
+use Sunrise\Http\Router\Dictionary\AttributeName;
 use Sunrise\Http\Router\Route;
 use Sunrise\Http\Router\Router;
 
@@ -41,7 +42,7 @@ final class RouteResponseResolver implements ResponseResolverInterface
             return null;
         }
 
-        $router = $request->getAttribute('@router');
+        $router = $request->getAttribute(AttributeName::ROUTER);
         if (! $router instanceof Router) {
             throw new LogicException();
         }

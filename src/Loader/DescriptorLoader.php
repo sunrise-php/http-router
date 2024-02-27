@@ -45,7 +45,6 @@ use function class_exists;
 use function is_dir;
 use function is_file;
 use function join;
-use function rtrim;
 use function sprintf;
 use function strtoupper;
 use function usort;
@@ -54,22 +53,12 @@ final class DescriptorLoader implements LoaderInterface
 {
     public const DEFAULT_CACHE_KEY = 'router_descriptors';
 
-    /**
-     * @var list<string>
-     */
-    private array $resources = [];
-
     public function __construct(
+        /** @var list<string> */
+        private readonly array $resources,
         private readonly ?CacheInterface $cache = null,
         private readonly string $cacheKey = self::DEFAULT_CACHE_KEY,
     ) {
-    }
-
-    public function attach(string ...$resources): void
-    {
-        foreach ($resources as $resource) {
-            $this->resources[] = $resource;
-        }
     }
 
     /**
@@ -232,8 +221,7 @@ final class DescriptorLoader implements LoaderInterface
         $annotations = $classOrMethod->getAttributes(Prefix::class);
         if (isset($annotations[0])) {
             $annotation = $annotations[0]->newInstance();
-            // https://github.com/sunrise-php/http-router/issues/26
-            $descriptor->prefixes[] = rtrim($annotation->value, '/');
+            $descriptor->prefixes[] = $annotation->value;
         }
 
         /** @var list<ReflectionAttribute<Postfix>> $annotations */

@@ -35,11 +35,16 @@ final class CallbackMiddleware implements MiddlewareInterface
 
     public function __construct(
         callable $callback,
-        private readonly ReflectionFunction|ReflectionMethod $callbackReflection,
+        private readonly ReflectionMethod|ReflectionFunction $callbackReflection,
         private readonly ParameterResolver $parameterResolver,
         private readonly ResponseResolver $responseResolver,
     ) {
         $this->callback = $callback;
+    }
+
+    public function getCallbackReflection(): ReflectionMethod|ReflectionFunction
+    {
+        return $this->callbackReflection;
     }
 
     /**

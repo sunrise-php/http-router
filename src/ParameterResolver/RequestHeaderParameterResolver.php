@@ -20,7 +20,7 @@ use ReflectionAttribute;
 use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestHeader;
 use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
-use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorErrorProxy;
+use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
@@ -50,7 +50,7 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
      *
      * @throws HttpBadRequestException If a header was missed or invalid.
      */
-    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
+    public function resolveParameter(ReflectionParameter $parameter, mixed $request): Generator
     {
         /** @var ReflectionAttribute $attributes */
         $attributes = $parameter->getAttributes(RequestHeader::class);
@@ -58,7 +58,7 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
             return;
         }
 
-        if (! $context instanceof ServerRequestInterface) {
+        if (! $request instanceof ServerRequestInterface) {
             throw new LogicException(
                 'At this level of the application, any operations with the request are not possible.'
             );
@@ -66,7 +66,7 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
 
         $attribute = $attributes[0]->newInstance();
 
-        if (!$context->hasHeader($attribute->name)) {
+        if (!$request->hasHeader($attribute->name)) {
             if ($parameter->isDefaultValueAvailable()) {
                 return yield $parameter->getDefaultValue();
             } elseif ($parameter->allowsNull()) {
@@ -78,16 +78,16 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
 
         try {
             yield $this->hydrator->castValue(
-                $context->getHeaderLine($attribute->name),
+                $request->getHeaderLine($attribute->name),
                 Type::fromParameter($parameter),
                 path: [$attribute->name],
             );
         } catch (InvalidDataException $e) {
             throw (new HttpBadRequestException(previous: $e))
-                ->addError(...HydratorErrorProxy::create(...$e->getExceptions()));
+                ->addConstraintViolation(...HydratorConstraintViolationProxy::create(...$e->getExceptions()));
         } catch (InvalidValueException $e) {
             throw (new HttpBadRequestException(previous: $e))
-                ->addError(...HydratorErrorProxy::create($e));
+                ->addConstraintViolation(...HydratorConstraintViolationProxy::create($e));
         }
     }
 }

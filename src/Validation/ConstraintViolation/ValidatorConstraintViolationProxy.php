@@ -20,24 +20,16 @@ use Symfony\Component\Validator\ConstraintViolationInterface as ValidatorConstra
 /**
  * @since 3.0.0
  */
-final class ValidatorErrorProxy implements ConstraintViolationInterface
+final class ValidatorConstraintViolationProxy implements ConstraintViolationInterface
 {
-
-    /**
-     * Constructor of the class
-     *
-     * @param ValidatorConstraintViolation $validatorConstraintViolation
-     */
-    public function __construct(private ValidatorConstraintViolation $validatorConstraintViolation)
+    public function __construct(private readonly ValidatorConstraintViolation $validatorConstraintViolation)
     {
     }
 
     /**
      * Creates the {@see ConstraintViolationInterface} object(s) from the given validator's constraint violation(s)
      *
-     * @param ValidatorConstraintViolation ...$validatorConstraintViolations
-     *
-     * @return Generator<array-key, ConstraintViolationInterface>
+     * @return Generator<int, ConstraintViolationInterface>
      */
     public static function create(ValidatorConstraintViolation ...$validatorConstraintViolations): Generator
     {
@@ -46,17 +38,11 @@ final class ValidatorErrorProxy implements ConstraintViolationInterface
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getMessage(): string
     {
         return $this->validatorConstraintViolation->getMessage();
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getMessageTemplate(): string
     {
         return $this->validatorConstraintViolation->getMessageTemplate();
@@ -71,9 +57,6 @@ final class ValidatorErrorProxy implements ConstraintViolationInterface
         return $this->validatorConstraintViolation->getParameters();
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getPropertyPath(): string
     {
         return $this->validatorConstraintViolation->getPropertyPath();

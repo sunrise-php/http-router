@@ -11,19 +11,13 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\ParameterResolver;
-
-use Generator;
-use Psr\Http\Message\RequestInterface;
-use ReflectionParameter;
+namespace Sunrise\Http\Router\Dictionary;
 
 /**
  * @since 3.0.0
  */
-interface ParameterResolverInterface
+final class AttributeName
 {
-    /**
-     * @return Generator<int, mixed>
-     */
-    public function resolveParameter(ReflectionParameter $parameter, ?RequestInterface $request): Generator;
+    public const ROUTE = '@route';
+    public const ROUTER = '@router';
 }

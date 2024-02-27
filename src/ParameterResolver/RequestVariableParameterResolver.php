@@ -22,7 +22,7 @@ use Sunrise\Http\Router\Annotation\RequestVariable;
 use Sunrise\Http\Router\Exception\Http\HttpNotFoundException;
 use Sunrise\Http\Router\ParameterResolver;
 use Sunrise\Http\Router\Route;
-use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorErrorProxy;
+use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
@@ -53,7 +53,7 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
      *
      * @throws HttpNotFoundException If the request's path variable isn't valid.
      */
-    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
+    public function resolveParameter(ReflectionParameter $parameter, mixed $request): Generator
     {
         /** @var ReflectionAttribute $attributes */
         $attributes = $parameter->getAttributes(RequestVariable::class);
@@ -61,13 +61,13 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
             return;
         }
 
-        if (! $context instanceof ServerRequestInterface) {
+        if (! $request instanceof ServerRequestInterface) {
             throw new LogicException(
                 'At this level of the application, any operations with the request are not possible.'
             );
         }
 
-        $route = $context->getAttribute('@route');
+        $route = $request->getAttribute('@route');
         if (! $route instanceof Route) {
             throw new LogicException(sprintf(
                 'The #[PathVariable] attribute cannot be applied to the parameter {%s}, ' .
@@ -107,10 +107,10 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
             );
         } catch (InvalidDataException $e) {
             throw (new HttpNotFoundException(previous: $e))
-                ->addError(...HydratorErrorProxy::create(...$e->getExceptions()));
+                ->addConstraintViolation(...HydratorConstraintViolationProxy::create(...$e->getExceptions()));
         } catch (InvalidValueException $e) {
             throw (new HttpNotFoundException(previous: $e))
-                ->addError(...HydratorErrorProxy::create($e));
+                ->addConstraintViolation(...HydratorConstraintViolationProxy::create($e));
         }
     }
 }

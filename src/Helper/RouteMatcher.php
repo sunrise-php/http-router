@@ -57,8 +57,9 @@ final class RouteMatcher
             }
         } catch (ErrorException $e) {
             throw new InvalidArgumentException(sprintf(
-                'The route %s could not be matched due to a syntax error in one of variable patterns.',
+                'The route %s could not be matched due to a syntax error in one of variable patterns: %s',
                 $route,
+                $e->getMessage(),
             ), previous: $e);
         }
 

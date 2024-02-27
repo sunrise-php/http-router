@@ -18,34 +18,20 @@ namespace Sunrise\Http\Router\Validation;
  */
 final class ConstraintViolation implements ConstraintViolationInterface
 {
-
-    /**
-     * Constructor of the class
-     *
-     * @param string $message
-     * @param string $messageTemplate
-     * @param array<string, mixed> $messagePlaceholders
-     * @param string $propertyPath
-     */
     public function __construct(
         private readonly string $message,
         private readonly string $messageTemplate,
+        /** @var array<string, mixed> */
         private readonly array $messagePlaceholders,
         private readonly string $propertyPath,
     ) {
     }
 
-    /** readonly
-     * @inheritDoc
-     */
     public function getMessage(): string
     {
         return $this->message;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getMessageTemplate(): string
     {
         return $this->messageTemplate;
@@ -59,9 +45,6 @@ final class ConstraintViolation implements ConstraintViolationInterface
         return $this->messagePlaceholders;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getPropertyPath(): string
     {
         return $this->propertyPath;

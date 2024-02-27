@@ -25,5 +25,6 @@ final class VariablePattern
     public const UPPER = '[A-Z]+';
     public const WORD = '[0-9A-Za-z_]+';
     public const SLUG = '[0-9A-Za-z-]+';
+    public const SLUG_UTF8 = '[\p{N}\p{L}-]+';
     public const UUID = '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}';
 }
