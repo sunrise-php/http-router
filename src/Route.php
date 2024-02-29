@@ -16,7 +16,6 @@ namespace Sunrise\Http\Router;
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 
 use function array_key_exists;
-use function in_array;
 
 final class Route
 {
@@ -31,9 +30,9 @@ final class Route
         /** @var array<string, mixed> */
         private array $attributes = [],
         /** @var list<mixed> */
-        private array $middlewares = [],
+        private readonly array $middlewares = [],
         /** @var list<mixed> */
-        private array $constraints = [],
+        private readonly array $constraints = [],
         /** @var list<MediaTypeInterface> */
         private readonly array $consumes = [],
         /** @var list<MediaTypeInterface> */
@@ -77,15 +76,6 @@ final class Route
     public function getMethods(): array
     {
         return $this->methods;
-    }
-
-    public function listensMethod(string $method): bool
-    {
-        if ($this->methods === []) {
-            return true;
-        }
-
-        return in_array($method, $this->methods, true);
     }
 
     /**
@@ -139,59 +129,11 @@ final class Route
     }
 
     /**
-     * @param list<mixed> $middlewares
-     */
-    public function withMiddlewares(array $middlewares): self
-    {
-        $clone = clone $this;
-        $clone->middlewares = $middlewares;
-
-        return $clone;
-    }
-
-    /**
-     * @param list<mixed> $middlewares
-     */
-    public function withAddedMiddlewares(array $middlewares): self
-    {
-        $clone = clone $this;
-        foreach ($middlewares as $middleware) {
-            $clone->middlewares[] = $middleware;
-        }
-
-        return $clone;
-    }
-
-    /**
      * @return list<mixed>
      */
     public function getConstraints(): array
     {
         return $this->constraints;
-    }
-
-    /**
-     * @param list<mixed> $constraints
-     */
-    public function withConstraints(array $constraints): self
-    {
-        $clone = clone $this;
-        $clone->constraints = $constraints;
-
-        return $clone;
-    }
-
-    /**
-     * @param list<mixed> $constraints
-     */
-    public function withAddedConstraints(array $constraints): self
-    {
-        $clone = clone $this;
-        foreach ($constraints as $constraint) {
-            $clone->constraints[] = $constraint;
-        }
-
-        return $clone;
     }
 
     /**

@@ -30,19 +30,19 @@ final class RequestStreamParameterResolver implements ParameterResolverInterface
      *
      * @throws LogicException If the resolver is used incorrectly.
      */
-    public function resolveParameter(ReflectionParameter $parameter, mixed $request): Generator
+    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
         $type = $parameter->getType();
         if (! $type instanceof ReflectionNamedType || $type->getName() <> StreamInterface::class) {
             return;
         }
 
-        if (! $request instanceof ServerRequestInterface) {
+        if (! $context instanceof ServerRequestInterface) {
             throw new LogicException(
                 'At this level of the application, any operations with the request are not possible.'
             );
         }
 
-        yield $request->getBody();
+        yield $context->getBody();
     }
 }

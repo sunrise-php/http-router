@@ -53,7 +53,7 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
      *
      * @throws HttpNotFoundException If the request's path variable isn't valid.
      */
-    public function resolveParameter(ReflectionParameter $parameter, mixed $request): Generator
+    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
         /** @var ReflectionAttribute $attributes */
         $attributes = $parameter->getAttributes(RequestVariable::class);
@@ -61,13 +61,13 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
             return;
         }
 
-        if (! $request instanceof ServerRequestInterface) {
+        if (! $context instanceof ServerRequestInterface) {
             throw new LogicException(
                 'At this level of the application, any operations with the request are not possible.'
             );
         }
 
-        $route = $request->getAttribute('@route');
+        $route = $context->getAttribute('@route');
         if (! $route instanceof Route) {
             throw new LogicException(sprintf(
                 'The #[PathVariable] attribute cannot be applied to the parameter {%s}, ' .

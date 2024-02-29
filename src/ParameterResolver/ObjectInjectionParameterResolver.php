@@ -31,14 +31,15 @@ final class ObjectInjectionParameterResolver implements ParameterResolverInterfa
     /**
      * @inheritDoc
      */
-    public function resolveParameter(ReflectionParameter $parameter, mixed $request): Generator
+    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
         $type = $parameter->getType();
         if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
             return;
         }
 
-        if (is_a($this->object, $type->getName())) {
+        $typeName = $type->getName();
+        if (is_a($this->object, $typeName)) {
             yield $this->object;
         }
     }

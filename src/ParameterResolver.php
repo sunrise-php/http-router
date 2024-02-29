@@ -26,21 +26,15 @@ use function sprintf;
  */
 final class ParameterResolver
 {
+    private mixed $context;
 
-    /**
-     * @var mixed
-     */
-    private mixed $context = null;
+    public function __construct(
+        /** @var ParameterResolverInterface[] */
+        private array $resolvers,
+    ) {
+    }
 
-    /**
-     * @var list<ParameterResolverInterface>
-     */
-    private array $resolvers = [];
-
-    /**
-     * @inheritDoc
-     */
-    public function withContext(mixed $context): static
+    public function withContext(mixed $context): self
     {
         $clone = clone $this;
         $clone->context = $context;
@@ -48,10 +42,7 @@ final class ParameterResolver
         return $clone;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function withPriorityResolver(ParameterResolverInterface ...$resolvers): static
+    public function withPriorityResolver(ParameterResolverInterface ...$resolvers): self
     {
         $clone = clone $this;
         $clone->resolvers = [];
@@ -68,18 +59,6 @@ final class ParameterResolver
     }
 
     /**
-     * @inheritDoc
-     */
-    public function addResolver(ParameterResolverInterface ...$resolvers): void
-    {
-        foreach ($resolvers as $resolver) {
-            $this->resolvers[] = $resolver;
-        }
-    }
-
-    /**
-     * @inheritDoc
-     *
      * @throws LogicException If one of the parameters couldn't be resolved to an argument(s).
      */
     public function resolveParameters(ReflectionParameter ...$parameters): Generator

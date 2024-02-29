@@ -43,7 +43,7 @@ final class StreamResponseResolver implements ResponseResolverInterface
     public function resolveResponse(
         ServerRequestInterface $request,
         mixed $response,
-        ReflectionFunction|ReflectionMethod $responder,
+        ReflectionMethod|ReflectionFunction $responder,
     ) : ?ResponseInterface {
         if (! $response instanceof StreamInterface) {
             return null;

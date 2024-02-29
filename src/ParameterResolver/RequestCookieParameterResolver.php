@@ -58,7 +58,7 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
      *
      * @throws HttpBadRequestException If a cookie was missed or invalid.
      */
-    public function resolveParameter(ReflectionParameter $parameter, mixed $request): Generator
+    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
         /** @var list<ReflectionAttribute<RequestCookie>> $attributes */
         $attributes = $parameter->getAttributes(RequestCookie::class);
@@ -66,13 +66,13 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
             return;
         }
 
-        if (! $request instanceof ServerRequestInterface) {
+        if (! $context instanceof ServerRequestInterface) {
             throw new LogicException(
                 'At this level of the application, any operations with the request are not possible.',
             );
         }
 
-        $cookies = $request->getCookieParams();
+        $cookies = $context->getCookieParams();
         $attribute = $attributes[0]->newInstance();
 
         if (!isset($cookies[$attribute->name])) {

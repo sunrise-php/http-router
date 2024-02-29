@@ -50,7 +50,7 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
      *
      * @throws HttpBadRequestException If a header was missed or invalid.
      */
-    public function resolveParameter(ReflectionParameter $parameter, mixed $request): Generator
+    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
         /** @var ReflectionAttribute $attributes */
         $attributes = $parameter->getAttributes(RequestHeader::class);
@@ -58,7 +58,7 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
             return;
         }
 
-        if (! $request instanceof ServerRequestInterface) {
+        if (! $context instanceof ServerRequestInterface) {
             throw new LogicException(
                 'At this level of the application, any operations with the request are not possible.'
             );
@@ -66,7 +66,7 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
 
         $attribute = $attributes[0]->newInstance();
 
-        if (!$request->hasHeader($attribute->name)) {
+        if (!$context->hasHeader($attribute->name)) {
             if ($parameter->isDefaultValueAvailable()) {
                 return yield $parameter->getDefaultValue();
             } elseif ($parameter->allowsNull()) {
@@ -78,7 +78,7 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
 
         try {
             yield $this->hydrator->castValue(
-                $request->getHeaderLine($attribute->name),
+                $context->getHeaderLine($attribute->name),
                 Type::fromParameter($parameter),
                 path: [$attribute->name],
             );

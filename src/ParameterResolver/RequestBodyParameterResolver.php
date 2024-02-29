@@ -51,7 +51,7 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
      *
      * @throws HttpUnprocessableEntityException If the request's parsed body isn't valid.
      */
-    public function resolveParameter(ReflectionParameter $parameter, mixed $request): Generator
+    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
         if ($parameter->getAttributes(RequestBody::class) === []) {
             return;
@@ -65,14 +65,14 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
             ));
         }
 
-        if (! $request instanceof ServerRequestInterface) {
+        if (! $context instanceof ServerRequestInterface) {
             throw new LogicException(
                 'At this level of the application, any operations with the request are not possible.'
             );
         }
 
         try {
-            $object = $this->hydrator->hydrate($type->getName(), (array) $request->getParsedBody());
+            $object = $this->hydrator->hydrate($type->getName(), (array) $context->getParsedBody());
         } catch (InvalidDataException $e) {
             throw (new HttpUnprocessableEntityException)
                 ->addConstraintViolation(...HydratorConstraintViolationProxy::create(...$e->getExceptions()));

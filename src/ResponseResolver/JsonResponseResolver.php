@@ -50,7 +50,7 @@ final class JsonResponseResolver implements ResponseResolverInterface
     public function resolveResponse(
         ServerRequestInterface $request,
         mixed $response,
-        ReflectionFunction|ReflectionMethod $responder,
+        ReflectionMethod|ReflectionFunction $responder,
     ) : ?ResponseInterface {
         /** @var ReflectionAttribute $attributes */
         $attributes = $responder->getAttributes(JsonResponse::class);

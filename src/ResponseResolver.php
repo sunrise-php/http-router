@@ -30,31 +30,19 @@ use function sprintf;
  */
 final class ResponseResolver
 {
-
-    /**
-     * @var list<ResponseResolverInterface>
-     */
-    private array $resolvers = [];
-
-    /**
-     * @inheritDoc
-     */
-    public function addResolver(ResponseResolverInterface ...$resolvers): void
-    {
-        foreach ($resolvers as $resolver) {
-            $this->resolvers[] = $resolver;
-        }
+    public function __construct(
+        /** @var ResponseResolverInterface[] */
+        private readonly array $resolvers,
+    ) {
     }
 
     /**
-     * @inheritDoc
-     *
      * @throws LogicException If the response couldn't be resolved to PSR-7 response.
      */
     public function resolveResponse(
         ServerRequestInterface $request,
         mixed $response,
-        ReflectionFunction|ReflectionMethod $responder,
+        ReflectionMethod|ReflectionFunction $responder,
     ) : ResponseInterface {
         if ($response instanceof ResponseInterface) {
             return $this->handleResponse($request, $response, $responder);
@@ -85,7 +73,7 @@ final class ResponseResolver
     private function handleResponse(
         ServerRequestInterface $request,
         ResponseInterface $response,
-        ReflectionFunction|ReflectionMethod $responder,
+        ReflectionMethod|ReflectionFunction $responder,
     ) : ResponseInterface {
         /** @var ReflectionAttribute $attributes */
         $attributes = $responder->getAttributes(ResponseStatus::class);
@@ -111,7 +99,7 @@ final class ResponseResolver
      *
      * @return string
      */
-    public static function stringifyResponder(ReflectionFunction|ReflectionMethod $responder): string
+    public static function stringifyResponder(ReflectionMethod|ReflectionFunction $responder): string
     {
         if ($responder instanceof ReflectionMethod) {
             return sprintf('%s::%s(...)', $responder->getDeclaringClass()->getName(), $responder->getName());

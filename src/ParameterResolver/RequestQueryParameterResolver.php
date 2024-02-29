@@ -58,7 +58,7 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
      *
      * @throws HttpUnprocessableEntityException If the request's query parameters isn't valid.
      */
-    public function resolveParameter(ReflectionParameter $parameter, mixed $request): Generator
+    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
         if ($parameter->getAttributes(RequestQuery::class) === []) {
             return;
@@ -72,14 +72,14 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
             ));
         }
 
-        if (! $request instanceof ServerRequestInterface) {
+        if (! $context instanceof ServerRequestInterface) {
             throw new LogicException(
                 'At this level of the application, any operations with the request are not possible.'
             );
         }
 
         try {
-            $object = $this->hydrator->hydrate($type->getName(), $request->getQueryParams());
+            $object = $this->hydrator->hydrate($type->getName(), $context->getQueryParams());
         } catch (InvalidDataException $e) {
             throw (new HttpUnprocessableEntityException)
                 ->addConstraintViolation(...HydratorConstraintViolationProxy::create(...$e->getExceptions()));

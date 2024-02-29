@@ -43,7 +43,7 @@ final class EmptyResponseResolver implements ResponseResolverInterface
     public function resolveResponse(
         ServerRequestInterface $request,
         mixed $response,
-        ReflectionFunction|ReflectionMethod $responder,
+        ReflectionMethod|ReflectionFunction $responder,
     ) : ?ResponseInterface {
         if ($responder->getAttributes(EmptyResponse::class) === []) {
             return null;

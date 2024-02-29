@@ -16,7 +16,6 @@ namespace Sunrise\Http\Router\ParameterResolver;
 use Generator;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
-use Psr\Http\Message\RequestInterface;
 use ReflectionNamedType;
 use ReflectionParameter;
 
@@ -34,7 +33,7 @@ final class DependencyInjectionParameterResolver implements ParameterResolverInt
      *
      * @throws ContainerExceptionInterface If something went wrong while working with the container.
      */
-    public function resolveParameter(ReflectionParameter $parameter, ?RequestInterface $request): Generator
+    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
         $type = $parameter->getType();
         if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {

@@ -18,7 +18,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Dictionary\AttributeName;
 use Sunrise\Http\Router\Exception\Http\HttpMethodNotAllowedException;
 use Sunrise\Http\Router\Exception\Http\HttpNotFoundException;
 use Sunrise\Http\Router\Exception\Http\HttpUnsupportedMediaTypeException;
@@ -33,14 +32,15 @@ use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
 
 use function array_flip;
 use function array_keys;
+use function in_array;
 use function rawurldecode;
 use function sprintf;
 
 class Router
 {
-    private readonly ParameterResolver $parameterResolver;
-    private readonly ResponseResolver $responseResolver;
     private readonly ReferenceResolver $referenceResolver;
+
+    private array $middlewares;
 
     /**
      * @var array<string, Route>
@@ -50,12 +50,7 @@ class Router
     /**
      * @var array<string, non-empty-string>
      */
-    private array $patterns = [];
-
-    /**
-     * @var list<MiddlewareInterface>
-     */
-    private array $middlewares = [];
+    private array $routePatterns = [];
 
     /**
      * @var array<string, RequestHandlerInterface>
@@ -65,14 +60,26 @@ class Router
     private ?RequestHandlerInterface $routerRequestHandler = null;
 
     /**
+     * @param ParameterResolverInterface[] $parameterResolvers
+     * @param ResponseResolverInterface[] $responseResolvers
+     * @param list<LoaderInterface> $loaders
+     *
      * @since 3.0.0
      */
-    public function __construct()
-    {
+    public function __construct(
+        array $middlewares = [],
+        array $parameterResolvers = [],
+        array $responseResolvers = [],
+        array $loaders = [],
+    ) {
+        $this->middlewares = $middlewares;
+
         $this->referenceResolver = new ReferenceResolver(
-            $this->parameterResolver = new ParameterResolver(),
-            $this->responseResolver = new ResponseResolver(),
+            new ParameterResolver($parameterResolvers),
+            new ResponseResolver($responseResolvers),
         );
+
+        $this->load(...$loaders);
     }
 
     /**
@@ -88,7 +95,11 @@ class Router
      */
     public function getRoute(string $name): Route
     {
-        return $this->routes[$name] ?? throw new InvalidArgumentException(sprintf(
+        if (isset($this->routes[$name])) {
+            return $this->routes[$name];
+        }
+
+        return throw new InvalidArgumentException(sprintf(
             'The route %s does not exist.',
             $name,
         ));
@@ -101,30 +112,13 @@ class Router
         }
     }
 
-    public function loadRoutes(LoaderInterface ...$loaders): void
+    public function load(LoaderInterface ...$loaders): void
     {
         foreach ($loaders as $loader) {
             foreach ($loader->load() as $route) {
                 $this->routes[$route->getName()] = $route;
             }
         }
-    }
-
-    public function addMiddleware(mixed ...$middlewares): void
-    {
-        foreach ($middlewares as $middleware) {
-            $this->middlewares[] = $this->referenceResolver->resolveMiddleware($middleware);
-        }
-    }
-
-    public function addParameterResolver(ParameterResolverInterface ...$resolvers): void
-    {
-        $this->parameterResolver->addResolver(...$resolvers);
-    }
-
-    public function addResponseResolver(ResponseResolverInterface ...$resolvers): void
-    {
-        $this->responseResolver->addResolver(...$resolvers);
     }
 
     /**
@@ -148,7 +142,7 @@ class Router
         $requestPath = rawurldecode($request->getUri()->getPath());
         $allowedMethods = [];
         foreach ($this->routes as $route) {
-            $routePattern = $this->compileRoutePattern($route);
+            $routePattern = $this->compileRoute($route);
 
             // https://github.com/sunrise-php/http-router/issues/50
             // https://tools.ietf.org/html/rfc7231#section-6.5.5
@@ -156,8 +150,9 @@ class Router
                 continue;
             }
 
-            if (!$route->listensMethod($request->getMethod())) {
-                $allowedMethods += array_flip($route->getMethods());
+            $routeMethods = $route->getMethods();
+            if (!empty($routeMethods) && !in_array($request->getMethod(), $routeMethods, true)) {
+                $allowedMethods += array_flip($routeMethods);
                 continue;
             }
 
@@ -181,7 +176,7 @@ class Router
     public function run(ServerRequestInterface $request): ResponseInterface
     {
         return $this->getRouterRequestHandler()->handle(
-            $request->withAttribute(AttributeName::ROUTER, $this)
+            $request->withAttribute('@router', $this)
         );
     }
 
@@ -199,35 +194,37 @@ class Router
         }
 
         return $this->getRouteRequestHandler($route)->handle(
-            $request->withAttribute(AttributeName::ROUTE, $route)
+            $request->withAttribute('@route', $route)
         );
     }
 
     /**
-     * @since 3.0.0
+     * @param array<string, mixed> $values
+     *
+     * @throws InvalidArgumentException
      */
-    public function getRouterRequestHandler(): RequestHandlerInterface
+    public function buildRoute(Route|string $route, array $values = []): string
     {
-        if (isset($this->routerRequestHandler)) {
-            return $this->routerRequestHandler;
+        if (! $route instanceof Route) {
+            $route = $this->getRoute($route);
         }
 
-        $this->routerRequestHandler = new CallableRequestHandler(
-            function (ServerRequestInterface $request): ResponseInterface {
-                return $this->runRoute($this->match($request), $request);
-            }
-        );
+        return RouteBuilder::buildRoute($route->getPath(), $values + $route->getAttributes());
+    }
 
-        if ($this->middlewares === []) {
-            return $this->routerRequestHandler;
+    /**
+     * @return non-empty-string
+     *
+     * @throws InvalidArgumentException
+     */
+    public function compileRoute(Route|string $route): string
+    {
+        if (! $route instanceof Route) {
+            $route = $this->getRoute($route);
         }
 
-        $this->routerRequestHandler = new QueueableRequestHandler($this->routerRequestHandler);
-        foreach ($this->middlewares as $middleware) {
-            $this->routerRequestHandler->enqueue($middleware);
-        }
-
-        return $this->routerRequestHandler;
+        // phpcs:ignore Generic.Files.LineLength
+        return $this->routePatterns[$route->getName()] ??= $route->getPattern() ?? RouteCompiler::compileRoute($route->getPath(), $route->getPatterns());
     }
 
     /**
@@ -254,37 +251,42 @@ class Router
 
         $this->routeRequestHandlers[$routeName] = new QueueableRequestHandler($this->routeRequestHandlers[$routeName]);
         foreach ($middlewares as $middleware) {
-            $this->routeRequestHandlers[$routeName]->enqueue($this->referenceResolver->resolveMiddleware($middleware));
+            $this->routeRequestHandlers[$routeName]->enqueue(
+                $this->referenceResolver->resolveMiddleware($middleware)
+            );
         }
 
         return $this->routeRequestHandlers[$routeName];
     }
 
     /**
-     * @param array<string, mixed> $values
-     *
-     * @throws InvalidArgumentException
+     * @since 3.0.0
      */
-    public function buildRoutePath(Route|string $route, array $values = []): string
+    public function getRouterRequestHandler(): RequestHandlerInterface
     {
-        if (! $route instanceof Route) {
-            $route = $this->getRoute($route);
+        if (isset($this->routerRequestHandler)) {
+            return $this->routerRequestHandler;
         }
 
-        return RouteBuilder::buildRoute($route->getPath(), $values + $route->getAttributes());
-    }
+        $this->routerRequestHandler = new CallableRequestHandler(
+            function (ServerRequestInterface $request): ResponseInterface {
+                $route = $this->match($request);
 
-    /**
-     * @return non-empty-string
-     *
-     * @throws InvalidArgumentException
-     */
-    public function compileRoutePattern(Route|string $route): string
-    {
-        if (! $route instanceof Route) {
-            $route = $this->getRoute($route);
+                return $this->runRoute($route, $request);
+            }
+        );
+
+        if ($this->middlewares === []) {
+            return $this->routerRequestHandler;
         }
 
-        return $this->patterns[$route->getName()] ??= $route->getPattern() ?? RouteCompiler::compileRoute($route->getPath(), $route->getPatterns());
+        $this->routerRequestHandler = new QueueableRequestHandler($this->routerRequestHandler);
+        foreach ($this->middlewares as $middleware) {
+            $this->routerRequestHandler->enqueue(
+                $this->referenceResolver->resolveMiddleware($middleware)
+            );
+        }
+
+        return $this->routerRequestHandler;
     }
 }
