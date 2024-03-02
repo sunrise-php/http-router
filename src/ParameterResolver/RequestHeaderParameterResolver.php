@@ -18,29 +18,27 @@ use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionParameter;
+use Sunrise\Http\Router\Annotation\Constraint;
 use Sunrise\Http\Router\Annotation\RequestHeader;
-use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
-use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
+use Sunrise\Http\Router\ConstraintViolation;
+use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
 use Sunrise\Hydrator\Type;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+
+use function count;
 
 /**
- * RequestHeaderParameterResolver
- *
  * @since 3.0.0
  */
 final class RequestHeaderParameterResolver implements ParameterResolverInterface
 {
-
-    /**
-     * Constructor of the class
-     *
-     * @param HydratorInterface $hydrator
-     */
-    public function __construct(private HydratorInterface $hydrator)
-    {
+    public function __construct(
+        private readonly HydratorInterface $hydrator,
+        private readonly ?ValidatorInterface $validator = null,
+    ) {
     }
 
     /**
@@ -48,13 +46,13 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
      *
      * @throws LogicException If the resolver is used incorrectly.
      *
-     * @throws HttpBadRequestException If a header was missed or invalid.
+     * @throws HttpException If a header was missed or invalid.
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
-        /** @var ReflectionAttribute $attributes */
-        $attributes = $parameter->getAttributes(RequestHeader::class);
-        if ($attributes === []) {
+        /** @var list<ReflectionAttribute<RequestHeader>> $annotations */
+        $annotations = $parameter->getAttributes(RequestHeader::class);
+        if ($annotations === []) {
             return;
         }
 
@@ -64,30 +62,48 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
             );
         }
 
-        $attribute = $attributes[0]->newInstance();
+        $requestHeader = $annotations[0]->newInstance();
 
-        if (!$context->hasHeader($attribute->name)) {
+        if (!$context->hasHeader($requestHeader->name)) {
             if ($parameter->isDefaultValueAvailable()) {
                 return yield $parameter->getDefaultValue();
             } elseif ($parameter->allowsNull()) {
                 return yield;
             }
 
-            throw new HttpBadRequestException("The header {$attribute->name} must be provided.");
+            throw new HttpException($requestHeader->errorStatusCode, $requestHeader->errorMessage);
         }
 
         try {
-            yield $this->hydrator->castValue(
-                $context->getHeaderLine($attribute->name),
+            $value = $this->hydrator->castValue(
+                $context->getHeaderLine($requestHeader->name),
                 Type::fromParameter($parameter),
-                path: [$attribute->name],
+                path: [$requestHeader->name],
             );
         } catch (InvalidDataException $e) {
-            throw (new HttpBadRequestException(previous: $e))
-                ->addConstraintViolation(...HydratorConstraintViolationProxy::create(...$e->getExceptions()));
+            throw (new HttpException($requestHeader->errorStatusCode, $requestHeader->errorMessage, previous: $e))
+                ->addConstraintViolation(...ConstraintViolation::fromHydrator(...$e->getExceptions()));
         } catch (InvalidValueException $e) {
-            throw (new HttpBadRequestException(previous: $e))
-                ->addConstraintViolation(...HydratorConstraintViolationProxy::create($e));
+            throw (new HttpException($requestHeader->errorStatusCode, $requestHeader->errorMessage, previous: $e))
+                ->addConstraintViolation(...ConstraintViolation::fromHydrator($e));
         }
+
+        if (isset($this->validator)) {
+            $constraints = [];
+            /** @var ReflectionAttribute<Constraint> $annotation */
+            foreach ($parameter->getAttributes(Constraint::class) as $annotation) {
+                $constraint = $annotation->newInstance();
+                if ($constraint->value instanceof \Symfony\Component\Validator\Constraint) {
+                    $constraints[] = $constraint->value;
+                }
+            }
+
+            if (count($constraints) > 0 && count($violations = $this->validator->validate($value, $constraints)) > 0) {
+                throw (new HttpException($requestHeader->errorStatusCode, $requestHeader->errorMessage))
+                    ->addConstraintViolation(...ConstraintViolation::fromValidator(...$violations));
+            }
+        }
+
+        yield $value;
     }
 }

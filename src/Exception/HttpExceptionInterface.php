@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Exception;
 
 use Fig\Http\Message\StatusCodeInterface;
-use Sunrise\Http\Router\Validation\ConstraintViolationInterface;
+use Sunrise\Http\Router\ConstraintViolationInterface;
 
 /**
  * The package's base HTTP exception interface

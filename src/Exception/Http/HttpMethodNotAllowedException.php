@@ -26,22 +26,8 @@ use Throwable;
  */
 class HttpMethodNotAllowedException extends HttpException
 {
-
-    /**
-     * The error's default message
-     *
-     * @var string
-     */
     public const DEFAULT_MESSAGE = 'The request could not be processed using the requested HTTP method.';
 
-    /**
-     * Constructor of the class
-     *
-     * @param list<Stringable|string> $allowedMethods
-     * @param string|null $message
-     * @param int $code
-     * @param Throwable|null $previous
-     */
     // phpcs:ignore Generic.Files.LineLength
     public function __construct(private array $allowedMethods, ?string $message = null, int $code = 0, ?Throwable $previous = null)
     {

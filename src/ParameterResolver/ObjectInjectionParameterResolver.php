@@ -38,8 +38,7 @@ final class ObjectInjectionParameterResolver implements ParameterResolverInterfa
             return;
         }
 
-        $typeName = $type->getName();
-        if (is_a($this->object, $typeName)) {
+        if (is_a($this->object, $type->getName())) {
             yield $this->object;
         }
     }

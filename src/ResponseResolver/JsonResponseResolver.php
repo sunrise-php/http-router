@@ -22,9 +22,11 @@ use ReflectionAttribute;
 use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\JsonResponse;
-use Sunrise\Http\Router\ResponseResolver;
+use Sunrise\Http\Router\Helper\Stringifier;
+
 use function json_encode;
 use function sprintf;
+
 use const JSON_THROW_ON_ERROR;
 
 /**
@@ -34,12 +36,6 @@ use const JSON_THROW_ON_ERROR;
  */
 final class JsonResponseResolver implements ResponseResolverInterface
 {
-
-    /**
-     * Constructor of the class
-     *
-     * @param ResponseFactoryInterface $responseFactory
-     */
     public function __construct(private ResponseFactoryInterface $responseFactory)
     {
     }
@@ -70,7 +66,7 @@ final class JsonResponseResolver implements ResponseResolverInterface
         } catch (JsonException $e) {
             throw new LogicException(sprintf(
                 'The responder {%s} returned a response that could not be encoded to JSON due to: %s',
-                ResponseResolver::stringifyResponder($responder),
+                Stringifier::stringifyFunction($responder),
                 $e->getMessage(),
             ));
         }

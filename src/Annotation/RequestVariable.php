@@ -23,6 +23,9 @@ final class RequestVariable
 {
     public function __construct(
         public readonly string|null $name = null,
+        /** @var int<100, 599> */
+        public readonly int $errorStatusCode = 400,
+        public readonly ?string $errorMessage = null,
     ) {
     }
 }

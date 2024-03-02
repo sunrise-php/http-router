@@ -21,6 +21,7 @@ use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\ResponseHeader;
 use Sunrise\Http\Router\Annotation\ResponseStatus;
+use Sunrise\Http\Router\Helper\Stringifier;
 use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
 
 use function sprintf;
@@ -31,7 +32,7 @@ use function sprintf;
 final class ResponseResolver
 {
     public function __construct(
-        /** @var ResponseResolverInterface[] */
+        /** @var array<array-key, ResponseResolverInterface> */
         private readonly array $resolvers,
     ) {
     }
@@ -57,19 +58,10 @@ final class ResponseResolver
 
         throw new LogicException(sprintf(
             'The responder {%s} returned an unsupported response.',
-            self::stringifyResponder($responder),
+            Stringifier::stringifyFunction($responder),
         ));
     }
 
-    /**
-     * Handles the given response
-     *
-     * @param ServerRequestInterface $request
-     * @param ResponseInterface $response
-     * @param ReflectionFunction|ReflectionMethod $responder
-     *
-     * @return ResponseInterface
-     */
     private function handleResponse(
         ServerRequestInterface $request,
         ResponseInterface $response,
@@ -90,21 +82,5 @@ final class ResponseResolver
         }
 
         return $response;
-    }
-
-    /**
-     * Stringifies the given responder
-     *
-     * @param ReflectionFunction|ReflectionMethod $responder
-     *
-     * @return string
-     */
-    public static function stringifyResponder(ReflectionMethod|ReflectionFunction $responder): string
-    {
-        if ($responder instanceof ReflectionMethod) {
-            return sprintf('%s::%s(...)', $responder->getDeclaringClass()->getName(), $responder->getName());
-        }
-
-        return sprintf('%s(...)', $responder->getName());
     }
 }

@@ -21,4 +21,10 @@ use Attribute;
 #[Attribute(Attribute::TARGET_PARAMETER)]
 final class RequestQuery
 {
+    public function __construct(
+        /** @var int<100, 599> */
+        public readonly int $errorStatusCode = 400,
+        public readonly ?string $errorMessage = null,
+    ) {
+    }
 }

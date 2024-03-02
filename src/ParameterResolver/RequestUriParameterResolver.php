@@ -21,13 +21,10 @@ use ReflectionNamedType;
 use ReflectionParameter;
 
 /**
- * RequestUriParameterResolver
- *
  * @since 3.0.0
  */
 final class RequestUriParameterResolver implements ParameterResolverInterface
 {
-
     /**
      * @inheritDoc
      *

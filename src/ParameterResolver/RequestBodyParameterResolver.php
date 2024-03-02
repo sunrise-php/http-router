@@ -16,24 +16,20 @@ namespace Sunrise\Http\Router\ParameterResolver;
 use Generator;
 use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
+use ReflectionAttribute;
 use ReflectionNamedType;
 use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestBody;
-use Sunrise\Http\Router\Exception\Http\HttpUnprocessableEntityException;
-use Sunrise\Http\Router\ParameterResolver;
-use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
-use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationProxy;
+use Sunrise\Http\Router\ConstraintViolation;
+use Sunrise\Http\Router\Exception\HttpException;
+use Sunrise\Http\Router\Helper\Stringifier;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\HydratorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-use function count;
 use function sprintf;
 
 /**
- * @link https://github.com/sunrise-php/hydrator
- * @link https://github.com/symfony/validator
- *
  * @since 3.0.0
  */
 final class RequestBodyParameterResolver implements ParameterResolverInterface
@@ -49,11 +45,13 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
      *
      * @throws LogicException If the resolver is used incorrectly or if an object isn't valid.
      *
-     * @throws HttpUnprocessableEntityException If the request's parsed body isn't valid.
+     * @throws HttpException If the request's parsed body isn't valid.
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
-        if ($parameter->getAttributes(RequestBody::class) === []) {
+        /** @var list<ReflectionAttribute<RequestBody>> $annotations */
+        $annotations = $parameter->getAttributes(RequestBody::class);
+        if ($annotations === []) {
             return;
         }
 
@@ -61,7 +59,7 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
         if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
             throw new LogicException(sprintf(
                 'To use the #[RequestBody] attribute, the parameter {%s} must be typed with an object.',
-                ParameterResolver::stringifyParameter($parameter),
+                Stringifier::stringifyParameter($parameter),
             ));
         }
 
@@ -71,17 +69,21 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
             );
         }
 
+        $requestBody = $annotations[0]->newInstance();
+
         try {
             $object = $this->hydrator->hydrate($type->getName(), (array) $context->getParsedBody());
         } catch (InvalidDataException $e) {
-            throw (new HttpUnprocessableEntityException)
-                ->addConstraintViolation(...HydratorConstraintViolationProxy::create(...$e->getExceptions()));
+            throw (new HttpException($requestBody->errorStatusCode, $requestBody->errorMessage, previous: $e))
+                ->addConstraintViolation(...ConstraintViolation::fromHydrator(...$e->getExceptions()));
         }
 
-        $violations = $this->validator?->validate($object);
-        if (count($violations ?? []) > 0) {
-            throw (new HttpUnprocessableEntityException)
-                ->addConstraintViolation(...ValidatorConstraintViolationProxy::create(...$violations));
+        if (isset($this->validator)) {
+            $violations = $this->validator->validate($object);
+            if ($violations->count() > 0) {
+                throw (new HttpException($requestBody->errorStatusCode, $requestBody->errorMessage))
+                    ->addConstraintViolation(...ConstraintViolation::fromValidator(...$violations));
+            }
         }
 
         yield $object;

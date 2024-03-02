@@ -15,8 +15,8 @@ namespace Sunrise\Http\Router;
 
 use Generator;
 use LogicException;
-use ReflectionMethod;
 use ReflectionParameter;
+use Sunrise\Http\Router\Helper\Stringifier;
 use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
 
 use function sprintf;
@@ -29,7 +29,7 @@ final class ParameterResolver
     private mixed $context;
 
     public function __construct(
-        /** @var ParameterResolverInterface[] */
+        /** @var array<array-key, ParameterResolverInterface> */
         private array $resolvers,
     ) {
     }
@@ -69,10 +69,6 @@ final class ParameterResolver
     }
 
     /**
-     * Tries to resolve the given parameter to an argument(s)
-     *
-     * @param ReflectionParameter $parameter
-     *
      * @return Generator<int, mixed>
      *
      * @throws LogicException If the parameter couldn't be resolved to an argument(s).
@@ -92,34 +88,7 @@ final class ParameterResolver
 
         throw new LogicException(sprintf(
             'The parameter {%s} cannot be resolved.',
-            self::stringifyParameter($parameter)
+            Stringifier::stringifyParameter($parameter)
         ));
-    }
-
-    /**
-     * Stringifies the given parameter
-     *
-     * @param ReflectionParameter $parameter
-     *
-     * @return string
-     */
-    public static function stringifyParameter(ReflectionParameter $parameter): string
-    {
-        if ($parameter->getDeclaringFunction() instanceof ReflectionMethod) {
-            return sprintf(
-                '%s::%s($%s[%d])',
-                $parameter->getDeclaringFunction()->getDeclaringClass()->getName(),
-                $parameter->getDeclaringFunction()->getName(),
-                $parameter->getName(),
-                $parameter->getPosition(),
-            );
-        }
-
-        return sprintf(
-            '%s($%s[%d])',
-            $parameter->getDeclaringFunction()->getName(),
-            $parameter->getName(),
-            $parameter->getPosition(),
-        );
     }
 }

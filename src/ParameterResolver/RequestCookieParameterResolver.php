@@ -20,9 +20,8 @@ use ReflectionAttribute;
 use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\Constraint;
 use Sunrise\Http\Router\Annotation\RequestCookie;
-use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
-use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
-use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationProxy;
+use Sunrise\Http\Router\ConstraintViolation;
+use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
@@ -32,19 +31,10 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use function count;
 
 /**
- * RequestCookieParameterResolver
- *
  * @since 3.0.0
  */
 final class RequestCookieParameterResolver implements ParameterResolverInterface
 {
-
-    /**
-     * Constructor of the class
-     *
-     * @param HydratorInterface $hydrator
-     * @param ValidatorInterface|null $validator
-     */
     public function __construct(
         private readonly HydratorInterface $hydrator,
         private readonly ?ValidatorInterface $validator = null,
@@ -56,13 +46,13 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
      *
      * @throws LogicException If the resolver is used incorrectly.
      *
-     * @throws HttpBadRequestException If a cookie was missed or invalid.
+     * @throws HttpException If a cookie was missed or invalid.
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
-        /** @var list<ReflectionAttribute<RequestCookie>> $attributes */
-        $attributes = $parameter->getAttributes(RequestCookie::class);
-        if ($attributes === []) {
+        /** @var list<ReflectionAttribute<RequestCookie>> $annotations */
+        $annotations = $parameter->getAttributes(RequestCookie::class);
+        if ($annotations === []) {
             return;
         }
 
@@ -72,45 +62,48 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
             );
         }
 
-        $cookies = $context->getCookieParams();
-        $attribute = $attributes[0]->newInstance();
+        $requestCookie = $annotations[0]->newInstance();
 
-        if (!isset($cookies[$attribute->name])) {
+        $cookies = $context->getCookieParams();
+
+        if (!isset($cookies[$requestCookie->name])) {
             if ($parameter->isDefaultValueAvailable()) {
                 return yield $parameter->getDefaultValue();
             } elseif ($parameter->allowsNull()) {
                 return yield;
             }
 
-            throw new HttpBadRequestException("The cookie {$attribute->name} must be provided.");
+            throw new HttpException($requestCookie->errorStatusCode, $requestCookie->errorMessage);
         }
 
         try {
             $value = $this->hydrator->castValue(
-                $cookies[$attribute->name],
+                $cookies[$requestCookie->name],
                 Type::fromParameter($parameter),
-                path: [$attribute->name],
+                path: [$requestCookie->name],
             );
         } catch (InvalidDataException $e) {
-            throw (new HttpBadRequestException(previous: $e))
-                ->addConstraintViolation(...HydratorConstraintViolationProxy::create(...$e->getExceptions()));
+            throw (new HttpException($requestCookie->errorStatusCode, $requestCookie->errorMessage, previous: $e))
+                ->addConstraintViolation(...ConstraintViolation::fromHydrator(...$e->getExceptions()));
         } catch (InvalidValueException $e) {
-            throw (new HttpBadRequestException(previous: $e))
-                ->addConstraintViolation(...HydratorConstraintViolationProxy::create($e));
+            throw (new HttpException($requestCookie->errorStatusCode, $requestCookie->errorMessage, previous: $e))
+                ->addConstraintViolation(...ConstraintViolation::fromHydrator($e));
         }
 
-        $constraints = [];
-        /** @var ReflectionAttribute<Constraint> $attribute */
-        foreach ($parameter->getAttributes(Constraint::class) as $attribute) {
-            $attribute = $attribute->newInstance();
-            if ($attribute->value instanceof \Symfony\Component\Validator\Constraint) {
-                $constraints[] = $attribute->value;
+        if (isset($this->validator)) {
+            $constraints = [];
+            /** @var ReflectionAttribute<Constraint> $annotation */
+            foreach ($parameter->getAttributes(Constraint::class) as $annotation) {
+                $constraint = $annotation->newInstance();
+                if ($constraint->value instanceof \Symfony\Component\Validator\Constraint) {
+                    $constraints[] = $constraint->value;
+                }
             }
-        }
 
-        if (count($constraints) > 0 && count($violations = $this->validator?->validate($value, $constraints) ?? []) > 0) {
-            throw (new HttpBadRequestException())
-                ->addConstraintViolation(...ValidatorConstraintViolationProxy::create(...$violations));
+            if (count($constraints) > 0 && count($violations = $this->validator->validate($value, $constraints)) > 0) {
+                throw (new HttpException($requestCookie->errorStatusCode, $requestCookie->errorMessage))
+                    ->addConstraintViolation(...ConstraintViolation::fromValidator(...$violations));
+            }
         }
 
         yield $value;

@@ -23,6 +23,9 @@ final class RequestHeader
 {
     public function __construct(
         public readonly string $name,
+        /** @var int<100, 599> */
+        public readonly int $errorStatusCode = 400,
+        public readonly ?string $errorMessage = null,
     ) {
     }
 }

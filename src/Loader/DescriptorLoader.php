@@ -46,6 +46,7 @@ use function is_dir;
 use function is_file;
 use function join;
 use function sprintf;
+use function strtoupper;
 use function usort;
 
 final class DescriptorLoader implements LoaderInterface
@@ -53,7 +54,7 @@ final class DescriptorLoader implements LoaderInterface
     public const DEFAULT_CACHE_KEY = 'router_descriptors';
 
     public function __construct(
-        /** @var string[] */
+        /** @var array<array-key, string> */
         private readonly array $resources,
         private readonly ?CacheInterface $cache = null,
         private readonly string $cacheKey = self::DEFAULT_CACHE_KEY,
@@ -109,7 +110,7 @@ final class DescriptorLoader implements LoaderInterface
         foreach ($this->resources as $resource) {
             foreach ($this->getResourceDescriptors($resource) as $descriptor) {
                 $descriptor->path = join($descriptor->prefixes) . $descriptor->path;
-                $descriptor->methods = array_map(\strtoupper(...), $descriptor->methods);
+                $descriptor->methods = array_map(strtoupper(...), $descriptor->methods);
                 $descriptor->pattern = RouteCompiler::compileRoute($descriptor->path, $descriptor->patterns);
                 $descriptors[] = $descriptor;
             }

@@ -29,8 +29,6 @@ use function substr;
 final class RouteBuilder
 {
     /**
-     * @param array<string, mixed> $values
-     *
      * @throws InvalidArgumentException If the route isn't valid or any of the required values are missing.
      */
     public static function buildRoute(string $route, array $values = []): string

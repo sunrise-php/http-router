@@ -27,12 +27,6 @@ use ReflectionMethod;
  */
 final class StreamResponseResolver implements ResponseResolverInterface
 {
-
-    /**
-     * Constructor of the class
-     *
-     * @param ResponseFactoryInterface $responseFactory
-     */
     public function __construct(private ResponseFactoryInterface $responseFactory)
     {
     }

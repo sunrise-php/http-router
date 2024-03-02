@@ -15,9 +15,8 @@ namespace Sunrise\Http\Router\Exception;
 
 use RuntimeException;
 use Stringable;
-use Sunrise\Http\Router\Validation\ConstraintViolationInterface;
+use Sunrise\Http\Router\ConstraintViolationInterface;
 use Throwable;
-
 use function join;
 
 /**
@@ -50,12 +49,7 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     private array $constraintViolations = [];
 
     /**
-     * Constructor of the class
-     *
      * @param int<100, 599> $statusCode
-     * @param string $message
-     * @param int $code
-     * @param Throwable|null $previous
      */
     public function __construct(int $statusCode, string $message, int $code = 0, ?Throwable $previous = null)
     {

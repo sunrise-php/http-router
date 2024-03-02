@@ -25,21 +25,8 @@ use Throwable;
  */
 class HttpBadRequestException extends HttpException
 {
-
-    /**
-     * The error's default message
-     *
-     * @var string
-     */
     public const DEFAULT_MESSAGE = 'The request could not be processed due to malformed syntax or invalid parameters.';
 
-    /**
-     * Constructor of the class
-     *
-     * @param string|null $message
-     * @param int $code
-     * @param Throwable|null $previous
-     */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
         parent::__construct(self::STATUS_BAD_REQUEST, $message ?? self::DEFAULT_MESSAGE, $code, $previous);

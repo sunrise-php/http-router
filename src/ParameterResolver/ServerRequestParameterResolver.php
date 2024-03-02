@@ -21,13 +21,10 @@ use ReflectionParameter;
 use Sunrise\Http\Router\ServerRequest;
 
 /**
- * ServerRequestParameterResolver
- *
  * @since 3.0.0
  */
 final class ServerRequestParameterResolver implements ParameterResolverInterface
 {
-
     /**
      * @inheritDoc
      *

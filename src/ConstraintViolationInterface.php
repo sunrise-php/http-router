@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Validation;
+namespace Sunrise\Http\Router;
 
 /**
  * @since 3.0.0
@@ -22,10 +22,9 @@ interface ConstraintViolationInterface
 
     public function getMessageTemplate(): string;
 
-    /**
-     * @return array<string, mixed>
-     */
     public function getMessagePlaceholders(): array;
 
     public function getPropertyPath(): string;
+
+    public function getCode(): ?string;
 }

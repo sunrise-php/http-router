@@ -25,21 +25,8 @@ use Throwable;
  */
 class HttpNotFoundException extends HttpException
 {
-
-    /**
-     * The error's default message
-     *
-     * @var string
-     */
     public const DEFAULT_MESSAGE = 'The requested page or resource could not be found.';
 
-    /**
-     * Constructor of the class
-     *
-     * @param string|null $message
-     * @param int $code
-     * @param Throwable|null $previous
-     */
     public function __construct(?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
         parent::__construct(self::STATUS_NOT_FOUND, $message ?? self::DEFAULT_MESSAGE, $code, $previous);

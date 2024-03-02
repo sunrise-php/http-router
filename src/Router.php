@@ -16,7 +16,6 @@ namespace Sunrise\Http\Router;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Exception\Http\HttpMethodNotAllowedException;
 use Sunrise\Http\Router\Exception\Http\HttpNotFoundException;
@@ -32,13 +31,12 @@ use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
 
 use function array_flip;
 use function array_keys;
-use function in_array;
 use function rawurldecode;
 use function sprintf;
 
 class Router
 {
-    private readonly ReferenceResolver $referenceResolver;
+    private readonly InterceptorResolver $interceptorResolver;
 
     private array $middlewares;
 
@@ -60,8 +58,8 @@ class Router
     private ?RequestHandlerInterface $routerRequestHandler = null;
 
     /**
-     * @param ParameterResolverInterface[] $parameterResolvers
-     * @param ResponseResolverInterface[] $responseResolvers
+     * @param array<array-key, ParameterResolverInterface> $parameterResolvers
+     * @param array<array-key, ResponseResolverInterface> $responseResolvers
      * @param list<LoaderInterface> $loaders
      *
      * @since 3.0.0
@@ -74,7 +72,7 @@ class Router
     ) {
         $this->middlewares = $middlewares;
 
-        $this->referenceResolver = new ReferenceResolver(
+        $this->interceptorResolver = new InterceptorResolver(
             new ParameterResolver($parameterResolvers),
             new ResponseResolver($responseResolvers),
         );
@@ -122,12 +120,6 @@ class Router
     }
 
     /**
-     * Looks for a route that matches the given request
-     *
-     * @param ServerRequestInterface $request
-     *
-     * @return Route
-     *
      * @throws HttpNotFoundException
      *         If the request URI isn't served.
      *
@@ -150,9 +142,8 @@ class Router
                 continue;
             }
 
-            $routeMethods = $route->getMethods();
-            if (!empty($routeMethods) && !in_array($request->getMethod(), $routeMethods, true)) {
-                $allowedMethods += array_flip($routeMethods);
+            if (!$route->supportsMethod($request->getMethod())) {
+                $allowedMethods += array_flip($route->getMethods());
                 continue;
             }
 
@@ -199,8 +190,6 @@ class Router
     }
 
     /**
-     * @param array<string, mixed> $values
-     *
      * @throws InvalidArgumentException
      */
     public function buildRoute(Route|string $route, array $values = []): string
@@ -242,7 +231,7 @@ class Router
         }
 
         // phpcs:ignore Generic.Files.LineLength
-        $this->routeRequestHandlers[$routeName] = $this->referenceResolver->resolveRequestHandler($route->getRequestHandler());
+        $this->routeRequestHandlers[$routeName] = $this->interceptorResolver->resolveRequestHandler($route->getRequestHandler());
 
         $middlewares = $route->getMiddlewares();
         if ($middlewares === []) {
@@ -252,7 +241,7 @@ class Router
         $this->routeRequestHandlers[$routeName] = new QueueableRequestHandler($this->routeRequestHandlers[$routeName]);
         foreach ($middlewares as $middleware) {
             $this->routeRequestHandlers[$routeName]->enqueue(
-                $this->referenceResolver->resolveMiddleware($middleware)
+                $this->interceptorResolver->resolveMiddleware($middleware)
             );
         }
 
@@ -270,9 +259,7 @@ class Router
 
         $this->routerRequestHandler = new CallableRequestHandler(
             function (ServerRequestInterface $request): ResponseInterface {
-                $route = $this->match($request);
-
-                return $this->runRoute($route, $request);
+                return $this->runRoute($this->match($request), $request);
             }
         );
 
@@ -283,7 +270,7 @@ class Router
         $this->routerRequestHandler = new QueueableRequestHandler($this->routerRequestHandler);
         foreach ($this->middlewares as $middleware) {
             $this->routerRequestHandler->enqueue(
-                $this->referenceResolver->resolveMiddleware($middleware)
+                $this->interceptorResolver->resolveMiddleware($middleware)
             );
         }
 
