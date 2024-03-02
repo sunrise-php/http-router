@@ -390,6 +390,20 @@ final class ServerRequest implements ServerRequestInterface
         return $this->request->getQueryParams();
     }
 
+    public function hasQueryParam(string $name): bool
+    {
+        $params = $this->request->getQueryParams();
+
+        return isset($params[$name]);
+    }
+
+    public function getQueryParam(string $name, mixed $default = null): mixed
+    {
+        $params = $this->request->getQueryParams();
+
+        return $params[$name] ?? $default;
+    }
+
     /**
      * @inheritDoc
      */
@@ -407,6 +421,20 @@ final class ServerRequest implements ServerRequestInterface
     public function getCookieParams(): array
     {
         return $this->request->getCookieParams();
+    }
+
+    public function hasCookieParam(string $name): bool
+    {
+        $params = $this->request->getCookieParams();
+
+        return isset($params[$name]);
+    }
+
+    public function getCookieParam(string $name, mixed $default = null): mixed
+    {
+        $params = $this->request->getCookieParams();
+
+        return $params[$name] ?? $default;
     }
 
     /**

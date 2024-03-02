@@ -22,8 +22,7 @@ use Attribute;
 final class RequestBody
 {
     public function __construct(
-        /** @var int<100, 599> */
-        public readonly int $errorStatusCode = 400,
+        public readonly ?int $errorStatusCode = null,
         public readonly ?string $errorMessage = null,
     ) {
     }

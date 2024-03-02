@@ -212,7 +212,6 @@ class Router
             $route = $this->getRoute($route);
         }
 
-        // phpcs:ignore Generic.Files.LineLength
         return $this->routePatterns[$route->getName()] ??= $route->getPattern() ?? RouteCompiler::compileRoute($route->getPath(), $route->getPatterns());
     }
 
@@ -230,7 +229,6 @@ class Router
             return $this->routeRequestHandlers[$routeName];
         }
 
-        // phpcs:ignore Generic.Files.LineLength
         $this->routeRequestHandlers[$routeName] = $this->interceptorResolver->resolveRequestHandler($route->getRequestHandler());
 
         $middlewares = $route->getMiddlewares();

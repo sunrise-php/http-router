@@ -27,13 +27,11 @@ use Throwable;
  */
 class HttpUnsupportedMediaTypeException extends HttpException
 {
-    // phpcs:ignore Generic.Files.LineLength
     public const DEFAULT_MESSAGE = 'The request could not be processed due to an unsupported format of the request payload.';
 
     /**
      * @param list<MediaTypeInterface|Stringable|string> $supportedMediaTypes
      */
-    // phpcs:ignore Generic.Files.LineLength
     public function __construct(private readonly array $supportedMediaTypes, ?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
         foreach ($supportedMediaTypes as $index => $supportedMediaType) {

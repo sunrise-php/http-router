@@ -18,12 +18,7 @@ use Attribute;
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_PARAMETER)]
-final class RequestQuery
+#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION)]
+final class HtmlResponse
 {
-    public function __construct(
-        public readonly ?int $errorStatusCode = null,
-        public readonly ?string $errorMessage = null,
-    ) {
-    }
 }

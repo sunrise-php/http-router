@@ -94,7 +94,7 @@ final class InterceptorResolver
         }
 
         throw new LogicException(sprintf(
-            'The request handler {%s} could not be resolved.',
+            'The request handler %s could not be resolved.',
             self::stringifyInterceptor($requestHandler),
         ));
     }
@@ -143,7 +143,7 @@ final class InterceptorResolver
         }
 
         throw new LogicException(sprintf(
-            'The middleware {%s} could not be resolved.',
+            'The middleware %s could not be resolved.',
             self::stringifyInterceptor($middleware),
         ));
     }
@@ -210,12 +210,12 @@ final class InterceptorResolver
         }
 
         if (!class_exists($className)) {
-            throw new LogicException(sprintf('The class {%s} does not exist.', $className));
+            throw new LogicException(sprintf('The class %s does not exist.', $className));
         }
 
         $classReflection = new ReflectionClass($className);
         if (!$classReflection->isInstantiable()) {
-            throw new LogicException(sprintf('The class {%s} is not instantiable.', $className));
+            throw new LogicException(sprintf('The class %s is not instantiable.', $className));
         }
 
         $arguments = [];

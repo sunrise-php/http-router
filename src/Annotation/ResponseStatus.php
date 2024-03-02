@@ -22,7 +22,6 @@ use Attribute;
 final class ResponseStatus
 {
     public function __construct(
-        /** @var int<100, 599> */
         public readonly int $code,
         public readonly string $phrase = '',
     ) {

@@ -19,15 +19,13 @@ use ReflectionFunction;
 use ReflectionMethod;
 
 /**
- * ResponseResolverInterface
- *
  * @since 3.0.0
  */
 interface ResponseResolverInterface
 {
     public function resolveResponse(
-        ServerRequestInterface $request,
         mixed $response,
         ReflectionMethod|ReflectionFunction $responder,
-    ) : ?ResponseInterface;
+        ServerRequestInterface $request,
+    ): ?ResponseInterface;
 }

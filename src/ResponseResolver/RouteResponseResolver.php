@@ -22,27 +22,24 @@ use Sunrise\Http\Router\Route;
 use Sunrise\Http\Router\Router;
 
 /**
- * RouteResponseResolver
- *
  * @since 3.0.0
  */
 final class RouteResponseResolver implements ResponseResolverInterface
 {
-    /**
-     * @inheritDoc
-     */
     public function resolveResponse(
-        ServerRequestInterface $request,
         mixed $response,
         ReflectionMethod|ReflectionFunction $responder,
-    ) : ?ResponseInterface {
+        ServerRequestInterface $request,
+    ): ?ResponseInterface {
         if (! $response instanceof Route) {
             return null;
         }
 
         $router = $request->getAttribute('@router');
         if (! $router instanceof Router) {
-            throw new LogicException();
+            throw new LogicException(
+                'Something went wrong, the request must contain the @router attribute.'
+            );
         }
 
         return $router->runRoute($response, $request);

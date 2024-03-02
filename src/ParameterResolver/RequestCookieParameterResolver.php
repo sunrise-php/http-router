@@ -22,6 +22,7 @@ use Sunrise\Http\Router\Annotation\Constraint;
 use Sunrise\Http\Router\Annotation\RequestCookie;
 use Sunrise\Http\Router\ConstraintViolation;
 use Sunrise\Http\Router\Exception\HttpException;
+use Sunrise\Http\Router\ServerRequest;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
@@ -62,31 +63,31 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
             );
         }
 
+        $request = ServerRequest::create($context);
         $requestCookie = $annotations[0]->newInstance();
 
-        $cookies = $context->getCookieParams();
+        $placeholders = [
+            '{{ cookie_name }}' => $requestCookie->name,
+        ];
 
-        if (!isset($cookies[$requestCookie->name])) {
+        if (!$request->hasCookieParam($requestCookie->name)) {
             if ($parameter->isDefaultValueAvailable()) {
                 return yield $parameter->getDefaultValue();
             } elseif ($parameter->allowsNull()) {
                 return yield;
             }
 
-            throw new HttpException($requestCookie->errorStatusCode, $requestCookie->errorMessage);
+            throw HttpException::cookieMissed($requestCookie->errorStatusCode, $requestCookie->errorMessage, $placeholders);
         }
 
         try {
-            $value = $this->hydrator->castValue(
-                $cookies[$requestCookie->name],
+            $argument = $this->hydrator->castValue(
+                $request->getCookieParam($requestCookie->name),
                 Type::fromParameter($parameter),
                 path: [$requestCookie->name],
             );
-        } catch (InvalidDataException $e) {
-            throw (new HttpException($requestCookie->errorStatusCode, $requestCookie->errorMessage, previous: $e))
-                ->addConstraintViolation(...ConstraintViolation::fromHydrator(...$e->getExceptions()));
-        } catch (InvalidValueException $e) {
-            throw (new HttpException($requestCookie->errorStatusCode, $requestCookie->errorMessage, previous: $e))
+        } catch (InvalidDataException|InvalidValueException $e) {
+            throw HttpException::cookieInvalid($requestCookie->errorStatusCode, $requestCookie->errorMessage, $placeholders, previous: $e)
                 ->addConstraintViolation(...ConstraintViolation::fromHydrator($e));
         }
 
@@ -100,12 +101,12 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
                 }
             }
 
-            if (count($constraints) > 0 && count($violations = $this->validator->validate($value, $constraints)) > 0) {
-                throw (new HttpException($requestCookie->errorStatusCode, $requestCookie->errorMessage))
+            if (count($constraints) > 0 && count($violations = $this->validator->validate($argument, $constraints)) > 0) {
+                throw HttpException::cookieInvalid($requestCookie->errorStatusCode, $requestCookie->errorMessage, $placeholders)
                     ->addConstraintViolation(...ConstraintViolation::fromValidator(...$violations));
             }
         }
 
-        yield $value;
+        yield $argument;
     }
 }

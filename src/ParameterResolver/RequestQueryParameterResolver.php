@@ -22,11 +22,12 @@ use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestQuery;
 use Sunrise\Http\Router\ConstraintViolation;
 use Sunrise\Http\Router\Exception\HttpException;
-use Sunrise\Http\Router\Helper\Stringifier;
+use Sunrise\Http\Router\ParameterResolver;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\HydratorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+use function count;
 use function sprintf;
 
 /**
@@ -58,8 +59,8 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
         $type = $parameter->getType();
         if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
             throw new LogicException(sprintf(
-                'To use the #[RequestQuery] attribute, the parameter {%s} must be typed with an object.',
-                Stringifier::stringifyParameter($parameter),
+                'To use the #[RequestQuery] annotation, the parameter %s must be typed with an object.',
+                ParameterResolver::stringifyParameter($parameter),
             ));
         }
 
@@ -72,20 +73,17 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
         $requestQuery = $annotations[0]->newInstance();
 
         try {
-            $object = $this->hydrator->hydrate($type->getName(), $context->getQueryParams());
+            $argument = $this->hydrator->hydrate($type->getName(), $context->getQueryParams());
         } catch (InvalidDataException $e) {
-            throw (new HttpException($requestQuery->errorStatusCode, $requestQuery->errorMessage, previous: $e))
+            throw HttpException::queryInvalid($requestQuery->errorStatusCode, $requestQuery->errorMessage, previous: $e)
                 ->addConstraintViolation(...ConstraintViolation::fromHydrator(...$e->getExceptions()));
         }
 
-        if (isset($this->validator)) {
-            $violations = $this->validator->validate($object);
-            if ($violations->count() > 0) {
-                throw (new HttpException($requestQuery->errorStatusCode, $requestQuery->errorMessage))
-                    ->addConstraintViolation(...ConstraintViolation::fromValidator(...$violations));
-            }
+        if (isset($this->validator) && count($violations = $this->validator->validate($argument)) > 0) {
+            throw HttpException::queryInvalid($requestQuery->errorStatusCode, $requestQuery->errorMessage)
+                ->addConstraintViolation(...ConstraintViolation::fromValidator(...$violations));
         }
 
-        yield $object;
+        yield $argument;
     }
 }

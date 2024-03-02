@@ -14,8 +14,9 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router;
 
 use Generator;
-use Sunrise\Hydrator\Exception\InvalidValueException as HydratorConstraintViolation;
-use Symfony\Component\Validator\ConstraintViolationInterface as ValidatorConstraintViolation;
+use Sunrise\Hydrator\Exception\InvalidDataException;
+use Sunrise\Hydrator\Exception\InvalidValueException;
+use Symfony\Component\Validator\ConstraintViolationInterface as ValidatorConstraintViolationInterface;
 
 /**
  * @since 3.0.0
@@ -59,8 +60,14 @@ final class ConstraintViolation implements ConstraintViolationInterface
     /**
      * @return Generator<int, self>
      */
-    public static function fromHydrator(HydratorConstraintViolation ...$violations): Generator
+    public static function fromHydrator(InvalidDataException|InvalidValueException ...$violations): Generator
     {
+        foreach ($violations as $violation) {
+            if ($violation instanceof InvalidDataException) {
+                $violations = [...$violations, $violation->getExceptions()];
+            }
+        }
+
         foreach ($violations as $violation) {
             yield new self(
                 $violation->getMessage(),
@@ -75,7 +82,7 @@ final class ConstraintViolation implements ConstraintViolationInterface
     /**
      * @return Generator<int, self>
      */
-    public static function fromValidator(ValidatorConstraintViolation ...$violations): Generator
+    public static function fromValidator(ValidatorConstraintViolationInterface ...$violations): Generator
     {
         foreach ($violations as $violation) {
             yield new self(

@@ -19,9 +19,10 @@ use Attribute;
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_PARAMETER)]
-final class RequestQuery
+final class RequestQueryParam
 {
     public function __construct(
+        public readonly string $name,
         public readonly ?int $errorStatusCode = null,
         public readonly ?string $errorMessage = null,
     ) {

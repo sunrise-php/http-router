@@ -19,7 +19,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Entity\MediaType\ServerMediaType;
-use Sunrise\Http\Router\Exception\Http\HttpBadRequestException;
+use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\ServerRequest;
 
 use function is_array;
@@ -48,22 +48,22 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
     }
 
     /**
-     * @throws HttpBadRequestException If the JSON payload couldn't be decoded.
+     * @throws HttpException If the JSON payload couldn't be decoded.
      */
     private function decodePayload(string $payload): array
     {
         if ($payload === '') {
-            throw new HttpBadRequestException('JSON payload cannot be empty.');
+            throw HttpException::jsonPayloadEmpty();
         }
 
         try {
             $data = json_decode($payload, true, flags: JSON_BIGINT_AS_STRING | JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
-            throw new HttpBadRequestException('The JSON payload is invalid and could not be decoded.', previous: $e);
+            throw HttpException::jsonPayloadInvalid(previous: $e);
         }
 
         if (is_array($data) === false) {
-            throw new HttpBadRequestException('The JSON payload must be in the form of an array or an object.');
+            throw HttpException::jsonPayloadFormInvalid();
         }
 
         return $data;

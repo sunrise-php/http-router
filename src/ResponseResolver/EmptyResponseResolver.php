@@ -21,24 +21,19 @@ use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\EmptyResponse;
 
 /**
- * EmptyResponseResolver
- *
  * @since 3.0.0
  */
 final class EmptyResponseResolver implements ResponseResolverInterface
 {
-    public function __construct(private ResponseFactoryInterface $responseFactory)
+    public function __construct(private readonly ResponseFactoryInterface $responseFactory)
     {
     }
 
-    /**
-     * @inheritDoc
-     */
     public function resolveResponse(
-        ServerRequestInterface $request,
         mixed $response,
         ReflectionMethod|ReflectionFunction $responder,
-    ) : ?ResponseInterface {
+        ServerRequestInterface $request,
+    ): ?ResponseInterface {
         if ($responder->getAttributes(EmptyResponse::class) === []) {
             return null;
         }

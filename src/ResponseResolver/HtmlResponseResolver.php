@@ -13,26 +13,23 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\ResponseResolver;
 
-use JsonException;
 use LogicException;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use ReflectionAttribute;
 use ReflectionFunction;
 use ReflectionMethod;
-use Sunrise\Http\Router\Annotation\JsonResponse;
+use Stringable;
+use Sunrise\Http\Router\Annotation\HtmlResponse;
 use Sunrise\Http\Router\ResponseResolver;
 
-use function json_encode;
+use function is_string;
 use function sprintf;
-
-use const JSON_THROW_ON_ERROR;
 
 /**
  * @since 3.0.0
  */
-final class JsonResponseResolver implements ResponseResolverInterface
+final class HtmlResponseResolver implements ResponseResolverInterface
 {
     public function __construct(private readonly ResponseFactoryInterface $responseFactory)
     {
@@ -46,29 +43,21 @@ final class JsonResponseResolver implements ResponseResolverInterface
         ReflectionMethod|ReflectionFunction $responder,
         ServerRequestInterface $request,
     ): ?ResponseInterface {
-        /** @var list<ReflectionAttribute<JsonResponse>> $annotations */
-        $annotations = $responder->getAttributes(JsonResponse::class);
-        if ($annotations === []) {
+        if ($responder->getAttributes(HtmlResponse::class) === []) {
             return null;
         }
 
-        $jsonResponse = $annotations[0]->newInstance();
-
-        try {
-            /** @psalm-suppress ArgumentTypeCoercion */
-            $payload = json_encode($response, $jsonResponse->flags | JSON_THROW_ON_ERROR, $jsonResponse->depth);
-        } catch (JsonException $e) {
+        if (!is_string($response) && !($response instanceof Stringable)) {
             throw new LogicException(sprintf(
-                'The responder %s returned a response that could not be encoded to JSON due to: %s',
+                'The responder %s returned a response that cannot be converted to a string.',
                 ResponseResolver::stringifyResponder($responder),
-                $e->getMessage(),
-            ), previous: $e);
+            ));
         }
 
         $result = $this->responseFactory->createResponse(200)
-            ->withHeader('Content-Type', 'application/json; charset=UTF-8');
+            ->withHeader('Content-Type', 'text/html; charset=UTF-8');
 
-        $result->getBody()->write($payload);
+        $result->getBody()->write((string) $response);
 
         return $result;
     }

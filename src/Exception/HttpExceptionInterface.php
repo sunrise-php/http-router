@@ -23,26 +23,18 @@ use Sunrise\Http\Router\ConstraintViolationInterface;
  */
 interface HttpExceptionInterface extends ExceptionInterface, StatusCodeInterface
 {
+    public function getMessageTemplate(): string;
 
-    /**
-     * Gets HTTP status code that will be sent to the client
-     *
-     * See the {@see StatusCodeInterface} dictionary.
-     *
-     * @return int<100, 599>
-     */
+    public function getMessagePlaceholders(): array;
+
     public function getStatusCode(): int;
 
     /**
-     * Gets HTTP header fields that will be sent to the client
-     *
      * @return list<array{0: string, 1: string}>
      */
     public function getHeaderFields(): array;
 
     /**
-     * Gets the list of constraint violations associated with the error
-     *
      * @return list<ConstraintViolationInterface>
      */
     public function getConstraintViolations(): array;

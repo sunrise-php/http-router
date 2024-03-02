@@ -65,7 +65,10 @@ final class RouteBuilder
             }
 
             if (isset($variable['optional'])) {
-                $search[] = '(' . ($variable['left'] ?? '') . $statement . ($variable['right'] ?? '') . ')';
+                $left = $variable['left'] ?? '';
+                $right = $variable['right'] ?? '';
+
+                $search[] = '(' . $left . $statement . $right . ')';
                 $replace[] = '';
                 continue;
             }

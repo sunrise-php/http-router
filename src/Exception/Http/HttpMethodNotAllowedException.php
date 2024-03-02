@@ -28,7 +28,6 @@ class HttpMethodNotAllowedException extends HttpException
 {
     public const DEFAULT_MESSAGE = 'The request could not be processed using the requested HTTP method.';
 
-    // phpcs:ignore Generic.Files.LineLength
     public function __construct(private array $allowedMethods, ?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
         parent::__construct(self::STATUS_METHOD_NOT_ALLOWED, $message ?? self::DEFAULT_MESSAGE, $code, $previous);

@@ -214,7 +214,6 @@ final class DescriptorLoader implements LoaderInterface
         }
     }
 
-    // phpcs:ignore Generic.Files.LineLength
     private function supplementDescriptorFromClassOrMethod(Descriptor $descriptor, ReflectionClass|ReflectionMethod $classOrMethod): void
     {
         /** @var list<ReflectionAttribute<Prefix>> $annotations */

@@ -18,7 +18,7 @@ use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionNamedType;
 use ReflectionParameter;
-use Sunrise\Http\Router\Helper\Stringifier;
+use Sunrise\Http\Router\ParameterResolver;
 use Sunrise\Http\Router\Route;
 
 use function sprintf;
@@ -51,8 +51,8 @@ final class RequestRouteParameterResolver implements ParameterResolverInterface
         if (! $route instanceof Route && !$parameter->allowsNull()) {
             throw new LogicException(sprintf(
                 'At this level of the application, the request does not contain a route. ' .
-                'To suppress this error, the parameter {%s} should be nullable.',
-                Stringifier::stringifyParameter($parameter),
+                'To suppress this error, the parameter %s should be nullable.',
+                ParameterResolver::stringifyParameter($parameter),
             ));
         }
 

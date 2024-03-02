@@ -15,8 +15,8 @@ namespace Sunrise\Http\Router;
 
 use Generator;
 use LogicException;
+use ReflectionMethod;
 use ReflectionParameter;
-use Sunrise\Http\Router\Helper\Stringifier;
 use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
 
 use function sprintf;
@@ -87,8 +87,30 @@ final class ParameterResolver
         }
 
         throw new LogicException(sprintf(
-            'The parameter {%s} cannot be resolved.',
-            Stringifier::stringifyParameter($parameter)
+            'The parameter %s cannot be resolved.',
+            self::stringifyParameter($parameter)
         ));
+    }
+
+    public static function stringifyParameter(ReflectionParameter $parameter): string
+    {
+        $function = $parameter->getDeclaringFunction();
+
+        if ($function instanceof ReflectionMethod) {
+            return sprintf(
+                '%s::%s($%s[%d])',
+                $function->getDeclaringClass()->getName(),
+                $function->getName(),
+                $parameter->getName(),
+                $parameter->getPosition(),
+            );
+        }
+
+        return sprintf(
+            '%s($%s[%d])',
+            $function->getName(),
+            $parameter->getName(),
+            $parameter->getPosition(),
+        );
     }
 }
