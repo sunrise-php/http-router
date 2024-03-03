@@ -18,9 +18,10 @@ use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionParameter;
-use Sunrise\Http\Router\Annotation\Constraint;
 use Sunrise\Http\Router\Annotation\RequestPathVariable;
 use Sunrise\Http\Router\Exception\HttpException;
+use Sunrise\Http\Router\Helper\HydratorHelper;
+use Sunrise\Http\Router\Helper\ValidatorHelper;
 use Sunrise\Http\Router\ParameterResolver;
 use Sunrise\Http\Router\Route;
 use Sunrise\Hydrator\Exception\InvalidDataException;
@@ -67,9 +68,8 @@ final class RequestPathVariableParameterResolver implements ParameterResolverInt
         $route = $context->getAttribute('@route');
         if (! $route instanceof Route) {
             throw new LogicException(sprintf(
-                'The #[RequestPathVariable] annotation cannot be applied to the parameter %s, ' .
-                'because the request does not contain information about the requested route, ' .
-                'at least at this level of the application.',
+                'The #[RequestPathVariable] annotation cannot be applied to the parameter %s ' .
+                'because the request does not contain information about the requested route.',
                 ParameterResolver::stringifyParameter($parameter),
             ));
         }
@@ -101,29 +101,18 @@ final class RequestPathVariableParameterResolver implements ParameterResolverInt
         ];
 
         try {
-            $argument = $this->hydrator->castValue(
-                $route->getAttribute($variableName),
-                Type::fromParameter($parameter),
-                path: [$variableName],
-            );
+            $argument = $this->hydrator->castValue($route->getAttribute($variableName), Type::fromParameter($parameter), path: [$variableName]);
         } catch (InvalidDataException|InvalidValueException $e) {
             throw HttpException::pathVariableInvalid($requestVariable->errorStatusCode, $requestVariable->errorMessage, $placeholders, previous: $e)
-                ->addHydratorConstraintViolation($e);
+                ->addConstraintViolation(...HydratorHelper::adaptHydratorConstraintViolations($e));
         }
 
         if (isset($this->validator)) {
-            $constraints = [];
-            /** @var ReflectionAttribute<Constraint> $annotation */
-            foreach ($parameter->getAttributes(Constraint::class) as $annotation) {
-                $constraint = $annotation->newInstance();
-                if ($constraint->value instanceof \Symfony\Component\Validator\Constraint) {
-                    $constraints[] = $constraint->value;
+            if (count($constraints = ValidatorHelper::getParameterValidatorConstraints($parameter)) > 0) {
+                if (count($violations = $this->validator->validate($argument, $constraints)) > 0) {
+                    throw HttpException::pathVariableInvalid($requestVariable->errorStatusCode, $requestVariable->errorMessage, $placeholders)
+                        ->addConstraintViolation(...ValidatorHelper::adaptValidatorConstraintViolations(...$violations));
                 }
-            }
-
-            if (count($constraints) > 0 && count($violations = $this->validator->validate($argument, $constraints)) > 0) {
-                throw HttpException::pathVariableInvalid($requestVariable->errorStatusCode, $requestVariable->errorMessage, $placeholders)
-                    ->addValidatorConstraintViolation(...$violations);
             }
         }
 

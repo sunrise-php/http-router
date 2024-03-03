@@ -16,12 +16,8 @@ namespace Sunrise\Http\Router\Exception;
 use Fig\Http\Message\StatusCodeInterface;
 use RuntimeException;
 use Stringable;
-use Sunrise\Http\Router\ConstraintViolation;
 use Sunrise\Http\Router\ConstraintViolationInterface;
 use Sunrise\Http\Router\Dictionary\ErrorMessage;
-use Sunrise\Hydrator\Exception\InvalidDataException;
-use Sunrise\Hydrator\Exception\InvalidValueException;
-use Symfony\Component\Validator\ConstraintViolationInterface as ValidatorConstraintViolation;
 use Throwable;
 
 use function join;
@@ -319,30 +315,6 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     {
         foreach ($constraintViolations as $constraintViolation) {
             $this->constraintViolations[] = $constraintViolation;
-        }
-
-        return $this;
-    }
-
-    final public function addHydratorConstraintViolation(InvalidDataException|InvalidValueException $hydratorConstraintViolation): static
-    {
-        if ($hydratorConstraintViolation instanceof InvalidValueException) {
-            $this->constraintViolations[] = ConstraintViolation::fromHydrator($hydratorConstraintViolation);
-
-            return $this;
-        }
-
-        foreach ($hydratorConstraintViolation->getExceptions() as $hydratorConstraintViolation) {
-            $this->constraintViolations[] = ConstraintViolation::fromHydrator($hydratorConstraintViolation);
-        }
-
-        return $this;
-    }
-
-    final public function addValidatorConstraintViolation(ValidatorConstraintViolation ...$validatorConstraintViolations): static
-    {
-        foreach ($validatorConstraintViolations as $validatorConstraintViolation) {
-            $this->constraintViolations[] = ConstraintViolation::fromValidator($validatorConstraintViolation);
         }
 
         return $this;

@@ -21,6 +21,8 @@ use ReflectionNamedType;
 use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestQuery;
 use Sunrise\Http\Router\Exception\HttpException;
+use Sunrise\Http\Router\Helper\HydratorHelper;
+use Sunrise\Http\Router\Helper\ValidatorHelper;
 use Sunrise\Http\Router\ParameterResolver;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\HydratorInterface;
@@ -75,12 +77,14 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
             $argument = $this->hydrator->hydrate($type->getName(), $context->getQueryParams());
         } catch (InvalidDataException $e) {
             throw HttpException::queryInvalid($requestQuery->errorStatusCode, $requestQuery->errorMessage, previous: $e)
-                ->addHydratorConstraintViolation($e);
+                ->addConstraintViolation(...HydratorHelper::adaptHydratorConstraintViolations($e));
         }
 
-        if (isset($this->validator) && count($violations = $this->validator->validate($argument)) > 0) {
-            throw HttpException::queryInvalid($requestQuery->errorStatusCode, $requestQuery->errorMessage)
-                ->addValidatorConstraintViolation(...$violations);
+        if (isset($this->validator)) {
+            if (count($violations = $this->validator->validate($argument)) > 0) {
+                throw HttpException::queryInvalid($requestQuery->errorStatusCode, $requestQuery->errorMessage)
+                    ->addConstraintViolation(...ValidatorHelper::adaptValidatorConstraintViolations(...$violations));
+            }
         }
 
         yield $argument;

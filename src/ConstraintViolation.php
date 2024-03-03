@@ -13,9 +13,6 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
-use Sunrise\Hydrator\Exception\InvalidValueException as HydratorConstraintViolation;
-use Symfony\Component\Validator\ConstraintViolationInterface as ValidatorConstraintViolation;
-
 /**
  * @since 3.0.0
  */
@@ -28,28 +25,6 @@ final class ConstraintViolation implements ConstraintViolationInterface
         private readonly string $propertyPath,
         private readonly ?string $code,
     ) {
-    }
-
-    public static function fromHydrator(HydratorConstraintViolation $hydratorConstraintViolation): self
-    {
-        return new self(
-            $hydratorConstraintViolation->getMessage(),
-            $hydratorConstraintViolation->getMessageTemplate(),
-            $hydratorConstraintViolation->getMessagePlaceholders(),
-            $hydratorConstraintViolation->getPropertyPath(),
-            $hydratorConstraintViolation->getErrorCode(),
-        );
-    }
-
-    public static function fromValidator(ValidatorConstraintViolation $validatorConstraintViolation): self
-    {
-        return new self(
-            (string) $validatorConstraintViolation->getMessage(),
-            $validatorConstraintViolation->getMessageTemplate(),
-            $validatorConstraintViolation->getParameters(),
-            $validatorConstraintViolation->getPropertyPath(),
-            $validatorConstraintViolation->getCode(),
-        );
     }
 
     public function getMessage(): string

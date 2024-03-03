@@ -20,7 +20,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use ReflectionFunction;
 use ReflectionMethod;
 use Stringable;
-use Sunrise\Http\Router\Annotation\HtmlResponse;
+use Sunrise\Http\Router\Annotation\StringableResponse;
 use Sunrise\Http\Router\ResponseResolver;
 
 use function is_string;
@@ -29,7 +29,7 @@ use function sprintf;
 /**
  * @since 3.0.0
  */
-final class HtmlResponseResolver implements ResponseResolverInterface
+final class StringableResponseResolver implements ResponseResolverInterface
 {
     public function __construct(private readonly ResponseFactoryInterface $responseFactory)
     {
@@ -43,7 +43,7 @@ final class HtmlResponseResolver implements ResponseResolverInterface
         ReflectionMethod|ReflectionFunction $responder,
         ServerRequestInterface $request,
     ): ?ResponseInterface {
-        if ($responder->getAttributes(HtmlResponse::class) === []) {
+        if ($responder->getAttributes(StringableResponse::class) === []) {
             return null;
         }
 
@@ -54,9 +54,7 @@ final class HtmlResponseResolver implements ResponseResolverInterface
             ));
         }
 
-        $result = $this->responseFactory->createResponse(200)
-            ->withHeader('Content-Type', 'text/html; charset=UTF-8');
-
+        $result = $this->responseFactory->createResponse(200);
         $result->getBody()->write((string) $response);
 
         return $result;

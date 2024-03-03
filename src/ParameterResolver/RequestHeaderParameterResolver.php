@@ -18,9 +18,10 @@ use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionParameter;
-use Sunrise\Http\Router\Annotation\Constraint;
 use Sunrise\Http\Router\Annotation\RequestHeader;
 use Sunrise\Http\Router\Exception\HttpException;
+use Sunrise\Http\Router\Helper\HydratorHelper;
+use Sunrise\Http\Router\Helper\ValidatorHelper;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
@@ -78,29 +79,18 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
         }
 
         try {
-            $argument = $this->hydrator->castValue(
-                $context->getHeaderLine($requestHeader->name),
-                Type::fromParameter($parameter),
-                path: [$requestHeader->name],
-            );
+            $argument = $this->hydrator->castValue($context->getHeaderLine($requestHeader->name), Type::fromParameter($parameter), path: [$requestHeader->name]);
         } catch (InvalidDataException|InvalidValueException $e) {
             throw HttpException::headerInvalid($requestHeader->errorStatusCode, $requestHeader->errorMessage, $placeholders, previous: $e)
-                ->addHydratorConstraintViolation($e);
+                ->addConstraintViolation(...HydratorHelper::adaptHydratorConstraintViolations($e));
         }
 
         if (isset($this->validator)) {
-            $constraints = [];
-            /** @var ReflectionAttribute<Constraint> $annotation */
-            foreach ($parameter->getAttributes(Constraint::class) as $annotation) {
-                $constraint = $annotation->newInstance();
-                if ($constraint->value instanceof \Symfony\Component\Validator\Constraint) {
-                    $constraints[] = $constraint->value;
+            if (count($constraints = ValidatorHelper::getParameterValidatorConstraints($parameter)) > 0) {
+                if (count($violations = $this->validator->validate($argument, $constraints)) > 0) {
+                    throw HttpException::headerInvalid($requestHeader->errorStatusCode, $requestHeader->errorMessage, $placeholders)
+                        ->addConstraintViolation(...ValidatorHelper::adaptValidatorConstraintViolations(...$violations));
                 }
-            }
-
-            if (count($constraints) > 0 && count($violations = $this->validator->validate($argument, $constraints)) > 0) {
-                throw HttpException::headerInvalid($requestHeader->errorStatusCode, $requestHeader->errorMessage, $placeholders)
-                    ->addValidatorConstraintViolation(...$violations);
             }
         }
 
