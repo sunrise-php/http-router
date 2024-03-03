@@ -36,7 +36,7 @@ final class RequestRouteParameterResolver implements ParameterResolverInterface
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
         $type = $parameter->getType();
-        if (! $type instanceof ReflectionNamedType || $type->getName() <> Route::class) {
+        if (! $type instanceof ReflectionNamedType || $type->getName() !== Route::class) {
             return;
         }
 

@@ -157,7 +157,6 @@ final class InterceptorResolver
     ): Closure {
         return fn(ServerRequestInterface $request): ResponseInterface => (
             $this->responseResolver->resolveResponse(
-                $request,
                 $callback(...
                     $this->parameterResolver
                         ->withContext($request)
@@ -165,6 +164,7 @@ final class InterceptorResolver
                         ->resolveParameters(...$reflection->getParameters())
                 ),
                 $reflection,
+                $request,
             )
         );
     }
@@ -178,7 +178,6 @@ final class InterceptorResolver
     ): Closure {
         return fn(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface => (
             $this->responseResolver->resolveResponse(
-                $request,
                 $callback(...
                     $this->parameterResolver
                         ->withContext($request)
@@ -187,6 +186,7 @@ final class InterceptorResolver
                         ->resolveParameters(...$reflection->getParameters())
                 ),
                 $reflection,
+                $request,
             )
         );
     }

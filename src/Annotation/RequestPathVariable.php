@@ -19,10 +19,10 @@ use Attribute;
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_PARAMETER)]
-final class RequestVariable
+final class RequestPathVariable
 {
     public function __construct(
-        public readonly string|null $name = null,
+        public readonly ?string $name = null,
         public readonly ?int $errorStatusCode = null,
         public readonly ?string $errorMessage = null,
     ) {

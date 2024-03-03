@@ -20,7 +20,6 @@ use ReflectionAttribute;
 use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\Constraint;
 use Sunrise\Http\Router\Annotation\RequestHeader;
-use Sunrise\Http\Router\ConstraintViolation;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
@@ -86,7 +85,7 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
             );
         } catch (InvalidDataException|InvalidValueException $e) {
             throw HttpException::headerInvalid($requestHeader->errorStatusCode, $requestHeader->errorMessage, $placeholders, previous: $e)
-                ->addConstraintViolation(...ConstraintViolation::fromHydrator($e));
+                ->addHydratorConstraintViolation($e);
         }
 
         if (isset($this->validator)) {
@@ -101,7 +100,7 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
 
             if (count($constraints) > 0 && count($violations = $this->validator->validate($argument, $constraints)) > 0) {
                 throw HttpException::headerInvalid($requestHeader->errorStatusCode, $requestHeader->errorMessage, $placeholders)
-                    ->addConstraintViolation(...ConstraintViolation::fromValidator(...$violations));
+                    ->addValidatorConstraintViolation(...$violations);
             }
         }
 

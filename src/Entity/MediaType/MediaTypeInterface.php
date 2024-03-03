@@ -13,10 +13,12 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Entity\MediaType;
 
+use Stringable;
+
 /**
  * @since 3.0.0
  */
-interface MediaTypeInterface
+interface MediaTypeInterface extends Stringable
 {
     public function getType(): string;
 

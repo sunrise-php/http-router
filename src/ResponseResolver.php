@@ -40,18 +40,18 @@ final class ResponseResolver
      * @throws LogicException If the response couldn't be resolved to PSR-7 response.
      */
     public function resolveResponse(
-        ServerRequestInterface $request,
         mixed $response,
         ReflectionMethod|ReflectionFunction $responder,
+        ServerRequestInterface $request,
     ) : ResponseInterface {
         if ($response instanceof ResponseInterface) {
-            return $this->handleResponse($request, $response, $responder);
+            return $this->handleResponse($response, $responder);
         }
 
         foreach ($this->resolvers as $resolver) {
             $result = $resolver->resolveResponse($response, $responder, $request);
             if ($result instanceof ResponseInterface) {
-                return $this->handleResponse($request, $result, $responder);
+                return $this->handleResponse($result, $responder);
             }
         }
 
@@ -62,7 +62,6 @@ final class ResponseResolver
     }
 
     private function handleResponse(
-        ServerRequestInterface $request,
         ResponseInterface $response,
         ReflectionMethod|ReflectionFunction $responder,
     ) : ResponseInterface {

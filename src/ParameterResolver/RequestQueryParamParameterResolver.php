@@ -20,7 +20,6 @@ use ReflectionAttribute;
 use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\Constraint;
 use Sunrise\Http\Router\Annotation\RequestQueryParam;
-use Sunrise\Http\Router\ConstraintViolation;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\ServerRequest;
 use Sunrise\Hydrator\Exception\InvalidDataException;
@@ -47,7 +46,7 @@ final class RequestQueryParamParameterResolver implements ParameterResolverInter
      *
      * @throws LogicException If the resolver is used incorrectly.
      *
-     * @throws HttpException If a param was missed or invalid.
+     * @throws HttpException If a query parameter was missed or invalid.
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
@@ -88,7 +87,7 @@ final class RequestQueryParamParameterResolver implements ParameterResolverInter
             );
         } catch (InvalidDataException|InvalidValueException $e) {
             throw HttpException::queryParamInvalid($requestParam->errorStatusCode, $requestParam->errorMessage, $placeholders, previous: $e)
-                ->addConstraintViolation(...ConstraintViolation::fromHydrator($e));
+                ->addHydratorConstraintViolation($e);
         }
 
         if (isset($this->validator)) {
@@ -103,7 +102,7 @@ final class RequestQueryParamParameterResolver implements ParameterResolverInter
 
             if (count($constraints) > 0 && count($violations = $this->validator->validate($argument, $constraints)) > 0) {
                 throw HttpException::queryParamInvalid($requestParam->errorStatusCode, $requestParam->errorMessage, $placeholders)
-                    ->addConstraintViolation(...ConstraintViolation::fromValidator(...$violations));
+                    ->addValidatorConstraintViolation(...$violations);
             }
         }
 

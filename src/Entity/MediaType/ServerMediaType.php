@@ -33,4 +33,12 @@ final class ServerMediaType implements MediaTypeInterface
     {
         return $this->subtype;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function __toString(): string
+    {
+        return $this->type . '/' . $this->subtype;
+    }
 }

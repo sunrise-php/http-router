@@ -43,4 +43,12 @@ final class ClientMediaType implements MediaTypeInterface
     {
         return $this->parameters;
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function __toString(): string
+    {
+        return $this->type . '/' . $this->subtype;
+    }
 }

@@ -20,7 +20,6 @@ use ReflectionAttribute;
 use ReflectionNamedType;
 use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestBody;
-use Sunrise\Http\Router\ConstraintViolation;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\ParameterResolver;
 use Sunrise\Hydrator\Exception\InvalidDataException;
@@ -76,12 +75,12 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
             $argument = $this->hydrator->hydrate($type->getName(), (array) $context->getParsedBody());
         } catch (InvalidDataException $e) {
             throw HttpException::bodyInvalid($requestBody->errorStatusCode, $requestBody->errorMessage, previous: $e)
-                ->addConstraintViolation(...ConstraintViolation::fromHydrator(...$e->getExceptions()));
+                ->addHydratorConstraintViolation($e);
         }
 
         if (isset($this->validator) && count($violations = $this->validator->validate($argument)) > 0) {
             throw HttpException::bodyInvalid($requestBody->errorStatusCode, $requestBody->errorMessage)
-                ->addConstraintViolation(...ConstraintViolation::fromValidator(...$violations));
+                ->addValidatorConstraintViolation(...$violations);
         }
 
         yield $argument;

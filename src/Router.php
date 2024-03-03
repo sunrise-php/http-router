@@ -17,9 +17,7 @@ use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Exception\Http\HttpMethodNotAllowedException;
-use Sunrise\Http\Router\Exception\Http\HttpNotFoundException;
-use Sunrise\Http\Router\Exception\Http\HttpUnsupportedMediaTypeException;
+use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Helper\RouteBuilder;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Helper\RouteMatcher;
@@ -120,14 +118,7 @@ class Router
     }
 
     /**
-     * @throws HttpNotFoundException
-     *         If the request URI isn't served.
-     *
-     * @throws HttpMethodNotAllowedException
-     *         If the request method isn't allowed.
-     *
-     * @throws HttpUnsupportedMediaTypeException
-     *         If the client not produces required media types.
+     * @throws HttpException
      */
     public function match(ServerRequestInterface $request): Route
     {
@@ -148,17 +139,25 @@ class Router
             }
 
             if (!ServerRequest::create($request)->clientProducesMediaType(...$route->getConsumedMediaTypes())) {
-                throw new HttpUnsupportedMediaTypeException($route->getConsumedMediaTypes());
+                throw HttpException::mediaTypeNotSupported(placeholders: [
+                    '{{ media_type }}' => ServerRequest::create($request)->getClientProducedMediaType(),
+                ])
+                    ->addHeaderField('Accept', ...$route->getConsumedMediaTypes());
             }
 
             return $route->withAddedAttributes($matches);
         }
 
         if (!empty($allowedMethods)) {
-            throw new HttpMethodNotAllowedException(array_keys($allowedMethods));
+            throw HttpException::methodNotAllowed(placeholders: [
+                '{{ method }}' => $request->getMethod(),
+            ])
+                ->addHeaderField('Allow', ...array_keys($allowedMethods));
         }
 
-        throw new HttpNotFoundException();
+        throw HttpException::resourceNotFound(placeholders: [
+            '{{ resource }}' => $requestPath,
+        ]);
     }
 
     /**

@@ -13,11 +13,15 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Exception;
 
-use Closure;
+use Fig\Http\Message\StatusCodeInterface;
 use RuntimeException;
 use Stringable;
+use Sunrise\Http\Router\ConstraintViolation;
 use Sunrise\Http\Router\ConstraintViolationInterface;
 use Sunrise\Http\Router\Dictionary\ErrorMessage;
+use Sunrise\Hydrator\Exception\InvalidDataException;
+use Sunrise\Hydrator\Exception\InvalidValueException;
+use Symfony\Component\Validator\ConstraintViolationInterface as ValidatorConstraintViolation;
 use Throwable;
 
 use function join;
@@ -30,8 +34,6 @@ use function strtr;
  */
 class HttpException extends RuntimeException implements HttpExceptionInterface
 {
-    public const DEFAULT_ERROR_STATUS_CODE = 400;
-
     private string $messageTemplate;
 
     private array $messagePlaceholders;
@@ -39,7 +41,10 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     private int $statusCode;
 
     /**
-     * @var list<array{0: string, 1: string}>
+     * @var list<array{0: TFieldName, 1: TFieldValue}>
+     *
+     * @template TFieldName as string
+     * @template TFieldValue as string
      */
     private array $headerFields = [];
 
@@ -50,86 +55,235 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
 
     public function __construct(int $statusCode, string $message, array $placeholders = [], ?Throwable $previous = null)
     {
-        parent::__construct(strtr($message, $placeholders), 0, $previous);
+        $interpolatedMessage = strtr($message, $placeholders);
+
+        parent::__construct($interpolatedMessage, 0, $previous);
 
         $this->statusCode = $statusCode;
         $this->messageTemplate = $message;
         $this->messagePlaceholders = $placeholders;
     }
 
-    final public static function jsonPayloadEmpty(?int $statusCode = null, ?string $message = null, array $placeholders = [], ?Throwable $previous = null): self
-    {
-        return new self($statusCode ?? self::DEFAULT_ERROR_STATUS_CODE, $message ?? ErrorMessage::JSON_PAYLOAD_EMPTY, $placeholders, $previous);
+    final public static function resourceNotFound(
+        ?int $statusCode = null,
+        ?string $message = null,
+        array $placeholders = [],
+        ?Throwable $previous = null,
+    ): self {
+        return new self(
+            statusCode: $statusCode ?? StatusCodeInterface::STATUS_NOT_FOUND,
+            message: $message ?? ErrorMessage::RESOURCE_NOT_FOUND,
+            placeholders: $placeholders,
+            previous: $previous,
+        );
     }
 
-    final public static function jsonPayloadInvalid(?int $statusCode = null, ?string $message = null, array $placeholders = [], ?Throwable $previous = null): self
-    {
-        return new self($statusCode ?? self::DEFAULT_ERROR_STATUS_CODE, $message ?? ErrorMessage::JSON_PAYLOAD_INVALID, $placeholders, $previous);
+    final public static function methodNotAllowed(
+        ?int $statusCode = null,
+        ?string $message = null,
+        array $placeholders = [],
+        ?Throwable $previous = null,
+    ): self {
+        return new self(
+            statusCode: $statusCode ?? StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED,
+            message: $message ?? ErrorMessage::METHOD_NOT_ALLOWED,
+            placeholders: $placeholders,
+            previous: $previous,
+        );
     }
 
-    final public static function jsonPayloadFormInvalid(?int $statusCode = null, ?string $message = null, array $placeholders = [], ?Throwable $previous = null): self
-    {
-        return new self($statusCode ?? self::DEFAULT_ERROR_STATUS_CODE, $message ?? ErrorMessage::JSON_PAYLOAD_FORM_INVALID, $placeholders, $previous);
+    final public static function mediaTypeNotSupported(
+        ?int $statusCode = null,
+        ?string $message = null,
+        array $placeholders = [],
+        ?Throwable $previous = null,
+    ): self {
+        return new self(
+            statusCode: $statusCode ?? StatusCodeInterface::STATUS_UNSUPPORTED_MEDIA_TYPE,
+            message: $message ?? ErrorMessage::MEDIA_TYPE_NOT_SUPPORTED,
+            placeholders: $placeholders,
+            previous: $previous,
+        );
     }
 
-    final public static function bodyInvalid(?int $statusCode = null, ?string $message = null, array $placeholders = [], ?Throwable $previous = null): self
-    {
-        return new self($statusCode ?? self::DEFAULT_ERROR_STATUS_CODE, $message ?? ErrorMessage::BODY_INVALID, $placeholders, $previous);
+    final public static function jsonPayloadEmpty(
+        ?int $statusCode = null,
+        ?string $message = null,
+        array $placeholders = [],
+        ?Throwable $previous = null,
+    ): self {
+        return new self(
+            statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            message: $message ?? ErrorMessage::JSON_PAYLOAD_EMPTY,
+            placeholders: $placeholders,
+            previous: $previous,
+        );
     }
 
-    final public static function cookieMissed(?int $statusCode = null, ?string $message = null, array $placeholders = [], ?Throwable $previous = null): self
-    {
-        return new self($statusCode ?? self::DEFAULT_ERROR_STATUS_CODE, $message ?? ErrorMessage::COOKIE_MISSED, $placeholders, $previous);
+    final public static function jsonPayloadInvalid(
+        ?int $statusCode = null,
+        ?string $message = null,
+        array $placeholders = [],
+        ?Throwable $previous = null,
+    ): self {
+        return new self(
+            statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            message: $message ?? ErrorMessage::JSON_PAYLOAD_INVALID,
+            placeholders: $placeholders,
+            previous: $previous,
+        );
     }
 
-    final public static function cookieInvalid(?int $statusCode = null, ?string $message = null, array $placeholders = [], ?Throwable $previous = null): self
-    {
-        return new self($statusCode ?? self::DEFAULT_ERROR_STATUS_CODE, $message ?? ErrorMessage::COOKIE_INVALID, $placeholders, $previous);
+    final public static function jsonPayloadFormInvalid(
+        ?int $statusCode = null,
+        ?string $message = null,
+        array $placeholders = [],
+        ?Throwable $previous = null,
+    ): self {
+        return new self(
+            statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            message: $message ?? ErrorMessage::JSON_PAYLOAD_FORM_INVALID,
+            placeholders: $placeholders,
+            previous: $previous,
+        );
     }
 
-    final public static function headerMissed(?int $statusCode = null, ?string $message = null, array $placeholders = [], ?Throwable $previous = null): self
-    {
-        return new self($statusCode ?? self::DEFAULT_ERROR_STATUS_CODE, $message ?? ErrorMessage::HEADER_MISSED, $placeholders, $previous);
+    final public static function bodyInvalid(
+        ?int $statusCode = null,
+        ?string $message = null,
+        array $placeholders = [],
+        ?Throwable $previous = null,
+    ): self {
+        return new self(
+            statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            message: $message ?? ErrorMessage::BODY_INVALID,
+            placeholders: $placeholders,
+            previous: $previous,
+        );
     }
 
-    final public static function headerInvalid(?int $statusCode = null, ?string $message = null, array $placeholders = [], ?Throwable $previous = null): self
-    {
-        return new self($statusCode ?? self::DEFAULT_ERROR_STATUS_CODE, $message ?? ErrorMessage::HEADER_INVALID, $placeholders, $previous);
+    final public static function cookieMissed(
+        ?int $statusCode = null,
+        ?string $message = null,
+        array $placeholders = [],
+        ?Throwable $previous = null,
+    ): self {
+        return new self(
+            statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            message: $message ?? ErrorMessage::COOKIE_MISSED,
+            placeholders: $placeholders,
+            previous: $previous,
+        );
     }
 
-    final public static function queryInvalid(?int $statusCode = null, ?string $message = null, array $placeholders = [], ?Throwable $previous = null): self
-    {
-        return new self($statusCode ?? self::DEFAULT_ERROR_STATUS_CODE, $message ?? ErrorMessage::QUERY_INVALID, $placeholders, $previous);
+    final public static function cookieInvalid(
+        ?int $statusCode = null,
+        ?string $message = null,
+        array $placeholders = [],
+        ?Throwable $previous = null,
+    ): self {
+        return new self(
+            statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            message: $message ?? ErrorMessage::COOKIE_INVALID,
+            placeholders: $placeholders,
+            previous: $previous,
+        );
     }
 
-    final public static function queryParamMissed(?int $statusCode = null, ?string $message = null, array $placeholders = [], ?Throwable $previous = null): self
-    {
-        return new self($statusCode ?? self::DEFAULT_ERROR_STATUS_CODE, $message ?? ErrorMessage::QUERY_PARAM_MISSED, $placeholders, $previous);
+    final public static function headerMissed(
+        ?int $statusCode = null,
+        ?string $message = null,
+        array $placeholders = [],
+        ?Throwable $previous = null,
+    ): self {
+        return new self(
+            statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            message: $message ?? ErrorMessage::HEADER_MISSED,
+            placeholders: $placeholders,
+            previous: $previous,
+        );
     }
 
-    final public static function queryParamInvalid(?int $statusCode = null, ?string $message = null, array $placeholders = [], ?Throwable $previous = null): self
-    {
-        return new self($statusCode ?? self::DEFAULT_ERROR_STATUS_CODE, $message ?? ErrorMessage::QUERY_PARAM_INVALID, $placeholders, $previous);
+    final public static function headerInvalid(
+        ?int $statusCode = null,
+        ?string $message = null,
+        array $placeholders = [],
+        ?Throwable $previous = null,
+    ): self {
+        return new self(
+            statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            message: $message ?? ErrorMessage::HEADER_INVALID,
+            placeholders: $placeholders,
+            previous: $previous,
+        );
     }
 
-    final public static function pathVariableInvalid(?int $statusCode = null, ?string $message = null, array $placeholders = [], ?Throwable $previous = null): self
-    {
-        return new self($statusCode ?? self::DEFAULT_ERROR_STATUS_CODE, $message ?? ErrorMessage::PATH_VARIABLE_INVALID, $placeholders, $previous);
+    final public static function queryInvalid(
+        ?int $statusCode = null,
+        ?string $message = null,
+        array $placeholders = [],
+        ?Throwable $previous = null,
+    ): self {
+        return new self(
+            statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            message: $message ?? ErrorMessage::QUERY_INVALID,
+            placeholders: $placeholders,
+            previous: $previous,
+        );
     }
 
-    public function getMessageTemplate(): string
+    final public static function queryParamMissed(
+        ?int $statusCode = null,
+        ?string $message = null,
+        array $placeholders = [],
+        ?Throwable $previous = null,
+    ): self {
+        return new self(
+            statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            message: $message ?? ErrorMessage::QUERY_PARAM_MISSED,
+            placeholders: $placeholders,
+            previous: $previous,
+        );
+    }
+
+    final public static function queryParamInvalid(
+        ?int $statusCode = null,
+        ?string $message = null,
+        array $placeholders = [],
+        ?Throwable $previous = null,
+    ): self {
+        return new self(
+            statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            message: $message ?? ErrorMessage::QUERY_PARAM_INVALID,
+            placeholders: $placeholders,
+            previous: $previous,
+        );
+    }
+
+    final public static function pathVariableInvalid(
+        ?int $statusCode = null,
+        ?string $message = null,
+        array $placeholders = [],
+        ?Throwable $previous = null,
+    ): self {
+        return new self(
+            statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            message: $message ?? ErrorMessage::PATH_VARIABLE_INVALID,
+            placeholders: $placeholders,
+            previous: $previous,
+        );
+    }
+
+    final public function getMessageTemplate(): string
     {
         return $this->messageTemplate;
     }
 
-    public function getMessagePlaceholders(): array
+    final public function getMessagePlaceholders(): array
     {
         return $this->messagePlaceholders;
     }
 
-    /**
-     * @inheritDoc
-     */
     final public function getStatusCode(): int
     {
         return $this->statusCode;
@@ -165,6 +319,30 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     {
         foreach ($constraintViolations as $constraintViolation) {
             $this->constraintViolations[] = $constraintViolation;
+        }
+
+        return $this;
+    }
+
+    final public function addHydratorConstraintViolation(InvalidDataException|InvalidValueException $hydratorConstraintViolation): static
+    {
+        if ($hydratorConstraintViolation instanceof InvalidValueException) {
+            $this->constraintViolations[] = ConstraintViolation::fromHydrator($hydratorConstraintViolation);
+
+            return $this;
+        }
+
+        foreach ($hydratorConstraintViolation->getExceptions() as $hydratorConstraintViolation) {
+            $this->constraintViolations[] = ConstraintViolation::fromHydrator($hydratorConstraintViolation);
+        }
+
+        return $this;
+    }
+
+    final public function addValidatorConstraintViolation(ValidatorConstraintViolation ...$validatorConstraintViolations): static
+    {
+        foreach ($validatorConstraintViolations as $validatorConstraintViolation) {
+            $this->constraintViolations[] = ConstraintViolation::fromValidator($validatorConstraintViolation);
         }
 
         return $this;

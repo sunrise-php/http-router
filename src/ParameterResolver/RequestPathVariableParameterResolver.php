@@ -19,10 +19,8 @@ use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\Constraint;
-use Sunrise\Http\Router\Annotation\RequestVariable;
-use Sunrise\Http\Router\ConstraintViolation;
+use Sunrise\Http\Router\Annotation\RequestPathVariable;
 use Sunrise\Http\Router\Exception\HttpException;
-use Sunrise\Http\Router\Helper\RouteSimplifier;
 use Sunrise\Http\Router\ParameterResolver;
 use Sunrise\Http\Router\Route;
 use Sunrise\Hydrator\Exception\InvalidDataException;
@@ -37,7 +35,7 @@ use function sprintf;
 /**
  * @since 3.0.0
  */
-final class RequestVariableParameterResolver implements ParameterResolverInterface
+final class RequestPathVariableParameterResolver implements ParameterResolverInterface
 {
     public function __construct(
         private readonly HydratorInterface $hydrator,
@@ -54,8 +52,8 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
-        /** @var list<ReflectionAttribute<RequestVariable>> $annotations */
-        $annotations = $parameter->getAttributes(RequestVariable::class);
+        /** @var list<ReflectionAttribute<RequestPathVariable>> $annotations */
+        $annotations = $parameter->getAttributes(RequestPathVariable::class);
         if ($annotations === []) {
             return;
         }
@@ -69,7 +67,7 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
         $route = $context->getAttribute('@route');
         if (! $route instanceof Route) {
             throw new LogicException(sprintf(
-                'The #[RequestVariable] annotation cannot be applied to the parameter %s, ' .
+                'The #[RequestPathVariable] annotation cannot be applied to the parameter %s, ' .
                 'because the request does not contain information about the requested route, ' .
                 'at least at this level of the application.',
                 ParameterResolver::stringifyParameter($parameter),
@@ -77,6 +75,7 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
         }
 
         $requestVariable = $annotations[0]->newInstance();
+
         $variableName = $requestVariable->name ?? $parameter->getName();
 
         if (!$route->hasAttribute($variableName)) {
@@ -87,9 +86,9 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
             }
 
             throw new LogicException(sprintf(
-                'The parameter %1$s expects the value of the variable %3$s from the route %2$s, ' .
+                'The parameter %1$s expects the value of the variable %3$s from the route %2$s ' .
                 'which is not present in the request, most likely, because the variable is optional. ' .
-                'To resolve this issue, make this parameter nullable or assign it a default value.',
+                'To resolve this issue, assign the default value to the parameter or make it nullable.',
                 ParameterResolver::stringifyParameter($parameter),
                 $route->getName(),
                 $variableName,
@@ -98,6 +97,7 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
 
         $placeholders = [
             '{{ variable_name }}' => $variableName,
+            '{{ route_path }}' => $route->getPath(),
         ];
 
         try {
@@ -107,10 +107,8 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
                 path: [$variableName],
             );
         } catch (InvalidDataException|InvalidValueException $e) {
-            $placeholders['{{ route_path }}'] = RouteSimplifier::simplifyRoute($route->getPath());
-
             throw HttpException::pathVariableInvalid($requestVariable->errorStatusCode, $requestVariable->errorMessage, $placeholders, previous: $e)
-                ->addConstraintViolation(...ConstraintViolation::fromHydrator($e));
+                ->addHydratorConstraintViolation($e);
         }
 
         if (isset($this->validator)) {
@@ -124,10 +122,8 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
             }
 
             if (count($constraints) > 0 && count($violations = $this->validator->validate($argument, $constraints)) > 0) {
-                $placeholders['{{ route_path }}'] = RouteSimplifier::simplifyRoute($route->getPath());
-
                 throw HttpException::pathVariableInvalid($requestVariable->errorStatusCode, $requestVariable->errorMessage, $placeholders)
-                    ->addConstraintViolation(...ConstraintViolation::fromValidator(...$violations));
+                    ->addValidatorConstraintViolation(...$violations);
             }
         }
 

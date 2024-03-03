@@ -20,7 +20,6 @@ use ReflectionAttribute;
 use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\Constraint;
 use Sunrise\Http\Router\Annotation\RequestCookie;
-use Sunrise\Http\Router\ConstraintViolation;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\ServerRequest;
 use Sunrise\Hydrator\Exception\InvalidDataException;
@@ -88,7 +87,7 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
             );
         } catch (InvalidDataException|InvalidValueException $e) {
             throw HttpException::cookieInvalid($requestCookie->errorStatusCode, $requestCookie->errorMessage, $placeholders, previous: $e)
-                ->addConstraintViolation(...ConstraintViolation::fromHydrator($e));
+                ->addHydratorConstraintViolation($e);
         }
 
         if (isset($this->validator)) {
@@ -103,7 +102,7 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
 
             if (count($constraints) > 0 && count($violations = $this->validator->validate($argument, $constraints)) > 0) {
                 throw HttpException::cookieInvalid($requestCookie->errorStatusCode, $requestCookie->errorMessage, $placeholders)
-                    ->addConstraintViolation(...ConstraintViolation::fromValidator(...$violations));
+                    ->addValidatorConstraintViolation(...$violations);
             }
         }
 

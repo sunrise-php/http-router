@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Exception;
 
-use Fig\Http\Message\StatusCodeInterface;
 use Sunrise\Http\Router\ConstraintViolationInterface;
 
 /**
@@ -21,7 +20,7 @@ use Sunrise\Http\Router\ConstraintViolationInterface;
  *
  * @since 3.0.0
  */
-interface HttpExceptionInterface extends ExceptionInterface, StatusCodeInterface
+interface HttpExceptionInterface extends ExceptionInterface
 {
     public function getMessageTemplate(): string;
 
@@ -30,7 +29,10 @@ interface HttpExceptionInterface extends ExceptionInterface, StatusCodeInterface
     public function getStatusCode(): int;
 
     /**
-     * @return list<array{0: string, 1: string}>
+     * @return list<array{0: TFieldName, 1: TFieldValue}>
+     *
+     * @template TFieldName as string
+     * @template TFieldValue as string
      */
     public function getHeaderFields(): array;
 
