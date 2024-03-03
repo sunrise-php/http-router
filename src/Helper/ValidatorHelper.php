@@ -30,7 +30,7 @@ final class ValidatorHelper
     /**
      * @return list<ValidatorConstraint>
      */
-    public static function getParameterValidatorConstraints(ReflectionParameter $parameter): array
+    public static function getParameterConstraints(ReflectionParameter $parameter): array
     {
         $validatorConstraints = [];
         /** @var ReflectionAttribute<RouterConstraint> $annotation */
@@ -47,7 +47,7 @@ final class ValidatorHelper
     /**
      * @return Generator<int, RouterConstraintViolationInterface>
      */
-    public static function adaptValidatorConstraintViolations(ValidatorConstraintViolationInterface ...$validatorConstraintViolations): Generator
+    public static function adaptConstraintViolations(ValidatorConstraintViolationInterface ...$validatorConstraintViolations): Generator
     {
         foreach ($validatorConstraintViolations as $validatorConstraintViolation) {
             yield new RouterConstraintViolation(

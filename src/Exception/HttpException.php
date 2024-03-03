@@ -158,6 +158,20 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
         );
     }
 
+    final public static function queryInvalid(
+        ?int $statusCode = null,
+        ?string $message = null,
+        array $placeholders = [],
+        ?Throwable $previous = null,
+    ): self {
+        return new self(
+            statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            message: $message ?? ErrorMessage::QUERY_INVALID,
+            placeholders: $placeholders,
+            previous: $previous,
+        );
+    }
+
     final public static function cookieMissed(
         ?int $statusCode = null,
         ?string $message = null,
@@ -209,20 +223,6 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
         return new self(
             statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
             message: $message ?? ErrorMessage::HEADER_INVALID,
-            placeholders: $placeholders,
-            previous: $previous,
-        );
-    }
-
-    final public static function queryInvalid(
-        ?int $statusCode = null,
-        ?string $message = null,
-        array $placeholders = [],
-        ?Throwable $previous = null,
-    ): self {
-        return new self(
-            statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
-            message: $message ?? ErrorMessage::QUERY_INVALID,
             placeholders: $placeholders,
             previous: $previous,
         );

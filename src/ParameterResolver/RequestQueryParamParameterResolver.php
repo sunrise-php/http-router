@@ -84,14 +84,14 @@ final class RequestQueryParamParameterResolver implements ParameterResolverInter
             $argument = $this->hydrator->castValue($request->getQueryParam($requestParam->name), Type::fromParameter($parameter), path: [$requestParam->name]);
         } catch (InvalidDataException|InvalidValueException $e) {
             throw HttpException::queryParamInvalid($requestParam->errorStatusCode, $requestParam->errorMessage, $placeholders, previous: $e)
-                ->addConstraintViolation(...HydratorHelper::adaptHydratorConstraintViolations($e));
+                ->addConstraintViolation(...HydratorHelper::adaptConstraintViolations($e));
         }
 
         if (isset($this->validator)) {
-            if (count($constraints = ValidatorHelper::getParameterValidatorConstraints($parameter)) > 0) {
+            if (count($constraints = ValidatorHelper::getParameterConstraints($parameter)) > 0) {
                 if (count($violations = $this->validator->validate($argument, $constraints)) > 0) {
                     throw HttpException::queryParamInvalid($requestParam->errorStatusCode, $requestParam->errorMessage, $placeholders)
-                        ->addConstraintViolation(...ValidatorHelper::adaptValidatorConstraintViolations(...$violations));
+                        ->addConstraintViolation(...ValidatorHelper::adaptConstraintViolations(...$violations));
                 }
             }
         }

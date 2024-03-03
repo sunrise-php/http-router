@@ -156,7 +156,7 @@ class Router
         }
 
         throw HttpException::resourceNotFound(placeholders: [
-            '{{ resource }}' => $requestPath,
+            '{{ uri }}' => $requestPath,
         ]);
     }
 

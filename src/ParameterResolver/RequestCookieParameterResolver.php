@@ -84,14 +84,14 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
             $argument = $this->hydrator->castValue($request->getCookieParam($requestCookie->name), Type::fromParameter($parameter), path: [$requestCookie->name]);
         } catch (InvalidDataException|InvalidValueException $e) {
             throw HttpException::cookieInvalid($requestCookie->errorStatusCode, $requestCookie->errorMessage, $placeholders, previous: $e)
-                ->addConstraintViolation(...HydratorHelper::adaptHydratorConstraintViolations($e));
+                ->addConstraintViolation(...HydratorHelper::adaptConstraintViolations($e));
         }
 
         if (isset($this->validator)) {
-            if (count($constraints = ValidatorHelper::getParameterValidatorConstraints($parameter)) > 0) {
+            if (count($constraints = ValidatorHelper::getParameterConstraints($parameter)) > 0) {
                 if (count($violations = $this->validator->validate($argument, $constraints)) > 0) {
                     throw HttpException::cookieInvalid($requestCookie->errorStatusCode, $requestCookie->errorMessage, $placeholders)
-                        ->addConstraintViolation(...ValidatorHelper::adaptValidatorConstraintViolations(...$violations));
+                        ->addConstraintViolation(...ValidatorHelper::adaptConstraintViolations(...$violations));
                 }
             }
         }

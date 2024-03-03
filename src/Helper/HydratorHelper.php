@@ -27,7 +27,7 @@ final class HydratorHelper
     /**
      * @return Generator<int, ConstraintViolationInterface>
      */
-    public static function adaptHydratorConstraintViolations(InvalidDataException|InvalidValueException $error): Generator
+    public static function adaptConstraintViolations(InvalidDataException|InvalidValueException $error): Generator
     {
         if ($error instanceof InvalidValueException) {
             return yield new ConstraintViolation(
