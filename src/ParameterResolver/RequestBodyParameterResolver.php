@@ -68,18 +68,18 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
             throw new LogicException('At this level of the application, any operations with the request are not possible.');
         }
 
-        $requestBody = $annotations[0]->newInstance();
+        $processParams = $annotations[0]->newInstance();
 
         try {
             $argument = $this->hydrator->hydrate($type->getName(), (array) $context->getParsedBody());
         } catch (InvalidDataException $e) {
-            throw HttpException::bodyInvalid($requestBody->errorStatusCode, $requestBody->errorMessage, previous: $e)
+            throw HttpException::bodyInvalid($processParams->errorStatusCode, $processParams->errorMessage, previous: $e)
                 ->addConstraintViolation(...HydratorHelper::adaptConstraintViolations($e));
         }
 
         if (isset($this->validator)) {
             if (($violations = $this->validator->validate($argument))->count() > 0) {
-                throw HttpException::bodyInvalid($requestBody->errorStatusCode, $requestBody->errorMessage)
+                throw HttpException::bodyInvalid($processParams->errorStatusCode, $processParams->errorMessage)
                     ->addConstraintViolation(...ValidatorHelper::adaptConstraintViolations(...$violations));
             }
         }

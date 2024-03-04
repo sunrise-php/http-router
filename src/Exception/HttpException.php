@@ -38,7 +38,7 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
      *
      * @var array<array-key, mixed>
      */
-    private array $messagePlaceholders = [];
+    private array $messagePlaceholders;
 
     /**
      * @var list<array{0: string, 1: string}>

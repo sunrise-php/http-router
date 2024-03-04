@@ -51,16 +51,16 @@ final class StringableResponseResolver implements ResponseResolverInterface
 
         if (!is_string($response) && !($response instanceof Stringable)) {
             throw new LogicException(sprintf(
-                'The responder %s returned the response %s that cannot be converted to a string.',
+                'The responder %s returned the response "%s" that cannot be converted to a string.',
                 ResponseResolver::stringifyResponder($responder),
                 get_debug_type($response),
             ));
         }
 
-        $result = $this->responseFactory->createResponse(StatusCodeInterface::STATUS_OK);
+        $stringableResponse = $this->responseFactory->createResponse(StatusCodeInterface::STATUS_OK);
 
-        $result->getBody()->write((string) $response);
+        $stringableResponse->getBody()->write((string) $response);
 
-        return $result;
+        return $stringableResponse;
     }
 }

@@ -17,6 +17,7 @@ use BackedEnum;
 use InvalidArgumentException;
 use Stringable;
 
+use function get_debug_type;
 use function is_int;
 use function is_string;
 use function sprintf;
@@ -41,22 +42,14 @@ final class RouteBuilder
             $statement = substr($route, $variable['offset'], $variable['length']);
 
             if (isset($values[$variable['name']])) {
-                $value = $values[$variable['name']];
-
-                if (is_int($value)) {
-                    $value = (string) $value;
-                } elseif ($value instanceof BackedEnum) {
-                    $value = (string) $value->value;
-                } elseif ($value instanceof Stringable) {
-                    $value = $value->__toString();
-                }
-
-                if (!is_string($value)) {
+                try {
+                    $value = self::stringifyValue($values[$variable['name']]);
+                } catch (InvalidArgumentException $e) {
                     throw new InvalidArgumentException(sprintf(
                         'The route %s could not be built with an unsupported value for the variable %s.',
                         $route,
                         $variable['name'],
-                    ));
+                    ), previous: $e);
                 }
 
                 $search[] = $statement;
@@ -84,5 +77,29 @@ final class RouteBuilder
         $search[] = ')';
 
         return str_replace($search, $replace, $route);
+    }
+
+    /**
+     * @throws InvalidArgumentException If the value couldn't be converted to a string.
+     */
+    public static function stringifyValue(mixed $value): string
+    {
+        if (is_string($value)) {
+            return $value;
+        }
+        if (is_int($value)) {
+            return (string) $value;
+        }
+        if ($value instanceof BackedEnum) {
+            return (string) $value->value;
+        }
+        if ($value instanceof Stringable) {
+            return $value->__toString();
+        }
+
+        throw new InvalidArgumentException(sprintf(
+            'The value "%s" could be converted to a string.',
+            get_debug_type($value),
+        ));
     }
 }

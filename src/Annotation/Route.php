@@ -19,7 +19,7 @@ use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
 final class Route
 {
-    public mixed $holder;
+    public mixed $holder = null;
 
     /** @var list<string> */
     public array $prefixes = [];

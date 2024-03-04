@@ -25,6 +25,7 @@ use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\JsonResponse;
 use Sunrise\Http\Router\ResponseResolver;
 
+use function get_debug_type;
 use function json_encode;
 use function sprintf;
 
@@ -53,24 +54,25 @@ final class JsonResponseResolver implements ResponseResolverInterface
             return null;
         }
 
-        $jsonResponse = $annotations[0]->newInstance();
+        $jsonResponseParams = $annotations[0]->newInstance();
 
         try {
             /** @psalm-suppress ArgumentTypeCoercion */
-            $payload = json_encode($response, $jsonResponse->flags | JSON_THROW_ON_ERROR, $jsonResponse->depth);
+            $payload = json_encode($response, $jsonResponseParams->flags | JSON_THROW_ON_ERROR, $jsonResponseParams->depth);
         } catch (JsonException $e) {
             throw new LogicException(sprintf(
-                'The responder %s returned a response that could not be encoded to JSON due to: %s',
+                'The responder %s returned the response "%s" that could not be encoded to JSON due to: %s',
                 ResponseResolver::stringifyResponder($responder),
+                get_debug_type($response),
                 $e->getMessage(),
             ), previous: $e);
         }
 
-        $result = $this->responseFactory->createResponse(StatusCodeInterface::STATUS_OK)
+        $jsonResponse = $this->responseFactory->createResponse(StatusCodeInterface::STATUS_OK)
             ->withHeader('Content-Type', 'application/json; charset=UTF-8');
 
-        $result->getBody()->write($payload);
+        $jsonResponse->getBody()->write($payload);
 
-        return $result;
+        return $jsonResponse;
     }
 }

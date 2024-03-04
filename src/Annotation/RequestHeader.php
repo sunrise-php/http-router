@@ -22,7 +22,7 @@ use Attribute;
 final class RequestHeader
 {
     public function __construct(
-        public readonly string $name,
+        public readonly string $headerName,
         public readonly ?int $errorStatusCode = null,
         public readonly ?string $errorMessage = null,
     ) {

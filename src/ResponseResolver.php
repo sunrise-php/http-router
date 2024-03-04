@@ -23,6 +23,7 @@ use Sunrise\Http\Router\Annotation\ResponseHeader;
 use Sunrise\Http\Router\Annotation\ResponseStatus;
 use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
 
+use function get_debug_type;
 use function sprintf;
 
 /**
@@ -31,7 +32,7 @@ use function sprintf;
 final class ResponseResolver
 {
     public function __construct(
-        /** @var array<array-key, ResponseResolverInterface> */
+        /** @var ResponseResolverInterface[] */
         private readonly array $resolvers,
     ) {
     }
@@ -43,51 +44,52 @@ final class ResponseResolver
         mixed $response,
         ReflectionMethod|ReflectionFunction $responder,
         ServerRequestInterface $request,
-    ) : ResponseInterface {
+    ): ResponseInterface {
         if ($response instanceof ResponseInterface) {
-            return $this->handleResponse($response, $responder);
+            return $response;
         }
 
         foreach ($this->resolvers as $resolver) {
-            $result = $resolver->resolveResponse($response, $responder, $request);
-            if ($result instanceof ResponseInterface) {
-                return $this->handleResponse($result, $responder);
+            $resolvedResponse = $resolver->resolveResponse($response, $responder, $request);
+            if ($resolvedResponse instanceof ResponseInterface) {
+                return $this->completeResponse($resolvedResponse, $responder);
             }
         }
 
         throw new LogicException(sprintf(
-            'The responder %s returned an unsupported response.',
+            'The responder %s returned the unsupported response "%s".',
             self::stringifyResponder($responder),
+            get_debug_type($response),
         ));
     }
 
-    private function handleResponse(
+    private function completeResponse(
         ResponseInterface $response,
         ReflectionMethod|ReflectionFunction $responder,
-    ) : ResponseInterface {
-        /** @var ReflectionAttribute $attributes */
-        $attributes = $responder->getAttributes(ResponseStatus::class);
-        if (isset($attributes[0])) {
-            $status = $attributes[0]->newInstance();
+    ): ResponseInterface {
+        /** @var list<ReflectionAttribute<ResponseStatus>> $annotations */
+        $annotations = $responder->getAttributes(ResponseStatus::class);
+        if (isset($annotations[0])) {
+            $status = $annotations[0]->newInstance();
             $response = $response->withStatus($status->code, $status->phrase);
         }
 
-        /** @var ReflectionAttribute $attributes */
-        $attributes = $responder->getAttributes(ResponseHeader::class);
-        foreach ($attributes as $attribute) {
-            $header = $attribute->newInstance();
+        /** @var list<ReflectionAttribute<ResponseHeader>> $annotations */
+        $annotations = $responder->getAttributes(ResponseHeader::class);
+        foreach ($annotations as $annotation) {
+            $header = $annotation->newInstance();
             $response = $response->withHeader($header->name, $header->value);
         }
 
         return $response;
     }
 
-    public static function stringifyResponder(ReflectionMethod|ReflectionFunction $function): string
+    public static function stringifyResponder(ReflectionMethod|ReflectionFunction $responder): string
     {
-        if ($function instanceof ReflectionMethod) {
-            return sprintf('%s::%s()', $function->getDeclaringClass()->getName(), $function->getName());
+        if ($responder instanceof ReflectionMethod) {
+            return sprintf('%s::%s()', $responder->getDeclaringClass()->getName(), $responder->getName());
         }
 
-        return sprintf('%s()', $function->getName());
+        return sprintf('%s()', $responder->getName());
     }
 }

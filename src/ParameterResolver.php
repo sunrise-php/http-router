@@ -19,6 +19,7 @@ use ReflectionMethod;
 use ReflectionParameter;
 use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
 
+use function array_unshift;
 use function sprintf;
 
 /**
@@ -26,10 +27,10 @@ use function sprintf;
  */
 final class ParameterResolver
 {
-    private mixed $context;
+    private mixed $context = null;
 
     public function __construct(
-        /** @var array<array-key, ParameterResolverInterface> */
+        /** @var ParameterResolverInterface[] */
         private array $resolvers,
     ) {
     }
@@ -45,15 +46,8 @@ final class ParameterResolver
     public function withPriorityResolver(ParameterResolverInterface ...$resolvers): self
     {
         $clone = clone $this;
-        $clone->resolvers = [];
 
-        foreach ($resolvers as $resolver) {
-            $clone->resolvers[] = $resolver;
-        }
-
-        foreach ($this->resolvers as $resolver) {
-            $clone->resolvers[] = $resolver;
-        }
+        array_unshift($clone->resolvers, ...$resolvers);
 
         return $clone;
     }
@@ -82,13 +76,9 @@ final class ParameterResolver
             }
         }
 
-        if ($parameter->isDefaultValueAvailable()) {
-            return yield $parameter->getDefaultValue();
-        }
-
         throw new LogicException(sprintf(
-            'The parameter %s cannot be resolved.',
-            self::stringifyParameter($parameter)
+            'The parameter %s could not be resolved because a suitable resolver for it was not found.',
+            self::stringifyParameter($parameter),
         ));
     }
 
@@ -97,20 +87,9 @@ final class ParameterResolver
         $function = $parameter->getDeclaringFunction();
 
         if ($function instanceof ReflectionMethod) {
-            return sprintf(
-                '%s::%s($%s[%d])',
-                $function->getDeclaringClass()->getName(),
-                $function->getName(),
-                $parameter->getName(),
-                $parameter->getPosition(),
-            );
+            return sprintf('%s::%s($%s[%d])', $function->getDeclaringClass()->getName(), $function->getName(), $parameter->getName(), $parameter->getPosition());
         }
 
-        return sprintf(
-            '%s($%s[%d])',
-            $function->getName(),
-            $parameter->getName(),
-            $parameter->getPosition(),
-        );
+        return sprintf('%s($%s[%d])', $function->getName(), $parameter->getName(), $parameter->getPosition());
     }
 }
