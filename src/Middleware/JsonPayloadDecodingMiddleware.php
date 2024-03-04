@@ -48,6 +48,8 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
     }
 
     /**
+     * @return array<array-key, mixed>
+     *
      * @throws HttpException If the JSON payload couldn't be decoded.
      */
     private function decodePayload(string $payload): array

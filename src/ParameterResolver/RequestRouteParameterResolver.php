@@ -41,9 +41,7 @@ final class RequestRouteParameterResolver implements ParameterResolverInterface
         }
 
         if (! $context instanceof ServerRequestInterface) {
-            throw new LogicException(
-                'At this level of the application, any operations with the request are not possible.'
-            );
+            throw new LogicException('At this level of the application, any operations with the request are not possible.');
         }
 
         /** @var Route|null $route */

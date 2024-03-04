@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\ResponseResolver;
 
+use Fig\Http\Message\StatusCodeInterface;
 use JsonException;
 use LogicException;
 use Psr\Http\Message\ResponseFactoryInterface;
@@ -65,7 +66,7 @@ final class JsonResponseResolver implements ResponseResolverInterface
             ), previous: $e);
         }
 
-        $result = $this->responseFactory->createResponse(200)
+        $result = $this->responseFactory->createResponse(StatusCodeInterface::STATUS_OK)
             ->withHeader('Content-Type', 'application/json; charset=UTF-8');
 
         $result->getBody()->write($payload);

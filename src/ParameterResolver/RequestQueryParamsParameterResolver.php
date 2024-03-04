@@ -68,18 +68,18 @@ final class RequestQueryParamsParameterResolver implements ParameterResolverInte
             throw new LogicException('At this level of the application, any operations with the request are not possible.');
         }
 
-        $requestQuery = $annotations[0]->newInstance();
+        $requestQueryParams = $annotations[0]->newInstance();
 
         try {
             $argument = $this->hydrator->hydrate($type->getName(), $context->getQueryParams());
         } catch (InvalidDataException $e) {
-            throw HttpException::queryParamsInvalid($requestQuery->errorStatusCode, $requestQuery->errorMessage, previous: $e)
+            throw HttpException::queryParamsInvalid($requestQueryParams->errorStatusCode, $requestQueryParams->errorMessage, previous: $e)
                 ->addConstraintViolation(...HydratorHelper::adaptConstraintViolations($e));
         }
 
         if (isset($this->validator)) {
             if (($violations = $this->validator->validate($argument))->count() > 0) {
-                throw HttpException::queryParamsInvalid($requestQuery->errorStatusCode, $requestQuery->errorMessage)
+                throw HttpException::queryParamsInvalid($requestQueryParams->errorStatusCode, $requestQueryParams->errorMessage)
                     ->addConstraintViolation(...ValidatorHelper::adaptConstraintViolations(...$violations));
             }
         }

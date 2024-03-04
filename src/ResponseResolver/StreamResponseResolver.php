@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\ResponseResolver;
 
+use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -38,7 +39,7 @@ final class StreamResponseResolver implements ResponseResolverInterface
             return null;
         }
 
-        return $this->responseFactory->createResponse(200)
+        return $this->responseFactory->createResponse(StatusCodeInterface::STATUS_OK)
             ->withBody($response);
     }
 }

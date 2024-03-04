@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\ResponseResolver;
 
+use Fig\Http\Message\StatusCodeInterface;
 use LogicException;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -23,6 +24,7 @@ use Stringable;
 use Sunrise\Http\Router\Annotation\StringableResponse;
 use Sunrise\Http\Router\ResponseResolver;
 
+use function get_debug_type;
 use function is_string;
 use function sprintf;
 
@@ -49,12 +51,14 @@ final class StringableResponseResolver implements ResponseResolverInterface
 
         if (!is_string($response) && !($response instanceof Stringable)) {
             throw new LogicException(sprintf(
-                'The responder %s returned a response that cannot be converted to a string.',
+                'The responder %s returned the response %s that cannot be converted to a string.',
                 ResponseResolver::stringifyResponder($responder),
+                get_debug_type($response),
             ));
         }
 
-        $result = $this->responseFactory->createResponse(200);
+        $result = $this->responseFactory->createResponse(StatusCodeInterface::STATUS_OK);
+
         $result->getBody()->write((string) $response);
 
         return $result;

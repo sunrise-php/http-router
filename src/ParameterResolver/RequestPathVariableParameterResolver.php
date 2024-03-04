@@ -72,32 +72,29 @@ final class RequestPathVariableParameterResolver implements ParameterResolverInt
             ));
         }
 
-        $requestVariable = $annotations[0]->newInstance();
+        $requestPathVariable = $annotations[0]->newInstance();
+        $pathVariableName = $requestPathVariable->name ?? $parameter->getName();
 
-        $variableName = $requestVariable->name ?? $parameter->getName();
-
-        if (!$route->hasAttribute($variableName)) {
+        if (!$route->hasAttribute($pathVariableName)) {
             if ($parameter->isDefaultValueAvailable()) {
                 return yield $parameter->getDefaultValue();
-            } elseif ($parameter->allowsNull()) {
-                return yield;
             }
 
             throw new LogicException(sprintf(
                 'The parameter %1$s expects the value of the variable %3$s from the route %2$s ' .
                 'which is not present in the request, most likely, because the variable is optional. ' .
-                'To resolve this issue, assign the default value to the parameter or make it nullable.',
+                'To resolve this issue, assign the default value to the parameter, for example, null.',
                 ParameterResolver::stringifyParameter($parameter),
                 $route->getName(),
-                $variableName,
+                $pathVariableName,
             ));
         }
 
         try {
-            $argument = $this->hydrator->castValue($route->getAttribute($variableName), Type::fromParameter($parameter), path: [$variableName]);
+            $argument = $this->hydrator->castValue($route->getAttribute($pathVariableName), Type::fromParameter($parameter), path: [$pathVariableName]);
         } catch (InvalidDataException|InvalidValueException $e) {
-            throw HttpException::pathVariableInvalid($requestVariable->errorStatusCode, $requestVariable->errorMessage, previous: $e)
-                ->addMessagePlaceholder('{{ variable_name }}', $variableName)
+            throw HttpException::pathVariableInvalid($requestPathVariable->errorStatusCode, $requestPathVariable->errorMessage, previous: $e)
+                ->addMessagePlaceholder('{{ variable_name }}', $pathVariableName)
                 ->addMessagePlaceholder('{{ route_path }}', RouteSimplifier::simplifyRoute($route->getPath()))
                 ->addConstraintViolation(...HydratorHelper::adaptConstraintViolations($e));
         }
@@ -105,8 +102,8 @@ final class RequestPathVariableParameterResolver implements ParameterResolverInt
         if (isset($this->validator)) {
             if (($constraints = ValidatorHelper::getParameterConstraints($parameter))->valid()) {
                 if (($violations = $this->validator->validate($argument, [...$constraints]))->count() > 0) {
-                    throw HttpException::pathVariableInvalid($requestVariable->errorStatusCode, $requestVariable->errorMessage)
-                        ->addMessagePlaceholder('{{ variable_name }}', $variableName)
+                    throw HttpException::pathVariableInvalid($requestPathVariable->errorStatusCode, $requestPathVariable->errorMessage)
+                        ->addMessagePlaceholder('{{ variable_name }}', $pathVariableName)
                         ->addMessagePlaceholder('{{ route_path }}', RouteSimplifier::simplifyRoute($route->getPath()))
                         ->addConstraintViolation(...ValidatorHelper::adaptConstraintViolations(...$violations));
                 }

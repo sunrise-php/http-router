@@ -63,8 +63,6 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
         if (!$context->hasHeader($requestHeader->name)) {
             if ($parameter->isDefaultValueAvailable()) {
                 return yield $parameter->getDefaultValue();
-            } elseif ($parameter->allowsNull()) {
-                return yield;
             }
 
             throw HttpException::headerMissed($requestHeader->errorStatusCode, $requestHeader->errorMessage)

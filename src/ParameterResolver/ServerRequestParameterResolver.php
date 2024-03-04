@@ -38,9 +38,7 @@ final class ServerRequestParameterResolver implements ParameterResolverInterface
         }
 
         if (! $context instanceof ServerRequestInterface) {
-            throw new LogicException(
-                'At this level of the application, any operations with the request are not possible.'
-            );
+            throw new LogicException('At this level of the application, any operations with the request are not possible.');
         }
 
         yield ServerRequest::create($context);

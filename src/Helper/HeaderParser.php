@@ -38,11 +38,7 @@ final class HeaderParser
         [$identifier, $parameters] = current($values);
 
         if (preg_match('|^([^/*]+)/([^/*]+)$|', $identifier, $matches)) {
-            return new ClientMediaType(
-                type: $matches[1],
-                subtype: $matches[2],
-                parameters: $parameters,
-            );
+            return new ClientMediaType($matches[1], $matches[2], $parameters);
         }
 
         return null;
@@ -64,11 +60,7 @@ final class HeaderParser
 
         foreach ($values as $index => [$identifier, $parameters]) {
             if (preg_match('|^([^/]+)/([^/]+)$|', $identifier, $matches)) {
-                yield $index => new ClientMediaType(
-                    type: $matches[1],
-                    subtype: $matches[2],
-                    parameters: $parameters,
-                );
+                yield $index => new ClientMediaType($matches[1], $matches[2], $parameters);
             }
         }
     }
@@ -89,11 +81,7 @@ final class HeaderParser
 
         foreach ($values as $index => [$identifier, $parameters]) {
             if (preg_match('|^(?:i-)?([^-]+)(?:-[^-]+)*$|', $identifier, $matches)) {
-                yield $index => new ClientLanguage(
-                    code: $matches[1],
-                    locale: $identifier,
-                    parameters: $parameters,
-                );
+                yield $index => new ClientLanguage($matches[1], $identifier, $parameters);
             }
         }
     }

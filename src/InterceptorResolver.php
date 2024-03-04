@@ -61,10 +61,7 @@ final class InterceptorResolver
 
         if ($requestHandler instanceof Closure) {
             return new CallableRequestHandler(
-                $this->createRequestHandlerCallback(
-                    $requestHandler,
-                    new ReflectionFunction($requestHandler),
-                ),
+                $this->createRequestHandlerCallback($requestHandler, new ReflectionFunction($requestHandler)),
             );
         }
 
@@ -78,13 +75,7 @@ final class InterceptorResolver
 
             if (is_callable($requestHandler)) {
                 return new CallableRequestHandler(
-                    $this->createRequestHandlerCallback(
-                        $requestHandler,
-                        new ReflectionMethod(
-                            $requestHandler[0],
-                            $requestHandler[1],
-                        ),
-                    ),
+                    $this->createRequestHandlerCallback($requestHandler, new ReflectionMethod($requestHandler[0], $requestHandler[1])),
                 );
             }
         }
@@ -110,10 +101,7 @@ final class InterceptorResolver
 
         if ($middleware instanceof Closure) {
             return new CallableMiddleware(
-                $this->createMiddlewareCallback(
-                    $middleware,
-                    new ReflectionFunction($middleware),
-                ),
+                $this->createMiddlewareCallback($middleware, new ReflectionFunction($middleware)),
             );
         }
 
@@ -131,13 +119,7 @@ final class InterceptorResolver
 
             if (is_callable($middleware)) {
                 return new CallableMiddleware(
-                    $this->createMiddlewareCallback(
-                        $middleware,
-                        new ReflectionMethod(
-                            $middleware[0],
-                            $middleware[1],
-                        ),
-                    ),
+                    $this->createMiddlewareCallback($middleware, new ReflectionMethod($middleware[0], $middleware[1])),
                 );
             }
         }

@@ -65,8 +65,6 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
         if (!$request->hasCookieParam($requestCookie->name)) {
             if ($parameter->isDefaultValueAvailable()) {
                 return yield $parameter->getDefaultValue();
-            } elseif ($parameter->allowsNull()) {
-                return yield;
             }
 
             throw HttpException::cookieMissed($requestCookie->errorStatusCode, $requestCookie->errorMessage)

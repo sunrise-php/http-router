@@ -26,6 +26,9 @@ use Sunrise\Http\Router\Router;
  */
 final class RouteResponseResolver implements ResponseResolverInterface
 {
+    /**
+     * @throws LogicException If the resolver is used incorrectly.
+     */
     public function resolveResponse(
         mixed $response,
         ReflectionMethod|ReflectionFunction $responder,
@@ -37,9 +40,7 @@ final class RouteResponseResolver implements ResponseResolverInterface
 
         $router = $request->getAttribute('@router');
         if (! $router instanceof Router) {
-            throw new LogicException(
-                'Something went wrong; the request must contain the @router attribute.'
-            );
+            throw new LogicException('Something went wrong; the request must contain the @router attribute.');
         }
 
         return $router->runRoute($response, $request);

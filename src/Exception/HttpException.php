@@ -35,6 +35,8 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
 
     /**
      * Placeholders for interpolating the exception's non-interpolated message.
+     *
+     * @var array<array-key, mixed>
      */
     private array $messagePlaceholders = [];
 

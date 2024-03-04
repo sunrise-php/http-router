@@ -27,6 +27,8 @@ interface HttpExceptionInterface extends ExceptionInterface
 
     /**
      * Returns placeholders for interpolating the exception's non-interpolated message.
+     *
+     * @return array<array-key, mixed>
      */
     public function getMessagePlaceholders(): array;
 
