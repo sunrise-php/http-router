@@ -28,7 +28,6 @@ use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\HydratorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-use function count;
 use function sprintf;
 
 /**
@@ -66,9 +65,7 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
         }
 
         if (! $context instanceof ServerRequestInterface) {
-            throw new LogicException(
-                'At this level of the application, any operations with the request are not possible.'
-            );
+            throw new LogicException('At this level of the application, any operations with the request are not possible.');
         }
 
         $requestBody = $annotations[0]->newInstance();
@@ -81,7 +78,7 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
         }
 
         if (isset($this->validator)) {
-            if (count($violations = $this->validator->validate($argument)) > 0) {
+            if (($violations = $this->validator->validate($argument))->count() > 0) {
                 throw HttpException::bodyInvalid($requestBody->errorStatusCode, $requestBody->errorMessage)
                     ->addConstraintViolation(...ValidatorHelper::adaptConstraintViolations(...$violations));
             }

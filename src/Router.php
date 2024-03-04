@@ -29,6 +29,8 @@ use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
 
 use function array_flip;
 use function array_keys;
+use function count;
+use function in_array;
 use function rawurldecode;
 use function sprintf;
 
@@ -133,15 +135,14 @@ class Router
                 continue;
             }
 
-            if (!$route->supportsMethod($request->getMethod())) {
+            if (!$this->routeSupportsMethod($route, $request->getMethod())) {
                 $allowedMethods += array_flip($route->getMethods());
                 continue;
             }
 
             if (!ServerRequest::create($request)->clientProducesMediaType(...$route->getConsumedMediaTypes())) {
-                throw HttpException::mediaTypeNotSupported(placeholders: [
-                    '{{ media_type }}' => ServerRequest::create($request)->getClientProducedMediaType(),
-                ])
+                throw HttpException::mediaTypeNotSupported()
+                    ->addMessagePlaceholder('{{ media_type }}', ServerRequest::create($request)->getClientProducedMediaType())
                     ->addHeaderField('Accept', ...$route->getConsumedMediaTypes());
             }
 
@@ -149,15 +150,13 @@ class Router
         }
 
         if (!empty($allowedMethods)) {
-            throw HttpException::methodNotAllowed(placeholders: [
-                '{{ method }}' => $request->getMethod(),
-            ])
+            throw HttpException::methodNotAllowed()
+                ->addMessagePlaceholder('{{ method }}', $request->getMethod())
                 ->addHeaderField('Allow', ...array_keys($allowedMethods));
         }
 
-        throw HttpException::resourceNotFound(placeholders: [
-            '{{ uri }}' => $requestPath,
-        ]);
+        throw HttpException::resourceNotFound()
+            ->addMessagePlaceholder('{{ resource }}', $requestPath);
     }
 
     /**
@@ -212,6 +211,23 @@ class Router
         }
 
         return $this->routePatterns[$route->getName()] ??= $route->getPattern() ?? RouteCompiler::compileRoute($route->getPath(), $route->getPatterns());
+    }
+
+    /**
+     * @since 3.0.0
+     */
+    public function routeSupportsMethod(Route|string $route, string $method): bool
+    {
+        if (! $route instanceof Route) {
+            $route = $this->getRoute($route);
+        }
+
+        $methods = $route->getMethods();
+        if ($methods === []) {
+            return true;
+        }
+
+        return in_array($method, $methods, true);
     }
 
     /**

@@ -29,8 +29,6 @@ use Sunrise\Hydrator\HydratorInterface;
 use Sunrise\Hydrator\Type;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-use function count;
-
 /**
  * @since 3.0.0
  */
@@ -58,17 +56,11 @@ final class RequestQueryParamParameterResolver implements ParameterResolverInter
         }
 
         if (! $context instanceof ServerRequestInterface) {
-            throw new LogicException(
-                'At this level of the application, any operations with the request are not possible.',
-            );
+            throw new LogicException('At this level of the application, any operations with the request are not possible.');
         }
 
         $request = ServerRequest::create($context);
         $requestParam = $annotations[0]->newInstance();
-
-        $placeholders = [
-            '{{ param_name }}' => $requestParam->name,
-        ];
 
         if (!$request->hasQueryParam($requestParam->name)) {
             if ($parameter->isDefaultValueAvailable()) {
@@ -77,20 +69,23 @@ final class RequestQueryParamParameterResolver implements ParameterResolverInter
                 return yield;
             }
 
-            throw HttpException::queryParamMissed($requestParam->errorStatusCode, $requestParam->errorMessage, $placeholders);
+            throw HttpException::queryParamMissed($requestParam->errorStatusCode, $requestParam->errorMessage)
+                ->addMessagePlaceholder('{{ param_name }}', $requestParam->name);
         }
 
         try {
             $argument = $this->hydrator->castValue($request->getQueryParam($requestParam->name), Type::fromParameter($parameter), path: [$requestParam->name]);
         } catch (InvalidDataException|InvalidValueException $e) {
-            throw HttpException::queryParamInvalid($requestParam->errorStatusCode, $requestParam->errorMessage, $placeholders, previous: $e)
+            throw HttpException::queryParamInvalid($requestParam->errorStatusCode, $requestParam->errorMessage, previous: $e)
+                ->addMessagePlaceholder('{{ param_name }}', $requestParam->name)
                 ->addConstraintViolation(...HydratorHelper::adaptConstraintViolations($e));
         }
 
         if (isset($this->validator)) {
-            if (count($constraints = ValidatorHelper::getParameterConstraints($parameter)) > 0) {
-                if (count($violations = $this->validator->validate($argument, $constraints)) > 0) {
-                    throw HttpException::queryParamInvalid($requestParam->errorStatusCode, $requestParam->errorMessage, $placeholders)
+            if (($constraints = ValidatorHelper::getParameterConstraints($parameter))->valid()) {
+                if (($violations = $this->validator->validate($argument, [...$constraints]))->count() > 0) {
+                    throw HttpException::queryParamInvalid($requestParam->errorStatusCode, $requestParam->errorMessage)
+                        ->addMessagePlaceholder('{{ param_name }}', $requestParam->name)
                         ->addConstraintViolation(...ValidatorHelper::adaptConstraintViolations(...$violations));
                 }
             }

@@ -18,12 +18,11 @@ use Attribute;
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_PARAMETER)]
-final class RequestQuery
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
+final class Priority
 {
     public function __construct(
-        public readonly ?int $errorStatusCode = null,
-        public readonly ?string $errorMessage = null,
+        public readonly int $value,
     ) {
     }
 }

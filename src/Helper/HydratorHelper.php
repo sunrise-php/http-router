@@ -29,24 +29,26 @@ final class HydratorHelper
      */
     public static function adaptConstraintViolations(InvalidDataException|InvalidValueException $error): Generator
     {
-        if ($error instanceof InvalidValueException) {
-            return yield new ConstraintViolation(
-                $error->getMessage(),
-                $error->getMessageTemplate(),
-                $error->getMessagePlaceholders(),
-                $error->getPropertyPath(),
-                $error->getErrorCode(),
-            );
+        if ($error instanceof InvalidDataException) {
+            foreach ($error->getExceptions() as $violation) {
+                yield new ConstraintViolation(
+                    $violation->getMessage(),
+                    $violation->getMessageTemplate(),
+                    $violation->getMessagePlaceholders(),
+                    $violation->getPropertyPath(),
+                    $violation->getErrorCode(),
+                );
+            }
+
+            return;
         }
 
-        foreach ($error->getExceptions() as $violation) {
-            yield new ConstraintViolation(
-                $violation->getMessage(),
-                $violation->getMessageTemplate(),
-                $violation->getMessagePlaceholders(),
-                $violation->getPropertyPath(),
-                $violation->getErrorCode(),
-            );
-        }
+        yield new ConstraintViolation(
+            $error->getMessage(),
+            $error->getMessageTemplate(),
+            $error->getMessagePlaceholders(),
+            $error->getPropertyPath(),
+            $error->getErrorCode(),
+        );
     }
 }

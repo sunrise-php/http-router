@@ -11,18 +11,19 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Entity\MediaType;
+namespace Sunrise\Http\Router\Annotation;
 
-use Stringable;
+use Attribute;
 
 /**
  * @since 3.0.0
  */
-interface MediaTypeInterface extends Stringable
+#[Attribute(Attribute::TARGET_PARAMETER)]
+final class RequestQueryParams
 {
-    public const SEPARATOR = '/';
-
-    public function getType(): string;
-
-    public function getSubtype(): string;
+    public function __construct(
+        public readonly ?int $errorStatusCode = null,
+        public readonly ?string $errorMessage = null,
+    ) {
+    }
 }

@@ -24,23 +24,22 @@ use function join;
 use function strtr;
 
 /**
- * The package's base HTTP exception
- *
  * @since 3.0.0
  */
 class HttpException extends RuntimeException implements HttpExceptionInterface
 {
+    /**
+     * The exception's non-interpolated message.
+     */
     private string $messageTemplate;
 
-    private array $messagePlaceholders;
-
-    private int $statusCode;
+    /**
+     * Placeholders for interpolating the exception's non-interpolated message.
+     */
+    private array $messagePlaceholders = [];
 
     /**
-     * @var list<array{0: TFieldName, 1: TFieldValue}>
-     *
-     * @template TFieldName as string
-     * @template TFieldValue as string
+     * @var list<array{0: string, 1: string}>
      */
     private array $headerFields = [];
 
@@ -49,25 +48,24 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
      */
     private array $constraintViolations = [];
 
-    public function __construct(int $statusCode, string $message, array $placeholders = [], ?Throwable $previous = null)
+    public function __construct(int $code, string $message, array $placeholders = [], ?Throwable $previous = null)
     {
-        $interpolatedMessage = strtr($message, $placeholders);
-
-        parent::__construct($interpolatedMessage, 0, $previous);
-
-        $this->statusCode = $statusCode;
         $this->messageTemplate = $message;
         $this->messagePlaceholders = $placeholders;
+
+        $interpolatedMessage = strtr($message, $placeholders);
+
+        parent::__construct($interpolatedMessage, $code, $previous);
     }
 
     final public static function resourceNotFound(
-        ?int $statusCode = null,
+        ?int $code = null,
         ?string $message = null,
         array $placeholders = [],
         ?Throwable $previous = null,
     ): self {
         return new self(
-            statusCode: $statusCode ?? StatusCodeInterface::STATUS_NOT_FOUND,
+            code: $code ?? StatusCodeInterface::STATUS_NOT_FOUND,
             message: $message ?? ErrorMessage::RESOURCE_NOT_FOUND,
             placeholders: $placeholders,
             previous: $previous,
@@ -75,13 +73,13 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     }
 
     final public static function methodNotAllowed(
-        ?int $statusCode = null,
+        ?int $code = null,
         ?string $message = null,
         array $placeholders = [],
         ?Throwable $previous = null,
     ): self {
         return new self(
-            statusCode: $statusCode ?? StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED,
+            code: $code ?? StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED,
             message: $message ?? ErrorMessage::METHOD_NOT_ALLOWED,
             placeholders: $placeholders,
             previous: $previous,
@@ -89,153 +87,55 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     }
 
     final public static function mediaTypeNotSupported(
-        ?int $statusCode = null,
+        ?int $code = null,
         ?string $message = null,
         array $placeholders = [],
         ?Throwable $previous = null,
     ): self {
         return new self(
-            statusCode: $statusCode ?? StatusCodeInterface::STATUS_UNSUPPORTED_MEDIA_TYPE,
+            code: $code ?? StatusCodeInterface::STATUS_UNSUPPORTED_MEDIA_TYPE,
             message: $message ?? ErrorMessage::MEDIA_TYPE_NOT_SUPPORTED,
             placeholders: $placeholders,
             previous: $previous,
         );
     }
 
-    final public static function jsonPayloadEmpty(
-        ?int $statusCode = null,
+    final public static function pathVariableInvalid(
+        ?int $code = null,
         ?string $message = null,
         array $placeholders = [],
         ?Throwable $previous = null,
     ): self {
         return new self(
-            statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
-            message: $message ?? ErrorMessage::JSON_PAYLOAD_EMPTY,
+            code: $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            message: $message ?? ErrorMessage::PATH_VARIABLE_INVALID,
             placeholders: $placeholders,
             previous: $previous,
         );
     }
 
-    final public static function jsonPayloadInvalid(
-        ?int $statusCode = null,
+    final public static function queryParamsInvalid(
+        ?int $code = null,
         ?string $message = null,
         array $placeholders = [],
         ?Throwable $previous = null,
     ): self {
         return new self(
-            statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
-            message: $message ?? ErrorMessage::JSON_PAYLOAD_INVALID,
-            placeholders: $placeholders,
-            previous: $previous,
-        );
-    }
-
-    final public static function jsonPayloadFormInvalid(
-        ?int $statusCode = null,
-        ?string $message = null,
-        array $placeholders = [],
-        ?Throwable $previous = null,
-    ): self {
-        return new self(
-            statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
-            message: $message ?? ErrorMessage::JSON_PAYLOAD_FORM_INVALID,
-            placeholders: $placeholders,
-            previous: $previous,
-        );
-    }
-
-    final public static function bodyInvalid(
-        ?int $statusCode = null,
-        ?string $message = null,
-        array $placeholders = [],
-        ?Throwable $previous = null,
-    ): self {
-        return new self(
-            statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
-            message: $message ?? ErrorMessage::BODY_INVALID,
-            placeholders: $placeholders,
-            previous: $previous,
-        );
-    }
-
-    final public static function queryInvalid(
-        ?int $statusCode = null,
-        ?string $message = null,
-        array $placeholders = [],
-        ?Throwable $previous = null,
-    ): self {
-        return new self(
-            statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
-            message: $message ?? ErrorMessage::QUERY_INVALID,
-            placeholders: $placeholders,
-            previous: $previous,
-        );
-    }
-
-    final public static function cookieMissed(
-        ?int $statusCode = null,
-        ?string $message = null,
-        array $placeholders = [],
-        ?Throwable $previous = null,
-    ): self {
-        return new self(
-            statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
-            message: $message ?? ErrorMessage::COOKIE_MISSED,
-            placeholders: $placeholders,
-            previous: $previous,
-        );
-    }
-
-    final public static function cookieInvalid(
-        ?int $statusCode = null,
-        ?string $message = null,
-        array $placeholders = [],
-        ?Throwable $previous = null,
-    ): self {
-        return new self(
-            statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
-            message: $message ?? ErrorMessage::COOKIE_INVALID,
-            placeholders: $placeholders,
-            previous: $previous,
-        );
-    }
-
-    final public static function headerMissed(
-        ?int $statusCode = null,
-        ?string $message = null,
-        array $placeholders = [],
-        ?Throwable $previous = null,
-    ): self {
-        return new self(
-            statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
-            message: $message ?? ErrorMessage::HEADER_MISSED,
-            placeholders: $placeholders,
-            previous: $previous,
-        );
-    }
-
-    final public static function headerInvalid(
-        ?int $statusCode = null,
-        ?string $message = null,
-        array $placeholders = [],
-        ?Throwable $previous = null,
-    ): self {
-        return new self(
-            statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
-            message: $message ?? ErrorMessage::HEADER_INVALID,
+            code: $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            message: $message ?? ErrorMessage::QUERY_PARAMS_INVALID,
             placeholders: $placeholders,
             previous: $previous,
         );
     }
 
     final public static function queryParamMissed(
-        ?int $statusCode = null,
+        ?int $code = null,
         ?string $message = null,
         array $placeholders = [],
         ?Throwable $previous = null,
     ): self {
         return new self(
-            statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            code: $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
             message: $message ?? ErrorMessage::QUERY_PARAM_MISSED,
             placeholders: $placeholders,
             previous: $previous,
@@ -243,46 +143,145 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     }
 
     final public static function queryParamInvalid(
-        ?int $statusCode = null,
+        ?int $code = null,
         ?string $message = null,
         array $placeholders = [],
         ?Throwable $previous = null,
     ): self {
         return new self(
-            statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            code: $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
             message: $message ?? ErrorMessage::QUERY_PARAM_INVALID,
             placeholders: $placeholders,
             previous: $previous,
         );
     }
 
-    final public static function pathVariableInvalid(
-        ?int $statusCode = null,
+    final public static function headerMissed(
+        ?int $code = null,
         ?string $message = null,
         array $placeholders = [],
         ?Throwable $previous = null,
     ): self {
         return new self(
-            statusCode: $statusCode ?? StatusCodeInterface::STATUS_BAD_REQUEST,
-            message: $message ?? ErrorMessage::PATH_VARIABLE_INVALID,
+            code: $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            message: $message ?? ErrorMessage::HEADER_MISSED,
             placeholders: $placeholders,
             previous: $previous,
         );
     }
 
+    final public static function headerInvalid(
+        ?int $code = null,
+        ?string $message = null,
+        array $placeholders = [],
+        ?Throwable $previous = null,
+    ): self {
+        return new self(
+            code: $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            message: $message ?? ErrorMessage::HEADER_INVALID,
+            placeholders: $placeholders,
+            previous: $previous,
+        );
+    }
+
+    final public static function cookieMissed(
+        ?int $code = null,
+        ?string $message = null,
+        array $placeholders = [],
+        ?Throwable $previous = null,
+    ): self {
+        return new self(
+            code: $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            message: $message ?? ErrorMessage::COOKIE_MISSED,
+            placeholders: $placeholders,
+            previous: $previous,
+        );
+    }
+
+    final public static function cookieInvalid(
+        ?int $code = null,
+        ?string $message = null,
+        array $placeholders = [],
+        ?Throwable $previous = null,
+    ): self {
+        return new self(
+            code: $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            message: $message ?? ErrorMessage::COOKIE_INVALID,
+            placeholders: $placeholders,
+            previous: $previous,
+        );
+    }
+
+    final public static function bodyInvalid(
+        ?int $code = null,
+        ?string $message = null,
+        array $placeholders = [],
+        ?Throwable $previous = null,
+    ): self {
+        return new self(
+            code: $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            message: $message ?? ErrorMessage::BODY_INVALID,
+            placeholders: $placeholders,
+            previous: $previous,
+        );
+    }
+
+    final public static function jsonPayloadEmpty(
+        ?int $code = null,
+        ?string $message = null,
+        array $placeholders = [],
+        ?Throwable $previous = null,
+    ): self {
+        return new self(
+            code: $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            message: $message ?? ErrorMessage::JSON_PAYLOAD_EMPTY,
+            placeholders: $placeholders,
+            previous: $previous,
+        );
+    }
+
+    final public static function jsonPayloadInvalid(
+        ?int $code = null,
+        ?string $message = null,
+        array $placeholders = [],
+        ?Throwable $previous = null,
+    ): self {
+        return new self(
+            code: $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            message: $message ?? ErrorMessage::JSON_PAYLOAD_INVALID,
+            placeholders: $placeholders,
+            previous: $previous,
+        );
+    }
+
+    final public static function jsonPayloadFormInvalid(
+        ?int $code = null,
+        ?string $message = null,
+        array $placeholders = [],
+        ?Throwable $previous = null,
+    ): self {
+        return new self(
+            code: $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            message: $message ?? ErrorMessage::JSON_PAYLOAD_FORM_INVALID,
+            placeholders: $placeholders,
+            previous: $previous,
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
     final public function getMessageTemplate(): string
     {
         return $this->messageTemplate;
     }
 
+    /**
+     * @inheritDoc
+     */
     final public function getMessagePlaceholders(): array
     {
         return $this->messagePlaceholders;
-    }
-
-    final public function getStatusCode(): int
-    {
-        return $this->statusCode;
     }
 
     /**
@@ -301,7 +300,16 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
         return $this->constraintViolations;
     }
 
-    final public function addHeaderField(string $fieldName, Stringable|string ...$fieldValues): static
+    final public function addMessagePlaceholder(string $placeholder, mixed $replacement): static
+    {
+        $this->messagePlaceholders[$placeholder] = $replacement;
+
+        $this->message = strtr($this->messageTemplate, $this->messagePlaceholders);
+
+        return $this;
+    }
+
+    final public function addHeaderField(string $fieldName, string|Stringable ...$fieldValues): static
     {
         // https://datatracker.ietf.org/doc/html/rfc7230#section-7
         $fieldValue = join(', ', $fieldValues);

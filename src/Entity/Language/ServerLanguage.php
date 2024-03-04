@@ -11,18 +11,20 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Entity\MediaType;
-
-use Stringable;
+namespace Sunrise\Http\Router\Entity\Language;
 
 /**
  * @since 3.0.0
  */
-interface MediaTypeInterface extends Stringable
+final class ServerLanguage implements LanguageInterface
 {
-    public const SEPARATOR = '/';
+    public function __construct(
+        private readonly string $code,
+    ) {
+    }
 
-    public function getType(): string;
-
-    public function getSubtype(): string;
+    public function getCode(): string
+    {
+        return $this->code;
+    }
 }

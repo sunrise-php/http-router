@@ -16,23 +16,22 @@ namespace Sunrise\Http\Router\Exception;
 use Sunrise\Http\Router\ConstraintViolationInterface;
 
 /**
- * The package's base HTTP exception interface
- *
  * @since 3.0.0
  */
 interface HttpExceptionInterface extends ExceptionInterface
 {
+    /**
+     * Returns the exception's non-interpolated message.
+     */
     public function getMessageTemplate(): string;
 
+    /**
+     * Returns placeholders for interpolating the exception's non-interpolated message.
+     */
     public function getMessagePlaceholders(): array;
 
-    public function getStatusCode(): int;
-
     /**
-     * @return list<array{0: TFieldName, 1: TFieldValue}>
-     *
-     * @template TFieldName as string
-     * @template TFieldValue as string
+     * @return list<array{0: string, 1: string}>
      */
     public function getHeaderFields(): array;
 

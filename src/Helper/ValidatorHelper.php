@@ -28,20 +28,17 @@ use Symfony\Component\Validator\ConstraintViolationInterface as ValidatorConstra
 final class ValidatorHelper
 {
     /**
-     * @return list<ValidatorConstraint>
+     * @return Generator<int, ValidatorConstraint>
      */
-    public static function getParameterConstraints(ReflectionParameter $parameter): array
+    public static function getParameterConstraints(ReflectionParameter $parameter): Generator
     {
-        $validatorConstraints = [];
         /** @var ReflectionAttribute<RouterConstraint> $annotation */
         foreach ($parameter->getAttributes(RouterConstraint::class) as $annotation) {
             $routerConstraint = $annotation->newInstance();
             if ($routerConstraint->value instanceof ValidatorConstraint) {
-                $validatorConstraints[] = $routerConstraint->value;
+                yield $routerConstraint->value;
             }
         }
-
-        return $validatorConstraints;
     }
 
     /**

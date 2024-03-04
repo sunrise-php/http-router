@@ -19,7 +19,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionNamedType;
 use ReflectionParameter;
-use Sunrise\Http\Router\Annotation\RequestQuery;
+use Sunrise\Http\Router\Annotation\RequestQueryParams;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Helper\HydratorHelper;
 use Sunrise\Http\Router\Helper\ValidatorHelper;
@@ -28,13 +28,12 @@ use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\HydratorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-use function count;
 use function sprintf;
 
 /**
  * @since 3.0.0
  */
-final class RequestQueryParameterResolver implements ParameterResolverInterface
+final class RequestQueryParamsParameterResolver implements ParameterResolverInterface
 {
     public function __construct(
         private readonly HydratorInterface $hydrator,
@@ -51,8 +50,8 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
-        /** @var list<ReflectionAttribute<RequestQuery>> $annotations */
-        $annotations = $parameter->getAttributes(RequestQuery::class);
+        /** @var list<ReflectionAttribute<RequestQueryParams>> $annotations */
+        $annotations = $parameter->getAttributes(RequestQueryParams::class);
         if ($annotations === []) {
             return;
         }
@@ -60,15 +59,13 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
         $type = $parameter->getType();
         if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
             throw new LogicException(sprintf(
-                'To use the #[RequestQuery] annotation, the parameter %s must be typed with an object.',
+                'To use the #[RequestQueryParams] annotation, the parameter %s must be typed with an object.',
                 ParameterResolver::stringifyParameter($parameter),
             ));
         }
 
         if (! $context instanceof ServerRequestInterface) {
-            throw new LogicException(
-                'At this level of the application, any operations with the request are not possible.'
-            );
+            throw new LogicException('At this level of the application, any operations with the request are not possible.');
         }
 
         $requestQuery = $annotations[0]->newInstance();
@@ -76,13 +73,13 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
         try {
             $argument = $this->hydrator->hydrate($type->getName(), $context->getQueryParams());
         } catch (InvalidDataException $e) {
-            throw HttpException::queryInvalid($requestQuery->errorStatusCode, $requestQuery->errorMessage, previous: $e)
+            throw HttpException::queryParamsInvalid($requestQuery->errorStatusCode, $requestQuery->errorMessage, previous: $e)
                 ->addConstraintViolation(...HydratorHelper::adaptConstraintViolations($e));
         }
 
         if (isset($this->validator)) {
-            if (count($violations = $this->validator->validate($argument)) > 0) {
-                throw HttpException::queryInvalid($requestQuery->errorStatusCode, $requestQuery->errorMessage)
+            if (($violations = $this->validator->validate($argument))->count() > 0) {
+                throw HttpException::queryParamsInvalid($requestQuery->errorStatusCode, $requestQuery->errorMessage)
                     ->addConstraintViolation(...ValidatorHelper::adaptConstraintViolations(...$violations));
             }
         }

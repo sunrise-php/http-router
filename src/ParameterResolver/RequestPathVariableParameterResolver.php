@@ -21,6 +21,7 @@ use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestPathVariable;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Helper\HydratorHelper;
+use Sunrise\Http\Router\Helper\RouteSimplifier;
 use Sunrise\Http\Router\Helper\ValidatorHelper;
 use Sunrise\Http\Router\ParameterResolver;
 use Sunrise\Http\Router\Route;
@@ -30,7 +31,6 @@ use Sunrise\Hydrator\HydratorInterface;
 use Sunrise\Hydrator\Type;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-use function count;
 use function sprintf;
 
 /**
@@ -60,9 +60,7 @@ final class RequestPathVariableParameterResolver implements ParameterResolverInt
         }
 
         if (! $context instanceof ServerRequestInterface) {
-            throw new LogicException(
-                'At this level of the application, any operations with the request are not possible.'
-            );
+            throw new LogicException('At this level of the application, any operations with the request are not possible.');
         }
 
         $route = $context->getAttribute('@route');
@@ -95,22 +93,21 @@ final class RequestPathVariableParameterResolver implements ParameterResolverInt
             ));
         }
 
-        $placeholders = [
-            '{{ variable_name }}' => $variableName,
-            '{{ route_path }}' => $route->getPath(),
-        ];
-
         try {
             $argument = $this->hydrator->castValue($route->getAttribute($variableName), Type::fromParameter($parameter), path: [$variableName]);
         } catch (InvalidDataException|InvalidValueException $e) {
-            throw HttpException::pathVariableInvalid($requestVariable->errorStatusCode, $requestVariable->errorMessage, $placeholders, previous: $e)
+            throw HttpException::pathVariableInvalid($requestVariable->errorStatusCode, $requestVariable->errorMessage, previous: $e)
+                ->addMessagePlaceholder('{{ variable_name }}', $variableName)
+                ->addMessagePlaceholder('{{ route_path }}', RouteSimplifier::simplifyRoute($route->getPath()))
                 ->addConstraintViolation(...HydratorHelper::adaptConstraintViolations($e));
         }
 
         if (isset($this->validator)) {
-            if (count($constraints = ValidatorHelper::getParameterConstraints($parameter)) > 0) {
-                if (count($violations = $this->validator->validate($argument, $constraints)) > 0) {
-                    throw HttpException::pathVariableInvalid($requestVariable->errorStatusCode, $requestVariable->errorMessage, $placeholders)
+            if (($constraints = ValidatorHelper::getParameterConstraints($parameter))->valid()) {
+                if (($violations = $this->validator->validate($argument, [...$constraints]))->count() > 0) {
+                    throw HttpException::pathVariableInvalid($requestVariable->errorStatusCode, $requestVariable->errorMessage)
+                        ->addMessagePlaceholder('{{ variable_name }}', $variableName)
+                        ->addMessagePlaceholder('{{ route_path }}', RouteSimplifier::simplifyRoute($route->getPath()))
                         ->addConstraintViolation(...ValidatorHelper::adaptConstraintViolations(...$violations));
                 }
             }

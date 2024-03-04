@@ -24,32 +24,44 @@ final class Route
     /** @var list<string> */
     public array $prefixes = [];
 
+    /** @var array<string, string> */
+    public array $patterns = [];
+
+    /** @var list<string> */
+    public array $methods = [];
+
+    /** @var array<string, mixed> */
+    public array $attributes = [];
+
+    /** @var list<mixed> */
+    public array $middlewares = [];
+
+    /** @var list<mixed> */
+    public array $constraints = [];
+
+    /** @var list<MediaTypeInterface> */
+    public array $consumes = [];
+
+    /** @var list<MediaTypeInterface> */
+    public array $produces = [];
+
+    /** @var list<string> */
+    public array $tags = [];
+
+    public string $summary = '';
+
+    public string $description = '';
+
+    public bool $isDeprecated = false;
+
     /** @var non-empty-string|null */
     public string|null $pattern = null;
+
+    public int $priority = 0;
 
     public function __construct(
         public string $name,
         public string $path,
-        /** @var array<string, string> */
-        public array $patterns = [],
-        /** @var list<string> */
-        public array $methods = [],
-        /** @var array<string, mixed> */
-        public array $attributes = [],
-        /** @var list<mixed> */
-        public array $middlewares = [],
-        /** @var list<mixed> */
-        public array $constraints = [],
-        /** @var list<MediaTypeInterface> */
-        public array $consumes = [],
-        /** @var list<MediaTypeInterface> */
-        public array $produces = [],
-        public string $summary = '',
-        public string $description = '',
-        /** @var list<string> */
-        public array $tags = [],
-        public bool $isDeprecated = false,
-        public int $priority = 0,
     ) {
     }
 }

@@ -16,7 +16,6 @@ namespace Sunrise\Http\Router;
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 
 use function array_key_exists;
-use function in_array;
 
 final class Route
 {
@@ -38,10 +37,10 @@ final class Route
         private readonly array $consumes = [],
         /** @var list<MediaTypeInterface> */
         private readonly array $produces = [],
-        private readonly string $summary = '',
-        private readonly string $description = '',
         /** @var list<string> */
         private readonly array $tags = [],
+        private readonly ?string $summary = null,
+        private readonly ?string $description = null,
         private readonly bool $isDeprecated = false,
         /** @var non-empty-string|null */
         private readonly ?string $pattern = null,
@@ -77,15 +76,6 @@ final class Route
     public function getMethods(): array
     {
         return $this->methods;
-    }
-
-    public function supportsMethod(string $method): bool
-    {
-        if ($this->methods === []) {
-            return true;
-        }
-
-        return in_array($method, $this->methods, true);
     }
 
     /**
@@ -162,22 +152,22 @@ final class Route
         return $this->produces;
     }
 
-    public function getSummary(): string
-    {
-        return $this->summary;
-    }
-
-    public function getDescription(): string
-    {
-        return $this->description;
-    }
-
     /**
      * @return list<string>
      */
     public function getTags(): array
     {
         return $this->tags;
+    }
+
+    public function getSummary(): ?string
+    {
+        return $this->summary;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
     }
 
     public function isDeprecated(): bool

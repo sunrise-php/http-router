@@ -13,8 +13,6 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Entity\MediaType;
 
-use function sprintf;
-
 /**
  * @since 3.0.0
  */
@@ -46,11 +44,8 @@ final class ClientMediaType implements MediaTypeInterface
         return $this->parameters;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function __toString(): string
     {
-        return sprintf('%s/%s', $this->type, $this->subtype);
+        return $this->type . $this::SEPARATOR . $this->subtype;
     }
 }

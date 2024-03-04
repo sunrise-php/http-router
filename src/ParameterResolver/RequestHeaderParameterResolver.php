@@ -28,8 +28,6 @@ use Sunrise\Hydrator\HydratorInterface;
 use Sunrise\Hydrator\Type;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-use function count;
-
 /**
  * @since 3.0.0
  */
@@ -57,16 +55,10 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
         }
 
         if (! $context instanceof ServerRequestInterface) {
-            throw new LogicException(
-                'At this level of the application, any operations with the request are not possible.'
-            );
+            throw new LogicException('At this level of the application, any operations with the request are not possible.');
         }
 
         $requestHeader = $annotations[0]->newInstance();
-
-        $placeholders = [
-            '{{ header_name }}' => $requestHeader->name,
-        ];
 
         if (!$context->hasHeader($requestHeader->name)) {
             if ($parameter->isDefaultValueAvailable()) {
@@ -75,20 +67,23 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
                 return yield;
             }
 
-            throw HttpException::headerMissed($requestHeader->errorStatusCode, $requestHeader->errorMessage, $placeholders);
+            throw HttpException::headerMissed($requestHeader->errorStatusCode, $requestHeader->errorMessage)
+                ->addMessagePlaceholder('{{ header_name }}', $requestHeader->name);
         }
 
         try {
             $argument = $this->hydrator->castValue($context->getHeaderLine($requestHeader->name), Type::fromParameter($parameter), path: [$requestHeader->name]);
         } catch (InvalidDataException|InvalidValueException $e) {
-            throw HttpException::headerInvalid($requestHeader->errorStatusCode, $requestHeader->errorMessage, $placeholders, previous: $e)
+            throw HttpException::headerInvalid($requestHeader->errorStatusCode, $requestHeader->errorMessage, previous: $e)
+                ->addMessagePlaceholder('{{ header_name }}', $requestHeader->name)
                 ->addConstraintViolation(...HydratorHelper::adaptConstraintViolations($e));
         }
 
         if (isset($this->validator)) {
-            if (count($constraints = ValidatorHelper::getParameterConstraints($parameter)) > 0) {
-                if (count($violations = $this->validator->validate($argument, $constraints)) > 0) {
-                    throw HttpException::headerInvalid($requestHeader->errorStatusCode, $requestHeader->errorMessage, $placeholders)
+            if (($constraints = ValidatorHelper::getParameterConstraints($parameter))->valid()) {
+                if (($violations = $this->validator->validate($argument, [...$constraints]))->count() > 0) {
+                    throw HttpException::headerInvalid($requestHeader->errorStatusCode, $requestHeader->errorMessage)
+                        ->addMessagePlaceholder('{{ header_name }}', $requestHeader->name)
                         ->addConstraintViolation(...ValidatorHelper::adaptConstraintViolations(...$violations));
                 }
             }

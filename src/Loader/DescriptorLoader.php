@@ -32,6 +32,7 @@ use Sunrise\Http\Router\Annotation\Middleware;
 use Sunrise\Http\Router\Annotation\Pattern;
 use Sunrise\Http\Router\Annotation\Postfix;
 use Sunrise\Http\Router\Annotation\Prefix;
+use Sunrise\Http\Router\Annotation\Priority;
 use Sunrise\Http\Router\Annotation\Produces;
 use Sunrise\Http\Router\Annotation\Route as Descriptor;
 use Sunrise\Http\Router\Annotation\Summary;
@@ -82,9 +83,9 @@ final class DescriptorLoader implements LoaderInterface
                 $descriptor->constraints,
                 $descriptor->consumes,
                 $descriptor->produces,
+                $descriptor->tags,
                 $descriptor->summary,
                 $descriptor->description,
-                $descriptor->tags,
                 $descriptor->isDeprecated,
                 $descriptor->pattern,
             );
@@ -109,9 +110,6 @@ final class DescriptorLoader implements LoaderInterface
         $descriptors = [];
         foreach ($this->resources as $resource) {
             foreach ($this->getResourceDescriptors($resource) as $descriptor) {
-                $descriptor->path = join($descriptor->prefixes) . $descriptor->path;
-                $descriptor->methods = array_map(strtoupper(...), $descriptor->methods);
-                $descriptor->pattern = RouteCompiler::compileRoute($descriptor->path, $descriptor->patterns);
                 $descriptors[] = $descriptor;
             }
         }
@@ -179,6 +177,7 @@ final class DescriptorLoader implements LoaderInterface
                 $descriptor->holder = $class->getName();
                 $this->supplementDescriptorFromParentClasses($descriptor, $class);
                 $this->supplementDescriptorFromClassOrMethod($descriptor, $class);
+                $this->completeDescriptor($descriptor);
                 yield $descriptor;
             }
         }
@@ -196,6 +195,7 @@ final class DescriptorLoader implements LoaderInterface
                 $this->supplementDescriptorFromParentClasses($descriptor, $class);
                 $this->supplementDescriptorFromClassOrMethod($descriptor, $class);
                 $this->supplementDescriptorFromClassOrMethod($descriptor, $method);
+                $this->completeDescriptor($descriptor);
                 yield $descriptor;
             }
         }
@@ -279,6 +279,13 @@ final class DescriptorLoader implements LoaderInterface
             $descriptor->produces[] = $annotation->value;
         }
 
+        /** @var list<ReflectionAttribute<Tag>> $annotations */
+        $annotations = $classOrMethod->getAttributes(Tag::class);
+        foreach ($annotations as $annotation) {
+            $annotation = $annotation->newInstance();
+            $descriptor->tags[] = $annotation->value;
+        }
+
         /** @var list<ReflectionAttribute<Summary>> $annotations */
         $annotations = $classOrMethod->getAttributes(Summary::class);
         foreach ($annotations as $annotation) {
@@ -293,17 +300,26 @@ final class DescriptorLoader implements LoaderInterface
             $descriptor->description .= $annotation->value;
         }
 
-        /** @var list<ReflectionAttribute<Tag>> $annotations */
-        $annotations = $classOrMethod->getAttributes(Tag::class);
-        foreach ($annotations as $annotation) {
-            $annotation = $annotation->newInstance();
-            $descriptor->tags[] = $annotation->value;
-        }
-
         /** @var list<ReflectionAttribute<Deprecated>> $annotations */
         $annotations = $classOrMethod->getAttributes(Deprecated::class);
         if (isset($annotations[0])) {
             $descriptor->isDeprecated = true;
         }
+
+        /** @var list<ReflectionAttribute<Priority>> $annotations */
+        $annotations = $classOrMethod->getAttributes(Priority::class);
+        if (isset($annotations[0])) {
+            $annotation = $annotations[0]->newInstance();
+            $descriptor->priority = $annotation->value;
+        }
+    }
+
+    private function completeDescriptor(Descriptor $descriptor): void
+    {
+        $descriptor->path = join($descriptor->prefixes) . $descriptor->path;
+
+        $descriptor->methods = array_map(strtoupper(...), $descriptor->methods);
+
+        $descriptor->pattern = RouteCompiler::compileRoute($descriptor->path, $descriptor->patterns);
     }
 }
