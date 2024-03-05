@@ -22,7 +22,7 @@ use Throwable;
  */
 final class HttpExceptionFactory
 {
-    final public static function resourceNotFound(
+    public static function resourceNotFound(
         ?int $code = null,
         ?string $message = null,
         array $placeholders = [],
@@ -36,7 +36,7 @@ final class HttpExceptionFactory
         );
     }
 
-    final public static function methodNotAllowed(
+    public static function methodNotAllowed(
         ?int $code = null,
         ?string $message = null,
         array $placeholders = [],
@@ -50,7 +50,7 @@ final class HttpExceptionFactory
         );
     }
 
-    final public static function mediaTypeNotSupported(
+    public static function mediaTypeNotSupported(
         ?int $code = null,
         ?string $message = null,
         array $placeholders = [],
@@ -64,7 +64,7 @@ final class HttpExceptionFactory
         );
     }
 
-    final public static function pathVariableInvalid(
+    public static function pathVariableInvalid(
         ?int $code = null,
         ?string $message = null,
         array $placeholders = [],
@@ -78,7 +78,7 @@ final class HttpExceptionFactory
         );
     }
 
-    final public static function queryParamsInvalid(
+    public static function queryParamsInvalid(
         ?int $code = null,
         ?string $message = null,
         array $placeholders = [],
@@ -92,7 +92,7 @@ final class HttpExceptionFactory
         );
     }
 
-    final public static function queryParamMissed(
+    public static function queryParamMissed(
         ?int $code = null,
         ?string $message = null,
         array $placeholders = [],
@@ -106,7 +106,7 @@ final class HttpExceptionFactory
         );
     }
 
-    final public static function queryParamInvalid(
+    public static function queryParamInvalid(
         ?int $code = null,
         ?string $message = null,
         array $placeholders = [],
@@ -120,7 +120,7 @@ final class HttpExceptionFactory
         );
     }
 
-    final public static function headerMissed(
+    public static function headerMissed(
         ?int $code = null,
         ?string $message = null,
         array $placeholders = [],
@@ -134,7 +134,7 @@ final class HttpExceptionFactory
         );
     }
 
-    final public static function headerInvalid(
+    public static function headerInvalid(
         ?int $code = null,
         ?string $message = null,
         array $placeholders = [],
@@ -148,7 +148,7 @@ final class HttpExceptionFactory
         );
     }
 
-    final public static function cookieMissed(
+    public static function cookieMissed(
         ?int $code = null,
         ?string $message = null,
         array $placeholders = [],
@@ -162,7 +162,7 @@ final class HttpExceptionFactory
         );
     }
 
-    final public static function cookieInvalid(
+    public static function cookieInvalid(
         ?int $code = null,
         ?string $message = null,
         array $placeholders = [],
@@ -176,7 +176,7 @@ final class HttpExceptionFactory
         );
     }
 
-    final public static function bodyInvalid(
+    public static function bodyInvalid(
         ?int $code = null,
         ?string $message = null,
         array $placeholders = [],
@@ -190,7 +190,7 @@ final class HttpExceptionFactory
         );
     }
 
-    final public static function jsonPayloadEmpty(
+    public static function jsonPayloadEmpty(
         ?int $code = null,
         ?string $message = null,
         array $placeholders = [],
@@ -204,7 +204,7 @@ final class HttpExceptionFactory
         );
     }
 
-    final public static function jsonPayloadInvalid(
+    public static function jsonPayloadInvalid(
         ?int $code = null,
         ?string $message = null,
         array $placeholders = [],
@@ -218,7 +218,7 @@ final class HttpExceptionFactory
         );
     }
 
-    final public static function jsonPayloadFormInvalid(
+    public static function jsonPayloadFormInvalid(
         ?int $code = null,
         ?string $message = null,
         array $placeholders = [],
