@@ -20,7 +20,7 @@ use Stringable;
  */
 interface MediaTypeInterface extends Stringable
 {
-    public const SEPARATOR = '/';
+    final public const SEPARATOR = '/';
 
     public function getType(): string;
 

@@ -19,6 +19,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Exception\HttpException;
+use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\Helper\RouteBuilder;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Helper\RouteMatcher;
@@ -141,7 +142,7 @@ class Router
             }
 
             if (!ServerRequest::create($request)->clientProducesMediaType(...$route->getConsumedMediaTypes())) {
-                throw HttpException::mediaTypeNotSupported()
+                throw HttpExceptionFactory::mediaTypeNotSupported()
                     ->addMessagePlaceholder('{{ media_type }}', ServerRequest::create($request)->getClientProducedMediaType())
                     ->addHeaderField('Accept', ...$route->getConsumedMediaTypes());
             }
@@ -150,12 +151,12 @@ class Router
         }
 
         if (!empty($allowedMethods)) {
-            throw HttpException::methodNotAllowed()
+            throw HttpExceptionFactory::methodNotAllowed()
                 ->addMessagePlaceholder('{{ method }}', $request->getMethod())
                 ->addHeaderField('Allow', ...array_keys($allowedMethods));
         }
 
-        throw HttpException::resourceNotFound()
+        throw HttpExceptionFactory::resourceNotFound()
             ->addMessagePlaceholder('{{ resource }}', $requestPath);
     }
 

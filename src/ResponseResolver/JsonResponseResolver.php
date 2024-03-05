@@ -25,7 +25,6 @@ use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\JsonResponse;
 use Sunrise\Http\Router\ResponseResolver;
 
-use function get_debug_type;
 use function json_encode;
 use function sprintf;
 
@@ -36,8 +35,14 @@ use const JSON_THROW_ON_ERROR;
  */
 final class JsonResponseResolver implements ResponseResolverInterface
 {
-    public function __construct(private readonly ResponseFactoryInterface $responseFactory)
-    {
+    public const DEFAULT_ENCODING_FLAGS = 0;
+    public const DEFAULT_ENCODING_DEPTH = 512;
+
+    public function __construct(
+        private readonly ResponseFactoryInterface $responseFactory,
+        private readonly ?int $defaultEncodingFlags = null,
+        private readonly ?int $defaultEncodingDepth = null,
+    ) {
     }
 
     /**
@@ -54,16 +59,18 @@ final class JsonResponseResolver implements ResponseResolverInterface
             return null;
         }
 
-        $jsonResponseParams = $annotations[0]->newInstance();
+        $processParams = $annotations[0]->newInstance();
+
+        $encodingFlags = $processParams->encodingFlags ?? $this->defaultEncodingFlags ?? self::DEFAULT_ENCODING_FLAGS;
+        $encodingDepth = $processParams->encodingDepth ?? $this->defaultEncodingDepth ?? self::DEFAULT_ENCODING_DEPTH;
 
         try {
             /** @psalm-suppress ArgumentTypeCoercion */
-            $payload = json_encode($response, $jsonResponseParams->flags | JSON_THROW_ON_ERROR, $jsonResponseParams->depth);
+            $payload = json_encode($response, $encodingFlags | JSON_THROW_ON_ERROR, $encodingDepth);
         } catch (JsonException $e) {
             throw new LogicException(sprintf(
-                'The responder %s returned the response "%s" that could not be encoded to JSON due to: %s',
+                'The responder %s returned a response that could not be encoded to JSON due to: %s',
                 ResponseResolver::stringifyResponder($responder),
-                get_debug_type($response),
                 $e->getMessage(),
             ), previous: $e);
         }

@@ -20,6 +20,7 @@ use ReflectionAttribute;
 use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestCookie;
 use Sunrise\Http\Router\Exception\HttpException;
+use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\Helper\HydratorHelper;
 use Sunrise\Http\Router\Helper\ValidatorHelper;
 use Sunrise\Http\Router\ServerRequest;
@@ -67,14 +68,14 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
                 return yield $parameter->getDefaultValue();
             }
 
-            throw HttpException::cookieMissed($processParams->errorStatusCode, $processParams->errorMessage)
+            throw HttpExceptionFactory::cookieMissed($processParams->errorStatusCode, $processParams->errorMessage)
                 ->addMessagePlaceholder('{{ cookie_name }}', $processParams->cookieName);
         }
 
         try {
             $argument = $this->hydrator->castValue($requestProxy->getCookieParam($processParams->cookieName), Type::fromParameter($parameter), path: [$processParams->cookieName]);
         } catch (InvalidDataException|InvalidValueException $e) {
-            throw HttpException::cookieInvalid($processParams->errorStatusCode, $processParams->errorMessage, previous: $e)
+            throw HttpExceptionFactory::cookieInvalid($processParams->errorStatusCode, $processParams->errorMessage, previous: $e)
                 ->addMessagePlaceholder('{{ cookie_name }}', $processParams->cookieName)
                 ->addConstraintViolation(...HydratorHelper::adaptConstraintViolations($e));
         }
@@ -82,7 +83,7 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
         if (isset($this->validator)) {
             if (($constraints = ValidatorHelper::getParameterConstraints($parameter))->valid()) {
                 if (($violations = $this->validator->validate($argument, [...$constraints]))->count() > 0) {
-                    throw HttpException::cookieInvalid($processParams->errorStatusCode, $processParams->errorMessage)
+                    throw HttpExceptionFactory::cookieInvalid($processParams->errorStatusCode, $processParams->errorMessage)
                         ->addMessagePlaceholder('{{ cookie_name }}', $processParams->cookieName)
                         ->addConstraintViolation(...ValidatorHelper::adaptConstraintViolations(...$violations));
                 }

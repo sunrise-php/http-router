@@ -46,9 +46,10 @@ final class RouteBuilder
                     $value = self::stringifyValue($values[$variable['name']]);
                 } catch (InvalidArgumentException $e) {
                     throw new InvalidArgumentException(sprintf(
-                        'The route %s could not be built with an unsupported value for the variable %s.',
+                        'The route %s could not be built with an invalid value for the variable %s due to: %s',
                         $route,
                         $variable['name'],
+                        $e->getMessage(),
                     ), previous: $e);
                 }
 
@@ -98,7 +99,9 @@ final class RouteBuilder
         }
 
         throw new InvalidArgumentException(sprintf(
-            'The value "%s" could be converted to a string.',
+            'The value of the type %s could not be converted to a string. ' .
+            'To resolve this issue, use one of the following value types: ' .
+            'string, integer, backed enum or stringable object.',
             get_debug_type($value),
         ));
     }

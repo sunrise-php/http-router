@@ -20,6 +20,7 @@ use ReflectionAttribute;
 use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestHeader;
 use Sunrise\Http\Router\Exception\HttpException;
+use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\Helper\HydratorHelper;
 use Sunrise\Http\Router\Helper\ValidatorHelper;
 use Sunrise\Hydrator\Exception\InvalidDataException;
@@ -65,14 +66,14 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
                 return yield $parameter->getDefaultValue();
             }
 
-            throw HttpException::headerMissed($processParams->errorStatusCode, $processParams->errorMessage)
+            throw HttpExceptionFactory::headerMissed($processParams->errorStatusCode, $processParams->errorMessage)
                 ->addMessagePlaceholder('{{ header_name }}', $processParams->headerName);
         }
 
         try {
             $argument = $this->hydrator->castValue($context->getHeaderLine($processParams->headerName), Type::fromParameter($parameter), path: [$processParams->headerName]);
         } catch (InvalidDataException|InvalidValueException $e) {
-            throw HttpException::headerInvalid($processParams->errorStatusCode, $processParams->errorMessage, previous: $e)
+            throw HttpExceptionFactory::headerInvalid($processParams->errorStatusCode, $processParams->errorMessage, previous: $e)
                 ->addMessagePlaceholder('{{ header_name }}', $processParams->headerName)
                 ->addConstraintViolation(...HydratorHelper::adaptConstraintViolations($e));
         }
@@ -80,7 +81,7 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
         if (isset($this->validator)) {
             if (($constraints = ValidatorHelper::getParameterConstraints($parameter))->valid()) {
                 if (($violations = $this->validator->validate($argument, [...$constraints]))->count() > 0) {
-                    throw HttpException::headerInvalid($processParams->errorStatusCode, $processParams->errorMessage)
+                    throw HttpExceptionFactory::headerInvalid($processParams->errorStatusCode, $processParams->errorMessage)
                         ->addMessagePlaceholder('{{ header_name }}', $processParams->headerName)
                         ->addConstraintViolation(...ValidatorHelper::adaptConstraintViolations(...$violations));
                 }

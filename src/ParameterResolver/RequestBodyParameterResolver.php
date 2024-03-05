@@ -21,6 +21,7 @@ use ReflectionNamedType;
 use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestBody;
 use Sunrise\Http\Router\Exception\HttpException;
+use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\Helper\HydratorHelper;
 use Sunrise\Http\Router\Helper\ValidatorHelper;
 use Sunrise\Http\Router\ParameterResolver;
@@ -73,13 +74,13 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
         try {
             $argument = $this->hydrator->hydrate($type->getName(), (array) $context->getParsedBody());
         } catch (InvalidDataException $e) {
-            throw HttpException::bodyInvalid($processParams->errorStatusCode, $processParams->errorMessage, previous: $e)
+            throw HttpExceptionFactory::bodyInvalid($processParams->errorStatusCode, $processParams->errorMessage, previous: $e)
                 ->addConstraintViolation(...HydratorHelper::adaptConstraintViolations($e));
         }
 
         if (isset($this->validator)) {
             if (($violations = $this->validator->validate($argument))->count() > 0) {
-                throw HttpException::bodyInvalid($processParams->errorStatusCode, $processParams->errorMessage)
+                throw HttpExceptionFactory::bodyInvalid($processParams->errorStatusCode, $processParams->errorMessage)
                     ->addConstraintViolation(...ValidatorHelper::adaptConstraintViolations(...$violations));
             }
         }

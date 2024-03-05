@@ -22,8 +22,8 @@ use Attribute;
 final class JsonResponse
 {
     public function __construct(
-        public readonly int $flags = 0,
-        public readonly int $depth = 512,
+        public readonly ?int $encodingFlags = null,
+        public readonly ?int $encodingDepth = null,
     ) {
     }
 }

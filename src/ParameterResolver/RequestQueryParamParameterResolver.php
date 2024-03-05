@@ -20,6 +20,7 @@ use ReflectionAttribute;
 use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestQueryParam;
 use Sunrise\Http\Router\Exception\HttpException;
+use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\Helper\HydratorHelper;
 use Sunrise\Http\Router\Helper\ValidatorHelper;
 use Sunrise\Http\Router\ServerRequest;
@@ -67,14 +68,14 @@ final class RequestQueryParamParameterResolver implements ParameterResolverInter
                 return yield $parameter->getDefaultValue();
             }
 
-            throw HttpException::queryParamMissed($processParams->errorStatusCode, $processParams->errorMessage)
+            throw HttpExceptionFactory::queryParamMissed($processParams->errorStatusCode, $processParams->errorMessage)
                 ->addMessagePlaceholder('{{ param_name }}', $processParams->paramName);
         }
 
         try {
             $argument = $this->hydrator->castValue($requestProxy->getQueryParam($processParams->paramName), Type::fromParameter($parameter), path: [$processParams->paramName]);
         } catch (InvalidDataException|InvalidValueException $e) {
-            throw HttpException::queryParamInvalid($processParams->errorStatusCode, $processParams->errorMessage, previous: $e)
+            throw HttpExceptionFactory::queryParamInvalid($processParams->errorStatusCode, $processParams->errorMessage, previous: $e)
                 ->addMessagePlaceholder('{{ param_name }}', $processParams->paramName)
                 ->addConstraintViolation(...HydratorHelper::adaptConstraintViolations($e));
         }
@@ -82,7 +83,7 @@ final class RequestQueryParamParameterResolver implements ParameterResolverInter
         if (isset($this->validator)) {
             if (($constraints = ValidatorHelper::getParameterConstraints($parameter))->valid()) {
                 if (($violations = $this->validator->validate($argument, [...$constraints]))->count() > 0) {
-                    throw HttpException::queryParamInvalid($processParams->errorStatusCode, $processParams->errorMessage)
+                    throw HttpExceptionFactory::queryParamInvalid($processParams->errorStatusCode, $processParams->errorMessage)
                         ->addMessagePlaceholder('{{ param_name }}', $processParams->paramName)
                         ->addConstraintViolation(...ValidatorHelper::adaptConstraintViolations(...$violations));
                 }

@@ -28,7 +28,6 @@ use Sunrise\Http\Router\ParameterResolver\ObjectInjectionParameterResolver;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 
 use function class_exists;
-use function get_debug_type;
 use function is_array;
 use function is_callable;
 use function is_string;
@@ -81,10 +80,7 @@ final class RequestHandlerResolver
             return $requestHandler;
         }
 
-        throw new InvalidArgumentException(sprintf(
-            'The request handler "%s" could not be resolved.',
-            get_debug_type($requestHandler),
-        ));
+        throw new InvalidArgumentException('Unsupported request handler.');
     }
 
     /**
@@ -117,10 +113,7 @@ final class RequestHandlerResolver
             return $middleware;
         }
 
-        throw new InvalidArgumentException(sprintf(
-            'The middleware "%s" could not be resolved.',
-            get_debug_type($middleware),
-        ));
+        throw new InvalidArgumentException('Unsupported middleware.');
     }
 
     /**

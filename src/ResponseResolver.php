@@ -23,7 +23,6 @@ use Sunrise\Http\Router\Annotation\ResponseHeader;
 use Sunrise\Http\Router\Annotation\ResponseStatus;
 use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
 
-use function get_debug_type;
 use function sprintf;
 
 /**
@@ -57,9 +56,8 @@ final class ResponseResolver
         }
 
         throw new LogicException(sprintf(
-            'The responder %s returned the unsupported response "%s".',
+            'The responder %s returned an unsupported response.',
             self::stringifyResponder($responder),
-            get_debug_type($response),
         ));
     }
 
