@@ -18,7 +18,6 @@ use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
-use Stringable;
 use Sunrise\Http\Router\Entity\Language\ClientLanguage;
 use Sunrise\Http\Router\Entity\Language\LanguageComparator;
 use Sunrise\Http\Router\Entity\Language\LanguageInterface;
@@ -26,6 +25,7 @@ use Sunrise\Http\Router\Entity\MediaType\ClientMediaType;
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeComparator;
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 use Sunrise\Http\Router\Helper\HeaderParser;
+
 use function current;
 use function preg_match;
 use function usort;
@@ -63,6 +63,10 @@ final class ServerRequest implements ServerRequestInterface
     public function getClientProducedMediaType(): ?ClientMediaType
     {
         $header = $this->request->getHeaderLine('Content-Type');
+        if ($header === '') {
+            return null;
+        }
+
         $values = HeaderParser::parseHeader($header);
         if ($values === []) {
             return null;
@@ -87,6 +91,10 @@ final class ServerRequest implements ServerRequestInterface
     public function getClientConsumedMediaTypes(): Generator
     {
         $header = $this->request->getHeaderLine('Accept');
+        if ($header === '') {
+            return;
+        }
+
         $values = HeaderParser::parseHeader($header);
         if ($values === []) {
             return;
@@ -114,6 +122,10 @@ final class ServerRequest implements ServerRequestInterface
     public function getClientConsumedLanguages(): Generator
     {
         $header = $this->request->getHeaderLine('Accept-Language');
+        if ($header === '') {
+            return;
+        }
+
         $values = HeaderParser::parseHeader($header);
         if ($values === []) {
             return;
@@ -135,7 +147,7 @@ final class ServerRequest implements ServerRequestInterface
         }
     }
 
-    public function getClientPreferredMediaType(MediaTypeInterface|Stringable|string ...$serverProducedMediaTypes): ?ClientMediaType
+    public function getClientPreferredMediaType(MediaTypeInterface ...$serverProducedMediaTypes): ?ClientMediaType
     {
         if ($serverProducedMediaTypes === []) {
             return null;
@@ -153,7 +165,7 @@ final class ServerRequest implements ServerRequestInterface
         return null;
     }
 
-    public function getClientPreferredLanguage(LanguageInterface|Stringable|string ...$serverProducedLanguages): ?ClientLanguage
+    public function getClientPreferredLanguage(LanguageInterface ...$serverProducedLanguages): ?ClientLanguage
     {
         if ($serverProducedLanguages === []) {
             return null;
@@ -171,7 +183,7 @@ final class ServerRequest implements ServerRequestInterface
         return null;
     }
 
-    public function clientProducesMediaType(MediaTypeInterface|Stringable|string ...$serverConsumedMediaTypes): bool
+    public function clientProducesMediaType(MediaTypeInterface ...$serverConsumedMediaTypes): bool
     {
         // This case is interpreted as follows: the server accepts any media type...
         if ($serverConsumedMediaTypes === []) {
@@ -193,7 +205,7 @@ final class ServerRequest implements ServerRequestInterface
         return false;
     }
 
-    public function clientConsumesMediaType(MediaTypeInterface|Stringable|string ...$serverProducedMediaTypes): bool
+    public function clientConsumesMediaType(MediaTypeInterface ...$serverProducedMediaTypes): bool
     {
         if ($serverProducedMediaTypes === []) {
             return false;
@@ -216,7 +228,7 @@ final class ServerRequest implements ServerRequestInterface
         return false;
     }
 
-    public function clientConsumesLanguage(LanguageInterface|Stringable|string ...$serverProducedLanguages): bool
+    public function clientConsumesLanguage(LanguageInterface ...$serverProducedLanguages): bool
     {
         if ($serverProducedLanguages === []) {
             return false;

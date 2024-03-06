@@ -100,7 +100,7 @@ final class RequestPathVariableParameterResolver implements ParameterResolverInt
                 Type::fromParameter($parameter),
                 path: [$variableName],
             );
-        } catch (InvalidDataException|InvalidValueException $e) {
+        } catch (InvalidValueException|InvalidDataException $e) {
             throw HttpExceptionFactory::pathVariableInvalid($errorStatusCode, $processParams->errorMessage, previous: $e)
                 ->addMessagePlaceholder('{{ variable_name }}', $variableName)
                 ->addMessagePlaceholder('{{ route_path }}', RouteSimplifier::simplifyRoute($route->getPath()))

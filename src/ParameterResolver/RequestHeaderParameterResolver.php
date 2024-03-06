@@ -79,7 +79,7 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
                 Type::fromParameter($parameter),
                 path: [$processParams->headerName],
             );
-        } catch (InvalidDataException|InvalidValueException $e) {
+        } catch (InvalidValueException|InvalidDataException $e) {
             throw HttpExceptionFactory::headerInvalid($errorStatusCode, $processParams->errorMessage, previous: $e)
                 ->addMessagePlaceholder('{{ header_name }}', $processParams->headerName)
                 ->addConstraintViolation(...HydratorHelper::adaptConstraintViolations($e));

@@ -61,12 +61,12 @@ final class RequestQueryParamParameterResolver implements ParameterResolverInter
             throw new LogicException('At this level of the application, any operations with the request are not possible.');
         }
 
-        $request = ServerRequest::create($context);
+        $serverRequest = ServerRequest::create($context);
         $processParams = $annotations[0]->newInstance();
 
         $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
 
-        if (!$request->hasQueryParam($processParams->paramName)) {
+        if (!$serverRequest->hasQueryParam($processParams->paramName)) {
             if ($parameter->isDefaultValueAvailable()) {
                 return yield $parameter->getDefaultValue();
             }
@@ -77,11 +77,11 @@ final class RequestQueryParamParameterResolver implements ParameterResolverInter
 
         try {
             $argument = $this->hydrator->castValue(
-                $request->getQueryParam($processParams->paramName),
+                $serverRequest->getQueryParam($processParams->paramName),
                 Type::fromParameter($parameter),
                 path: [$processParams->paramName],
             );
-        } catch (InvalidDataException|InvalidValueException $e) {
+        } catch (InvalidValueException|InvalidDataException $e) {
             throw HttpExceptionFactory::queryParamInvalid($errorStatusCode, $processParams->errorMessage, previous: $e)
                 ->addMessagePlaceholder('{{ param_name }}', $processParams->paramName)
                 ->addConstraintViolation(...HydratorHelper::adaptConstraintViolations($e));

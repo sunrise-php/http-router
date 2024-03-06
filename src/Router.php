@@ -16,6 +16,7 @@ namespace Sunrise\Http\Router;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
@@ -28,16 +29,13 @@ use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
 use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
 
-use function array_flip;
-use function array_keys;
+use function array_merge;
 use function rawurldecode;
 use function sprintf;
 
 class Router
 {
     private readonly RequestHandlerResolver $requestHandlerResolver;
-
-    private array $middlewares;
 
     /**
      * @var array<string, Route>
@@ -59,24 +57,25 @@ class Router
     /**
      * @param ParameterResolverInterface[] $parameterResolvers
      * @param ResponseResolverInterface[] $responseResolvers
-     * @param list<LoaderInterface> $loaders
+     * @param LoaderInterface[] $loaders
      *
      * @since 3.0.0
      */
     public function __construct(
-        array $middlewares = [],
+        /** @var MiddlewareInterface[] */
+        private readonly array $middlewares = [],
         array $parameterResolvers = [],
         array $responseResolvers = [],
         array $loaders = [],
     ) {
-        $this->middlewares = $middlewares;
-
         $this->requestHandlerResolver = new RequestHandlerResolver(
             new ParameterResolver($parameterResolvers),
             new ResponseResolver($responseResolvers),
         );
 
-        $this->load(...$loaders);
+        foreach ($loaders as $loader) {
+            $this->load($loader);
+        }
     }
 
     /**
@@ -135,7 +134,7 @@ class Router
             }
 
             if (!$route->allowsMethod($request->getMethod())) {
-                $allowedMethods += array_flip($route->getMethods());
+                $allowedMethods = array_merge($allowedMethods, $route->getMethods());
                 continue;
             }
 
@@ -145,7 +144,7 @@ class Router
         if (!empty($allowedMethods)) {
             throw HttpExceptionFactory::methodNotAllowed()
                 ->addMessagePlaceholder('{{ method }}', $request->getMethod())
-                ->addHeaderField('Allow', ...array_keys($allowedMethods));
+                ->addHeaderField('Allow', ...$allowedMethods);
         }
 
         throw HttpExceptionFactory::resourceNotFound()
@@ -173,9 +172,9 @@ class Router
             $request = $request->withAttribute($name, $value);
         }
 
-        return $this->getRouteRequestHandler($route)->handle(
-            $request->withAttribute('@route', $route)
-        );
+        $request = $request->withAttribute('@route', $route);
+
+        return $this->getRouteRequestHandler($route)->handle($request);
     }
 
     /**

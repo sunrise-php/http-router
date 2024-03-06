@@ -19,34 +19,29 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use ReflectionClass;
 use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\Middleware\CallableMiddleware;
 use Sunrise\Http\Router\ParameterResolver\ObjectInjectionParameterResolver;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 
-use function class_exists;
 use function is_array;
 use function is_callable;
 use function is_string;
 use function is_subclass_of;
-use function sprintf;
 
 /**
  * @since 2.10.0
  */
 final class RequestHandlerResolver
 {
-    /**
-     * @var array<class-string, object>
-     */
-    private array $resolvedClasses = [];
+    private readonly ClassResolver $classResolver;
 
     public function __construct(
         private readonly ParameterResolver $parameterResolver,
         private readonly ResponseResolver $responseResolver,
     ) {
+        $this->classResolver = new ClassResolver($parameterResolver);
     }
 
     /**
@@ -54,12 +49,20 @@ final class RequestHandlerResolver
      */
     public function resolveRequestHandler(mixed $requestHandler): RequestHandlerInterface
     {
+        if ($requestHandler instanceof RequestHandlerInterface) {
+            return $requestHandler;
+        }
+
+        if ($requestHandler instanceof Closure) {
+            return new CallableRequestHandler($this->createRequestHandlerCallback($requestHandler, new ReflectionFunction($requestHandler)));
+        }
+
         // https://github.com/php/php-src/blob/3ed526441400060aa4e618b91b3352371fcd02a8/Zend/zend_API.c#L3884-L3932
         if (is_array($requestHandler) && is_callable($requestHandler, true)) {
             /** @var array{0: class-string|object, 1: non-empty-string} $requestHandler */
 
             if (is_string($requestHandler[0])) {
-                $requestHandler[0] = $this->resolveClass($requestHandler[0]);
+                $requestHandler[0] = $this->classResolver->resolveClass($requestHandler[0]);
             }
 
             if (is_callable($requestHandler)) {
@@ -68,15 +71,7 @@ final class RequestHandlerResolver
         }
 
         if (is_string($requestHandler) && is_subclass_of($requestHandler, RequestHandlerInterface::class)) {
-            return $this->resolveClass($requestHandler);
-        }
-
-        if ($requestHandler instanceof Closure) {
-            return new CallableRequestHandler($this->createRequestHandlerCallback($requestHandler, new ReflectionFunction($requestHandler)));
-        }
-
-        if ($requestHandler instanceof RequestHandlerInterface) {
-            return $requestHandler;
+            return $this->classResolver->resolveClass($requestHandler);
         }
 
         throw new InvalidArgumentException('Unsupported request handler.');
@@ -87,8 +82,16 @@ final class RequestHandlerResolver
      */
     public function resolveMiddleware(mixed $middleware): MiddlewareInterface
     {
+        if ($middleware instanceof MiddlewareInterface) {
+            return $middleware;
+        }
+
+        if ($middleware instanceof Closure) {
+            return new CallableMiddleware($this->createMiddlewareCallback($middleware, new ReflectionFunction($middleware)));
+        }
+
         if (is_string($middleware) && is_subclass_of($middleware, MiddlewareInterface::class)) {
-            return $this->resolveClass($middleware);
+            return $this->classResolver->resolveClass($middleware);
         }
 
         // https://github.com/php/php-src/blob/3ed526441400060aa4e618b91b3352371fcd02a8/Zend/zend_API.c#L3884-L3932
@@ -96,7 +99,7 @@ final class RequestHandlerResolver
             /** @var array{0: class-string|object, 1: non-empty-string} $middleware */
 
             if (is_string($middleware[0])) {
-                $middleware[0] = $this->resolveClass($middleware[0]);
+                $middleware[0] = $this->classResolver->resolveClass($middleware[0]);
             }
 
             if (is_callable($middleware)) {
@@ -104,50 +107,7 @@ final class RequestHandlerResolver
             }
         }
 
-        if ($middleware instanceof Closure) {
-            return new CallableMiddleware($this->createMiddlewareCallback($middleware, new ReflectionFunction($middleware)));
-        }
-
-        if ($middleware instanceof MiddlewareInterface) {
-            return $middleware;
-        }
-
         throw new InvalidArgumentException('Unsupported middleware.');
-    }
-
-    /**
-     * @param class-string<T> $className
-     *
-     * @return T
-     *
-     * @template T of object
-     *
-     * @throws InvalidArgumentException If the class couldn't be resolved.
-     */
-    private function resolveClass(string $className): object
-    {
-        if (isset($this->resolvedClasses[$className])) {
-            /** @var T */
-            return $this->resolvedClasses[$className];
-        }
-
-        if (!class_exists($className)) {
-            throw new InvalidArgumentException(sprintf('The class %s does not exist and cannot be resolved.', $className));
-        }
-
-        $classReflection = new ReflectionClass($className);
-        if (!$classReflection->isInstantiable()) {
-            throw new InvalidArgumentException(sprintf('The class %s is not instantiable and cannot be resolved.', $className));
-        }
-
-        $arguments = [];
-        $constructor = $classReflection->getConstructor();
-        if (isset($constructor) && $constructor->getNumberOfParameters()) {
-            $arguments = $this->parameterResolver->resolveParameters(...$constructor->getParameters());
-        }
-
-        /** @var T */
-        return $this->resolvedClasses[$className] = $classReflection->newInstance(...$arguments);
     }
 
     /**
@@ -162,7 +122,9 @@ final class RequestHandlerResolver
                 $callback(...
                     $this->parameterResolver
                         ->withContext($request)
-                        ->withPriorityResolver(new ObjectInjectionParameterResolver($request))
+                        ->withPriorityResolver(
+                            new ObjectInjectionParameterResolver($request),
+                        )
                         ->resolveParameters(...$reflection->getParameters())
                 ),
                 $reflection,

@@ -61,12 +61,12 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
             throw new LogicException('At this level of the application, any operations with the request are not possible.');
         }
 
-        $request = ServerRequest::create($context);
+        $serverRequest = ServerRequest::create($context);
         $processParams = $annotations[0]->newInstance();
 
         $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
 
-        if (!$request->hasCookieParam($processParams->cookieName)) {
+        if (!$serverRequest->hasCookieParam($processParams->cookieName)) {
             if ($parameter->isDefaultValueAvailable()) {
                 return yield $parameter->getDefaultValue();
             }
@@ -77,11 +77,11 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
 
         try {
             $argument = $this->hydrator->castValue(
-                $request->getCookieParam($processParams->cookieName),
+                $serverRequest->getCookieParam($processParams->cookieName),
                 Type::fromParameter($parameter),
                 path: [$processParams->cookieName],
             );
-        } catch (InvalidDataException|InvalidValueException $e) {
+        } catch (InvalidValueException|InvalidDataException $e) {
             throw HttpExceptionFactory::cookieInvalid($errorStatusCode, $processParams->errorMessage, previous: $e)
                 ->addMessagePlaceholder('{{ cookie_name }}', $processParams->cookieName)
                 ->addConstraintViolation(...HydratorHelper::adaptConstraintViolations($e));
