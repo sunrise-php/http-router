@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router;
 
 use Generator;
+use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
@@ -25,6 +26,9 @@ use Sunrise\Http\Router\Entity\MediaType\ClientMediaType;
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeComparator;
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 use Sunrise\Http\Router\Helper\HeaderParser;
+use function current;
+use function preg_match;
+use function usort;
 
 /**
  * @since 3.0.0
@@ -45,11 +49,36 @@ final class ServerRequest implements ServerRequestInterface
         return $this->request;
     }
 
+    public function getRoute(): Route
+    {
+        /** @var Route|null $route */
+        $route = $this->getAttribute('@route');
+        if (! $route instanceof Route) {
+            throw new LogicException('At this level of the application, the request does not contain a route.');
+        }
+
+        return $route;
+    }
+
     public function getClientProducedMediaType(): ?ClientMediaType
     {
-        return HeaderParser::parseContentTypeHeader(
-            $this->request->getHeaderLine('Content-Type')
-        );
+        $header = $this->request->getHeaderLine('Content-Type');
+        $values = HeaderParser::parseHeader($header);
+        if ($values === []) {
+            return null;
+        }
+
+        [$identifier, $parameters] = current($values);
+
+        if (preg_match('|^([^/*]+)/([^/*]+)$|', $identifier, $matches)) {
+            return new ClientMediaType(
+                type: $matches[1],
+                subtype: $matches[2],
+                parameters: $parameters,
+            );
+        }
+
+        return null;
     }
 
     /**
@@ -57,9 +86,26 @@ final class ServerRequest implements ServerRequestInterface
      */
     public function getClientConsumedMediaTypes(): Generator
     {
-        yield from HeaderParser::parseAcceptHeader(
-            $this->request->getHeaderLine('Accept')
-        );
+        $header = $this->request->getHeaderLine('Accept');
+        $values = HeaderParser::parseHeader($header);
+        if ($values === []) {
+            return;
+        }
+
+        // https://github.com/php/php-src/blob/d9549d2ee215cb04aa5d2e3195c608d581fb272c/ext/standard/array.c#L900-L903
+        usort($values, static fn(array $a, array $b): int => (
+            (float) ($b[1]['q'] ?? '1') <=> (float) ($a[1]['q'] ?? '1')
+        ));
+
+        foreach ($values as $index => [$identifier, $parameters]) {
+            if (preg_match('|^([^/]+)/([^/]+)$|', $identifier, $matches)) {
+                yield $index => new ClientMediaType(
+                    type: $matches[1],
+                    subtype: $matches[2],
+                    parameters: $parameters,
+                );
+            }
+        }
     }
 
     /**
@@ -67,9 +113,26 @@ final class ServerRequest implements ServerRequestInterface
      */
     public function getClientConsumedLanguages(): Generator
     {
-        yield from HeaderParser::parseAcceptLanguageHeader(
-            $this->request->getHeaderLine('Accept-Language')
-        );
+        $header = $this->request->getHeaderLine('Accept-Language');
+        $values = HeaderParser::parseHeader($header);
+        if ($values === []) {
+            return;
+        }
+
+        // https://github.com/php/php-src/blob/d9549d2ee215cb04aa5d2e3195c608d581fb272c/ext/standard/array.c#L900-L903
+        usort($values, static fn(array $a, array $b): int => (
+            (float) ($b[1]['q'] ?? '1') <=> (float) ($a[1]['q'] ?? '1')
+        ));
+
+        foreach ($values as $index => [$identifier, $parameters]) {
+            if (preg_match('|^(?:i-)?([^-]+)(?:-[^-]+)*$|', $identifier, $matches)) {
+                yield $index => new ClientLanguage(
+                    code: $matches[1],
+                    locale: $identifier,
+                    parameters: $parameters,
+                );
+            }
+        }
     }
 
     public function getClientPreferredMediaType(MediaTypeInterface|Stringable|string ...$serverProducedMediaTypes): ?ClientMediaType

@@ -24,6 +24,8 @@ final class CallableRequestHandler implements RequestHandlerInterface
 {
     /**
      * @var T
+     *
+     * @readonly
      */
     private $callback;
 

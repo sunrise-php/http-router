@@ -27,6 +27,8 @@ final class CallableMiddleware implements MiddlewareInterface
 {
     /**
      * @var T
+     *
+     * @readonly
      */
     private $callback;
 

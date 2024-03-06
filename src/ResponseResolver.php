@@ -56,7 +56,7 @@ final class ResponseResolver
         }
 
         throw new LogicException(sprintf(
-            'The responder %s returned an unsupported response.',
+            'The responder %s returned an unsupported response that could not be resolved.',
             self::stringifyResponder($responder),
         ));
     }

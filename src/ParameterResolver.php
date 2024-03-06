@@ -77,7 +77,7 @@ final class ParameterResolver
         }
 
         throw new LogicException(sprintf(
-            'The parameter %s could not be resolved.',
+            'The parameter %s could not be resolved because it is not supported.',
             self::stringifyParameter($parameter),
         ));
     }

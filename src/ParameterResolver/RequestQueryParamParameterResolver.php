@@ -38,6 +38,7 @@ final class RequestQueryParamParameterResolver implements ParameterResolverInter
     public function __construct(
         private readonly HydratorInterface $hydrator,
         private readonly ?ValidatorInterface $validator = null,
+        private readonly ?int $defaultErrorStatusCode = null,
     ) {
     }
 
@@ -60,22 +61,28 @@ final class RequestQueryParamParameterResolver implements ParameterResolverInter
             throw new LogicException('At this level of the application, any operations with the request are not possible.');
         }
 
-        $requestProxy = ServerRequest::create($context);
+        $request = ServerRequest::create($context);
         $processParams = $annotations[0]->newInstance();
 
-        if (!$requestProxy->hasQueryParam($processParams->paramName)) {
+        $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
+
+        if (!$request->hasQueryParam($processParams->paramName)) {
             if ($parameter->isDefaultValueAvailable()) {
                 return yield $parameter->getDefaultValue();
             }
 
-            throw HttpExceptionFactory::queryParamMissed($processParams->errorStatusCode, $processParams->errorMessage)
+            throw HttpExceptionFactory::queryParamMissed($errorStatusCode, $processParams->errorMessage)
                 ->addMessagePlaceholder('{{ param_name }}', $processParams->paramName);
         }
 
         try {
-            $argument = $this->hydrator->castValue($requestProxy->getQueryParam($processParams->paramName), Type::fromParameter($parameter), path: [$processParams->paramName]);
+            $argument = $this->hydrator->castValue(
+                $request->getQueryParam($processParams->paramName),
+                Type::fromParameter($parameter),
+                path: [$processParams->paramName],
+            );
         } catch (InvalidDataException|InvalidValueException $e) {
-            throw HttpExceptionFactory::queryParamInvalid($processParams->errorStatusCode, $processParams->errorMessage, previous: $e)
+            throw HttpExceptionFactory::queryParamInvalid($errorStatusCode, $processParams->errorMessage, previous: $e)
                 ->addMessagePlaceholder('{{ param_name }}', $processParams->paramName)
                 ->addConstraintViolation(...HydratorHelper::adaptConstraintViolations($e));
         }
@@ -83,7 +90,7 @@ final class RequestQueryParamParameterResolver implements ParameterResolverInter
         if (isset($this->validator)) {
             if (($constraints = ValidatorHelper::getParameterConstraints($parameter))->valid()) {
                 if (($violations = $this->validator->validate($argument, [...$constraints]))->count() > 0) {
-                    throw HttpExceptionFactory::queryParamInvalid($processParams->errorStatusCode, $processParams->errorMessage)
+                    throw HttpExceptionFactory::queryParamInvalid($errorStatusCode, $processParams->errorMessage)
                         ->addMessagePlaceholder('{{ param_name }}', $processParams->paramName)
                         ->addConstraintViolation(...ValidatorHelper::adaptConstraintViolations(...$violations));
                 }

@@ -38,6 +38,8 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
 {
     /**
      * @inheritDoc
+     *
+     * @throws HttpException If the request's payload couldn't be decoded.
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
@@ -51,7 +53,7 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
     /**
      * @return array<array-key, mixed>
      *
-     * @throws HttpException If the JSON payload couldn't be decoded.
+     * @throws HttpException If the payload couldn't be decoded.
      */
     private function decodePayload(string $payload): array
     {

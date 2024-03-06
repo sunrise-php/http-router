@@ -39,6 +39,7 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
     public function __construct(
         private readonly HydratorInterface $hydrator,
         private readonly ?ValidatorInterface $validator = null,
+        private readonly ?int $defaultErrorStatusCode = null,
     ) {
     }
 
@@ -71,16 +72,18 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
 
         $processParams = $annotations[0]->newInstance();
 
+        $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
+
         try {
             $argument = $this->hydrator->hydrate($type->getName(), (array) $context->getParsedBody());
         } catch (InvalidDataException $e) {
-            throw HttpExceptionFactory::bodyInvalid($processParams->errorStatusCode, $processParams->errorMessage, previous: $e)
+            throw HttpExceptionFactory::bodyInvalid($errorStatusCode, $processParams->errorMessage, previous: $e)
                 ->addConstraintViolation(...HydratorHelper::adaptConstraintViolations($e));
         }
 
         if (isset($this->validator)) {
             if (($violations = $this->validator->validate($argument))->count() > 0) {
-                throw HttpExceptionFactory::bodyInvalid($processParams->errorStatusCode, $processParams->errorMessage)
+                throw HttpExceptionFactory::bodyInvalid($errorStatusCode, $processParams->errorMessage)
                     ->addConstraintViolation(...ValidatorHelper::adaptConstraintViolations(...$violations));
             }
         }

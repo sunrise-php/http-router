@@ -13,91 +13,15 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Helper;
 
-use Generator;
 use Sunrise\Http\Router\Dictionary\Charset;
-use Sunrise\Http\Router\Entity\Language\ClientLanguage;
-use Sunrise\Http\Router\Entity\MediaType\ClientMediaType;
 
-use function current;
-use function preg_match;
 use function trim;
-use function usort;
 
 /**
  * @since 3.0.0
  */
 final class HeaderParser
 {
-    public static function parseContentTypeHeader(string $header): ?ClientMediaType
-    {
-        $values = self::parseHeader($header);
-        if ($values === []) {
-            return null;
-        }
-
-        [$identifier, $parameters] = current($values);
-
-        if (preg_match('|^([^/*]+)/([^/*]+)$|', $identifier, $matches)) {
-            return new ClientMediaType(
-                type: $matches[1],
-                subtype: $matches[2],
-                parameters: $parameters,
-            );
-        }
-
-        return null;
-    }
-
-    /**
-     * @return Generator<int<0, max>, ClientMediaType>
-     */
-    public static function parseAcceptHeader(string $header): Generator
-    {
-        $values = self::parseHeader($header);
-        if ($values === []) {
-            return;
-        }
-
-        usort($values, static fn(array $a, array $b): int => (
-            (float) ($b[1]['q'] ?? '1') <=> (float) ($a[1]['q'] ?? '1')
-        ));
-
-        foreach ($values as $index => [$identifier, $parameters]) {
-            if (preg_match('|^([^/]+)/([^/]+)$|', $identifier, $matches)) {
-                yield $index => new ClientMediaType(
-                    type: $matches[1],
-                    subtype: $matches[2],
-                    parameters: $parameters,
-                );
-            }
-        }
-    }
-
-    /**
-     * @return Generator<int<0, max>, ClientLanguage>
-     */
-    public static function parseAcceptLanguageHeader(string $header): Generator
-    {
-        $values = self::parseHeader($header);
-        if ($values === []) {
-            return;
-        }
-
-        usort($values, static fn(array $a, array $b): int => (
-            (float) ($b[1]['q'] ?? '1') <=> (float) ($a[1]['q'] ?? '1')
-        ));
-
-        foreach ($values as $index => [$identifier, $parameters]) {
-            if (preg_match('|^(?:i-)?([^-]+)(?:-[^-]+)*$|', $identifier, $matches)) {
-                yield $index => new ClientLanguage(
-                    code: $matches[1],
-                    locale: $identifier,
-                    parameters: $parameters,
-                );
-            }
-        }
-    }
-
     /**
      * @return array<int<0, max>, array{0: string, 1: array<string, string>}>
      */

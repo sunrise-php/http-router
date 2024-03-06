@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Loader;
 
 use Generator;
-use LogicException;
+use InvalidArgumentException;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\SimpleCache\CacheException;
 use Psr\SimpleCache\CacheInterface;
@@ -65,7 +65,7 @@ final class DescriptorLoader implements LoaderInterface
     /**
      * @inheritDoc
      *
-     * @throws LogicException If one of the resources isn't supported.
+     * @throws InvalidArgumentException If one of the resources isn't supported.
      *
      * @throws CacheException If something went wrong while working with the cache.
      */
@@ -95,13 +95,13 @@ final class DescriptorLoader implements LoaderInterface
     /**
      * @return list<Descriptor>
      *
-     * @throws LogicException If one of the resources isn't supported.
+     * @throws InvalidArgumentException If one of the resources isn't supported.
      *
      * @throws CacheException If something went wrong while working with the cache.
      */
     private function getDescriptors(): array
     {
-        /** @var list<Descriptor>|null $descriptors */
+        /** @var null|list<Descriptor> $descriptors */
         $descriptors = $this->cache?->get($this->cacheKey);
         if (isset($descriptors)) {
             return $descriptors;
@@ -124,7 +124,7 @@ final class DescriptorLoader implements LoaderInterface
     /**
      * @return Generator<int, Descriptor>
      *
-     * @throws LogicException If the resource isn't supported.
+     * @throws InvalidArgumentException If the resource isn't supported.
      */
     private function getResourceDescriptors(string $resource): Generator
     {
@@ -152,7 +152,7 @@ final class DescriptorLoader implements LoaderInterface
             return;
         }
 
-        throw new LogicException(sprintf(
+        throw new InvalidArgumentException(sprintf(
             'The loader %s only accepts directory, file or class names; ' .
             'however, the resource %s is not one of them.',
             __CLASS__,

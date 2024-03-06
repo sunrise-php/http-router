@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router;
 
 use InvalidArgumentException;
-use LogicException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -31,7 +30,6 @@ use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
 
 use function array_flip;
 use function array_keys;
-use function in_array;
 use function rawurldecode;
 use function sprintf;
 
@@ -136,15 +134,9 @@ class Router
                 continue;
             }
 
-            if (!$this->routeSupportsMethod($route, $request->getMethod())) {
+            if (!$route->allowsMethod($request->getMethod())) {
                 $allowedMethods += array_flip($route->getMethods());
                 continue;
-            }
-
-            if (!ServerRequest::create($request)->clientProducesMediaType(...$route->getConsumedMediaTypes())) {
-                throw HttpExceptionFactory::mediaTypeNotSupported()
-                    ->addMessagePlaceholder('{{ media_type }}', ServerRequest::create($request)->getClientProducedMediaType())
-                    ->addHeaderField('Accept', ...$route->getConsumedMediaTypes());
             }
 
             return $route->withAddedAttributes($matches);
@@ -165,9 +157,7 @@ class Router
      */
     public function run(ServerRequestInterface $request): ResponseInterface
     {
-        return $this->getRouterRequestHandler()->handle(
-            $request->withAttribute('@router', $this)
-        );
+        return $this->getRouterRequestHandler()->handle($request);
     }
 
     /**
@@ -190,6 +180,8 @@ class Router
 
     /**
      * @throws InvalidArgumentException
+     *
+     * @since 3.0.0
      */
     public function buildRoute(Route|string $route, array $values = []): string
     {
@@ -204,6 +196,8 @@ class Router
      * @return non-empty-string
      *
      * @throws InvalidArgumentException
+     *
+     * @since 3.0.0
      */
     public function compileRoute(Route|string $route): string
     {
@@ -215,24 +209,7 @@ class Router
     }
 
     /**
-     * @since 3.0.0
-     */
-    public function routeSupportsMethod(Route|string $route, string $method): bool
-    {
-        if (! $route instanceof Route) {
-            $route = $this->getRoute($route);
-        }
-
-        $methods = $route->getMethods();
-        if ($methods === []) {
-            return true;
-        }
-
-        return in_array($method, $methods, true);
-    }
-
-    /**
-     * @throws LogicException If the route is associated with an unsupported request handler or middleware.
+     * @throws InvalidArgumentException If the route is associated with an unsupported request handler or middleware.
      *
      * @since 3.0.0
      */
@@ -250,7 +227,7 @@ class Router
         try {
             $this->routeRequestHandlers[$routeName] = $this->requestHandlerResolver->resolveRequestHandler($route->getRequestHandler());
         } catch (InvalidArgumentException $e) {
-            throw new LogicException(sprintf(
+            throw new InvalidArgumentException(sprintf(
                 'The route %s refers to an unsupported request handler.',
                 $routeName,
             ), previous: $e);
@@ -267,7 +244,7 @@ class Router
             try {
                 $middleware = $this->requestHandlerResolver->resolveMiddleware($middleware);
             } catch (InvalidArgumentException $e) {
-                throw new LogicException(sprintf(
+                throw new InvalidArgumentException(sprintf(
                     'The route %s refers to an unsupported middleware.',
                     $routeName,
                 ), previous: $e);
@@ -280,7 +257,7 @@ class Router
     }
 
     /**
-     * @throws LogicException If the router is associated with an unsupported middleware.
+     * @throws InvalidArgumentException If the router is associated with an unsupported middleware.
      *
      * @since 3.0.0
      */
@@ -306,7 +283,7 @@ class Router
             try {
                 $middleware = $this->requestHandlerResolver->resolveMiddleware($middleware);
             } catch (InvalidArgumentException $e) {
-                throw new LogicException('The router refers to an unsupported middleware.', previous: $e);
+                throw new InvalidArgumentException('The router refers to an unsupported middleware.', previous: $e);
             }
 
             $this->routerRequestHandler->enqueue($middleware);

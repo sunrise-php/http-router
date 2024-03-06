@@ -60,7 +60,7 @@ final class Route
     public int $priority = 0;
 
     public function __construct(
-        public string $name,
+        public readonly string $name,
         public string $path,
     ) {
     }

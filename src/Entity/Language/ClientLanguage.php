@@ -21,6 +21,7 @@ final class ClientLanguage implements LanguageInterface
     public function __construct(
         private readonly string $code,
         // One of the Accept-Language header's identifiers
+        // https://datatracker.ietf.org/doc/html/rfc7231#section-5.3.5
         private readonly string $locale,
         /** @var array<string, string> */
         private readonly array $parameters,

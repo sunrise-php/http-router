@@ -38,6 +38,7 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
     public function __construct(
         private readonly HydratorInterface $hydrator,
         private readonly ?ValidatorInterface $validator = null,
+        private readonly ?int $defaultErrorStatusCode = null,
     ) {
     }
 
@@ -60,22 +61,28 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
             throw new LogicException('At this level of the application, any operations with the request are not possible.');
         }
 
-        $requestProxy = ServerRequest::create($context);
+        $request = ServerRequest::create($context);
         $processParams = $annotations[0]->newInstance();
 
-        if (!$requestProxy->hasCookieParam($processParams->cookieName)) {
+        $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
+
+        if (!$request->hasCookieParam($processParams->cookieName)) {
             if ($parameter->isDefaultValueAvailable()) {
                 return yield $parameter->getDefaultValue();
             }
 
-            throw HttpExceptionFactory::cookieMissed($processParams->errorStatusCode, $processParams->errorMessage)
+            throw HttpExceptionFactory::cookieMissed($errorStatusCode, $processParams->errorMessage)
                 ->addMessagePlaceholder('{{ cookie_name }}', $processParams->cookieName);
         }
 
         try {
-            $argument = $this->hydrator->castValue($requestProxy->getCookieParam($processParams->cookieName), Type::fromParameter($parameter), path: [$processParams->cookieName]);
+            $argument = $this->hydrator->castValue(
+                $request->getCookieParam($processParams->cookieName),
+                Type::fromParameter($parameter),
+                path: [$processParams->cookieName],
+            );
         } catch (InvalidDataException|InvalidValueException $e) {
-            throw HttpExceptionFactory::cookieInvalid($processParams->errorStatusCode, $processParams->errorMessage, previous: $e)
+            throw HttpExceptionFactory::cookieInvalid($errorStatusCode, $processParams->errorMessage, previous: $e)
                 ->addMessagePlaceholder('{{ cookie_name }}', $processParams->cookieName)
                 ->addConstraintViolation(...HydratorHelper::adaptConstraintViolations($e));
         }
@@ -83,7 +90,7 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
         if (isset($this->validator)) {
             if (($constraints = ValidatorHelper::getParameterConstraints($parameter))->valid()) {
                 if (($violations = $this->validator->validate($argument, [...$constraints]))->count() > 0) {
-                    throw HttpExceptionFactory::cookieInvalid($processParams->errorStatusCode, $processParams->errorMessage)
+                    throw HttpExceptionFactory::cookieInvalid($errorStatusCode, $processParams->errorMessage)
                         ->addMessagePlaceholder('{{ cookie_name }}', $processParams->cookieName)
                         ->addConstraintViolation(...ValidatorHelper::adaptConstraintViolations(...$violations));
                 }

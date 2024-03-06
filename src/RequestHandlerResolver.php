@@ -15,7 +15,6 @@ namespace Sunrise\Http\Router;
 
 use Closure;
 use InvalidArgumentException;
-use LogicException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -123,7 +122,7 @@ final class RequestHandlerResolver
      *
      * @template T of object
      *
-     * @throws LogicException If the class couldn't be resolved.
+     * @throws InvalidArgumentException If the class couldn't be resolved.
      */
     private function resolveClass(string $className): object
     {
@@ -133,12 +132,12 @@ final class RequestHandlerResolver
         }
 
         if (!class_exists($className)) {
-            throw new LogicException(sprintf('The class %s does not exist and cannot be resolved.', $className));
+            throw new InvalidArgumentException(sprintf('The class %s does not exist and cannot be resolved.', $className));
         }
 
         $classReflection = new ReflectionClass($className);
         if (!$classReflection->isInstantiable()) {
-            throw new LogicException(sprintf('The class %s is not instantiable and cannot be resolved.', $className));
+            throw new InvalidArgumentException(sprintf('The class %s is not instantiable and cannot be resolved.', $className));
         }
 
         $arguments = [];
