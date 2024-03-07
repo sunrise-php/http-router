@@ -185,8 +185,8 @@ final class RouteParser
                 continue;
             }
 
-            // (xxx{foo}xxx)
-            // ~^^^~~~~~^^^~
+            // (left{foo}right)
+            // ~^^^^~~~~~^^^^^~
             if (($cursor & $inOptionalPart) && !($cursor & $inVariable)) {
                 if (!($cursor & $inOccupiedPart)) {
                     $left .= $route[$offset];

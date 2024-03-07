@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router;
+namespace Sunrise\Http\Router\Validation;
 
 /**
  * @since 3.0.0

@@ -17,10 +17,7 @@ use Generator;
 use ReflectionAttribute;
 use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\Constraint as RouterConstraint;
-use Sunrise\Http\Router\ConstraintViolation as RouterConstraintViolation;
-use Sunrise\Http\Router\ConstraintViolationInterface as RouterConstraintViolationInterface;
 use Symfony\Component\Validator\Constraint as ValidatorConstraint;
-use Symfony\Component\Validator\ConstraintViolationInterface as ValidatorConstraintViolationInterface;
 
 /**
  * @since 3.0.0
@@ -38,22 +35,6 @@ final class ValidatorHelper
             if ($routerConstraint->value instanceof ValidatorConstraint) {
                 yield $routerConstraint->value;
             }
-        }
-    }
-
-    /**
-     * @return Generator<int, RouterConstraintViolationInterface>
-     */
-    public static function adaptConstraintViolations(ValidatorConstraintViolationInterface ...$validatorConstraintViolations): Generator
-    {
-        foreach ($validatorConstraintViolations as $validatorConstraintViolation) {
-            yield new RouterConstraintViolation(
-                (string) $validatorConstraintViolation->getMessage(),
-                $validatorConstraintViolation->getMessageTemplate(),
-                $validatorConstraintViolation->getParameters(),
-                $validatorConstraintViolation->getPropertyPath(),
-                $validatorConstraintViolation->getCode(),
-            );
         }
     }
 }

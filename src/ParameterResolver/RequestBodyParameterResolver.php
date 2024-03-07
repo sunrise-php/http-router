@@ -22,13 +22,14 @@ use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestBody;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
-use Sunrise\Http\Router\Helper\HydratorHelper;
-use Sunrise\Http\Router\Helper\ValidatorHelper;
 use Sunrise\Http\Router\ParameterResolver;
+use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
+use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationProxy;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\HydratorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+use function array_map;
 use function sprintf;
 
 /**
@@ -78,13 +79,13 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
             $argument = $this->hydrator->hydrate($type->getName(), (array) $context->getParsedBody());
         } catch (InvalidDataException $e) {
             throw HttpExceptionFactory::bodyInvalid($errorStatusCode, $processParams->errorMessage, previous: $e)
-                ->addConstraintViolation(...HydratorHelper::adaptConstraintViolations($e));
+                ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), $e->getExceptions()));
         }
 
         if (isset($this->validator)) {
             if (($violations = $this->validator->validate($argument))->count() > 0) {
                 throw HttpExceptionFactory::bodyInvalid($errorStatusCode, $processParams->errorMessage)
-                    ->addConstraintViolation(...ValidatorHelper::adaptConstraintViolations(...$violations));
+                    ->addConstraintViolation(...array_map(ValidatorConstraintViolationProxy::create(...), [...$violations]));
             }
         }
 

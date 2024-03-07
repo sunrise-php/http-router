@@ -21,17 +21,19 @@ use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestPathVariable;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
-use Sunrise\Http\Router\Helper\HydratorHelper;
 use Sunrise\Http\Router\Helper\RouteSimplifier;
 use Sunrise\Http\Router\Helper\ValidatorHelper;
 use Sunrise\Http\Router\ParameterResolver;
 use Sunrise\Http\Router\Route;
+use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
+use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationProxy;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
 use Sunrise\Hydrator\Type;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+use function array_map;
 use function sprintf;
 
 /**
@@ -101,10 +103,12 @@ final class RequestPathVariableParameterResolver implements ParameterResolverInt
                 path: [$variableName],
             );
         } catch (InvalidValueException|InvalidDataException $e) {
+            $violations = ($e instanceof InvalidValueException) ? [$e] : $e->getExceptions();
+
             throw HttpExceptionFactory::pathVariableInvalid($errorStatusCode, $processParams->errorMessage, previous: $e)
                 ->addMessagePlaceholder('{{ variable_name }}', $variableName)
                 ->addMessagePlaceholder('{{ route_path }}', RouteSimplifier::simplifyRoute($route->getPath()))
-                ->addConstraintViolation(...HydratorHelper::adaptConstraintViolations($e));
+                ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), $violations));
         }
 
         if (isset($this->validator)) {
@@ -113,7 +117,7 @@ final class RequestPathVariableParameterResolver implements ParameterResolverInt
                     throw HttpExceptionFactory::pathVariableInvalid($errorStatusCode, $processParams->errorMessage)
                         ->addMessagePlaceholder('{{ variable_name }}', $variableName)
                         ->addMessagePlaceholder('{{ route_path }}', RouteSimplifier::simplifyRoute($route->getPath()))
-                        ->addConstraintViolation(...ValidatorHelper::adaptConstraintViolations(...$violations));
+                        ->addConstraintViolation(...array_map(ValidatorConstraintViolationProxy::create(...), [...$violations]));
                 }
             }
         }

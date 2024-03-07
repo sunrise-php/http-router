@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Exception;
 
-use Sunrise\Http\Router\ConstraintViolationInterface;
+use Sunrise\Http\Router\Validation\ConstraintViolationInterface;
 
 /**
  * @since 3.0.0

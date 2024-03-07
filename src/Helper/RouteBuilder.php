@@ -87,14 +87,11 @@ final class RouteBuilder
     {
         if (is_string($value)) {
             return $value;
-        }
-        if (is_int($value)) {
+        } elseif (is_int($value)) {
             return (string) $value;
-        }
-        if ($value instanceof BackedEnum) {
+        } elseif ($value instanceof BackedEnum) {
             return (string) $value->value;
-        }
-        if ($value instanceof Stringable) {
+        } elseif ($value instanceof Stringable) {
             return $value->__toString();
         }
 

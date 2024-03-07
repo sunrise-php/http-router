@@ -19,45 +19,100 @@ use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
 final class Route
 {
+    /**
+     * The route's request handler.
+     */
     public mixed $holder = null;
 
-    /** @var list<string> */
+    /**
+     * Use the {@see Prefix} annotation.
+     *
+     * @var list<string>
+     */
     public array $prefixes = [];
 
-    /** @var array<string, string> */
+    /**
+     * Use the {@see Pattern} annotation.
+     *
+     * @var array<string, string>
+     */
     public array $patterns = [];
 
-    /** @var list<string> */
+    /**
+     * Use the {@see Method} annotation.
+     *
+     * @var list<string>
+     */
     public array $methods = [];
 
-    /** @var array<string, mixed> */
+    /**
+     * Use the {@see \Sunrise\Http\Router\Annotation\Attribute} annotation.
+     *
+     * @var array<string, mixed>
+     */
     public array $attributes = [];
 
-    /** @var list<mixed> */
+    /**
+     * Use the {@see Middleware} annotation.
+     *
+     * @var list<mixed>
+     */
     public array $middlewares = [];
 
-    /** @var list<mixed> */
+    /**
+     * Use the {@see Constraint} annotation.
+     *
+     * @var list<mixed>
+     */
     public array $constraints = [];
 
-    /** @var list<MediaTypeInterface> */
+    /**
+     * Use the {@see Consumes} annotation.
+     *
+     * @var list<MediaTypeInterface>
+     */
     public array $consumes = [];
 
-    /** @var list<MediaTypeInterface> */
+    /**
+     * Use the {@see Produces} annotation.
+     *
+     * @var list<MediaTypeInterface>
+     */
     public array $produces = [];
 
-    /** @var list<string> */
+    /**
+     * Use the {@see Tag} annotation.
+     *
+     * @var list<string>
+     */
     public array $tags = [];
 
+    /**
+     * Use the {@see Summary} annotation.
+     */
     public string $summary = '';
 
+    /**
+     * Use the {@see Description} annotation.
+     */
     public string $description = '';
 
+    /**
+     * Use the {@see Deprecated} annotation.
+     */
     public bool $isDeprecated = false;
 
-    /** @var non-empty-string|null */
-    public string|null $pattern = null;
-
+    /**
+     * Use the {@see Priority} annotation.
+     */
     public int $priority = 0;
+
+    /**
+     * The route compilation result.
+     *
+     * @var non-empty-string|null
+     */
+    public string|null $pattern = null;
 
     public function __construct(
         public readonly string $name,

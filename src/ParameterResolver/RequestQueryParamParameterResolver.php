@@ -21,14 +21,17 @@ use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestQueryParam;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
-use Sunrise\Http\Router\Helper\HydratorHelper;
 use Sunrise\Http\Router\Helper\ValidatorHelper;
 use Sunrise\Http\Router\ServerRequest;
+use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
+use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationProxy;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
 use Sunrise\Hydrator\Type;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+
+use function array_map;
 
 /**
  * @since 3.0.0
@@ -82,9 +85,11 @@ final class RequestQueryParamParameterResolver implements ParameterResolverInter
                 path: [$processParams->paramName],
             );
         } catch (InvalidValueException|InvalidDataException $e) {
+            $violations = ($e instanceof InvalidValueException) ? [$e] : $e->getExceptions();
+
             throw HttpExceptionFactory::queryParamInvalid($errorStatusCode, $processParams->errorMessage, previous: $e)
                 ->addMessagePlaceholder('{{ param_name }}', $processParams->paramName)
-                ->addConstraintViolation(...HydratorHelper::adaptConstraintViolations($e));
+                ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), $violations));
         }
 
         if (isset($this->validator)) {
@@ -92,7 +97,7 @@ final class RequestQueryParamParameterResolver implements ParameterResolverInter
                 if (($violations = $this->validator->validate($argument, [...$constraints]))->count() > 0) {
                     throw HttpExceptionFactory::queryParamInvalid($errorStatusCode, $processParams->errorMessage)
                         ->addMessagePlaceholder('{{ param_name }}', $processParams->paramName)
-                        ->addConstraintViolation(...ValidatorHelper::adaptConstraintViolations(...$violations));
+                        ->addConstraintViolation(...array_map(ValidatorConstraintViolationProxy::create(...), [...$violations]));
                 }
             }
         }

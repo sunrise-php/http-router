@@ -15,7 +15,7 @@ namespace Sunrise\Http\Router\Exception;
 
 use RuntimeException;
 use Stringable;
-use Sunrise\Http\Router\ConstraintViolationInterface;
+use Sunrise\Http\Router\Validation\ConstraintViolationInterface;
 use Throwable;
 
 use function join;
