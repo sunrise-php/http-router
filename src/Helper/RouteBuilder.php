@@ -15,11 +15,7 @@ namespace Sunrise\Http\Router\Helper;
 
 use BackedEnum;
 use InvalidArgumentException;
-use Stringable;
 
-use function get_debug_type;
-use function is_int;
-use function is_string;
 use function sprintf;
 use function str_replace;
 use function substr;
@@ -42,15 +38,10 @@ final class RouteBuilder
             $statement = substr($route, $variable['offset'], $variable['length']);
 
             if (isset($values[$variable['name']])) {
-                try {
-                    $value = self::stringifyValue($values[$variable['name']]);
-                } catch (InvalidArgumentException $e) {
-                    throw new InvalidArgumentException(sprintf(
-                        'The route %s could not be built with an invalid value for the variable %s due to: %s',
-                        $route,
-                        $variable['name'],
-                        $e->getMessage(),
-                    ), previous: $e);
+                $value = $values[$variable['name']];
+
+                if ($value instanceof BackedEnum) {
+                    $value = $value->value;
                 }
 
                 $search[] = $statement;
@@ -78,28 +69,5 @@ final class RouteBuilder
         $search[] = ')';
 
         return str_replace($search, $replace, $route);
-    }
-
-    /**
-     * @throws InvalidArgumentException If the value couldn't be converted to a string.
-     */
-    public static function stringifyValue(mixed $value): string
-    {
-        if (is_string($value)) {
-            return $value;
-        } elseif (is_int($value)) {
-            return (string) $value;
-        } elseif ($value instanceof BackedEnum) {
-            return (string) $value->value;
-        } elseif ($value instanceof Stringable) {
-            return $value->__toString();
-        }
-
-        throw new InvalidArgumentException(sprintf(
-            'The value of the type %s could not be converted to a string. ' .
-            'To resolve this issue, use one of the following value types: ' .
-            'string, integer, backed enum or stringable object.',
-            get_debug_type($value),
-        ));
     }
 }
