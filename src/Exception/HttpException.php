@@ -32,9 +32,9 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     private string $messageTemplate;
 
     /**
-     * @var array<array-key, mixed>
+     * @var array<string, mixed>
      */
-    private array $messagePlaceholders;
+    private array $messagePlaceholders = [];
 
     /**
      * @var list<array{0: string, 1: string}>
@@ -46,14 +46,11 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
      */
     private array $constraintViolations = [];
 
-    public function __construct(int $code, string $message, array $placeholders = [], ?Throwable $previous = null)
+    public function __construct(string $message, int $code, ?Throwable $previous = null)
     {
+        parent::__construct($message, $code, $previous);
+
         $this->messageTemplate = $message;
-        $this->messagePlaceholders = $placeholders;
-
-        $interpolatedMessage = strtr($message, $placeholders);
-
-        parent::__construct($interpolatedMessage, $code, $previous);
     }
 
     /**

@@ -58,17 +58,17 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
     private function decodePayload(string $payload): array
     {
         if ($payload === '') {
-            throw HttpExceptionFactory::jsonPayloadEmpty();
+            throw HttpExceptionFactory::emptyJsonPayload();
         }
 
         try {
             $data = json_decode($payload, true, flags: JSON_BIGINT_AS_STRING | JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
-            throw HttpExceptionFactory::jsonPayloadInvalid(previous: $e);
+            throw HttpExceptionFactory::invalidJsonPayload(previous: $e);
         }
 
         if (is_array($data) === false) {
-            throw HttpExceptionFactory::jsonPayloadFormInvalid();
+            throw HttpExceptionFactory::invalidJsonPayloadForm();
         }
 
         return $data;

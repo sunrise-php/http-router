@@ -212,6 +212,7 @@ final class ServerRequest implements ServerRequestInterface
         }
 
         $clientConsumedMediaTypes = $this->getClientConsumedMediaTypes();
+        // This case is interpreted as follows: the client accepts any media type...
         if (!$clientConsumedMediaTypes->valid()) {
             return true;
         }
@@ -220,24 +221,6 @@ final class ServerRequest implements ServerRequestInterface
         foreach ($clientConsumedMediaTypes as $clientConsumedMediaType) {
             foreach ($serverProducedMediaTypes as $serverProducedMediaType) {
                 if ($mediaTypeComparator->equals($clientConsumedMediaType, $serverProducedMediaType)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    public function clientConsumesLanguage(LanguageInterface ...$serverProducedLanguages): bool
-    {
-        if ($serverProducedLanguages === []) {
-            return false;
-        }
-
-        $languageComparator = new LanguageComparator();
-        foreach ($this->getClientConsumedLanguages() as $clientConsumedLanguage) {
-            foreach ($serverProducedLanguages as $serverProducedLanguage) {
-                if ($languageComparator->equals($clientConsumedLanguage, $serverProducedLanguage)) {
                     return true;
                 }
             }

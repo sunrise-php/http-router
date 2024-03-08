@@ -48,7 +48,6 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
      * @inheritDoc
      *
      * @throws LogicException If the resolver is used incorrectly or if an object isn't valid.
-     *
      * @throws HttpException If the request's parsed body isn't valid.
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
@@ -78,13 +77,13 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
         try {
             $argument = $this->hydrator->hydrate($type->getName(), (array) $context->getParsedBody());
         } catch (InvalidDataException $e) {
-            throw HttpExceptionFactory::bodyInvalid($errorStatusCode, $processParams->errorMessage, previous: $e)
+            throw HttpExceptionFactory::invalidBody($processParams->errorMessage, $errorStatusCode, previous: $e)
                 ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), $e->getExceptions()));
         }
 
         if (isset($this->validator)) {
             if (($violations = $this->validator->validate($argument))->count() > 0) {
-                throw HttpExceptionFactory::bodyInvalid($errorStatusCode, $processParams->errorMessage)
+                throw HttpExceptionFactory::invalidBody($processParams->errorMessage, $errorStatusCode)
                     ->addConstraintViolation(...array_map(ValidatorConstraintViolationProxy::create(...), [...$violations]));
             }
         }

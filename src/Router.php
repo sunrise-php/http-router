@@ -20,6 +20,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
+use Sunrise\Http\Router\Exception\InvalidRouteMatchingSubjectException;
 use Sunrise\Http\Router\Helper\RouteBuilder;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Helper\RouteMatcher;
@@ -29,7 +30,8 @@ use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
 use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
 
-use function array_merge;
+use function array_flip;
+use function array_keys;
 use function rawurldecode;
 use function sprintf;
 
@@ -127,14 +129,16 @@ class Router
         foreach ($this->routes as $route) {
             $routePattern = $this->compileRoute($route);
 
-            // https://github.com/sunrise-php/http-router/issues/50
-            // https://tools.ietf.org/html/rfc7231#section-6.5.5
-            if (!RouteMatcher::matchPattern($route->getPath(), $routePattern, $requestPath, $matches)) {
-                continue;
+            try {
+                if (!RouteMatcher::matchPattern($route->getPath(), $routePattern, $requestPath, $matches)) {
+                    continue;
+                }
+            } catch (InvalidRouteMatchingSubjectException $e) {
+                throw new HttpException($e->getMessage(), 400); // TODO
             }
 
             if (!$route->allowsMethod($request->getMethod())) {
-                $allowedMethods = array_merge($allowedMethods, $route->getMethods());
+                $allowedMethods += array_flip($route->getMethods());
                 continue;
             }
 
@@ -144,7 +148,7 @@ class Router
         if (!empty($allowedMethods)) {
             throw HttpExceptionFactory::methodNotAllowed()
                 ->addMessagePlaceholder('{{ method }}', $request->getMethod())
-                ->addHeaderField('Allow', ...$allowedMethods);
+                ->addHeaderField('Allow', ...array_keys($allowedMethods));
         }
 
         throw HttpExceptionFactory::resourceNotFound()

@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Helper;
 
-use InvalidArgumentException;
 use Sunrise\Http\Router\Dictionary\Charset;
+use Sunrise\Http\Router\Exception\InvalidRouteParsingSubjectException;
 
 use function sprintf;
 
@@ -28,7 +28,7 @@ final class RouteParser
      *
      * @return list<array{name: string, pattern?: string, optional?: true, left?: string, right?: string, offset: int, length: int}>
      *
-     * @throws InvalidArgumentException If the route isn't valid.
+     * @throws InvalidRouteParsingSubjectException
      */
     public static function parseRoute(string $route): array
     {
@@ -47,7 +47,7 @@ final class RouteParser
         for ($offset = 0; isset($route[$offset]); $offset++) {
             if ($route[$offset] === '(' && !($cursor & $inVariable)) {
                 if (($cursor & $inOptionalPart)) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new InvalidRouteParsingSubjectException(sprintf(
                         'The route %s could not be parsed due to a syntax error. ' .
                         'An attempt to open an optional part at position %d has failed ' .
                         'because nested optional parts are not supported.',
@@ -61,7 +61,7 @@ final class RouteParser
             }
             if ($route[$offset] === ')' && !($cursor & $inVariable)) {
                 if (!($cursor & $inOptionalPart)) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new InvalidRouteParsingSubjectException(sprintf(
                         'The route %s could not be parsed due to a syntax error. ' .
                         'An attempt to close an optional part at position %d has failed ' .
                         'because an open optional part was not found.',
@@ -83,7 +83,7 @@ final class RouteParser
 
             if ($route[$offset] === '{' && !($cursor & $inVariablePattern)) {
                 if (($cursor & $inVariable)) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new InvalidRouteParsingSubjectException(sprintf(
                         'The route %s could not be parsed due to a syntax error. ' .
                         'An attempt to open a variable at position %d has failed ' .
                         'because nested variables are not supported.',
@@ -92,7 +92,7 @@ final class RouteParser
                     ));
                 }
                 if (($cursor & $inOccupiedPart)) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new InvalidRouteParsingSubjectException(sprintf(
                         'The route %s could not be parsed due to a syntax error. ' .
                         'An attempt to open a variable at position %d has failed ' .
                         'because more than one variable inside an optional part is not supported.',
@@ -114,7 +114,7 @@ final class RouteParser
             }
             if ($route[$offset] === '}' && !($cursor & $inVariablePattern)) {
                 if (!($cursor & $inVariable)) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new InvalidRouteParsingSubjectException(sprintf(
                         'The route %s could not be parsed due to a syntax error. ' .
                         'An attempt to close a variable at position %d has failed ' .
                         'because an open variable was not found.',
@@ -123,7 +123,7 @@ final class RouteParser
                     ));
                 }
                 if (!isset($variables[$variable]['name'])) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new InvalidRouteParsingSubjectException(sprintf(
                         'The route %s could not be parsed due to a syntax error. ' .
                         'An attempt to close a variable at position %d has failed ' .
                         'because its name is required for its declaration.',
@@ -140,7 +140,7 @@ final class RouteParser
 
             if ($route[$offset] === '<' && ($cursor & $inVariable)) {
                 if (($cursor & $inVariablePattern)) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new InvalidRouteParsingSubjectException(sprintf(
                         'The route %s could not be parsed due to a syntax error. ' .
                         'An attempt to open a variable pattern at position %d has failed ' .
                         'because nested patterns are not supported.',
@@ -149,7 +149,7 @@ final class RouteParser
                     ));
                 }
                 if (!($cursor & $inVariableName)) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new InvalidRouteParsingSubjectException(sprintf(
                         'The route %s could not be parsed due to a syntax error. ' .
                         'An attempt to open a variable pattern at position %d has failed ' .
                         'because the pattern must be preceded by the variable name.',
@@ -163,7 +163,7 @@ final class RouteParser
             }
             if ($route[$offset] === '>' && ($cursor & $inVariable)) {
                 if (!($cursor & $inVariablePattern)) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new InvalidRouteParsingSubjectException(sprintf(
                         'The route %s could not be parsed due to a syntax error. ' .
                         'An attempt to close a variable pattern at position %d has failed ' .
                         'because an open pattern was not found.',
@@ -172,7 +172,7 @@ final class RouteParser
                     ));
                 }
                 if (!isset($variables[$variable]['pattern'])) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new InvalidRouteParsingSubjectException(sprintf(
                         'The route %s could not be parsed due to a syntax error. ' .
                         'An attempt to close a variable pattern at position %d has failed ' .
                         'because its content is required for its declaration.',
@@ -200,7 +200,7 @@ final class RouteParser
             // https://www.pcre.org/original/doc/html/pcrepattern.html#SEC16
             if (($cursor & $inVariableName)) {
                 if (!isset($variables[$variable]['name']) && $route[$offset] >= '0' && $route[$offset] <= '9') {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new InvalidRouteParsingSubjectException(sprintf(
                         'The route %s could not be parsed due to a syntax error. ' .
                         'An invalid character was found at position %d. ' .
                         'Please note that variable names cannot start with digits.',
@@ -209,7 +209,7 @@ final class RouteParser
                     ));
                 }
                 if (!isset(Charset::PCRE_SUBPATTERN_NAME[$route[$offset]])) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new InvalidRouteParsingSubjectException(sprintf(
                         'The route %s could not be parsed due to a syntax error. ' .
                         'An invalid character was found at position %d. ' .
                         'Please note that variable names must consist only of digits, letters and underscores.',
@@ -218,7 +218,7 @@ final class RouteParser
                     ));
                 }
                 if (isset($variables[$variable]['name'][31])) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new InvalidRouteParsingSubjectException(sprintf(
                         'The route %s could not be parsed due to a syntax error. ' .
                         'An extra character was found at position %d. ' .
                         'Please note that variable names must not exceed 32 characters.',
@@ -234,7 +234,7 @@ final class RouteParser
 
             if (($cursor & $inVariablePattern)) {
                 if ($route[$offset] === RouteCompiler::PATTERN_DELIMITER) {
-                    throw new InvalidArgumentException(sprintf(
+                    throw new InvalidRouteParsingSubjectException(sprintf(
                         'The route %s could not be parsed due to a syntax error. ' .
                         'An invalid character was found at position %d. ' .
                         'Please note that variable patterns cannot contain the %s character; ' .
@@ -253,7 +253,7 @@ final class RouteParser
             // {foo<\w+>xxx}
             // ~~~~~~~~~^^^~
             if (($cursor & $inVariable)) {
-                throw new InvalidArgumentException(sprintf(
+                throw new InvalidRouteParsingSubjectException(sprintf(
                     'The route %s could not be parsed due to a syntax error. ' .
                     'An unexpected character was found at position %d; a variable at this position must be closed.',
                     $route,
@@ -263,7 +263,7 @@ final class RouteParser
         }
 
         if (($cursor & $inVariable) || ($cursor & $inOptionalPart)) {
-            throw new InvalidArgumentException(sprintf(
+            throw new InvalidRouteParsingSubjectException(sprintf(
                 'The route %s could not be parsed due to a syntax error. ' .
                 'An attempt to parse the route has failed because it contains an unclosed optional part or variable.',
                 $route,

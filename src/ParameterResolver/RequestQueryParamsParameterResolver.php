@@ -48,7 +48,6 @@ final class RequestQueryParamsParameterResolver implements ParameterResolverInte
      * @inheritDoc
      *
      * @throws LogicException If the resolver is used incorrectly or if an object isn't valid.
-     *
      * @throws HttpException If the request's query parameters aren't valid.
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
@@ -78,13 +77,13 @@ final class RequestQueryParamsParameterResolver implements ParameterResolverInte
         try {
             $argument = $this->hydrator->hydrate($type->getName(), $context->getQueryParams());
         } catch (InvalidDataException $e) {
-            throw HttpExceptionFactory::queryParamsInvalid($errorStatusCode, $processParams->errorMessage, previous: $e)
+            throw HttpExceptionFactory::invalidQueryParams($processParams->errorMessage, $errorStatusCode, previous: $e)
                 ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), $e->getExceptions()));
         }
 
         if (isset($this->validator)) {
             if (($violations = $this->validator->validate($argument))->count() > 0) {
-                throw HttpExceptionFactory::queryParamsInvalid($errorStatusCode, $processParams->errorMessage)
+                throw HttpExceptionFactory::invalidQueryParams($processParams->errorMessage, $errorStatusCode)
                     ->addConstraintViolation(...array_map(ValidatorConstraintViolationProxy::create(...), [...$violations]));
             }
         }

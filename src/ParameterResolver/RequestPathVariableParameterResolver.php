@@ -52,7 +52,6 @@ final class RequestPathVariableParameterResolver implements ParameterResolverInt
      * @inheritDoc
      *
      * @throws LogicException If the resolver is used incorrectly.
-     *
      * @throws HttpException If a path variable isn't valid.
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
@@ -105,7 +104,7 @@ final class RequestPathVariableParameterResolver implements ParameterResolverInt
         } catch (InvalidValueException|InvalidDataException $e) {
             $violations = ($e instanceof InvalidValueException) ? [$e] : $e->getExceptions();
 
-            throw HttpExceptionFactory::pathVariableInvalid($errorStatusCode, $processParams->errorMessage, previous: $e)
+            throw HttpExceptionFactory::invalidPathVariable($processParams->errorMessage, $errorStatusCode, previous: $e)
                 ->addMessagePlaceholder('{{ variable_name }}', $variableName)
                 ->addMessagePlaceholder('{{ route_path }}', RouteSimplifier::simplifyRoute($route->getPath()))
                 ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), $violations));
@@ -114,7 +113,7 @@ final class RequestPathVariableParameterResolver implements ParameterResolverInt
         if (isset($this->validator)) {
             if (($constraints = ValidatorHelper::getParameterConstraints($parameter))->valid()) {
                 if (($violations = $this->validator->validate($argument, [...$constraints]))->count() > 0) {
-                    throw HttpExceptionFactory::pathVariableInvalid($errorStatusCode, $processParams->errorMessage)
+                    throw HttpExceptionFactory::invalidPathVariable($processParams->errorMessage, $errorStatusCode)
                         ->addMessagePlaceholder('{{ variable_name }}', $variableName)
                         ->addMessagePlaceholder('{{ route_path }}', RouteSimplifier::simplifyRoute($route->getPath()))
                         ->addConstraintViolation(...array_map(ValidatorConstraintViolationProxy::create(...), [...$violations]));

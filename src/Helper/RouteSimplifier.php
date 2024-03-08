@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Helper;
 
-use InvalidArgumentException;
+use Sunrise\Http\Router\Exception\InvalidRouteParsingSubjectException;
 
 use function str_replace;
 use function substr;
@@ -24,7 +24,7 @@ use function substr;
 final class RouteSimplifier
 {
     /**
-     * @throws InvalidArgumentException If the route isn't valid.
+     * @throws InvalidRouteParsingSubjectException
      */
     public static function simplifyRoute(string $route): string
     {

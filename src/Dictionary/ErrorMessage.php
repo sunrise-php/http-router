@@ -20,17 +20,18 @@ final class ErrorMessage
 {
     public const RESOURCE_NOT_FOUND = 'The resource {{ resource }} was not found.';
     public const METHOD_NOT_ALLOWED = 'The method {{ method }} is not allowed; check the Allow response header for allowed methods.';
-    public const MEDIA_TYPE_NOT_SUPPORTED = 'The media type {{ media_type }} is not supported; check the Accept response header for supported media types.';
-    public const PATH_VARIABLE_INVALID = 'The variable {{ variable_name }} of the route {{ route_path }} is invalid.';
-    public const QUERY_PARAMS_INVALID = 'The query parameters are invalid.';
-    public const QUERY_PARAM_MISSED = 'The query parameter {{ param_name }} must be provided.';
-    public const QUERY_PARAM_INVALID = 'The query parameter {{ param_name }} is invalid.';
-    public const HEADER_MISSED = 'The header {{ header_name }} must be provided.';
-    public const HEADER_INVALID = 'The header {{ header_name }} is invalid.';
-    public const COOKIE_MISSED = 'The cookie {{ cookie_name }} must be provided.';
-    public const COOKIE_INVALID = 'The cookie {{ cookie_name }} is invalid.';
-    public const BODY_INVALID = 'The request body is invalid.';
-    public const JSON_PAYLOAD_EMPTY = 'The JSON payload cannot be empty.';
-    public const JSON_PAYLOAD_INVALID = 'The JSON payload is invalid and could not be decoded.';
-    public const JSON_PAYLOAD_FORM_INVALID = 'The JSON payload must be in the form of an array or an object.';
+    public const MISSING_MEDIA_TYPE = 'The Content-Type header must be provided and cannot be empty; check the Accept response header for supported media types.';
+    public const UNSUPPORTED_MEDIA_TYPE = 'The media type {{ media_type }} is not supported; check the Accept response header for supported media types.';
+    public const INVALID_PATH_VARIABLE = 'The variable {{ variable_name }} of the route {{ route_path }} is invalid.';
+    public const INVALID_QUERY_PARAMS = 'The query parameters are invalid.';
+    public const MISSING_QUERY_PARAM = 'The query parameter {{ param_name }} must be provided.';
+    public const INVALID_QUERY_PARAM = 'The query parameter {{ param_name }} is invalid.';
+    public const MISSING_HEADER_FIELD = 'The header {{ header_name }} must be provided.';
+    public const INVALID_HEADER_FIELD = 'The header {{ header_name }} is invalid.';
+    public const MISSING_COOKIE_PARAM = 'The cookie {{ cookie_name }} must be provided.';
+    public const INVALID_COOKIE_PARAM = 'The cookie {{ cookie_name }} is invalid.';
+    public const INVALID_BODY = 'The request body is invalid.';
+    public const EMPTY_JSON_PAYLOAD = 'The JSON payload cannot be empty.';
+    public const INVALID_JSON_PAYLOAD = 'The JSON payload is invalid and could not be decoded.';
+    public const INVALID_JSON_PAYLOAD_FORM = 'The JSON payload must be in the form of an array or an object.';
 }

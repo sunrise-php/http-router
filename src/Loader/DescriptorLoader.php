@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Loader;
 
 use Generator;
-use InvalidArgumentException;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\SimpleCache\CacheException;
 use Psr\SimpleCache\CacheInterface;
@@ -37,6 +36,7 @@ use Sunrise\Http\Router\Annotation\Produces;
 use Sunrise\Http\Router\Annotation\Route as Descriptor;
 use Sunrise\Http\Router\Annotation\Summary;
 use Sunrise\Http\Router\Annotation\Tag;
+use Sunrise\Http\Router\Exception\InvalidLoaderResourceException;
 use Sunrise\Http\Router\Helper\FilesystemHelper;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Route;
@@ -65,9 +65,8 @@ final class DescriptorLoader implements LoaderInterface
     /**
      * @inheritDoc
      *
-     * @throws InvalidArgumentException If one of the resources isn't supported.
-     *
-     * @throws CacheException If something went wrong while working with the cache.
+     * @throws InvalidLoaderResourceException
+     * @throws CacheException
      */
     public function load(): Generator
     {
@@ -95,9 +94,8 @@ final class DescriptorLoader implements LoaderInterface
     /**
      * @return list<Descriptor>
      *
-     * @throws InvalidArgumentException If one of the resources isn't supported.
-     *
-     * @throws CacheException If something went wrong while working with the cache.
+     * @throws InvalidLoaderResourceException
+     * @throws CacheException
      */
     private function getDescriptors(): array
     {
@@ -124,7 +122,7 @@ final class DescriptorLoader implements LoaderInterface
     /**
      * @return Generator<int, Descriptor>
      *
-     * @throws InvalidArgumentException If the resource isn't supported.
+     * @throws InvalidLoaderResourceException
      */
     private function getResourceDescriptors(string $resource): Generator
     {
@@ -152,7 +150,7 @@ final class DescriptorLoader implements LoaderInterface
             return;
         }
 
-        throw new InvalidArgumentException(sprintf(
+        throw new InvalidLoaderResourceException(sprintf(
             'The loader %s only accepts directory, file or class names; ' .
             'however, the resource %s is not one of them.',
             __CLASS__,

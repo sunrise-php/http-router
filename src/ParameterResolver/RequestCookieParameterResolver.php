@@ -49,7 +49,6 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
      * @inheritDoc
      *
      * @throws LogicException If the resolver is used incorrectly.
-     *
      * @throws HttpException If a cookie was missed or invalid.
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
@@ -74,7 +73,7 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
                 return yield $parameter->getDefaultValue();
             }
 
-            throw HttpExceptionFactory::cookieMissed($errorStatusCode, $processParams->errorMessage)
+            throw HttpExceptionFactory::missingCookieParam($processParams->errorMessage, $errorStatusCode)
                 ->addMessagePlaceholder('{{ cookie_name }}', $processParams->cookieName);
         }
 
@@ -87,7 +86,7 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
         } catch (InvalidValueException|InvalidDataException $e) {
             $violations = ($e instanceof InvalidValueException) ? [$e] : $e->getExceptions();
 
-            throw HttpExceptionFactory::cookieInvalid($errorStatusCode, $processParams->errorMessage, previous: $e)
+            throw HttpExceptionFactory::invalidCookieParam($processParams->errorMessage, $errorStatusCode, previous: $e)
                 ->addMessagePlaceholder('{{ cookie_name }}', $processParams->cookieName)
                 ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), $violations));
         }
@@ -95,7 +94,7 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
         if (isset($this->validator)) {
             if (($constraints = ValidatorHelper::getParameterConstraints($parameter))->valid()) {
                 if (($violations = $this->validator->validate($argument, [...$constraints]))->count() > 0) {
-                    throw HttpExceptionFactory::cookieInvalid($errorStatusCode, $processParams->errorMessage)
+                    throw HttpExceptionFactory::invalidCookieParam($processParams->errorMessage, $errorStatusCode)
                         ->addMessagePlaceholder('{{ cookie_name }}', $processParams->cookieName)
                         ->addConstraintViolation(...array_map(ValidatorConstraintViolationProxy::create(...), [...$violations]));
                 }

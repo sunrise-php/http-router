@@ -14,7 +14,10 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Helper;
 
 use ErrorException;
-use InvalidArgumentException;
+use Sunrise\Http\Router\Exception\InvalidRouteParsingSubjectException;
+use Sunrise\Http\Router\Exception\InvalidRouteMatchingPatternException;
+use Sunrise\Http\Router\Exception\InvalidRouteMatchingSubjectException;
+use Throwable;
 
 use function is_int;
 use function preg_last_error;
@@ -23,6 +26,7 @@ use function preg_match;
 use function sprintf;
 
 use const E_WARNING;
+use const PREG_BAD_UTF8_ERROR;
 use const PREG_UNMATCHED_AS_NULL;
 
 /**
@@ -34,7 +38,9 @@ final class RouteMatcher
      * @param array<string, string> $patterns
      * @param-out array<string, string> $matches
      *
-     * @throws InvalidArgumentException If the route or one of the patterns isn't valid.
+     * @throws InvalidRouteMatchingPatternException
+     * @throws InvalidRouteMatchingSubjectException
+     * @throws InvalidRouteParsingSubjectException
      */
     public static function matchRoute(string $route, array $patterns, string $subject, ?array &$matches = null): bool
     {
@@ -47,7 +53,8 @@ final class RouteMatcher
      * @param non-empty-string $pattern
      * @param-out array<string, string> $matches
      *
-     * @throws InvalidArgumentException If the pattern isn't valid.
+     * @throws InvalidRouteMatchingPatternException
+     * @throws InvalidRouteMatchingSubjectException
      */
     public static function matchPattern(string $route, string $pattern, string $subject, ?array &$matches = null): bool
     {
@@ -55,12 +62,35 @@ final class RouteMatcher
             if (($result = @preg_match($pattern, $subject, $matches, PREG_UNMATCHED_AS_NULL)) === false) {
                 throw new ErrorException(preg_last_error_msg(), preg_last_error(), E_WARNING);
             }
-        } catch (ErrorException $e) {
-            throw new InvalidArgumentException(sprintf(
-                'The route %s could not be matched due to a syntax error in one of variable patterns: %s',
-                $route,
-                $e->getMessage(),
-            ), previous: $e);
+        } catch (Throwable $e) {
+            if (preg_last_error() === PREG_BAD_UTF8_ERROR) {
+                throw new InvalidRouteMatchingSubjectException(
+                    sprintf(
+                        'The route %s could not be matched due to an invalid subject: %s.',
+                        $route,
+                        preg_last_error_msg(),
+                    ),
+                    code: preg_last_error(),
+                    previous: $e,
+                );
+            }
+
+            throw new InvalidRouteMatchingPatternException(
+                sprintf(
+                    'The route %s could not be matched due to: %s; ' .
+                    'most likely, this problem is related to one of the route patterns. ' .
+                    'Please refer to the official documentation: ' .
+                    'https://www.php.net/preg_last_error',
+                    $route,
+                    preg_last_error_msg(),
+                ),
+                code: preg_last_error(),
+                previous: $e,
+            );
+        }
+
+        if ($result === 0) {
+            return false;
         }
 
         foreach ($matches as $key => $match) {
@@ -71,6 +101,6 @@ final class RouteMatcher
 
         /** @var array<string, string> $matches */
 
-        return $result === 1;
+        return true;
     }
 }

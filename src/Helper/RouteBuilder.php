@@ -14,7 +14,8 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Helper;
 
 use BackedEnum;
-use InvalidArgumentException;
+use Sunrise\Http\Router\Exception\InvalidRouteBuildingValueException;
+use Sunrise\Http\Router\Exception\InvalidRouteParsingSubjectException;
 
 use function sprintf;
 use function str_replace;
@@ -26,7 +27,8 @@ use function substr;
 final class RouteBuilder
 {
     /**
-     * @throws InvalidArgumentException If the route isn't valid or any of the required values are missing.
+     * @throws InvalidRouteBuildingValueException
+     * @throws InvalidRouteParsingSubjectException
      */
     public static function buildRoute(string $route, array $values = []): string
     {
@@ -58,7 +60,7 @@ final class RouteBuilder
                 continue;
             }
 
-            throw new InvalidArgumentException(sprintf(
+            throw new InvalidRouteBuildingValueException(sprintf(
                 'The route %s could not be built without a required value for the variable %s.',
                 $route,
                 $variable['name'],

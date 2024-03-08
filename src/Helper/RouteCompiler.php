@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Helper;
 
-use InvalidArgumentException;
+use Sunrise\Http\Router\Exception\InvalidRouteParsingSubjectException;
 
 use function addcslashes;
 use function str_replace;
@@ -31,7 +31,7 @@ final class RouteCompiler
      *
      * @return non-empty-string
      *
-     * @throws InvalidArgumentException If the route isn't valid.
+     * @throws InvalidRouteParsingSubjectException
      */
     public static function compileRoute(string $route, array $patterns = []): string
     {
