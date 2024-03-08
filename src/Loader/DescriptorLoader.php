@@ -99,7 +99,7 @@ final class DescriptorLoader implements LoaderInterface
      */
     private function getDescriptors(): array
     {
-        /** @var null|list<Descriptor> $descriptors */
+        /** @var list<Descriptor>|null $descriptors */
         $descriptors = $this->cache?->get($this->cacheKey);
         if (isset($descriptors)) {
             return $descriptors;

@@ -24,7 +24,7 @@ use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\Helper\RouteSimplifier;
 use Sunrise\Http\Router\Helper\ValidatorHelper;
 use Sunrise\Http\Router\ParameterResolver;
-use Sunrise\Http\Router\Route;
+use Sunrise\Http\Router\ServerRequest;
 use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
 use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationProxy;
 use Sunrise\Hydrator\Exception\InvalidDataException;
@@ -66,15 +66,8 @@ final class RequestPathVariableParameterResolver implements ParameterResolverInt
             throw new LogicException('At this level of the application, any operations with the request are not possible.');
         }
 
-        $route = $context->getAttribute('@route');
-        if (! $route instanceof Route) {
-            throw new LogicException(sprintf(
-                'The #[RequestPathVariable] annotation cannot be applied to the parameter %s ' .
-                'because the request does not contain information about the requested route.',
-                ParameterResolver::stringifyParameter($parameter),
-            ));
-        }
-
+        $serverRequest = ServerRequest::create($context);
+        $route = $serverRequest->getRoute();
         $processParams = $annotations[0]->newInstance();
 
         $variableName = $processParams->variableName ?? $parameter->getName();

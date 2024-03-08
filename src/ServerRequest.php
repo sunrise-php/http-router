@@ -41,7 +41,7 @@ final class ServerRequest implements ServerRequestInterface
 
     public static function create(ServerRequestInterface $request): self
     {
-        return ($request instanceof self) ? $request : new self($request);
+        return new self($request);
     }
 
     public function getOriginalRequest(): ServerRequestInterface
@@ -49,12 +49,14 @@ final class ServerRequest implements ServerRequestInterface
         return $this->request;
     }
 
-    public function getRoute(): Route
+    /**
+     * @throws LogicException If the request doesn't contain a route.
+     */
+    public function getRoute(): RouteInterface
     {
-        /** @var Route|null $route */
         $route = $this->getAttribute('@route');
-        if (! $route instanceof Route) {
-            throw new LogicException('At this level of the application, the request does not contain a route.');
+        if (! $route instanceof RouteInterface) {
+            throw new LogicException('At this level of the application, the request does not contain information about the requested route.');
         }
 
         return $route;

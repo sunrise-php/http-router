@@ -21,6 +21,8 @@ use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\ServerRequest;
 
+use function array_values;
+
 /**
  * @since 3.0.0
  */
@@ -34,7 +36,7 @@ final class PayloadMediaTypeNegotiationMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $serverRequest = ServerRequest::create($request);
-        $serverConsumedMediaTypes = $serverRequest->getRoute()->getConsumedMediaTypes();
+        $serverConsumedMediaTypes = array_values($serverRequest->getRoute()->getConsumedMediaTypes());
         if (! $serverRequest->clientProducesMediaType(...$serverConsumedMediaTypes)) {
             if ($serverRequest->getClientProducedMediaType() === null) {
                 throw HttpExceptionFactory::missingMediaType()

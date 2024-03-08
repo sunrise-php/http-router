@@ -20,7 +20,9 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
+use Sunrise\Http\Router\Exception\InvalidRouteBuildingValueException;
 use Sunrise\Http\Router\Exception\InvalidRouteMatchingSubjectException;
+use Sunrise\Http\Router\Exception\InvalidRouteParsingSubjectException;
 use Sunrise\Http\Router\Helper\RouteBuilder;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Helper\RouteMatcher;
@@ -35,12 +37,12 @@ use function array_keys;
 use function rawurldecode;
 use function sprintf;
 
-class Router
+class Router implements RequestHandlerInterface
 {
     private readonly RequestHandlerResolver $requestHandlerResolver;
 
     /**
-     * @var array<string, Route>
+     * @var array<string, RouteInterface>
      */
     private array $routes = [];
 
@@ -81,7 +83,7 @@ class Router
     }
 
     /**
-     * @return array<string, Route>
+     * @return array<string, RouteInterface>
      */
     public function getRoutes(): array
     {
@@ -91,7 +93,7 @@ class Router
     /**
      * @throws InvalidArgumentException If the route doesn't exist.
      */
-    public function getRoute(string $name): Route
+    public function getRoute(string $name): RouteInterface
     {
         if (isset($this->routes[$name])) {
             return $this->routes[$name];
@@ -103,7 +105,7 @@ class Router
         ));
     }
 
-    public function addRoute(Route ...$routes): void
+    public function addRoute(RouteInterface ...$routes): void
     {
         foreach ($routes as $route) {
             $this->routes[$route->getName()] = $route;
@@ -122,7 +124,7 @@ class Router
     /**
      * @throws HttpException
      */
-    public function match(ServerRequestInterface $request): Route
+    public function match(ServerRequestInterface $request): RouteInterface
     {
         $requestPath = rawurldecode($request->getUri()->getPath());
         $allowedMethods = [];
@@ -156,9 +158,9 @@ class Router
     }
 
     /**
-     * @since 2.8.0
+     * @inheritDoc
      */
-    public function run(ServerRequestInterface $request): ResponseInterface
+    public function handle(ServerRequestInterface $request): ResponseInterface
     {
         return $this->getRouterRequestHandler()->handle($request);
     }
@@ -166,9 +168,9 @@ class Router
     /**
      * @since 3.0.0
      */
-    public function runRoute(Route|string $route, ServerRequestInterface $request): ResponseInterface
+    public function runRoute(RouteInterface|string $route, ServerRequestInterface $request): ResponseInterface
     {
-        if (! $route instanceof Route) {
+        if (! $route instanceof RouteInterface) {
             $route = $this->getRoute($route);
         }
 
@@ -182,13 +184,14 @@ class Router
     }
 
     /**
-     * @throws InvalidArgumentException
+     * @throws InvalidRouteBuildingValueException
+     * @throws InvalidRouteParsingSubjectException
      *
      * @since 3.0.0
      */
-    public function buildRoute(Route|string $route, array $values = []): string
+    public function buildRoute(RouteInterface|string $route, array $values = []): string
     {
-        if (! $route instanceof Route) {
+        if (! $route instanceof RouteInterface) {
             $route = $this->getRoute($route);
         }
 
@@ -198,13 +201,13 @@ class Router
     /**
      * @return non-empty-string
      *
-     * @throws InvalidArgumentException
+     * @throws InvalidRouteParsingSubjectException
      *
      * @since 3.0.0
      */
-    public function compileRoute(Route|string $route): string
+    public function compileRoute(RouteInterface|string $route): string
     {
-        if (! $route instanceof Route) {
+        if (! $route instanceof RouteInterface) {
             $route = $this->getRoute($route);
         }
 
@@ -216,9 +219,9 @@ class Router
      *
      * @since 3.0.0
      */
-    public function getRouteRequestHandler(Route|string $route): RequestHandlerInterface
+    public function getRouteRequestHandler(RouteInterface|string $route): RequestHandlerInterface
     {
-        if (! $route instanceof Route) {
+        if (! $route instanceof RouteInterface) {
             $route = $this->getRoute($route);
         }
 

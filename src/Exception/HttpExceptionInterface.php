@@ -31,12 +31,12 @@ interface HttpExceptionInterface extends ExceptionInterface
     public function getMessagePlaceholders(): array;
 
     /**
-     * @return list<array{0: string, 1: string}>
+     * @return array<array-key, array{0: string, 1: string}>
      */
     public function getHeaderFields(): array;
 
     /**
-     * @return list<ConstraintViolationInterface>
+     * @return array<array-key, ConstraintViolationInterface>
      */
     public function getConstraintViolations(): array;
 }

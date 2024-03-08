@@ -18,7 +18,7 @@ use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 use function array_key_exists;
 use function in_array;
 
-final class Route
+final class Route implements RouteInterface
 {
     public function __construct(
         private readonly string $name,
@@ -26,22 +26,22 @@ final class Route
         private readonly mixed $requestHandler,
         /** @var array<string, string> */
         private readonly array $patterns = [],
-        /** @var list<string> */
+        /** @var array<array-key, string> */
         private readonly array $methods = [],
         /** @var array<string, mixed> */
         private array $attributes = [],
-        /** @var list<mixed> */
+        /** @var array<array-key, mixed> */
         private readonly array $middlewares = [],
-        /** @var list<mixed> */
+        /** @var array<array-key, mixed> */
         private readonly array $constraints = [],
-        /** @var list<MediaTypeInterface> */
+        /** @var array<array-key, MediaTypeInterface> */
         private readonly array $consumes = [],
-        /** @var list<MediaTypeInterface> */
+        /** @var array<array-key, MediaTypeInterface> */
         private readonly array $produces = [],
-        /** @var list<string> */
+        /** @var array<array-key, string> */
         private readonly array $tags = [],
-        private readonly ?string $summary = null,
-        private readonly ?string $description = null,
+        private readonly string $summary = '',
+        private readonly string $description = '',
         private readonly bool $isDeprecated = false,
         /** @var non-empty-string|null */
         private readonly ?string $pattern = null,
@@ -64,7 +64,7 @@ final class Route
     }
 
     /**
-     * @return array<string, string>
+     * @inheritDoc
      */
     public function getPatterns(): array
     {
@@ -72,7 +72,7 @@ final class Route
     }
 
     /**
-     * @return list<string>
+     * @inheritDoc
      */
     public function getMethods(): array
     {
@@ -89,7 +89,7 @@ final class Route
     }
 
     /**
-     * @return array<string, mixed>
+     * @inheritDoc
      */
     public function getAttributes(): array
     {
@@ -107,9 +107,9 @@ final class Route
     }
 
     /**
-     * @param array<string, mixed> $attributes
+     * @inheritDoc
      */
-    public function withAttributes(array $attributes): self
+    public function withAttributes(array $attributes): static
     {
         $clone = clone $this;
         $clone->attributes = $attributes;
@@ -118,9 +118,9 @@ final class Route
     }
 
     /**
-     * @param array<string, mixed> $attributes
+     * @inheritDoc
      */
-    public function withAddedAttributes(array $attributes): self
+    public function withAddedAttributes(array $attributes): static
     {
         $clone = clone $this;
         foreach ($attributes as $name => $value) {
@@ -131,7 +131,7 @@ final class Route
     }
 
     /**
-     * @return list<mixed>
+     * @inheritDoc
      */
     public function getMiddlewares(): array
     {
@@ -139,7 +139,7 @@ final class Route
     }
 
     /**
-     * @return list<mixed>
+     * @inheritDoc
      */
     public function getConstraints(): array
     {
@@ -147,7 +147,7 @@ final class Route
     }
 
     /**
-     * @return list<MediaTypeInterface>
+     * @inheritDoc
      */
     public function getConsumedMediaTypes(): array
     {
@@ -155,7 +155,7 @@ final class Route
     }
 
     /**
-     * @return list<MediaTypeInterface>
+     * @inheritDoc
      */
     public function getProducedMediaTypes(): array
     {
@@ -163,19 +163,19 @@ final class Route
     }
 
     /**
-     * @return list<string>
+     * @inheritDoc
      */
     public function getTags(): array
     {
         return $this->tags;
     }
 
-    public function getSummary(): ?string
+    public function getSummary(): string
     {
         return $this->summary;
     }
 
-    public function getDescription(): ?string
+    public function getDescription(): string
     {
         return $this->description;
     }
@@ -186,7 +186,7 @@ final class Route
     }
 
     /**
-     * @return non-empty-string|null
+     * @inheritDoc
      */
     public function getPattern(): ?string
     {
