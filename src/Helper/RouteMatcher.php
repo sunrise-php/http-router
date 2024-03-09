@@ -89,10 +89,6 @@ final class RouteMatcher
             );
         }
 
-        if ($result === 0) {
-            return false;
-        }
-
         foreach ($matches as $key => $match) {
             if (is_int($key) || $match === null) {
                 unset($matches[$key]);
@@ -101,6 +97,6 @@ final class RouteMatcher
 
         /** @var array<string, string> $matches */
 
-        return true;
+        return $result === 1;
     }
 }

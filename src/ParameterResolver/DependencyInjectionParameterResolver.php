@@ -31,7 +31,7 @@ final class DependencyInjectionParameterResolver implements ParameterResolverInt
     /**
      * @inheritDoc
      *
-     * @throws ContainerExceptionInterface If something went wrong while working with the container.
+     * @throws ContainerExceptionInterface
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {

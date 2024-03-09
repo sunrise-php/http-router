@@ -47,8 +47,8 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
     /**
      * @inheritDoc
      *
-     * @throws LogicException If the resolver is used incorrectly.
-     * @throws HttpException If a header was missed or invalid.
+     * @throws HttpException
+     * @throws LogicException
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
@@ -64,36 +64,31 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
 
         $processParams = $annotations[0]->newInstance();
 
+        $headerName = $processParams->headerName;
         $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
 
-        if (!$context->hasHeader($processParams->headerName)) {
+        if (!$context->hasHeader($headerName)) {
             if ($parameter->isDefaultValueAvailable()) {
                 return yield $parameter->getDefaultValue();
             }
 
             throw HttpExceptionFactory::missingHeaderField($processParams->errorMessage, $errorStatusCode)
-                ->addMessagePlaceholder('{{ header_name }}', $processParams->headerName);
+                ->addMessagePlaceholder('{{ header_name }}', $headerName);
         }
 
         try {
-            $argument = $this->hydrator->castValue(
-                $context->getHeaderLine($processParams->headerName),
-                Type::fromParameter($parameter),
-                path: [$processParams->headerName],
-            );
+            $argument = $this->hydrator->castValue($context->getHeaderLine($headerName), Type::fromParameter($parameter), path: [$headerName]);
         } catch (InvalidValueException|InvalidDataException $e) {
-            $violations = ($e instanceof InvalidValueException) ? [$e] : $e->getExceptions();
-
             throw HttpExceptionFactory::invalidHeaderField($processParams->errorMessage, $errorStatusCode, previous: $e)
-                ->addMessagePlaceholder('{{ header_name }}', $processParams->headerName)
-                ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), $violations));
+                ->addMessagePlaceholder('{{ header_name }}', $headerName)
+                ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), ($e instanceof InvalidValueException) ? [$e] : $e->getExceptions()));
         }
 
         if (isset($this->validator)) {
             if (($constraints = ValidatorHelper::getParameterConstraints($parameter))->valid()) {
                 if (($violations = $this->validator->validate($argument, [...$constraints]))->count() > 0) {
                     throw HttpExceptionFactory::invalidHeaderField($processParams->errorMessage, $errorStatusCode)
-                        ->addMessagePlaceholder('{{ header_name }}', $processParams->headerName)
+                        ->addMessagePlaceholder('{{ header_name }}', $headerName)
                         ->addConstraintViolation(...array_map(ValidatorConstraintViolationProxy::create(...), [...$violations]));
                 }
             }

@@ -82,13 +82,13 @@ final class HttpExceptionFactory
         );
     }
 
-    public static function invalidQueryParams(
+    public static function invalidQuery(
         ?string $message = null,
         ?int $code = null,
         ?Throwable $previous = null,
     ): HttpException {
         return new HttpException(
-            message: $message ?? ErrorMessage::INVALID_QUERY_PARAMS,
+            message: $message ?? ErrorMessage::INVALID_QUERY,
             code: $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
             previous: $previous,
         );

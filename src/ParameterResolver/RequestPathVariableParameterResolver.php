@@ -51,8 +51,8 @@ final class RequestPathVariableParameterResolver implements ParameterResolverInt
     /**
      * @inheritDoc
      *
-     * @throws LogicException If the resolver is used incorrectly.
-     * @throws HttpException If a path variable isn't valid.
+     * @throws HttpException
+     * @throws LogicException
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
@@ -66,8 +66,7 @@ final class RequestPathVariableParameterResolver implements ParameterResolverInt
             throw new LogicException('At this level of the application, any operations with the request are not possible.');
         }
 
-        $serverRequest = ServerRequest::create($context);
-        $route = $serverRequest->getRoute();
+        $route = ServerRequest::create($context)->getRoute();
         $processParams = $annotations[0]->newInstance();
 
         $variableName = $processParams->variableName ?? $parameter->getName();
@@ -89,18 +88,12 @@ final class RequestPathVariableParameterResolver implements ParameterResolverInt
         }
 
         try {
-            $argument = $this->hydrator->castValue(
-                $route->getAttribute($variableName),
-                Type::fromParameter($parameter),
-                path: [$variableName],
-            );
+            $argument = $this->hydrator->castValue($route->getAttribute($variableName), Type::fromParameter($parameter), path: [$variableName]);
         } catch (InvalidValueException|InvalidDataException $e) {
-            $violations = ($e instanceof InvalidValueException) ? [$e] : $e->getExceptions();
-
             throw HttpExceptionFactory::invalidPathVariable($processParams->errorMessage, $errorStatusCode, previous: $e)
                 ->addMessagePlaceholder('{{ variable_name }}', $variableName)
-                ->addMessagePlaceholder('{{ route_path }}', RouteSimplifier::simplifyRoute($route->getPath()))
-                ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), $violations));
+                ->addMessagePlaceholder('{{ route }}', RouteSimplifier::simplifyRoute($route->getPath()))
+                ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), ($e instanceof InvalidValueException) ? [$e] : $e->getExceptions()));
         }
 
         if (isset($this->validator)) {
@@ -108,7 +101,7 @@ final class RequestPathVariableParameterResolver implements ParameterResolverInt
                 if (($violations = $this->validator->validate($argument, [...$constraints]))->count() > 0) {
                     throw HttpExceptionFactory::invalidPathVariable($processParams->errorMessage, $errorStatusCode)
                         ->addMessagePlaceholder('{{ variable_name }}', $variableName)
-                        ->addMessagePlaceholder('{{ route_path }}', RouteSimplifier::simplifyRoute($route->getPath()))
+                        ->addMessagePlaceholder('{{ route }}', RouteSimplifier::simplifyRoute($route->getPath()))
                         ->addConstraintViolation(...array_map(ValidatorConstraintViolationProxy::create(...), [...$violations]));
                 }
             }

@@ -33,13 +33,13 @@ use function is_subclass_of;
 /**
  * @since 2.10.0
  */
-final class RequestHandlerResolver
+final class RequestProcessorResolver
 {
     private readonly ClassResolver $classResolver;
 
     public function __construct(
         private readonly ParameterResolver $parameterResolver,
-        private readonly ResponseResolver $responseResolver,
+        private readonly ResponseResolver  $responseResolver,
     ) {
         $this->classResolver = new ClassResolver($parameterResolver);
     }

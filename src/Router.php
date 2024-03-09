@@ -23,6 +23,7 @@ use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\Exception\InvalidRouteBuildingValueException;
 use Sunrise\Http\Router\Exception\InvalidRouteMatchingSubjectException;
 use Sunrise\Http\Router\Exception\InvalidRouteParsingSubjectException;
+use Sunrise\Http\Router\Exception\RouteNotFoundException;
 use Sunrise\Http\Router\Helper\RouteBuilder;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Helper\RouteMatcher;
@@ -39,7 +40,7 @@ use function sprintf;
 
 class Router implements RequestHandlerInterface
 {
-    private readonly RequestHandlerResolver $requestHandlerResolver;
+    private readonly RequestProcessorResolver $requestHandlerResolver;
 
     /**
      * @var array<string, RouteInterface>
@@ -72,7 +73,7 @@ class Router implements RequestHandlerInterface
         array $responseResolvers = [],
         array $loaders = [],
     ) {
-        $this->requestHandlerResolver = new RequestHandlerResolver(
+        $this->requestHandlerResolver = new RequestProcessorResolver(
             new ParameterResolver($parameterResolvers),
             new ResponseResolver($responseResolvers),
         );
@@ -91,7 +92,7 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @throws InvalidArgumentException If the route doesn't exist.
+     * @throws RouteNotFoundException
      */
     public function getRoute(string $name): RouteInterface
     {
@@ -99,7 +100,7 @@ class Router implements RequestHandlerInterface
             return $this->routes[$name];
         }
 
-        return throw new InvalidArgumentException(sprintf(
+        return throw new RouteNotFoundException(sprintf(
             'The route %s does not exist.',
             $name,
         ));

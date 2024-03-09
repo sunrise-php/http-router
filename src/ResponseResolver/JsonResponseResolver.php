@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\ResponseResolver;
 
 use Fig\Http\Message\StatusCodeInterface;
-use InvalidArgumentException;
 use JsonException;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -23,6 +22,7 @@ use ReflectionAttribute;
 use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\JsonResponse;
+use Sunrise\Http\Router\Exception\InvalidResponseException;
 use Sunrise\Http\Router\ResponseResolver;
 
 use function json_encode;
@@ -46,7 +46,7 @@ final class JsonResponseResolver implements ResponseResolverInterface
     }
 
     /**
-     * @throws InvalidArgumentException If the resolver is used incorrectly.
+     * @throws InvalidResponseException
      */
     public function resolveResponse(
         mixed $response,
@@ -68,7 +68,7 @@ final class JsonResponseResolver implements ResponseResolverInterface
             /** @psalm-suppress ArgumentTypeCoercion */
             $payload = json_encode($response, $encodingFlags | JSON_THROW_ON_ERROR, $encodingDepth);
         } catch (JsonException $e) {
-            throw new InvalidArgumentException(sprintf(
+            throw new InvalidResponseException(sprintf(
                 'The responder %s returned a response that could not be encoded to JSON due to: %s',
                 ResponseResolver::stringifyResponder($responder),
                 $e->getMessage(),

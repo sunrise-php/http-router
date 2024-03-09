@@ -26,6 +26,7 @@ use Sunrise\Http\Router\ParameterResolver;
 use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
 use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationProxy;
 use Sunrise\Hydrator\Exception\InvalidDataException;
+use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\HydratorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -47,8 +48,9 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
     /**
      * @inheritDoc
      *
-     * @throws LogicException If the resolver is used incorrectly or if an object isn't valid.
-     * @throws HttpException If the request's parsed body isn't valid.
+     * @throws HttpException
+     * @throws InvalidObjectException
+     * @throws LogicException
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {

@@ -11,19 +11,13 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Annotation;
+namespace Sunrise\Http\Router\Exception;
 
-use Attribute;
+use InvalidArgumentException;
 
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_PARAMETER)]
-final class RequestQueryParams
+final class RouteNotFoundException extends InvalidArgumentException implements ExceptionInterface
 {
-    public function __construct(
-        public readonly ?int $errorStatusCode = null,
-        public readonly ?string $errorMessage = null,
-    ) {
-    }
 }

@@ -15,7 +15,6 @@ namespace Sunrise\Http\Router;
 
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 
-use function array_key_exists;
 use function in_array;
 
 final class Route implements RouteInterface
@@ -98,12 +97,12 @@ final class Route implements RouteInterface
 
     public function getAttribute(string $name, mixed $default = null): mixed
     {
-        return array_key_exists($name, $this->attributes) ? $this->attributes[$name] : $default;
+        return $this->attributes[$name] ?? $default;
     }
 
     public function hasAttribute(string $name): bool
     {
-        return array_key_exists($name, $this->attributes);
+        return isset($this->attributes[$name]);
     }
 
     /**

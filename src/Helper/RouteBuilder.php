@@ -14,9 +14,12 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Helper;
 
 use BackedEnum;
+use Stringable;
 use Sunrise\Http\Router\Exception\InvalidRouteBuildingValueException;
 use Sunrise\Http\Router\Exception\InvalidRouteParsingSubjectException;
 
+use function is_int;
+use function is_string;
 use function sprintf;
 use function str_replace;
 use function substr;
@@ -42,8 +45,20 @@ final class RouteBuilder
             if (isset($values[$variable['name']])) {
                 $value = $values[$variable['name']];
 
-                if ($value instanceof BackedEnum) {
-                    $value = $value->value;
+                if (is_int($value)) {
+                    $value = (string) $value;
+                } elseif ($value instanceof BackedEnum) {
+                    $value = (string) $value->value;
+                } elseif ($value instanceof Stringable) {
+                    $value = (string) $value;
+                }
+
+                if (!is_string($value)) {
+                    throw new InvalidRouteBuildingValueException(sprintf(
+                        'The route %s could not be built with an unexpected value for the variable %s.',
+                        $route,
+                        $variable['name'],
+                    ));
                 }
 
                 $search[] = $statement;

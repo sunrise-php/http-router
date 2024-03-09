@@ -11,13 +11,19 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Exception;
+namespace Sunrise\Http\Router\Annotation;
 
-use InvalidArgumentException;
+use Attribute;
 
 /**
  * @since 3.0.0
  */
-final class InvalidLoaderResourceException extends InvalidArgumentException implements ExceptionInterface
+#[Attribute(Attribute::TARGET_PARAMETER)]
+final class RequestQuery
 {
+    public function __construct(
+        public readonly ?int $errorStatusCode = null,
+        public readonly ?string $errorMessage = null,
+    ) {
+    }
 }

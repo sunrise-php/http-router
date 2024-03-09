@@ -48,8 +48,8 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
     /**
      * @inheritDoc
      *
-     * @throws LogicException If the resolver is used incorrectly.
-     * @throws HttpException If a cookie was missed or invalid.
+     * @throws HttpException
+     * @throws LogicException
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
@@ -66,36 +66,31 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
         $serverRequest = ServerRequest::create($context);
         $processParams = $annotations[0]->newInstance();
 
+        $cookieName = $processParams->cookieName;
         $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
 
-        if (!$serverRequest->hasCookieParam($processParams->cookieName)) {
+        if (!$serverRequest->hasCookieParam($cookieName)) {
             if ($parameter->isDefaultValueAvailable()) {
                 return yield $parameter->getDefaultValue();
             }
 
             throw HttpExceptionFactory::missingCookieParam($processParams->errorMessage, $errorStatusCode)
-                ->addMessagePlaceholder('{{ cookie_name }}', $processParams->cookieName);
+                ->addMessagePlaceholder('{{ cookie_name }}', $cookieName);
         }
 
         try {
-            $argument = $this->hydrator->castValue(
-                $serverRequest->getCookieParam($processParams->cookieName),
-                Type::fromParameter($parameter),
-                path: [$processParams->cookieName],
-            );
+            $argument = $this->hydrator->castValue($serverRequest->getCookieParam($cookieName), Type::fromParameter($parameter), path: [$cookieName]);
         } catch (InvalidValueException|InvalidDataException $e) {
-            $violations = ($e instanceof InvalidValueException) ? [$e] : $e->getExceptions();
-
             throw HttpExceptionFactory::invalidCookieParam($processParams->errorMessage, $errorStatusCode, previous: $e)
-                ->addMessagePlaceholder('{{ cookie_name }}', $processParams->cookieName)
-                ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), $violations));
+                ->addMessagePlaceholder('{{ cookie_name }}', $cookieName)
+                ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), ($e instanceof InvalidValueException) ? [$e] : $e->getExceptions()));
         }
 
         if (isset($this->validator)) {
             if (($constraints = ValidatorHelper::getParameterConstraints($parameter))->valid()) {
                 if (($violations = $this->validator->validate($argument, [...$constraints]))->count() > 0) {
                     throw HttpExceptionFactory::invalidCookieParam($processParams->errorMessage, $errorStatusCode)
-                        ->addMessagePlaceholder('{{ cookie_name }}', $processParams->cookieName)
+                        ->addMessagePlaceholder('{{ cookie_name }}', $cookieName)
                         ->addConstraintViolation(...array_map(ValidatorConstraintViolationProxy::create(...), [...$violations]));
                 }
             }
