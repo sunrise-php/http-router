@@ -92,7 +92,7 @@ final class RequestPathVariableParameterResolver implements ParameterResolverInt
         } catch (InvalidValueException|InvalidDataException $e) {
             throw HttpExceptionFactory::invalidPathVariable($processParams->errorMessage, $errorStatusCode, previous: $e)
                 ->addMessagePlaceholder('{{ variable_name }}', $variableName)
-                ->addMessagePlaceholder('{{ route }}', RouteSimplifier::simplifyRoute($route->getPath()))
+                ->addMessagePlaceholder('{{ route_path }}', RouteSimplifier::simplifyRoute($route->getPath()))
                 ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), ($e instanceof InvalidValueException) ? [$e] : $e->getExceptions()));
         }
 
@@ -101,7 +101,7 @@ final class RequestPathVariableParameterResolver implements ParameterResolverInt
                 if (($violations = $this->validator->validate($argument, [...$constraints]))->count() > 0) {
                     throw HttpExceptionFactory::invalidPathVariable($processParams->errorMessage, $errorStatusCode)
                         ->addMessagePlaceholder('{{ variable_name }}', $variableName)
-                        ->addMessagePlaceholder('{{ route }}', RouteSimplifier::simplifyRoute($route->getPath()))
+                        ->addMessagePlaceholder('{{ route_path }}', RouteSimplifier::simplifyRoute($route->getPath()))
                         ->addConstraintViolation(...array_map(ValidatorConstraintViolationProxy::create(...), [...$violations]));
                 }
             }

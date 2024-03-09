@@ -74,14 +74,14 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
                 return yield $parameter->getDefaultValue();
             }
 
-            throw HttpExceptionFactory::missingCookieParam($processParams->errorMessage, $errorStatusCode)
+            throw HttpExceptionFactory::cookieRequired($processParams->errorMessage, $errorStatusCode)
                 ->addMessagePlaceholder('{{ cookie_name }}', $cookieName);
         }
 
         try {
             $argument = $this->hydrator->castValue($serverRequest->getCookieParam($cookieName), Type::fromParameter($parameter), path: [$cookieName]);
         } catch (InvalidValueException|InvalidDataException $e) {
-            throw HttpExceptionFactory::invalidCookieParam($processParams->errorMessage, $errorStatusCode, previous: $e)
+            throw HttpExceptionFactory::invalidCookie($processParams->errorMessage, $errorStatusCode, previous: $e)
                 ->addMessagePlaceholder('{{ cookie_name }}', $cookieName)
                 ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), ($e instanceof InvalidValueException) ? [$e] : $e->getExceptions()));
         }
@@ -89,7 +89,7 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
         if (isset($this->validator)) {
             if (($constraints = ValidatorHelper::getParameterConstraints($parameter))->valid()) {
                 if (($violations = $this->validator->validate($argument, [...$constraints]))->count() > 0) {
-                    throw HttpExceptionFactory::invalidCookieParam($processParams->errorMessage, $errorStatusCode)
+                    throw HttpExceptionFactory::invalidCookie($processParams->errorMessage, $errorStatusCode)
                         ->addMessagePlaceholder('{{ cookie_name }}', $cookieName)
                         ->addConstraintViolation(...array_map(ValidatorConstraintViolationProxy::create(...), [...$violations]));
                 }

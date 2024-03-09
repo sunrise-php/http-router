@@ -72,14 +72,14 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
                 return yield $parameter->getDefaultValue();
             }
 
-            throw HttpExceptionFactory::missingHeaderField($processParams->errorMessage, $errorStatusCode)
+            throw HttpExceptionFactory::headerRequired($processParams->errorMessage, $errorStatusCode)
                 ->addMessagePlaceholder('{{ header_name }}', $headerName);
         }
 
         try {
             $argument = $this->hydrator->castValue($context->getHeaderLine($headerName), Type::fromParameter($parameter), path: [$headerName]);
         } catch (InvalidValueException|InvalidDataException $e) {
-            throw HttpExceptionFactory::invalidHeaderField($processParams->errorMessage, $errorStatusCode, previous: $e)
+            throw HttpExceptionFactory::invalidHeader($processParams->errorMessage, $errorStatusCode, previous: $e)
                 ->addMessagePlaceholder('{{ header_name }}', $headerName)
                 ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), ($e instanceof InvalidValueException) ? [$e] : $e->getExceptions()));
         }
@@ -87,7 +87,7 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
         if (isset($this->validator)) {
             if (($constraints = ValidatorHelper::getParameterConstraints($parameter))->valid()) {
                 if (($violations = $this->validator->validate($argument, [...$constraints]))->count() > 0) {
-                    throw HttpExceptionFactory::invalidHeaderField($processParams->errorMessage, $errorStatusCode)
+                    throw HttpExceptionFactory::invalidHeader($processParams->errorMessage, $errorStatusCode)
                         ->addMessagePlaceholder('{{ header_name }}', $headerName)
                         ->addConstraintViolation(...array_map(ValidatorConstraintViolationProxy::create(...), [...$violations]));
                 }

@@ -74,7 +74,7 @@ final class RequestQueryParamParameterResolver implements ParameterResolverInter
                 return yield $parameter->getDefaultValue();
             }
 
-            throw HttpExceptionFactory::missingQueryParam($processParams->errorMessage, $errorStatusCode)
+            throw HttpExceptionFactory::queryParamRequired($processParams->errorMessage, $errorStatusCode)
                 ->addMessagePlaceholder('{{ param_name }}', $paramName);
         }
 

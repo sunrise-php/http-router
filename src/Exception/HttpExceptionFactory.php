@@ -46,13 +46,13 @@ final class HttpExceptionFactory
         );
     }
 
-    public static function missingMediaType(
+    public static function mediaTypeRequired(
         ?string $message = null,
         ?int $code = null,
         ?Throwable $previous = null,
     ): HttpException {
         return new HttpException(
-            message: $message ?? ErrorMessage::MISSING_MEDIA_TYPE,
+            message: $message ?? ErrorMessage::MEDIA_TYPE_REQUIRED,
             code: $code ?? StatusCodeInterface::STATUS_UNSUPPORTED_MEDIA_TYPE,
             previous: $previous,
         );
@@ -94,13 +94,13 @@ final class HttpExceptionFactory
         );
     }
 
-    public static function missingQueryParam(
+    public static function queryParamRequired(
         ?string $message = null,
         ?int $code = null,
         ?Throwable $previous = null,
     ): HttpException {
         return new HttpException(
-            message: $message ?? ErrorMessage::MISSING_QUERY_PARAM,
+            message: $message ?? ErrorMessage::QUERY_PARAM_REQUIRED,
             code: $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
             previous: $previous,
         );
@@ -118,49 +118,49 @@ final class HttpExceptionFactory
         );
     }
 
-    public static function missingHeaderField(
+    public static function headerRequired(
         ?string $message = null,
         ?int $code = null,
         ?Throwable $previous = null,
     ): HttpException {
         return new HttpException(
-            message: $message ?? ErrorMessage::MISSING_HEADER_FIELD,
+            message: $message ?? ErrorMessage::HEADER_REQUIRED,
             code: $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
             previous: $previous,
         );
     }
 
-    public static function invalidHeaderField(
+    public static function invalidHeader(
         ?string $message = null,
         ?int $code = null,
         ?Throwable $previous = null,
     ): HttpException {
         return new HttpException(
-            message: $message ?? ErrorMessage::INVALID_HEADER_FIELD,
+            message: $message ?? ErrorMessage::INVALID_HEADER,
             code: $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
             previous: $previous,
         );
     }
 
-    public static function missingCookieParam(
+    public static function cookieRequired(
         ?string $message = null,
         ?int $code = null,
         ?Throwable $previous = null,
     ): HttpException {
         return new HttpException(
-            message: $message ?? ErrorMessage::MISSING_COOKIE_PARAM,
+            message: $message ?? ErrorMessage::COOKIE_REQUIRED,
             code: $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
             previous: $previous,
         );
     }
 
-    public static function invalidCookieParam(
+    public static function invalidCookie(
         ?string $message = null,
         ?int $code = null,
         ?Throwable $previous = null,
     ): HttpException {
         return new HttpException(
-            message: $message ?? ErrorMessage::INVALID_COOKIE_PARAM,
+            message: $message ?? ErrorMessage::INVALID_COOKIE,
             code: $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
             previous: $previous,
         );
