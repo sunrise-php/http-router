@@ -26,7 +26,7 @@ final class RouteParser
     /**
      * Parses the given route and returns its variables
      *
-     * @return list<array{name: string, pattern?: string, optional?: true, left?: string, right?: string, offset: int, length: int}>
+     * @return list<array{name: string, pattern?: string, optional?: array{left: string, right: string}, offset: int, length: int}>
      *
      * @throws InvalidRouteParsingSubjectException
      */
@@ -72,8 +72,8 @@ final class RouteParser
 
                 if (($cursor & $inOccupiedPart)) {
                     $cursor &= ~$inOccupiedPart;
-                    $variables[$variable]['left'] = $left;
-                    $variables[$variable]['right'] = $right;
+                    $variables[$variable]['optional']['left'] = $left;
+                    $variables[$variable]['optional']['right'] = $right;
                 }
 
                 $cursor &= ~$inOptionalPart;
@@ -105,7 +105,6 @@ final class RouteParser
 
                 if (($cursor & $inOptionalPart)) {
                     $cursor |= $inOccupiedPart;
-                    $variables[$variable]['optional'] = true;
                 }
 
                 $cursor |= $inVariable | $inVariableName;
@@ -270,7 +269,7 @@ final class RouteParser
             ));
         }
 
-        /** @var list<array{name: string, pattern?: string, optional?: true, left?: string, right?: string, offset: int, length: int}> */
+        /** @var list<array{name: string, pattern?: string, optional?: array{left: string, right: string}, offset: int, length: int}> */
         return $variables;
     }
 }

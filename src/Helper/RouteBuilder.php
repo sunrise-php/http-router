@@ -56,7 +56,7 @@ final class RouteBuilder
 
                 if (!is_string($value)) {
                     throw new InvalidRouteBuildingValueException(sprintf(
-                        'The route %s could not be built with a value for the variable %s that has an unsupported type %s.',
+                        'The route %s could not be built because the value assigned to the variable %s has an unsupported type: %s.',
                         $route,
                         $variable['name'],
                         get_debug_type($value),
@@ -69,10 +69,7 @@ final class RouteBuilder
             }
 
             if (isset($variable['optional'])) {
-                $left = $variable['left'] ?? '';
-                $right = $variable['right'] ?? '';
-
-                $search[] = '(' . $left . $statement . $right . ')';
+                $search[] = '(' . $variable['optional']['left'] . $statement . $variable['optional']['right'] . ')';
                 $replace[] = '';
                 continue;
             }
