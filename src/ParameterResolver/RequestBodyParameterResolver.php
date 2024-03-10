@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\ParameterResolver;
 
 use Generator;
-use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionNamedType;
@@ -22,6 +21,7 @@ use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestBody;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
+use Sunrise\Http\Router\Exception\InvalidParameterException;
 use Sunrise\Http\Router\ParameterResolver;
 use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
 use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationProxy;
@@ -50,7 +50,7 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
      *
      * @throws HttpException
      * @throws InvalidObjectException
-     * @throws LogicException
+     * @throws InvalidParameterException
      */
     public function resolveParameter(ReflectionParameter $parameter, ?ServerRequestInterface $request): Generator
     {
@@ -66,7 +66,7 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
 
         $type = $parameter->getType();
         if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
-            throw new LogicException(sprintf(
+            throw new InvalidParameterException(sprintf(
                 'To use the #[RequestBody] annotation, the parameter %s must be typed with an object.',
                 ParameterResolver::stringifyParameter($parameter),
             ));
