@@ -109,6 +109,11 @@ class Router implements RequestHandlerInterface
         throw new RouteNotFoundException(sprintf('The route %s does not exist.', $name));
     }
 
+    public function hasRoute(string $name): bool
+    {
+        return isset($this->routes[$name]);
+    }
+
     public function addRoute(RouteInterface ...$routes): void
     {
         foreach ($routes as $route) {
@@ -138,11 +143,13 @@ class Router implements RequestHandlerInterface
             $routePattern = $this->compileRoute($route);
 
             try {
-                if (!RouteMatcher::matchPattern($route->getPath(), $routePattern, $requestPath, $matches)) {
-                    continue;
-                }
+                $isRouteMatched = RouteMatcher::matchPattern($route->getPath(), $routePattern, $requestPath, $matches);
             } catch (InvalidRouteMatchingSubjectException $e) {
                 throw HttpExceptionFactory::invalidUri(previous: $e);
+            }
+
+            if (!$isRouteMatched) {
+                continue;
             }
 
             if (!$route->allowsMethod($request->getMethod())) {
