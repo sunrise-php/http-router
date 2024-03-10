@@ -74,12 +74,12 @@ class Router implements RequestHandlerInterface
         array $loaders = [],
     ) {
         $parameterResolver = new ParameterResolver($parameterResolvers);
-        $classResolver = new ClassResolver($parameterResolver);
         $responseResolver = new ResponseResolver($responseResolvers);
+        $classResolver = new ClassResolver($parameterResolver);
 
         $this->referenceResolver = new ReferenceResolver(
-            parameterResolver: $parameterResolver,
             classResolver: $classResolver,
+            parameterResolver: $parameterResolver,
             responseResolver: $responseResolver,
         );
 

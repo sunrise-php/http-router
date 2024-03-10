@@ -39,8 +39,8 @@ use function sprintf;
 final class ReferenceResolver
 {
     public function __construct(
-        private readonly ParameterResolver $parameterResolver,
         private readonly ClassResolver $classResolver,
+        private readonly ParameterResolver $parameterResolver,
         private readonly ResponseResolver $responseResolver,
     ) {
     }

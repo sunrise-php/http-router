@@ -44,11 +44,6 @@ final class ServerRequest implements ServerRequestInterface
         return new self($request);
     }
 
-    public function getOriginalRequest(): ServerRequestInterface
-    {
-        return $this->request;
-    }
-
     /**
      * @throws LogicException If the request doesn't contain a route.
      */
@@ -208,9 +203,10 @@ final class ServerRequest implements ServerRequestInterface
      */
     public function withProtocolVersion($version): self
     {
-        $this->request = $this->request->withProtocolVersion($version);
+        $clone = clone $this;
+        $clone->request = $this->request->withProtocolVersion($version);
 
-        return $this;
+        return $clone;
     }
 
     /**
@@ -250,9 +246,10 @@ final class ServerRequest implements ServerRequestInterface
      */
     public function withHeader($name, $value): self
     {
-        $this->request = $this->request->withHeader($name, $value);
+        $clone = clone $this;
+        $clone->request = $this->request->withHeader($name, $value);
 
-        return $this;
+        return $clone;
     }
 
     /**
@@ -260,9 +257,10 @@ final class ServerRequest implements ServerRequestInterface
      */
     public function withAddedHeader($name, $value): self
     {
-        $this->request = $this->request->withAddedHeader($name, $value);
+        $clone = clone $this;
+        $clone->request = $this->request->withAddedHeader($name, $value);
 
-        return $this;
+        return $clone;
     }
 
     /**
@@ -270,9 +268,10 @@ final class ServerRequest implements ServerRequestInterface
      */
     public function withoutHeader($name): self
     {
-        $this->request = $this->request->withoutHeader($name);
+        $clone = clone $this;
+        $clone->request = $this->request->withoutHeader($name);
 
-        return $this;
+        return $clone;
     }
 
     /**
@@ -288,9 +287,10 @@ final class ServerRequest implements ServerRequestInterface
      */
     public function withBody(StreamInterface $body): self
     {
-        $this->request = $this->request->withBody($body);
+        $clone = clone $this;
+        $clone->request = $this->request->withBody($body);
 
-        return $this;
+        return $clone;
     }
 
     /**
@@ -306,9 +306,10 @@ final class ServerRequest implements ServerRequestInterface
      */
     public function withMethod($method): self
     {
-        $this->request = $this->request->withMethod($method);
+        $clone = clone $this;
+        $clone->request = $this->request->withMethod($method);
 
-        return $this;
+        return $clone;
     }
 
     /**
@@ -324,9 +325,10 @@ final class ServerRequest implements ServerRequestInterface
      */
     public function withUri(UriInterface $uri, $preserveHost = false): self
     {
-        $this->request = $this->request->withUri($uri, $preserveHost);
+        $clone = clone $this;
+        $clone->request = $this->request->withUri($uri, $preserveHost);
 
-        return $this;
+        return $clone;
     }
 
     /**
@@ -342,9 +344,10 @@ final class ServerRequest implements ServerRequestInterface
      */
     public function withRequestTarget($requestTarget): self
     {
-        $this->request = $this->request->withRequestTarget($requestTarget);
+        $clone = clone $this;
+        $clone->request = $this->request->withRequestTarget($requestTarget);
 
-        return $this;
+        return $clone;
     }
 
     /**
@@ -382,9 +385,10 @@ final class ServerRequest implements ServerRequestInterface
      */
     public function withQueryParams(array $query): self
     {
-        $this->request = $this->request->withQueryParams($query);
+        $clone = clone $this;
+        $clone->request = $this->request->withQueryParams($query);
 
-        return $this;
+        return $clone;
     }
 
     /**
@@ -414,9 +418,10 @@ final class ServerRequest implements ServerRequestInterface
      */
     public function withCookieParams(array $cookies): self
     {
-        $this->request = $this->request->withCookieParams($cookies);
+        $clone = clone $this;
+        $clone->request = $this->request->withCookieParams($cookies);
 
-        return $this;
+        return $clone;
     }
 
     /**
@@ -432,9 +437,10 @@ final class ServerRequest implements ServerRequestInterface
      */
     public function withUploadedFiles(array $uploadedFiles): self
     {
-        $this->request = $this->request->withUploadedFiles($uploadedFiles);
+        $clone = clone $this;
+        $clone->request = $this->request->withUploadedFiles($uploadedFiles);
 
-        return $this;
+        return $clone;
     }
 
     /**
@@ -450,9 +456,10 @@ final class ServerRequest implements ServerRequestInterface
      */
     public function withParsedBody($data): self
     {
-        $this->request = $this->request->withParsedBody($data);
+        $clone = clone $this;
+        $clone->request = $this->request->withParsedBody($data);
 
-        return $this;
+        return $clone;
     }
 
     /**
@@ -476,9 +483,10 @@ final class ServerRequest implements ServerRequestInterface
      */
     public function withAttribute($name, $value): self
     {
-        $this->request = $this->request->withAttribute($name, $value);
+        $clone = clone $this;
+        $clone->request = $this->request->withAttribute($name, $value);
 
-        return $this;
+        return $clone;
     }
 
     /**
@@ -486,8 +494,9 @@ final class ServerRequest implements ServerRequestInterface
      */
     public function withoutAttribute($name): self
     {
-        $this->request = $this->request->withoutAttribute($name);
+        $clone = clone $this;
+        $clone->request = $this->request->withoutAttribute($name);
 
-        return $this;
+        return $clone;
     }
 }
