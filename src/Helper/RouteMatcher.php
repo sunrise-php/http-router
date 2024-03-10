@@ -62,31 +62,25 @@ final class RouteMatcher
             if (($result = @preg_match($pattern, $subject, $matches, PREG_UNMATCHED_AS_NULL)) === false) {
                 throw new ErrorException(preg_last_error_msg(), preg_last_error(), E_WARNING);
             }
-        } catch (Throwable $e) {
+        } catch (Throwable) {
+            // a client side error; must be handled as 4xx.
             if (preg_last_error() === PREG_BAD_UTF8_ERROR) {
-                throw new InvalidRouteMatchingSubjectException(
-                    sprintf(
-                        'The route %s could not be matched due to an invalid subject: %s.',
-                        $route,
-                        preg_last_error_msg(),
-                    ),
-                    code: preg_last_error(),
-                    previous: $e,
-                );
-            }
-
-            throw new InvalidRouteMatchingPatternException(
-                sprintf(
-                    'The route %s could not be matched due to: %s; ' .
-                    'most likely, this problem is related to one of the route patterns. ' .
-                    'Please refer to the official documentation: ' .
-                    'https://www.php.net/preg_last_error',
+                throw new InvalidRouteMatchingSubjectException(sprintf(
+                    'The route %s could not be matched due to: %s.',
                     $route,
                     preg_last_error_msg(),
-                ),
-                code: preg_last_error(),
-                previous: $e,
-            );
+                ));
+            }
+
+            // a server side error; must be handled as 5xx error.
+            throw new InvalidRouteMatchingPatternException(sprintf(
+                'The route %s could not be matched due to: %s; ' .
+                'most likely, this problem is related to one of the route patterns. ' .
+                'Please refer to the official documentation: ' .
+                'https://www.php.net/preg_last_error',
+                $route,
+                preg_last_error_msg(),
+            ), preg_last_error());
         }
 
         foreach ($matches as $key => $match) {

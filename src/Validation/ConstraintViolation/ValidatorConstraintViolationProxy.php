@@ -16,6 +16,8 @@ namespace Sunrise\Http\Router\Validation\ConstraintViolation;
 use Sunrise\Http\Router\Validation\ConstraintViolationInterface as RouterConstraintViolationInterface;
 use Symfony\Component\Validator\ConstraintViolationInterface as ValidatorConstraintViolationInterface;
 
+use function preg_replace;
+
 /**
  * @since 3.0.0
  */
@@ -47,7 +49,7 @@ final class ValidatorConstraintViolationProxy implements RouterConstraintViolati
 
     public function getPropertyPath(): string
     {
-        return $this->validatorConstraintViolation->getPropertyPath();
+        return preg_replace(['/\x5b([^\x5b\x5d]+)\x5d/', '/^\x2e/'], ['.$1'], $this->validatorConstraintViolation->getPropertyPath());
     }
 
     public function getCode(): ?string

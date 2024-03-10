@@ -15,6 +15,7 @@ namespace Sunrise\Http\Router;
 
 use Generator;
 use LogicException;
+use Psr\Http\Message\ServerRequestInterface;
 use ReflectionMethod;
 use ReflectionParameter;
 use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
@@ -27,7 +28,7 @@ use function sprintf;
  */
 final class ParameterResolver
 {
-    private mixed $context = null;
+    private ?ServerRequestInterface $request = null;
 
     public function __construct(
         /** @var ParameterResolverInterface[] */
@@ -35,10 +36,10 @@ final class ParameterResolver
     ) {
     }
 
-    public function withContext(mixed $context): self
+    public function withRequest(ServerRequestInterface $request): self
     {
         $clone = clone $this;
-        $clone->context = $context;
+        $clone->request = $request;
 
         return $clone;
     }
@@ -70,7 +71,7 @@ final class ParameterResolver
     private function resolveParameter(ReflectionParameter $parameter): Generator
     {
         foreach ($this->resolvers as $resolver) {
-            $arguments = $resolver->resolveParameter($parameter, $this->context);
+            $arguments = $resolver->resolveParameter($parameter, $this->request);
             if ($arguments->valid()) {
                 return yield from $arguments;
             }

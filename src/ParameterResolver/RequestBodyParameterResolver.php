@@ -52,8 +52,12 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
      * @throws InvalidObjectException
      * @throws LogicException
      */
-    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
+    public function resolveParameter(ReflectionParameter $parameter, ?ServerRequestInterface $request): Generator
     {
+        if ($request === null) {
+            return;
+        }
+
         /** @var list<ReflectionAttribute<RequestBody>> $annotations */
         $annotations = $parameter->getAttributes(RequestBody::class);
         if ($annotations === []) {
@@ -68,16 +72,12 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
             ));
         }
 
-        if (! $context instanceof ServerRequestInterface) {
-            throw new LogicException('At this level of the application, any operations with the request are not possible.');
-        }
-
         $processParams = $annotations[0]->newInstance();
 
         $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
 
         try {
-            $argument = $this->hydrator->hydrate($type->getName(), (array) $context->getParsedBody());
+            $argument = $this->hydrator->hydrate($type->getName(), (array) $request->getParsedBody());
         } catch (InvalidDataException $e) {
             throw HttpExceptionFactory::invalidBody($processParams->errorMessage, $errorStatusCode, previous: $e)
                 ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), $e->getExceptions()));

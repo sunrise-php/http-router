@@ -121,7 +121,7 @@ final class RequestProcessorResolver
             $this->responseResolver->resolveResponse(
                 $callback(...
                     $this->parameterResolver
-                        ->withContext($request)
+                        ->withRequest($request)
                         ->withPriorityResolver(
                             new ObjectInjectionParameterResolver($request),
                         )
@@ -144,7 +144,7 @@ final class RequestProcessorResolver
             $this->responseResolver->resolveResponse(
                 $callback(...
                     $this->parameterResolver
-                        ->withContext($request)
+                        ->withRequest($request)
                         ->withPriorityResolver(
                             new ObjectInjectionParameterResolver($request),
                             new ObjectInjectionParameterResolver($handler),

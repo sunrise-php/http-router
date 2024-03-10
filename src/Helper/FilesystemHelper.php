@@ -42,7 +42,7 @@ final class FilesystemHelper
     {
         if (!is_dir($dirname)) {
             throw new InvalidArgumentException(sprintf(
-                'The directory %s could not be scanned because it does not exist.',
+                'The directory %s does not exist.',
                 $dirname,
             ));
         }
@@ -86,7 +86,7 @@ final class FilesystemHelper
     {
         if (!is_file($filename)) {
             throw new InvalidArgumentException(sprintf(
-                'The file %s could not be scanned because it does not exist.',
+                'The file %s does not exist.',
                 $filename,
             ));
         }

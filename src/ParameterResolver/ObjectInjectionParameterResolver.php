@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\ParameterResolver;
 
 use Generator;
+use Psr\Http\Message\ServerRequestInterface;
 use ReflectionNamedType;
 use ReflectionParameter;
 
@@ -31,7 +32,7 @@ final class ObjectInjectionParameterResolver implements ParameterResolverInterfa
     /**
      * @inheritDoc
      */
-    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
+    public function resolveParameter(ReflectionParameter $parameter, ?ServerRequestInterface $request): Generator
     {
         $type = $parameter->getType();
         if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {

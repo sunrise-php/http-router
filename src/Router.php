@@ -150,12 +150,12 @@ class Router implements RequestHandlerInterface
 
         if (!empty($allowedMethods)) {
             throw HttpExceptionFactory::methodNotAllowed()
-                ->addMessagePlaceholder('{{ method }}', $request->getMethod())
+                ->addMessagePlaceholder('{{ request_method }}', $request->getMethod())
                 ->addHeaderField('Allow', ...array_keys($allowedMethods));
         }
 
-        throw HttpExceptionFactory::resourceNotFound()
-            ->addMessagePlaceholder('{{ resource }}', $requestPath);
+        throw HttpExceptionFactory::routeNotFound()
+            ->addMessagePlaceholder('{{ request_uri }}', $requestPath);
     }
 
     /**

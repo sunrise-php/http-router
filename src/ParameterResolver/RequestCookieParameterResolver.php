@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\ParameterResolver;
 
 use Generator;
-use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionParameter;
@@ -49,41 +48,44 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
      * @inheritDoc
      *
      * @throws HttpException
-     * @throws LogicException
      */
-    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
+    public function resolveParameter(ReflectionParameter $parameter, ?ServerRequestInterface $request): Generator
     {
+        if ($request === null) {
+            return;
+        }
+
         /** @var list<ReflectionAttribute<RequestCookie>> $annotations */
         $annotations = $parameter->getAttributes(RequestCookie::class);
         if ($annotations === []) {
             return;
         }
 
-        if (! $context instanceof ServerRequestInterface) {
-            throw new LogicException('At this level of the application, any operations with the request are not possible.');
-        }
-
-        $serverRequest = ServerRequest::create($context);
+        $request = ServerRequest::create($request);
         $processParams = $annotations[0]->newInstance();
 
         $cookieName = $processParams->cookieName;
         $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
 
-        if (!$serverRequest->hasCookieParam($cookieName)) {
+        if (!$request->hasCookieParam($cookieName)) {
             if ($parameter->isDefaultValueAvailable()) {
                 return yield $parameter->getDefaultValue();
             }
 
-            throw HttpExceptionFactory::cookieRequired($processParams->errorMessage, $errorStatusCode)
+            throw HttpExceptionFactory::missingCookie($processParams->errorMessage, $errorStatusCode)
                 ->addMessagePlaceholder('{{ cookie_name }}', $cookieName);
         }
 
         try {
-            $argument = $this->hydrator->castValue($serverRequest->getCookieParam($cookieName), Type::fromParameter($parameter), path: [$cookieName]);
-        } catch (InvalidValueException|InvalidDataException $e) {
+            $argument = $this->hydrator->castValue($request->getCookieParam($cookieName), Type::fromParameter($parameter), path: [$cookieName]);
+        } catch (InvalidValueException $e) {
             throw HttpExceptionFactory::invalidCookie($processParams->errorMessage, $errorStatusCode, previous: $e)
                 ->addMessagePlaceholder('{{ cookie_name }}', $cookieName)
-                ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), ($e instanceof InvalidValueException) ? [$e] : $e->getExceptions()));
+                ->addConstraintViolation(HydratorConstraintViolationProxy::create($e));
+        } catch (InvalidDataException $e) {
+            throw HttpExceptionFactory::invalidCookie($processParams->errorMessage, $errorStatusCode, previous: $e)
+                ->addMessagePlaceholder('{{ cookie_name }}', $cookieName)
+                ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), $e->getExceptions()));
         }
 
         if (isset($this->validator)) {

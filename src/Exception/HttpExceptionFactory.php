@@ -22,13 +22,13 @@ use Throwable;
  */
 final class HttpExceptionFactory
 {
-    public static function resourceNotFound(
+    public static function routeNotFound(
         ?string $message = null,
         ?int $code = null,
         ?Throwable $previous = null,
     ): HttpException {
         return new HttpException(
-            message: $message ?? ErrorMessage::RESOURCE_NOT_FOUND,
+            message: $message ?? ErrorMessage::ROUTE_NOT_FOUND,
             code: $code ?? StatusCodeInterface::STATUS_NOT_FOUND,
             previous: $previous,
         );
@@ -46,37 +46,37 @@ final class HttpExceptionFactory
         );
     }
 
-    public static function mediaTypeRequired(
+    public static function mediaTypeNotProvided(
         ?string $message = null,
         ?int $code = null,
         ?Throwable $previous = null,
     ): HttpException {
         return new HttpException(
-            message: $message ?? ErrorMessage::MEDIA_TYPE_REQUIRED,
+            message: $message ?? ErrorMessage::MEDIA_TYPE_NOT_PROVIDED,
             code: $code ?? StatusCodeInterface::STATUS_UNSUPPORTED_MEDIA_TYPE,
             previous: $previous,
         );
     }
 
-    public static function unsupportedMediaType(
+    public static function mediaTypeNotSupported(
         ?string $message = null,
         ?int $code = null,
         ?Throwable $previous = null,
     ): HttpException {
         return new HttpException(
-            message: $message ?? ErrorMessage::UNSUPPORTED_MEDIA_TYPE,
+            message: $message ?? ErrorMessage::MEDIA_TYPE_NOT_SUPPORTED,
             code: $code ?? StatusCodeInterface::STATUS_UNSUPPORTED_MEDIA_TYPE,
             previous: $previous,
         );
     }
 
-    public static function invalidPathVariable(
+    public static function invalidVariable(
         ?string $message = null,
         ?int $code = null,
         ?Throwable $previous = null,
     ): HttpException {
         return new HttpException(
-            message: $message ?? ErrorMessage::INVALID_PATH_VARIABLE,
+            message: $message ?? ErrorMessage::INVALID_VARIABLE,
             code: $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
             previous: $previous,
         );
@@ -94,37 +94,13 @@ final class HttpExceptionFactory
         );
     }
 
-    public static function queryParamRequired(
+    public static function missingHeader(
         ?string $message = null,
         ?int $code = null,
         ?Throwable $previous = null,
     ): HttpException {
         return new HttpException(
-            message: $message ?? ErrorMessage::QUERY_PARAM_REQUIRED,
-            code: $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
-            previous: $previous,
-        );
-    }
-
-    public static function invalidQueryParam(
-        ?string $message = null,
-        ?int $code = null,
-        ?Throwable $previous = null,
-    ): HttpException {
-        return new HttpException(
-            message: $message ?? ErrorMessage::INVALID_QUERY_PARAM,
-            code: $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
-            previous: $previous,
-        );
-    }
-
-    public static function headerRequired(
-        ?string $message = null,
-        ?int $code = null,
-        ?Throwable $previous = null,
-    ): HttpException {
-        return new HttpException(
-            message: $message ?? ErrorMessage::HEADER_REQUIRED,
+            message: $message ?? ErrorMessage::MISSING_HEADER,
             code: $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
             previous: $previous,
         );
@@ -142,13 +118,13 @@ final class HttpExceptionFactory
         );
     }
 
-    public static function cookieRequired(
+    public static function missingCookie(
         ?string $message = null,
         ?int $code = null,
         ?Throwable $previous = null,
     ): HttpException {
         return new HttpException(
-            message: $message ?? ErrorMessage::COOKIE_REQUIRED,
+            message: $message ?? ErrorMessage::MISSING_COOKIE,
             code: $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
             previous: $previous,
         );

@@ -40,11 +40,11 @@ final class PayloadMediaTypeNegotiationMiddleware implements MiddlewareInterface
         if (! $serverRequest->clientProducesMediaType(...$serverConsumedMediaTypes)) {
             $clientProducedMediaType = $serverRequest->getClientProducedMediaType();
             if ($clientProducedMediaType === null) {
-                throw HttpExceptionFactory::mediaTypeRequired()
+                throw HttpExceptionFactory::mediaTypeNotProvided()
                     ->addHeaderField('Accept', ...$serverConsumedMediaTypes);
             }
 
-            throw HttpExceptionFactory::unsupportedMediaType()
+            throw HttpExceptionFactory::mediaTypeNotSupported()
                 ->addMessagePlaceholder('{{ media_type }}', $clientProducedMediaType)
                 ->addHeaderField('Accept', ...$serverConsumedMediaTypes);
         }

@@ -18,7 +18,7 @@ use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionParameter;
-use Sunrise\Http\Router\Annotation\RequestPathVariable;
+use Sunrise\Http\Router\Annotation\RequestVariable;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\Helper\RouteSimplifier;
@@ -39,7 +39,7 @@ use function sprintf;
 /**
  * @since 3.0.0
  */
-final class RequestPathVariableParameterResolver implements ParameterResolverInterface
+final class RequestVariableParameterResolver implements ParameterResolverInterface
 {
     public function __construct(
         private readonly HydratorInterface $hydrator,
@@ -54,19 +54,19 @@ final class RequestPathVariableParameterResolver implements ParameterResolverInt
      * @throws HttpException
      * @throws LogicException
      */
-    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
+    public function resolveParameter(ReflectionParameter $parameter, ?ServerRequestInterface $request): Generator
     {
-        /** @var list<ReflectionAttribute<RequestPathVariable>> $annotations */
-        $annotations = $parameter->getAttributes(RequestPathVariable::class);
+        if ($request === null) {
+            return;
+        }
+
+        /** @var list<ReflectionAttribute<RequestVariable>> $annotations */
+        $annotations = $parameter->getAttributes(RequestVariable::class);
         if ($annotations === []) {
             return;
         }
 
-        if (! $context instanceof ServerRequestInterface) {
-            throw new LogicException('At this level of the application, any operations with the request are not possible.');
-        }
-
-        $route = ServerRequest::create($context)->getRoute();
+        $route = ServerRequest::create($request)->getRoute();
         $processParams = $annotations[0]->newInstance();
 
         $variableName = $processParams->variableName ?? $parameter->getName();
@@ -89,19 +89,24 @@ final class RequestPathVariableParameterResolver implements ParameterResolverInt
 
         try {
             $argument = $this->hydrator->castValue($route->getAttribute($variableName), Type::fromParameter($parameter), path: [$variableName]);
-        } catch (InvalidValueException|InvalidDataException $e) {
-            throw HttpExceptionFactory::invalidPathVariable($processParams->errorMessage, $errorStatusCode, previous: $e)
+        } catch (InvalidValueException $e) {
+            throw HttpExceptionFactory::invalidVariable($processParams->errorMessage, $errorStatusCode, previous: $e)
                 ->addMessagePlaceholder('{{ variable_name }}', $variableName)
-                ->addMessagePlaceholder('{{ route_path }}', RouteSimplifier::simplifyRoute($route->getPath()))
-                ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), ($e instanceof InvalidValueException) ? [$e] : $e->getExceptions()));
+                ->addMessagePlaceholder('{{ route_uri }}', RouteSimplifier::simplifyRoute($route->getPath()))
+                ->addConstraintViolation(HydratorConstraintViolationProxy::create($e));
+        } catch (InvalidDataException $e) {
+            throw HttpExceptionFactory::invalidVariable($processParams->errorMessage, $errorStatusCode, previous: $e)
+                ->addMessagePlaceholder('{{ variable_name }}', $variableName)
+                ->addMessagePlaceholder('{{ route_uri }}', RouteSimplifier::simplifyRoute($route->getPath()))
+                ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), $e->getExceptions()));
         }
 
         if (isset($this->validator)) {
             if (($constraints = ValidatorHelper::getParameterConstraints($parameter))->valid()) {
                 if (($violations = $this->validator->validate($argument, [...$constraints]))->count() > 0) {
-                    throw HttpExceptionFactory::invalidPathVariable($processParams->errorMessage, $errorStatusCode)
+                    throw HttpExceptionFactory::invalidVariable($processParams->errorMessage, $errorStatusCode)
                         ->addMessagePlaceholder('{{ variable_name }}', $variableName)
-                        ->addMessagePlaceholder('{{ route_path }}', RouteSimplifier::simplifyRoute($route->getPath()))
+                        ->addMessagePlaceholder('{{ route_uri }}', RouteSimplifier::simplifyRoute($route->getPath()))
                         ->addConstraintViolation(...array_map(ValidatorConstraintViolationProxy::create(...), [...$violations]));
                 }
             }

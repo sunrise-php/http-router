@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\ParameterResolver;
 
 use Generator;
-use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionParameter;
@@ -48,18 +47,17 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
      * @inheritDoc
      *
      * @throws HttpException
-     * @throws LogicException
      */
-    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
+    public function resolveParameter(ReflectionParameter $parameter, ?ServerRequestInterface $request): Generator
     {
+        if ($request === null) {
+            return;
+        }
+
         /** @var list<ReflectionAttribute<RequestHeader>> $annotations */
         $annotations = $parameter->getAttributes(RequestHeader::class);
         if ($annotations === []) {
             return;
-        }
-
-        if (! $context instanceof ServerRequestInterface) {
-            throw new LogicException('At this level of the application, any operations with the request are not possible.');
         }
 
         $processParams = $annotations[0]->newInstance();
@@ -67,21 +65,25 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
         $headerName = $processParams->headerName;
         $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
 
-        if (!$context->hasHeader($headerName)) {
+        if (!$request->hasHeader($headerName)) {
             if ($parameter->isDefaultValueAvailable()) {
                 return yield $parameter->getDefaultValue();
             }
 
-            throw HttpExceptionFactory::headerRequired($processParams->errorMessage, $errorStatusCode)
+            throw HttpExceptionFactory::missingHeader($processParams->errorMessage, $errorStatusCode)
                 ->addMessagePlaceholder('{{ header_name }}', $headerName);
         }
 
         try {
-            $argument = $this->hydrator->castValue($context->getHeaderLine($headerName), Type::fromParameter($parameter), path: [$headerName]);
-        } catch (InvalidValueException|InvalidDataException $e) {
+            $argument = $this->hydrator->castValue($request->getHeaderLine($headerName), Type::fromParameter($parameter), path: [$headerName]);
+        } catch (InvalidValueException $e) {
             throw HttpExceptionFactory::invalidHeader($processParams->errorMessage, $errorStatusCode, previous: $e)
                 ->addMessagePlaceholder('{{ header_name }}', $headerName)
-                ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), ($e instanceof InvalidValueException) ? [$e] : $e->getExceptions()));
+                ->addConstraintViolation(HydratorConstraintViolationProxy::create($e));
+        } catch (InvalidDataException $e) {
+            throw HttpExceptionFactory::invalidHeader($processParams->errorMessage, $errorStatusCode, previous: $e)
+                ->addMessagePlaceholder('{{ header_name }}', $headerName)
+                ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), $e->getExceptions()));
         }
 
         if (isset($this->validator)) {

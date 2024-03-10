@@ -157,7 +157,7 @@ final class DescriptorLoader implements LoaderInterface
         throw new InvalidRouteLoadingResourceException(sprintf(
             'The loader %s only accepts directory, file or class names; ' .
             'however, the resource %s is not one of them.',
-            __CLASS__,
+            $this::class,
             $resource,
         ));
     }

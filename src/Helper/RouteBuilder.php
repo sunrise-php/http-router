@@ -18,6 +18,7 @@ use Stringable;
 use Sunrise\Http\Router\Exception\InvalidRouteBuildingValueException;
 use Sunrise\Http\Router\Exception\InvalidRouteParsingSubjectException;
 
+use function get_debug_type;
 use function is_int;
 use function is_string;
 use function sprintf;
@@ -55,9 +56,10 @@ final class RouteBuilder
 
                 if (!is_string($value)) {
                     throw new InvalidRouteBuildingValueException(sprintf(
-                        'The route %s could not be built with an unexpected value for the variable %s.',
+                        'The route %s could not be built with a value for the variable %s that has an unsupported type %s.',
                         $route,
                         $variable['name'],
+                        get_debug_type($value),
                     ));
                 }
 
