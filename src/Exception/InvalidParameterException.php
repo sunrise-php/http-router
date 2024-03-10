@@ -13,11 +13,11 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Exception;
 
-use LogicException;
+use InvalidArgumentException;
 
 /**
  * @since 3.0.0
  */
-final class InvalidParameterException extends LogicException implements ExceptionInterface
+final class InvalidParameterException extends InvalidArgumentException implements ExceptionInterface
 {
 }

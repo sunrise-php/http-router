@@ -18,6 +18,6 @@ use InvalidArgumentException;
 /**
  * @since 3.0.0
  */
-final class UnsupportedReferenceException extends InvalidArgumentException implements ExceptionInterface
+final class InvalidReferenceException extends InvalidArgumentException implements ExceptionInterface
 {
 }

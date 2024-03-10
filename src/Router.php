@@ -13,13 +13,13 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
-use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
+use Sunrise\Http\Router\Exception\InvalidReferenceException;
 use Sunrise\Http\Router\Exception\InvalidRouteBuildingValueException;
 use Sunrise\Http\Router\Exception\InvalidRouteMatchingSubjectException;
 use Sunrise\Http\Router\Exception\InvalidRouteParsingSubjectException;
@@ -105,7 +105,7 @@ class Router implements RequestHandlerInterface
             return $this->routes[$name];
         }
 
-        return throw new RouteNotFoundException(sprintf('The route %s does not exist.', $name));
+        throw new RouteNotFoundException(sprintf('The route %s does not exist.', $name));
     }
 
     public function addRoute(RouteInterface ...$routes): void
@@ -169,6 +169,8 @@ class Router implements RequestHandlerInterface
     }
 
     /**
+     * @throws RouteNotFoundException
+     *
      * @since 3.0.0
      */
     public function runRoute(RouteInterface|string $route, ServerRequestInterface $request): ResponseInterface
@@ -187,6 +189,7 @@ class Router implements RequestHandlerInterface
     }
 
     /**
+     * @throws RouteNotFoundException
      * @throws InvalidRouteBuildingValueException
      * @throws InvalidRouteParsingSubjectException
      *
@@ -204,6 +207,7 @@ class Router implements RequestHandlerInterface
     /**
      * @return non-empty-string
      *
+     * @throws RouteNotFoundException
      * @throws InvalidRouteParsingSubjectException
      *
      * @since 3.0.0
@@ -218,7 +222,8 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @throws InvalidArgumentException If the route is associated with an unsupported request handler or middleware.
+     * @throws RouteNotFoundException
+     * @throws InvalidReferenceException
      *
      * @since 3.0.0
      */
@@ -233,40 +238,26 @@ class Router implements RequestHandlerInterface
             return $this->routeRequestHandlers[$routeName];
         }
 
-        try {
-            $this->routeRequestHandlers[$routeName] = $this->referenceResolver->resolveRequestHandler($route->getRequestHandler());
-        } catch (InvalidArgumentException $e) {
-            throw new InvalidArgumentException(sprintf(
-                'The route %s refers to an unsupported request handler.',
-                $routeName,
-            ), previous: $e);
-        }
-
         $middlewares = $route->getMiddlewares();
         if ($middlewares === []) {
-            return $this->routeRequestHandlers[$routeName];
+            return $this->routeRequestHandlers[$routeName] = $this->referenceResolver->resolveRequestHandler($route->getRequestHandler());
         }
 
-        $this->routeRequestHandlers[$routeName] = new QueueableRequestHandler($this->routeRequestHandlers[$routeName]);
+        $this->routeRequestHandlers[$routeName] = new QueueableRequestHandler(
+            $this->referenceResolver->resolveRequestHandler($route->getRequestHandler())
+        );
 
         foreach ($middlewares as $middleware) {
-            try {
-                $middleware = $this->referenceResolver->resolveMiddleware($middleware);
-            } catch (InvalidArgumentException $e) {
-                throw new InvalidArgumentException(sprintf(
-                    'The route %s refers to an unsupported middleware.',
-                    $routeName,
-                ), previous: $e);
-            }
-
-            $this->routeRequestHandlers[$routeName]->enqueue($middleware);
+            $this->routeRequestHandlers[$routeName]->enqueue(
+                $this->referenceResolver->resolveMiddleware($middleware)
+            );
         }
 
         return $this->routeRequestHandlers[$routeName];
     }
 
     /**
-     * @throws InvalidArgumentException If the router is associated with an unsupported middleware.
+     * @throws InvalidReferenceException
      *
      * @since 3.0.0
      */
@@ -287,15 +278,10 @@ class Router implements RequestHandlerInterface
         }
 
         $this->routerRequestHandler = new QueueableRequestHandler($this->routerRequestHandler);
-
         foreach ($this->middlewares as $middleware) {
-            try {
-                $middleware = $this->referenceResolver->resolveMiddleware($middleware);
-            } catch (InvalidArgumentException $e) {
-                throw new InvalidArgumentException('The router refers to an unsupported middleware.', previous: $e);
-            }
-
-            $this->routerRequestHandler->enqueue($middleware);
+            $this->routerRequestHandler->enqueue(
+                $this->referenceResolver->resolveMiddleware($middleware)
+            );
         }
 
         return $this->routerRequestHandler;

@@ -20,7 +20,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use ReflectionFunction;
 use ReflectionMethod;
-use Sunrise\Http\Router\Exception\UnsupportedReferenceException;
+use Sunrise\Http\Router\Exception\InvalidReferenceException;
 use Sunrise\Http\Router\Middleware\CallableMiddleware;
 use Sunrise\Http\Router\ParameterResolver\ObjectInjectionParameterResolver;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
@@ -46,7 +46,7 @@ final class ReferenceResolver
     }
 
     /**
-     * @throws UnsupportedReferenceException If the requst handler couldn't be resolved.
+     * @throws InvalidReferenceException If the requst handler couldn't be resolved.
      */
     public function resolveRequestHandler(mixed $reference): RequestHandlerInterface
     {
@@ -77,14 +77,14 @@ final class ReferenceResolver
             return $this->classResolver->resolveClass($reference);
         }
 
-        throw new UnsupportedReferenceException(sprintf(
-            'The request handler reference %s is not supported.',
+        throw new InvalidReferenceException(sprintf(
+            'The request handler reference %s could not be resolved.',
             self::stringifyReference($reference),
         ));
     }
 
     /**
-     * @throws UnsupportedReferenceException If the middleware couldn't be resolved.
+     * @throws InvalidReferenceException If the middleware couldn't be resolved.
      */
     public function resolveMiddleware(mixed $reference): MiddlewareInterface
     {
@@ -115,8 +115,8 @@ final class ReferenceResolver
             }
         }
 
-        throw new UnsupportedReferenceException(sprintf(
-            'The middleware reference %s is not supported.',
+        throw new InvalidReferenceException(sprintf(
+            'The middleware reference %s could not be resolved.',
             self::stringifyReference($reference),
         ));
     }
