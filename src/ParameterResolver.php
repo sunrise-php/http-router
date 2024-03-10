@@ -14,10 +14,11 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router;
 
 use Generator;
-use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionMethod;
 use ReflectionParameter;
+use Sunrise\Http\Router\Exception\InvalidParameterException;
+use Sunrise\Http\Router\Exception\UnsupportedParameterException;
 use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
 
 use function array_unshift;
@@ -54,31 +55,35 @@ final class ParameterResolver
     }
 
     /**
-     * @throws LogicException If one of the parameters couldn't be resolved to an argument(s).
+     * @return Generator<int, mixed>
+     *
+     * @throws InvalidParameterException
+     * @throws UnsupportedParameterException
      */
     public function resolveParameters(ReflectionParameter ...$parameters): Generator
     {
         foreach ($parameters as $parameter) {
-            yield from $this->resolveParameter($parameter);
+            yield from $this->resolveParameter($parameter, $this->request);
         }
     }
 
     /**
      * @return Generator<int, mixed>
      *
-     * @throws LogicException If the parameter couldn't be resolved to an argument(s).
+     * @throws InvalidParameterException
+     * @throws UnsupportedParameterException
      */
-    private function resolveParameter(ReflectionParameter $parameter): Generator
+    private function resolveParameter(ReflectionParameter $parameter, ?ServerRequestInterface $request): Generator
     {
         foreach ($this->resolvers as $resolver) {
-            $arguments = $resolver->resolveParameter($parameter, $this->request);
+            $arguments = $resolver->resolveParameter($parameter, $request);
             if ($arguments->valid()) {
                 return yield from $arguments;
             }
         }
 
-        throw new LogicException(sprintf(
-            'The parameter %s could not be resolved because it is not supported.',
+        throw new UnsupportedParameterException(sprintf(
+            'The parameter %s is not supported.',
             self::stringifyParameter($parameter),
         ));
     }

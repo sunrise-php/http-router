@@ -40,7 +40,7 @@ use function sprintf;
 
 class Router implements RequestHandlerInterface
 {
-    private readonly RequestProcessorResolver $requestHandlerResolver;
+    private readonly ReferenceResolver $referenceResolver;
 
     /**
      * @var array<string, RouteInterface>
@@ -73,9 +73,14 @@ class Router implements RequestHandlerInterface
         array $responseResolvers = [],
         array $loaders = [],
     ) {
-        $this->requestHandlerResolver = new RequestProcessorResolver(
-            new ParameterResolver($parameterResolvers),
-            new ResponseResolver($responseResolvers),
+        $parameterResolver = new ParameterResolver($parameterResolvers);
+        $classResolver = new ClassResolver($parameterResolver);
+        $responseResolver = new ResponseResolver($responseResolvers);
+
+        $this->referenceResolver = new ReferenceResolver(
+            parameterResolver: $parameterResolver,
+            classResolver: $classResolver,
+            responseResolver: $responseResolver,
         );
 
         foreach ($loaders as $loader) {
@@ -100,10 +105,7 @@ class Router implements RequestHandlerInterface
             return $this->routes[$name];
         }
 
-        return throw new RouteNotFoundException(sprintf(
-            'The route %s does not exist.',
-            $name,
-        ));
+        return throw new RouteNotFoundException(sprintf('The route %s does not exist.', $name));
     }
 
     public function addRoute(RouteInterface ...$routes): void
@@ -232,7 +234,7 @@ class Router implements RequestHandlerInterface
         }
 
         try {
-            $this->routeRequestHandlers[$routeName] = $this->requestHandlerResolver->resolveRequestHandler($route->getRequestHandler());
+            $this->routeRequestHandlers[$routeName] = $this->referenceResolver->resolveRequestHandler($route->getRequestHandler());
         } catch (InvalidArgumentException $e) {
             throw new InvalidArgumentException(sprintf(
                 'The route %s refers to an unsupported request handler.',
@@ -249,7 +251,7 @@ class Router implements RequestHandlerInterface
 
         foreach ($middlewares as $middleware) {
             try {
-                $middleware = $this->requestHandlerResolver->resolveMiddleware($middleware);
+                $middleware = $this->referenceResolver->resolveMiddleware($middleware);
             } catch (InvalidArgumentException $e) {
                 throw new InvalidArgumentException(sprintf(
                     'The route %s refers to an unsupported middleware.',
@@ -288,7 +290,7 @@ class Router implements RequestHandlerInterface
 
         foreach ($this->middlewares as $middleware) {
             try {
-                $middleware = $this->requestHandlerResolver->resolveMiddleware($middleware);
+                $middleware = $this->referenceResolver->resolveMiddleware($middleware);
             } catch (InvalidArgumentException $e) {
                 throw new InvalidArgumentException('The router refers to an unsupported middleware.', previous: $e);
             }

@@ -51,20 +51,19 @@ final class ClassResolver
         }
 
         if (!class_exists($fqn)) {
-            throw new InvalidArgumentException(sprintf('The class %s does not exist and cannot be resolved.', $fqn));
+            throw new InvalidArgumentException(sprintf('The class %s does not exist.', $fqn));
         }
 
         /** @var ReflectionClass<T> $reflection */
         $reflection = new ReflectionClass($fqn);
+
         if (!$reflection->isInstantiable()) {
-            throw new InvalidArgumentException(sprintf('The class %s is uninstantiable and cannot be resolved.', $fqn));
+            throw new InvalidArgumentException(sprintf('The class %s is not instantiable.', $fqn));
         }
 
-        $arguments = [];
-        $constructor = $reflection->getConstructor();
-        if (isset($constructor)) {
-            $arguments = $this->parameterResolver->resolveParameters(...$constructor->getParameters());
-        }
+        $arguments = $this->parameterResolver->resolveParameters(
+            ...($reflection->getConstructor()?->getParameters() ?? [])
+        );
 
         return $this->resolvedClasses[$fqn] = $reflection->newInstance(...$arguments);
     }
