@@ -17,10 +17,11 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
+use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 use Sunrise\Http\Router\Exception\InvalidReferenceException;
 use Sunrise\Http\Router\Exception\InvalidRouteBuildingValueException;
+use Sunrise\Http\Router\Exception\InvalidRouteMatchingPatternException;
 use Sunrise\Http\Router\Exception\InvalidRouteMatchingSubjectException;
 use Sunrise\Http\Router\Exception\InvalidRouteParsingSubjectException;
 use Sunrise\Http\Router\Exception\RouteNotFoundException;
@@ -42,6 +43,8 @@ class Router implements RequestHandlerInterface
 {
     private readonly ReferenceResolver $referenceResolver;
 
+    private ?RequestHandlerInterface $requestHandler = null;
+
     /**
      * @var array<string, RouteInterface>
      */
@@ -56,8 +59,6 @@ class Router implements RequestHandlerInterface
      * @var array<string, RequestHandlerInterface>
      */
     private array $routeRequestHandlers = [];
-
-    private ?RequestHandlerInterface $routerRequestHandler = null;
 
     /**
      * @param ParameterResolverInterface[] $parameterResolvers
@@ -125,7 +126,9 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @throws HttpException
+     * @throws HttpExceptionInterface
+     * @throws InvalidRouteMatchingPatternException
+     * @throws InvalidRouteParsingSubjectException
      */
     public function match(ServerRequestInterface $request): RouteInterface
     {
@@ -139,7 +142,7 @@ class Router implements RequestHandlerInterface
                     continue;
                 }
             } catch (InvalidRouteMatchingSubjectException $e) {
-                throw new HttpException($e->getMessage(), 400); // TODO
+                throw HttpExceptionFactory::invalidUri(previous: $e);
             }
 
             if (!$route->allowsMethod($request->getMethod())) {
@@ -162,14 +165,20 @@ class Router implements RequestHandlerInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws HttpExceptionInterface
+     * @throws InvalidReferenceException
+     * @throws InvalidRouteMatchingPatternException
+     * @throws InvalidRouteParsingSubjectException
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        return $this->getRouterRequestHandler()->handle($request);
+        return $this->getRequestHandler()->handle($request);
     }
 
     /**
      * @throws RouteNotFoundException
+     * @throws InvalidReferenceException
      *
      * @since 3.0.0
      */
@@ -183,9 +192,9 @@ class Router implements RequestHandlerInterface
             $request = $request->withAttribute($name, $value);
         }
 
-        $request = $request->withAttribute('@route', $route);
-
-        return $this->getRouteRequestHandler($route)->handle($request);
+        return $this->getRouteRequestHandler($route)->handle(
+            $request->withAttribute('@route', $route)
+        );
     }
 
     /**
@@ -238,19 +247,14 @@ class Router implements RequestHandlerInterface
             return $this->routeRequestHandlers[$routeName];
         }
 
-        $middlewares = $route->getMiddlewares();
-        if ($middlewares === []) {
-            return $this->routeRequestHandlers[$routeName] = $this->referenceResolver->resolveRequestHandler($route->getRequestHandler());
-        }
+        $this->routeRequestHandlers[$routeName] = $this->referenceResolver->resolveRequestHandler($route->getRequestHandler());
 
-        $this->routeRequestHandlers[$routeName] = new QueueableRequestHandler(
-            $this->referenceResolver->resolveRequestHandler($route->getRequestHandler())
-        );
-
-        foreach ($middlewares as $middleware) {
-            $this->routeRequestHandlers[$routeName]->enqueue(
-                $this->referenceResolver->resolveMiddleware($middleware)
-            );
+        $routeMiddlewares = $route->getMiddlewares();
+        if (!empty($routeMiddlewares)) {
+            $this->routeRequestHandlers[$routeName] = new QueueableRequestHandler($this->routeRequestHandlers[$routeName]);
+            foreach ($routeMiddlewares as $routeMiddleware) {
+                $this->routeRequestHandlers[$routeName]->enqueue($this->referenceResolver->resolveMiddleware($routeMiddleware));
+            }
         }
 
         return $this->routeRequestHandlers[$routeName];
@@ -261,29 +265,25 @@ class Router implements RequestHandlerInterface
      *
      * @since 3.0.0
      */
-    public function getRouterRequestHandler(): RequestHandlerInterface
+    public function getRequestHandler(): RequestHandlerInterface
     {
-        if (isset($this->routerRequestHandler)) {
-            return $this->routerRequestHandler;
+        if (isset($this->requestHandler)) {
+            return $this->requestHandler;
         }
 
-        $this->routerRequestHandler = new CallableRequestHandler(
+        $this->requestHandler = new CallableRequestHandler(
             fn(ServerRequestInterface $request): ResponseInterface => (
                 $this->runRoute($this->match($request), $request)
             )
         );
 
-        if ($this->middlewares === []) {
-            return $this->routerRequestHandler;
+        if (!empty($this->middlewares)) {
+            $this->requestHandler = new QueueableRequestHandler($this->requestHandler);
+            foreach ($this->middlewares as $middleware) {
+                $this->requestHandler->enqueue($this->referenceResolver->resolveMiddleware($middleware));
+            }
         }
 
-        $this->routerRequestHandler = new QueueableRequestHandler($this->routerRequestHandler);
-        foreach ($this->middlewares as $middleware) {
-            $this->routerRequestHandler->enqueue(
-                $this->referenceResolver->resolveMiddleware($middleware)
-            );
-        }
-
-        return $this->routerRequestHandler;
+        return $this->requestHandler;
     }
 }

@@ -40,8 +40,8 @@ final class JsonResponseResolver implements ResponseResolverInterface
 
     public function __construct(
         private readonly ResponseFactoryInterface $responseFactory,
-        private readonly ?int $defaultEncodingFlags = null,
-        private readonly ?int $defaultEncodingDepth = null,
+        private readonly int $defaultEncodingFlags = self::DEFAULT_ENCODING_FLAGS,
+        private readonly int $defaultEncodingDepth = self::DEFAULT_ENCODING_DEPTH,
     ) {
     }
 
@@ -61,8 +61,8 @@ final class JsonResponseResolver implements ResponseResolverInterface
 
         $processParams = $annotations[0]->newInstance();
 
-        $encodingFlags = $processParams->encodingFlags ?? $this->defaultEncodingFlags ?? self::DEFAULT_ENCODING_FLAGS;
-        $encodingDepth = $processParams->encodingDepth ?? $this->defaultEncodingDepth ?? self::DEFAULT_ENCODING_DEPTH;
+        $encodingFlags = $processParams->encodingFlags ?? $this->defaultEncodingFlags;
+        $encodingDepth = $processParams->encodingDepth ?? $this->defaultEncodingDepth;
 
         try {
             /** @psalm-suppress ArgumentTypeCoercion */

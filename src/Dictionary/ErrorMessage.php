@@ -18,6 +18,7 @@ namespace Sunrise\Http\Router\Dictionary;
  */
 final class ErrorMessage
 {
+    public const INVALID_URI = 'The requested URI is invalid and cannot be accepted by the server.';
     public const ROUTE_NOT_FOUND = 'The resource {{ request_uri }} was not found.';
     public const METHOD_NOT_ALLOWED = 'The method {{ request_method }} is not allowed; check the Allow response header for allowed methods.';
     public const MEDIA_TYPE_NOT_PROVIDED = 'The Content-Type header must be provided and must not be empty; check the Accept response header for supported media types.';

@@ -22,6 +22,18 @@ use Throwable;
  */
 final class HttpExceptionFactory
 {
+    public static function invalidUri(
+        ?string $message = null,
+        ?int $code = null,
+        ?Throwable $previous = null,
+    ): HttpException {
+        return new HttpException(
+            message: $message ?? ErrorMessage::INVALID_URI,
+            code: $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            previous: $previous,
+        );
+    }
+
     public static function routeNotFound(
         ?string $message = null,
         ?int $code = null,

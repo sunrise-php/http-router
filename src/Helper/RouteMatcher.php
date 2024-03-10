@@ -67,7 +67,7 @@ final class RouteMatcher
             if (preg_last_error() === PREG_BAD_UTF8_ERROR) {
                 throw new InvalidRouteMatchingSubjectException(sprintf(
                     'The route %s could not be matched due to: %s.',
-                    $route,
+                    RouteSimplifier::simplifyRoute($route),
                     preg_last_error_msg(),
                 ));
             }
