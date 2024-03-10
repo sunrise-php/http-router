@@ -3,7 +3,12 @@
     <rule ref="./vendor/sunrise/coding-standard/ruleset.xml"/>
 
     <file>benchmarks</file>
-    <file>functions</file>
     <file>src</file>
     <file>tests</file>
+
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="180"/>
+        </properties>
+    </rule>
 </ruleset>

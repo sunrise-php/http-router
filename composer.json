@@ -56,7 +56,8 @@
         "doctrine/orm": "^2.16",
         "symfony/uid": "^6.0",
         "ramsey/uuid": "^4.7",
-        "neomerx/cors-psr7": "^3.0"
+        "neomerx/cors-psr7": "^3.0",
+        "php-di/php-di": "^7.0"
     },
     "autoload": {
         "files": [
