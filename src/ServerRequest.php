@@ -138,10 +138,9 @@ final class ServerRequest implements ServerRequestInterface
             return null;
         }
 
-        $mediaTypeComparator = new MediaTypeComparator();
         foreach ($this->getClientConsumedMediaTypes() as $clientConsumedMediaType) {
             foreach ($serverProducedMediaTypes as $serverProducedMediaType) {
-                if ($mediaTypeComparator->equals($clientConsumedMediaType, $serverProducedMediaType)) {
+                if (MediaTypeComparator::equals($clientConsumedMediaType, $serverProducedMediaType)) {
                     return $clientConsumedMediaType;
                 }
             }
@@ -156,10 +155,9 @@ final class ServerRequest implements ServerRequestInterface
             return null;
         }
 
-        $languageComparator = new LanguageComparator();
         foreach ($this->getClientConsumedLanguages() as $clientConsumedLanguage) {
             foreach ($serverProducedLanguages as $serverProducedLanguage) {
-                if ($languageComparator->equals($clientConsumedLanguage, $serverProducedLanguage)) {
+                if (LanguageComparator::equals($clientConsumedLanguage, $serverProducedLanguage)) {
                     return $clientConsumedLanguage;
                 }
             }
@@ -180,9 +178,8 @@ final class ServerRequest implements ServerRequestInterface
             return false;
         }
 
-        $mediaTypeComparator = new MediaTypeComparator();
         foreach ($serverConsumedMediaTypes as $serverConsumedMediaType) {
-            if ($mediaTypeComparator->equals($clientProducedMediaType, $serverConsumedMediaType)) {
+            if (MediaTypeComparator::equals($clientProducedMediaType, $serverConsumedMediaType)) {
                 return true;
             }
         }

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Helper;
 
 use BackedEnum;
+use InvalidArgumentException;
 use Stringable;
 use Sunrise\Http\Router\Exception\InvalidRouteBuildingValueException;
 use Sunrise\Http\Router\Exception\InvalidRouteParsingSubjectException;
@@ -46,21 +47,15 @@ final class RouteBuilder
             if (isset($values[$variable['name']])) {
                 $value = $values[$variable['name']];
 
-                if (is_int($value)) {
-                    $value = (string) $value;
-                } elseif ($value instanceof BackedEnum) {
-                    $value = (string) $value->value;
-                } elseif ($value instanceof Stringable) {
-                    $value = (string) $value;
-                }
-
-                if (!is_string($value)) {
+                try {
+                    $value = self::stringifyValue($value);
+                } catch (InvalidArgumentException $e) {
                     throw new InvalidRouteBuildingValueException(sprintf(
-                        'The route %s could not be built because the value assigned to the variable %s has an unsupported type: %s.',
+                        'The route %s could not be built with an invalid value for the variable %s due to: %s',
                         $route,
                         $variable['name'],
-                        get_debug_type($value),
-                    ));
+                        $e->getMessage(),
+                    ), previous: $e);
                 }
 
                 $search[] = $statement;
@@ -81,9 +76,36 @@ final class RouteBuilder
             ));
         }
 
+        // will be replaced by an empty string:
+        // https://github.com/php/php-src/blob/a04577fb4ab5e1ebc7779608523b95ddf01e6c7f/ext/standard/string.c#L4406-L4408
         $search[] = '(';
         $search[] = ')';
 
         return str_replace($search, $replace, $route);
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private static function stringifyValue(mixed $value): string
+    {
+        if (is_string($value)) {
+            return $value;
+        }
+        if (is_int($value)) {
+            return (string) $value;
+        }
+        if ($value instanceof BackedEnum) {
+            return (string) $value->value;
+        }
+        if ($value instanceof Stringable) {
+            return $value->__toString();
+        }
+
+        throw new InvalidArgumentException(sprintf(
+            'The %s value could not be converted to a string; ' .
+            'supported types: string, integer, backed enum and stringable object.',
+            get_debug_type($value),
+        ));
     }
 }

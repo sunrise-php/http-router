@@ -64,7 +64,6 @@ final class FilesystemHelper
 
         foreach ($filenames as $filename) {
             (static function (string $filename): void {
-                /** @psalm-suppress UnresolvableInclude */
                 require_once $filename;
             })($filename);
         }
@@ -92,9 +91,7 @@ final class FilesystemHelper
         }
 
         $filename = realpath($filename);
-
         (static function (string $filename): void {
-            /** @psalm-suppress UnresolvableInclude */
             require_once $filename;
         })($filename);
 

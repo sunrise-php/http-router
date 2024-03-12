@@ -66,7 +66,7 @@ final class RouteMatcher
             // a client side error; must be handled as 4xx error.
             if (preg_last_error() === PREG_BAD_UTF8_ERROR) {
                 throw new InvalidRouteMatchingSubjectException(sprintf(
-                    'The route %s could not be matched due to: %s.',
+                    'The route %s could not be matched with an invalid subject due to: %s.',
                     RouteSimplifier::simplifyRoute($route),
                     preg_last_error_msg(),
                 ));
@@ -76,8 +76,7 @@ final class RouteMatcher
             throw new InvalidRouteMatchingPatternException(sprintf(
                 'The route %s could not be matched due to: %s; ' .
                 'most likely, this problem is related to one of the route patterns. ' .
-                'Please refer to the official documentation: ' .
-                'https://www.php.net/preg_last_error',
+                'Please refer to the official documentation: https://www.php.net/preg_last_error',
                 $route,
                 preg_last_error_msg(),
             ), preg_last_error());

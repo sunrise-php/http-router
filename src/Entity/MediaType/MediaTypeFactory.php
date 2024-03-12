@@ -13,14 +13,18 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Entity\MediaType;
 
+use Generator;
+
 /**
  * @since 3.0.0
  */
-final class MediaTypeComparator
+final class MediaTypeFactory
 {
-    public static function equals(MediaTypeInterface $a, MediaTypeInterface $b): bool
+    /**
+     * @return Generator<int, MediaTypeInterface>
+     */
+    public static function json(): Generator
     {
-        return ($a->getType() === $b->getType() || $a->getType() === '*' || $b->getType() === '*')
-            && ($a->getSubtype() === $b->getSubtype() || $a->getSubtype() === '*' || $b->getSubtype() === '*');
+        yield new ServerMediaType('application', 'json');
     }
 }

@@ -18,7 +18,7 @@ namespace Sunrise\Http\Router\Entity\Language;
  */
 final class LanguageComparator
 {
-    public function equals(LanguageInterface $a, LanguageInterface $b): bool
+    public static function equals(LanguageInterface $a, LanguageInterface $b): bool
     {
         return $a->getCode() === $b->getCode() || $a->getCode() === '*' || $b->getCode() === '*';
     }

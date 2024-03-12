@@ -22,18 +22,18 @@ use function trim;
  */
 final class HeaderParser
 {
+    private const IN_IDENTIFIER = 1;
+    private const IN_PARAMETER_NAME = 2;
+    private const IN_PARAMETER_VALUE = 4;
+    private const IN_QUOTED_STRING = 8;
+    private const IN_QUOTED_PAIR = 16;
+
     /**
      * @return array<int<0, max>, array{0: string, 1: array<string, string>}>
      */
     public static function parseHeader(string $header): array
     {
-        $inIdentifier = 1;
-        $inParameterName = 2;
-        $inParameterValue = 4;
-        $inQuotedString = 8;
-        $inQuotedPair = 16;
-
-        $cursor = $inIdentifier;
+        $cursor = self::IN_IDENTIFIER;
         $value = 0;
         $param = -1;
         $values = [];
@@ -43,44 +43,44 @@ final class HeaderParser
                 continue;
             }
 
-            if ($header[$offset] === ',' && !($cursor & $inQuotedString)) {
-                $cursor = $inIdentifier;
+            if ($header[$offset] === ',' && !($cursor & self::IN_QUOTED_STRING)) {
+                $cursor = self::IN_IDENTIFIER;
                 $value++;
                 $param = -1;
                 continue;
             }
-            if ($header[$offset] === ';' && !($cursor & $inQuotedString)) {
-                $cursor = $inParameterName;
+            if ($header[$offset] === ';' && !($cursor & self::IN_QUOTED_STRING)) {
+                $cursor = self::IN_PARAMETER_NAME;
                 $param++;
                 continue;
             }
-            if ($header[$offset] === '=' && ($cursor & $inParameterName)) {
-                $cursor = $inParameterValue;
+            if ($header[$offset] === '=' && ($cursor & self::IN_PARAMETER_NAME)) {
+                $cursor = self::IN_PARAMETER_VALUE;
                 continue;
             }
-            if ($header[$offset] === '"' && ($cursor & $inParameterValue) && !($cursor & $inQuotedPair)) {
-                $cursor ^= $inQuotedString;
+            if ($header[$offset] === '"' && ($cursor & self::IN_PARAMETER_VALUE) && !($cursor & self::IN_QUOTED_PAIR)) {
+                $cursor ^= self::IN_QUOTED_STRING;
                 continue;
             }
-            if ($header[$offset] === '\\' && ($cursor & $inQuotedString) && !($cursor & $inQuotedPair)) {
-                $cursor |= $inQuotedPair;
+            if ($header[$offset] === '\\' && ($cursor & self::IN_QUOTED_STRING) && !($cursor & self::IN_QUOTED_PAIR)) {
+                $cursor |= self::IN_QUOTED_PAIR;
                 continue;
             }
 
-            if ($cursor & $inIdentifier) {
+            if ($cursor & self::IN_IDENTIFIER) {
                 $values[$value][0] ??= '';
                 $values[$value][0] .= $header[$offset];
                 continue;
             }
-            if ($cursor & $inParameterName) {
+            if ($cursor & self::IN_PARAMETER_NAME) {
                 $values[$value][1][$param][0] ??= '';
                 $values[$value][1][$param][0] .= $header[$offset];
                 continue;
             }
-            if ($cursor & $inParameterValue) {
+            if ($cursor & self::IN_PARAMETER_VALUE) {
                 $values[$value][1][$param][1] ??= '';
                 $values[$value][1][$param][1] .= $header[$offset];
-                $cursor &= ~$inQuotedPair;
+                $cursor &= ~self::IN_QUOTED_PAIR;
                 continue;
             }
         }

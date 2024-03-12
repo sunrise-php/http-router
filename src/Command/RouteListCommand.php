@@ -50,7 +50,7 @@ final class RouteListCommand extends Command
             $table->addRow([
                 $route->getName(),
                 $route->getPath(),
-                $route->getMethods() === [] ? '<fg=gray>Any</>' : join(', ', $route->getMethods()),
+                $route->getMethods() === [] ? '<fg=red>ANY</>' : join(', ', $route->getMethods()),
             ]);
         }
 

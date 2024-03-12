@@ -37,6 +37,8 @@ final class RouteSimplifier
             $replace[] = '{' . $variable['name'] . '}';
         }
 
+        // will be replaced by an empty string:
+        // https://github.com/php/php-src/blob/a04577fb4ab5e1ebc7779608523b95ddf01e6c7f/ext/standard/string.c#L4406-L4408
         $search[] = '(';
         $search[] = ')';
 

@@ -46,7 +46,7 @@ final class ReferenceResolver
     }
 
     /**
-     * @throws InvalidReferenceException If the requst handler couldn't be resolved.
+     * @throws InvalidReferenceException
      */
     public function resolveRequestHandler(mixed $reference): RequestHandlerInterface
     {
@@ -84,7 +84,7 @@ final class ReferenceResolver
     }
 
     /**
-     * @throws InvalidReferenceException If the middleware couldn't be resolved.
+     * @throws InvalidReferenceException
      */
     public function resolveMiddleware(mixed $reference): MiddlewareInterface
     {
