@@ -23,6 +23,7 @@ use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
 
 use function array_unshift;
 use function sprintf;
+use function usort;
 
 /**
  * @since 3.0.0
@@ -35,6 +36,12 @@ final class ParameterResolver
         /** @var ParameterResolverInterface[] */
         private array $resolvers,
     ) {
+        usort($this->resolvers, static fn(
+            ParameterResolverInterface $a,
+            ParameterResolverInterface $b,
+        ): int => (
+            $b->getWeight() <=> $a->getWeight()
+        ));
     }
 
     public function withRequest(ServerRequestInterface $request): self

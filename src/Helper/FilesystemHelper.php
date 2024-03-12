@@ -85,6 +85,7 @@ final class FilesystemHelper
         }
 
         $filename = realpath($filename);
+
         (static function (string $filename): void {
             require_once $filename;
         })($filename);

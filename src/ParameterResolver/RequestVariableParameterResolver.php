@@ -114,4 +114,9 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
 
         yield $argument;
     }
+
+    public function getWeight(): int
+    {
+        return 100;
+    }
 }

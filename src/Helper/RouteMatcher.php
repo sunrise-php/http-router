@@ -38,9 +38,9 @@ final class RouteMatcher
      * @param array<string, string> $patterns
      * @param-out array<string, string> $matches
      *
+     * @throws InvalidRouteParsingSubjectException
      * @throws InvalidRouteMatchingPatternException
      * @throws InvalidRouteMatchingSubjectException
-     * @throws InvalidRouteParsingSubjectException
      */
     public static function matchRoute(string $route, array $patterns, string $subject, ?array &$matches = null): bool
     {
@@ -62,24 +62,22 @@ final class RouteMatcher
             if (($result = @preg_match($pattern, $subject, $matches, PREG_UNMATCHED_AS_NULL)) === false) {
                 throw new ErrorException(preg_last_error_msg(), preg_last_error(), E_WARNING);
             }
-        } catch (Throwable $e) {
-            // a client side error; must be handled as 4xx error.
+        } catch (Throwable) {
             if (preg_last_error() === PREG_BAD_UTF8_ERROR) {
                 throw new InvalidRouteMatchingSubjectException(sprintf(
                     'The route %s could not be matched with an invalid subject due to: %s.',
-                    RouteSimplifier::simplifyRoute($route),
+                    $route,
                     preg_last_error_msg(),
-                ), preg_last_error(), $e);
+                ));
             }
 
-            // a server side error; must be handled as 5xx error.
             throw new InvalidRouteMatchingPatternException(sprintf(
                 'The route %s could not be matched due to: %s; ' .
                 'most likely, this problem is related to one of the route patterns. ' .
                 'Please refer to the official documentation: https://www.php.net/preg_last_error',
                 $route,
                 preg_last_error_msg(),
-            ), preg_last_error(), $e);
+            ), preg_last_error());
         }
 
         foreach ($matches as $key => $match) {

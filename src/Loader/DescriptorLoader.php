@@ -66,9 +66,9 @@ final class DescriptorLoader implements LoaderInterface
     /**
      * @inheritDoc
      *
+     * @throws CacheException
      * @throws InvalidRouteLoadingResourceException
      * @throws InvalidRouteParsingSubjectException
-     * @throws CacheException
      */
     public function load(): Generator
     {
@@ -96,9 +96,9 @@ final class DescriptorLoader implements LoaderInterface
     /**
      * @return list<Descriptor>
      *
+     * @throws CacheException
      * @throws InvalidRouteLoadingResourceException
      * @throws InvalidRouteParsingSubjectException
-     * @throws CacheException
      */
     private function getDescriptors(): array
     {

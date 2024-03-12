@@ -26,4 +26,6 @@ interface ParameterResolverInterface
      * @return Generator<int, mixed>
      */
     public function resolveParameter(ReflectionParameter $parameter, ?ServerRequestInterface $request): Generator;
+
+    public function getWeight(): int;
 }

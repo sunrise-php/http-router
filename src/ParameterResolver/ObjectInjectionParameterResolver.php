@@ -43,4 +43,9 @@ final class ObjectInjectionParameterResolver implements ParameterResolverInterfa
             yield $this->object;
         }
     }
+
+    public function getWeight(): int
+    {
+        return 0;
+    }
 }

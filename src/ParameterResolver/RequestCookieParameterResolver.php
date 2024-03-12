@@ -100,4 +100,9 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
 
         yield $argument;
     }
+
+    public function getWeight(): int
+    {
+        return 60;
+    }
 }

@@ -14,6 +14,9 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router;
 
 use Closure;
+use InvalidArgumentException;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -42,6 +45,7 @@ final class ReferenceResolver
         private readonly ClassResolver $classResolver,
         private readonly ParameterResolver $parameterResolver,
         private readonly ResponseResolver $responseResolver,
+        private readonly ?ContainerInterface $container,
     ) {
     }
 
@@ -63,7 +67,7 @@ final class ReferenceResolver
             /** @var array{0: string|object, 1: string} $reference */
 
             if (is_string($reference[0]) && class_exists($reference[0])) {
-                $reference[0] = $this->classResolver->resolveClass($reference[0]);
+                $reference[0] = $this->resolveClass($reference[0]);
             }
 
             if (is_callable($reference)) {
@@ -74,7 +78,7 @@ final class ReferenceResolver
         }
 
         if (is_string($reference) && is_subclass_of($reference, RequestHandlerInterface::class)) {
-            return $this->classResolver->resolveClass($reference);
+            return $this->resolveClass($reference);
         }
 
         throw new InvalidReferenceException(sprintf(
@@ -97,7 +101,7 @@ final class ReferenceResolver
         }
 
         if (is_string($reference) && is_subclass_of($reference, MiddlewareInterface::class)) {
-            return $this->classResolver->resolveClass($reference);
+            return $this->resolveClass($reference);
         }
 
         // https://github.com/php/php-src/blob/3ed526441400060aa4e618b91b3352371fcd02a8/Zend/zend_API.c#L3884-L3932
@@ -105,7 +109,7 @@ final class ReferenceResolver
             /** @var array{0: string|object, 1: string} $reference */
 
             if (is_string($reference[0]) && class_exists($reference[0])) {
-                $reference[0] = $this->classResolver->resolveClass($reference[0]);
+                $reference[0] = $this->resolveClass($reference[0]);
             }
 
             if (is_callable($reference)) {
@@ -166,6 +170,22 @@ final class ReferenceResolver
                 $request,
             )
         );
+    }
+
+    /**
+     * @param class-string<T> $className
+     *
+     * @return T
+     *
+     * @template T of object
+     *
+     * @throws InvalidArgumentException
+     * @throws ContainerExceptionInterface
+     */
+    private function resolveClass(string $className): object
+    {
+        /** @var T */
+        return $this->container?->has($className) ? $this->container->get($className) : $this->classResolver->resolveClass($className);
     }
 
     private static function stringifyReference(mixed $reference): string

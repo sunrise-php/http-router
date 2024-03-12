@@ -46,4 +46,9 @@ final class DependencyInjectionParameterResolver implements ParameterResolverInt
             yield $this->container->get($typeName);
         }
     }
+
+    public function getWeight(): int
+    {
+        return -100;
+    }
 }

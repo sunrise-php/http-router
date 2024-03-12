@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Helper;
 
 use BackedEnum;
-use InvalidArgumentException;
 use Stringable;
 use Sunrise\Http\Router\Exception\InvalidRouteBuildingValueException;
 use Sunrise\Http\Router\Exception\InvalidRouteParsingSubjectException;
@@ -49,13 +48,13 @@ final class RouteBuilder
 
                 try {
                     $value = self::stringifyValue($value);
-                } catch (InvalidArgumentException $e) {
+                } catch (InvalidRouteBuildingValueException $e) {
                     throw new InvalidRouteBuildingValueException(sprintf(
                         'The route %s could not be built with an invalid value for the variable %s due to: %s',
                         $route,
                         $variable['name'],
                         $e->getMessage(),
-                    ), previous: $e);
+                    ));
                 }
 
                 $search[] = $statement;
@@ -85,9 +84,9 @@ final class RouteBuilder
     }
 
     /**
-     * @throws InvalidArgumentException
+     * @throws InvalidRouteBuildingValueException
      */
-    public static function stringifyValue(mixed $value): string
+    private static function stringifyValue(mixed $value): string
     {
         if (is_string($value)) {
             return $value;
@@ -102,7 +101,7 @@ final class RouteBuilder
             return $value->__toString();
         }
 
-        throw new InvalidArgumentException(sprintf(
+        throw new InvalidRouteBuildingValueException(sprintf(
             'The %s value could not be converted to a string; ' .
             'supported types: string, integer, backed enum and stringable object.',
             get_debug_type($value),

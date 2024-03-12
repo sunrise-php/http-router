@@ -34,13 +34,13 @@ final class HttpExceptionFactory
         );
     }
 
-    public static function routeNotFound(
+    public static function resourceNotFound(
         ?string $message = null,
         ?int $code = null,
         ?Throwable $previous = null,
     ): HttpException {
         return new HttpException(
-            message: $message ?? ErrorMessage::ROUTE_NOT_FOUND,
+            message: $message ?? ErrorMessage::RESOURCE_NOT_FOUND,
             code: $code ?? StatusCodeInterface::STATUS_NOT_FOUND,
             previous: $previous,
         );
@@ -58,25 +58,25 @@ final class HttpExceptionFactory
         );
     }
 
-    public static function mediaTypeNotProvided(
+    public static function missingMediaType(
         ?string $message = null,
         ?int $code = null,
         ?Throwable $previous = null,
     ): HttpException {
         return new HttpException(
-            message: $message ?? ErrorMessage::MEDIA_TYPE_NOT_PROVIDED,
+            message: $message ?? ErrorMessage::MISSING_MEDIA_TYPE,
             code: $code ?? StatusCodeInterface::STATUS_UNSUPPORTED_MEDIA_TYPE,
             previous: $previous,
         );
     }
 
-    public static function mediaTypeNotSupported(
+    public static function unsupportedMediaType(
         ?string $message = null,
         ?int $code = null,
         ?Throwable $previous = null,
     ): HttpException {
         return new HttpException(
-            message: $message ?? ErrorMessage::MEDIA_TYPE_NOT_SUPPORTED,
+            message: $message ?? ErrorMessage::UNSUPPORTED_MEDIA_TYPE,
             code: $code ?? StatusCodeInterface::STATUS_UNSUPPORTED_MEDIA_TYPE,
             previous: $previous,
         );

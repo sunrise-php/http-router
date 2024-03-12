@@ -18,7 +18,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Entity\MediaType\MediaTypeFactory;
+use Sunrise\Http\Router\Entity\MediaType\ServerMediaType;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\ServerRequest;
@@ -55,7 +55,7 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        if (ServerRequest::create($request)->clientProducesMediaType(...MediaTypeFactory::json())) {
+        if (ServerRequest::create($request)->clientProducesMediaType(new ServerMediaType('application', 'json'))) {
             $request = $request->withParsedBody($this->decodePayload($request->getBody()->__toString()));
         }
 
@@ -77,11 +77,10 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
             /** @psalm-suppress ArgumentTypeCoercion */
             $data = json_decode($payload, true, $this->decodingDepth, $this->decodingFlags | JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
-            throw HttpExceptionFactory::invalidJsonPayload(previous: $e)
-                ->addMessagePlaceholder('{{ details }}', $e->getMessage());
+            throw HttpExceptionFactory::invalidJsonPayload(previous: $e);
         }
 
-        if (is_array($data) === false) {
+        if (!is_array($data)) {
             throw HttpExceptionFactory::invalidJsonPayloadForm();
         }
 

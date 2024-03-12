@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -61,18 +62,17 @@ class Router implements RequestHandlerInterface
     private array $routeRequestHandlers = [];
 
     /**
+     * @param MiddlewareInterface[] $middlewares
      * @param ParameterResolverInterface[] $parameterResolvers
      * @param ResponseResolverInterface[] $responseResolvers
-     * @param LoaderInterface[] $loaders
      *
      * @since 3.0.0
      */
     public function __construct(
-        /** @var MiddlewareInterface[] */
         private readonly array $middlewares = [],
         array $parameterResolvers = [],
         array $responseResolvers = [],
-        array $loaders = [],
+        ?ContainerInterface $container = null,
     ) {
         $parameterResolver = new ParameterResolver($parameterResolvers);
         $responseResolver = new ResponseResolver($responseResolvers);
@@ -82,11 +82,8 @@ class Router implements RequestHandlerInterface
             classResolver: $classResolver,
             parameterResolver: $parameterResolver,
             responseResolver: $responseResolver,
+            container: $container,
         );
-
-        foreach ($loaders as $loader) {
-            $this->load($loader);
-        }
     }
 
     /**
@@ -145,8 +142,7 @@ class Router implements RequestHandlerInterface
             try {
                 $isRouteMatched = RouteMatcher::matchPattern($route->getPath(), $routePattern, $requestPath, $matches);
             } catch (InvalidRouteMatchingSubjectException $e) {
-                throw HttpExceptionFactory::invalidUri(previous: $e)
-                    ->addMessagePlaceholder('{{ details }}', $e->getPrevious()?->getMessage());
+                throw HttpExceptionFactory::invalidUri(previous: $e);
             }
 
             if (!$isRouteMatched) {
@@ -167,7 +163,7 @@ class Router implements RequestHandlerInterface
                 ->addHeaderField('Allow', ...array_keys($allowedMethods));
         }
 
-        throw HttpExceptionFactory::routeNotFound()
+        throw HttpExceptionFactory::resourceNotFound()
             ->addMessagePlaceholder('{{ request_uri }}', $requestPath);
     }
 

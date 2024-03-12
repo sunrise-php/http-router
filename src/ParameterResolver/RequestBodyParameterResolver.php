@@ -92,4 +92,9 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
 
         yield $argument;
     }
+
+    public function getWeight(): int
+    {
+        return 90;
+    }
 }
