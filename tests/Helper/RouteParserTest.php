@@ -24,10 +24,10 @@ final class RouteParserTest extends TestCase
     /**
      * @dataProvider invalidRouteDataProvider
      */
-    public function testParseInvalidRoute(string $route, string $expectedMessage): void
+    public function testParseInvalidRoute(string $route, string $expectedMessageRegex): void
     {
         $this->expectException(InvalidRouteParsingSubjectException::class);
-        $this->expectExceptionMessageMatches($expectedMessage);
+        $this->expectExceptionMessageMatches($expectedMessageRegex);
 
         RouteParser::parseRoute($route);
     }

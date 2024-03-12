@@ -36,6 +36,18 @@ use const JSON_THROW_ON_ERROR;
  */
 final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
 {
+    public const DEFAULT_DECODING_FLAGS = JSON_BIGINT_AS_STRING;
+    public const DEFAULT_DECODING_DEPTH = 512;
+
+    /**
+     * @since 3.0.0
+     */
+    public function __construct(
+        private readonly int $decodingFlags = self::DEFAULT_DECODING_FLAGS,
+        private readonly int $decodingDepth = self::DEFAULT_DECODING_DEPTH,
+    ) {
+    }
+
     /**
      * @inheritDoc
      *
@@ -62,9 +74,11 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
         }
 
         try {
-            $data = json_decode($payload, true, flags: JSON_BIGINT_AS_STRING | JSON_THROW_ON_ERROR);
+            /** @psalm-suppress ArgumentTypeCoercion */
+            $data = json_decode($payload, true, $this->decodingDepth, $this->decodingFlags | JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
-            throw HttpExceptionFactory::invalidJsonPayload(previous: $e);
+            throw HttpExceptionFactory::invalidJsonPayload(previous: $e)
+                ->addMessagePlaceholder('{{ details }}', $e->getMessage());
         }
 
         if (is_array($data) === false) {

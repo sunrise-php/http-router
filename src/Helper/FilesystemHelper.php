@@ -41,10 +41,7 @@ final class FilesystemHelper
     public static function getDirClasses(string $dirname): Generator
     {
         if (!is_dir($dirname)) {
-            throw new InvalidArgumentException(sprintf(
-                'The directory %s does not exist.',
-                $dirname,
-            ));
+            throw new InvalidArgumentException(sprintf('The directory %s does not exist.', $dirname));
         }
 
         /** @var array<string, string> $filenames */
@@ -84,10 +81,7 @@ final class FilesystemHelper
     public static function getFileClasses(string $filename): Generator
     {
         if (!is_file($filename)) {
-            throw new InvalidArgumentException(sprintf(
-                'The file %s does not exist.',
-                $filename,
-            ));
+            throw new InvalidArgumentException(sprintf('The file %s does not exist.', $filename));
         }
 
         $filename = realpath($filename);

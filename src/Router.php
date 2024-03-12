@@ -145,7 +145,8 @@ class Router implements RequestHandlerInterface
             try {
                 $isRouteMatched = RouteMatcher::matchPattern($route->getPath(), $routePattern, $requestPath, $matches);
             } catch (InvalidRouteMatchingSubjectException $e) {
-                throw HttpExceptionFactory::invalidUri(previous: $e);
+                throw HttpExceptionFactory::invalidUri(previous: $e)
+                    ->addMessagePlaceholder('{{ details }}', $e->getPrevious()?->getMessage());
             }
 
             if (!$isRouteMatched) {

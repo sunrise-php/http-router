@@ -41,7 +41,7 @@ final class ServerRequest implements ServerRequestInterface
 
     public static function create(ServerRequestInterface $request): self
     {
-        return new self($request);
+        return $request instanceof self ? $request : new self($request);
     }
 
     /**
