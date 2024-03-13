@@ -23,7 +23,7 @@ final class ErrorMessage
     public const METHOD_NOT_ALLOWED = 'The requested method is not allowed for this resource; Please check the Allow response header for allowed methods.';
     public const MISSING_MEDIA_TYPE = 'The Content-Type request header must be provided and cannot be empty; Please check the Accept response header for supported media types.';
     public const UNSUPPORTED_MEDIA_TYPE = 'The media type {{ media_type }} is not supported; Check the Accept response header for supported media types.';
-    public const INVALID_VARIABLE = 'The provided value of the variable {{ variable_name }} in the URI pattern {{ route_uri }} is invalid.';
+    public const INVALID_VARIABLE = 'The provided value of the variable {{{ variable_name }}} in the URI pattern {{ route_uri }} is invalid.';
     public const INVALID_QUERY = 'The provided request query parameters are invalid.';
     public const MISSING_HEADER = 'The request header {{ header_name }} must be provided.';
     public const INVALID_HEADER = 'The provided request header {{ header_name }} is invalid.';

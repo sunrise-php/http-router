@@ -30,6 +30,7 @@ use Sunrise\Http\Router\Helper\RouteBuilder;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Helper\RouteMatcher;
 use Sunrise\Http\Router\Loader\LoaderInterface;
+use Sunrise\Http\Router\ParameterResolver\ObjectInjectionParameterResolver;
 use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
@@ -74,14 +75,16 @@ class Router implements RequestHandlerInterface
         array $responseResolvers = [],
         ?ContainerInterface $container = null,
     ) {
+        $parameterResolvers[] = new ObjectInjectionParameterResolver($this);
+
         $parameterResolver = new ParameterResolver($parameterResolvers);
         $responseResolver = new ResponseResolver($responseResolvers);
         $classResolver = new ClassResolver($parameterResolver);
 
         $this->referenceResolver = new ReferenceResolver(
-            classResolver: $classResolver,
             parameterResolver: $parameterResolver,
             responseResolver: $responseResolver,
+            classResolver: $classResolver,
             container: $container,
         );
     }

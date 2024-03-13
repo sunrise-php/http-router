@@ -50,7 +50,7 @@ final class RouteBuilder
                     $value = self::stringifyValue($value);
                 } catch (InvalidRouteBuildingValueException $e) {
                     throw new InvalidRouteBuildingValueException(sprintf(
-                        'The route %s could not be built with an invalid value for the variable %s due to: %s',
+                        'The route %s could not be built with an invalid value for the variable {%s} due to: %s',
                         $route,
                         $variable['name'],
                         $e->getMessage(),
@@ -69,7 +69,7 @@ final class RouteBuilder
             }
 
             throw new InvalidRouteBuildingValueException(sprintf(
-                'The route %s could not be built without a required value for the variable %s.',
+                'The route %s could not be built without a required value for the variable {%s}.',
                 $route,
                 $variable['name'],
             ));

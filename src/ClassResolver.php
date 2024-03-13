@@ -22,7 +22,7 @@ use function sprintf;
 /**
  * @since 3.0.0
  */
-final class ClassResolver
+final class ClassResolver implements ClassResolverInterface
 {
     /**
      * @var array<class-string, object>
@@ -35,7 +35,9 @@ final class ClassResolver
     }
 
     /**
-     * @param class-string<T> $fqn
+     * {@inheritDoc}
+     *
+     * @param class-string<T> $className
      *
      * @return T
      *
@@ -43,28 +45,30 @@ final class ClassResolver
      *
      * @throws InvalidArgumentException If the class cannot be resolved.
      */
-    public function resolveClass(string $fqn): object
+    public function resolveClass(string $className): object
     {
-        if (isset($this->resolvedClasses[$fqn])) {
+        if (isset($this->resolvedClasses[$className])) {
             /** @var T */
-            return $this->resolvedClasses[$fqn];
+            return $this->resolvedClasses[$className];
         }
 
-        if (!class_exists($fqn)) {
-            throw new InvalidArgumentException(sprintf('The class %s does not exist.', $fqn));
+        if (!class_exists($className)) {
+            throw new InvalidArgumentException(sprintf('The class %s does not exist.', $className));
         }
 
-        /** @var ReflectionClass<T> $reflection */
-        $reflection = new ReflectionClass($fqn);
+        /** @var ReflectionClass<T> $classReflection */
+        $classReflection = new ReflectionClass($className);
 
-        if (!$reflection->isInstantiable()) {
-            throw new InvalidArgumentException(sprintf('The class %s is not instantiable.', $fqn));
+        if (!$classReflection->isInstantiable()) {
+            throw new InvalidArgumentException(sprintf('The class %s is not instantiable.', $className));
         }
 
-        $arguments = $this->parameterResolver->resolveParameters(
-            ...($reflection->getConstructor()?->getParameters() ?? [])
+        $this->resolvedClasses[$className] = $classReflection->newInstance(
+            ...$this->parameterResolver->resolveParameters(
+                ...($classReflection->getConstructor()?->getParameters() ?? [])
+            )
         );
 
-        return $this->resolvedClasses[$fqn] = $reflection->newInstance(...$arguments);
+        return $this->resolvedClasses[$className];
     }
 }

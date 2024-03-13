@@ -78,7 +78,7 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
             }
 
             throw new InvalidParameterException(sprintf(
-                'The parameter %s expects a value of the variable %s from the route %s ' .
+                'The parameter %s expects a value of the variable {%s} from the route %s ' .
                 'which is not present in the request, most likely, because the variable is optional. ' .
                 'To resolve this issue, assign the default value to the parameter.',
                 ParameterResolver::stringifyParameter($parameter),

@@ -42,13 +42,11 @@ use Sunrise\Http\Router\Helper\FilesystemHelper;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Route;
 
-use function array_map;
 use function class_exists;
 use function is_dir;
 use function is_file;
 use function join;
 use function sprintf;
-use function strtoupper;
 use function usort;
 
 final class DescriptorLoader implements LoaderInterface
@@ -324,8 +322,6 @@ final class DescriptorLoader implements LoaderInterface
     private function completeDescriptor(Descriptor $descriptor): void
     {
         $descriptor->path = join($descriptor->prefixes) . $descriptor->path;
-
-        $descriptor->methods = array_map(strtoupper(...), $descriptor->methods);
 
         $descriptor->pattern = RouteCompiler::compileRoute($descriptor->path, $descriptor->patterns);
     }

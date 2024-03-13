@@ -11,20 +11,21 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Entity\Language;
+namespace Sunrise\Http\Router;
 
 /**
  * @since 3.0.0
  */
-final class ServerLanguage implements LanguageInterface
+interface ClassResolverInterface
 {
-    public function __construct(
-        private readonly string $code,
-    ) {
-    }
-
-    public function getCode(): string
-    {
-        return $this->code;
-    }
+    /**
+     * Tries to resolve the given named class
+     *
+     * @param class-string<T> $className
+     *
+     * @return T
+     *
+     * @template T of object
+     */
+    public function resolveClass(string $className): object;
 }
