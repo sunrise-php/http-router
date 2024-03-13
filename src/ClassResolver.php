@@ -11,10 +11,11 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router;
+namespace Sunrise\Http\Router\ClassResolver;
 
 use InvalidArgumentException;
 use ReflectionClass;
+use Sunrise\Http\Router\ParameterResolverChain;
 
 use function class_exists;
 use function sprintf;
@@ -30,7 +31,7 @@ final class ClassResolver implements ClassResolverInterface
     private array $resolvedClasses = [];
 
     public function __construct(
-        private readonly ParameterResolver $parameterResolver,
+        private readonly ParameterResolverChain $parameterResolver,
     ) {
     }
 

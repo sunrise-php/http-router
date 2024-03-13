@@ -11,21 +11,12 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router;
+namespace Sunrise\Http\Router\ClassResolver;
 
 /**
  * @since 3.0.0
  */
 interface ClassResolverInterface
 {
-    /**
-     * Tries to resolve the given named class
-     *
-     * @param class-string<T> $className
-     *
-     * @return T
-     *
-     * @template T of object
-     */
     public function resolveClass(string $className): object;
 }

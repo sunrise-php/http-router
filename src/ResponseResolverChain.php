@@ -29,7 +29,7 @@ use function sprintf;
 /**
  * @since 3.0.0
  */
-final class ResponseResolver
+final class ResponseResolver implements ResponseResolverChainInterface
 {
     public function __construct(
         /** @var ResponseResolverInterface[] */
@@ -58,7 +58,7 @@ final class ResponseResolver
         }
 
         throw new UnsupportedResponseException(sprintf(
-            'The responder %s returned an unsupported response.',
+            'The responder %s returned an unsupported response that cannot be resolved.',
             self::stringifyResponder($responder),
         ));
     }

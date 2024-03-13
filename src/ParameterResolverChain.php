@@ -28,9 +28,9 @@ use function usort;
 /**
  * @since 3.0.0
  */
-final class ParameterResolver
+final class ParameterResolver implements ParameterResolverChainInterface
 {
-    private ?ServerRequestInterface $request = null;
+    private mixed $context = null;
 
     public function __construct(
         /** @var ParameterResolverInterface[] */
@@ -44,15 +44,15 @@ final class ParameterResolver
         ));
     }
 
-    public function withRequest(ServerRequestInterface $request): self
+    public function withContext(mixed $context): static
     {
         $clone = clone $this;
-        $clone->request = $request;
+        $clone->context = $context;
 
         return $clone;
     }
 
-    public function withPriorityResolver(ParameterResolverInterface ...$resolvers): self
+    public function withPriorityResolver(ParameterResolverInterface ...$resolvers): static
     {
         $clone = clone $this;
 
@@ -70,7 +70,7 @@ final class ParameterResolver
     public function resolveParameters(ReflectionParameter ...$parameters): Generator
     {
         foreach ($parameters as $parameter) {
-            yield from $this->resolveParameter($parameter, $this->request);
+            yield from $this->resolveParameter($parameter, $this->context);
         }
     }
 
