@@ -14,10 +14,8 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router;
 
 use Generator;
-use Psr\Http\Message\ServerRequestInterface;
 use ReflectionMethod;
 use ReflectionParameter;
-use Sunrise\Http\Router\Exception\InvalidParameterException;
 use Sunrise\Http\Router\Exception\UnsupportedParameterException;
 use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
 
@@ -28,7 +26,7 @@ use function usort;
 /**
  * @since 3.0.0
  */
-final class ParameterResolver implements ParameterResolverChainInterface
+final class ParameterResolverChain implements ParameterResolverChainInterface
 {
     private mixed $context = null;
 
@@ -39,9 +37,7 @@ final class ParameterResolver implements ParameterResolverChainInterface
         usort($this->resolvers, static fn(
             ParameterResolverInterface $a,
             ParameterResolverInterface $b,
-        ): int => (
-            $b->getWeight() <=> $a->getWeight()
-        ));
+        ): int => $b->getWeight() <=> $a->getWeight());
     }
 
     public function withContext(mixed $context): static
@@ -62,9 +58,8 @@ final class ParameterResolver implements ParameterResolverChainInterface
     }
 
     /**
-     * @return Generator<int, mixed>
+     * @inheritDoc
      *
-     * @throws InvalidParameterException
      * @throws UnsupportedParameterException
      */
     public function resolveParameters(ReflectionParameter ...$parameters): Generator
@@ -77,20 +72,19 @@ final class ParameterResolver implements ParameterResolverChainInterface
     /**
      * @return Generator<int, mixed>
      *
-     * @throws InvalidParameterException
      * @throws UnsupportedParameterException
      */
-    private function resolveParameter(ReflectionParameter $parameter, ?ServerRequestInterface $request): Generator
+    private function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
         foreach ($this->resolvers as $resolver) {
-            $arguments = $resolver->resolveParameter($parameter, $request);
+            $arguments = $resolver->resolveParameter($parameter, $context);
             if ($arguments->valid()) {
                 return yield from $arguments;
             }
         }
 
         throw new UnsupportedParameterException(sprintf(
-            'The parameter %s is not supported.',
+            'The parameter %s is not supported and cannot be resolved.',
             self::stringifyParameter($parameter),
         ));
     }

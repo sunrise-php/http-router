@@ -11,20 +11,14 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\ParameterResolver;
+namespace Sunrise\Http\Router;
 
-use Generator;
-use ReflectionParameter;
+use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * @since 3.0.0
  */
-interface ParameterResolverInterface
+interface RequestHandlerResolverInterface
 {
-    /**
-     * @return Generator<int, mixed>
-     */
-    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator;
-
-    public function getWeight(): int;
+    public function resolveRequestHandler(mixed $reference): RequestHandlerInterface;
 }

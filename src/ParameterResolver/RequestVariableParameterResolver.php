@@ -23,7 +23,7 @@ use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\Exception\InvalidParameterException;
 use Sunrise\Http\Router\Helper\RouteSimplifier;
 use Sunrise\Http\Router\Helper\ValidatorHelper;
-use Sunrise\Http\Router\ParameterResolver;
+use Sunrise\Http\Router\ParameterResolverChain;
 use Sunrise\Http\Router\ServerRequest;
 use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
 use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationProxy;
@@ -54,9 +54,9 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
      * @throws HttpException
      * @throws InvalidParameterException
      */
-    public function resolveParameter(ReflectionParameter $parameter, ?ServerRequestInterface $request): Generator
+    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
-        if ($request === null) {
+        if (! $context instanceof ServerRequestInterface) {
             return;
         }
 
@@ -66,7 +66,7 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
             return;
         }
 
-        $route = ServerRequest::create($request)->getRoute();
+        $route = ServerRequest::create($context)->getRoute();
         $processParams = $annotations[0]->newInstance();
 
         $variableName = $processParams->variableName ?? $parameter->getName();
@@ -81,7 +81,7 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
                 'The parameter %s expects a value of the variable {%s} from the route %s ' .
                 'which is not present in the request, most likely, because the variable is optional. ' .
                 'To resolve this issue, assign the default value to the parameter.',
-                ParameterResolver::stringifyParameter($parameter),
+                ParameterResolverChain::stringifyParameter($parameter),
                 $variableName,
                 $route->getName(),
             ));
@@ -117,6 +117,6 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
 
     public function getWeight(): int
     {
-        return 100;
+        return 0;
     }
 }

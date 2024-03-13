@@ -48,9 +48,9 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
      *
      * @throws HttpException
      */
-    public function resolveParameter(ReflectionParameter $parameter, ?ServerRequestInterface $request): Generator
+    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
-        if ($request === null) {
+        if (! $context instanceof ServerRequestInterface) {
             return;
         }
 
@@ -65,7 +65,7 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
         $headerName = $processParams->headerName;
         $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
 
-        if (!$request->hasHeader($headerName)) {
+        if (!$context->hasHeader($headerName)) {
             if ($parameter->isDefaultValueAvailable()) {
                 return yield $parameter->getDefaultValue();
             }
@@ -75,7 +75,7 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
         }
 
         try {
-            $argument = $this->hydrator->castValue($request->getHeaderLine($headerName), Type::fromParameter($parameter), path: [$headerName]);
+            $argument = $this->hydrator->castValue($context->getHeaderLine($headerName), Type::fromParameter($parameter), path: [$headerName]);
         } catch (InvalidValueException $e) {
             throw HttpExceptionFactory::invalidHeader($processParams->errorMessage, $errorStatusCode, previous: $e)
                 ->addMessagePlaceholder('{{ header_name }}', $headerName)
@@ -101,6 +101,6 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
 
     public function getWeight(): int
     {
-        return 70;
+        return 0;
     }
 }

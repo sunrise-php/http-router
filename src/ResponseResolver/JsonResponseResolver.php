@@ -23,7 +23,7 @@ use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\JsonResponse;
 use Sunrise\Http\Router\Exception\InvalidResponseException;
-use Sunrise\Http\Router\ResponseResolver;
+use Sunrise\Http\Router\ResponseResolverChain;
 
 use function json_encode;
 use function sprintf;
@@ -70,7 +70,7 @@ final class JsonResponseResolver implements ResponseResolverInterface
         } catch (JsonException $e) {
             throw new InvalidResponseException(sprintf(
                 'The responder %s returned a response that could not be encoded to JSON due to: %s',
-                ResponseResolver::stringifyResponder($responder),
+                ResponseResolverChain::stringifyResponder($responder),
                 $e->getMessage(),
             ), previous: $e);
         }
@@ -81,5 +81,10 @@ final class JsonResponseResolver implements ResponseResolverInterface
         $jsonResponse->getBody()->write($payload);
 
         return $jsonResponse;
+    }
+
+    public function getWeight(): int
+    {
+        return 0;
     }
 }

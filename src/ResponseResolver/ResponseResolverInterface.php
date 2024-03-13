@@ -28,4 +28,6 @@ interface ResponseResolverInterface
         ReflectionMethod|ReflectionFunction $responder,
         ServerRequestInterface $request,
     ): ?ResponseInterface;
+
+    public function getWeight(): int;
 }

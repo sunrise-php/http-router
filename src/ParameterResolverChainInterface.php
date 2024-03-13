@@ -11,20 +11,23 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\ParameterResolver;
+namespace Sunrise\Http\Router;
 
 use Generator;
 use ReflectionParameter;
+use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
 
 /**
  * @since 3.0.0
  */
-interface ParameterResolverInterface
+interface ParameterResolverChainInterface
 {
+    public function withContext(mixed $context): static;
+
+    public function withPriorityResolver(ParameterResolverInterface ...$resolvers): static;
+
     /**
      * @return Generator<int, mixed>
      */
-    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator;
-
-    public function getWeight(): int;
+    public function resolveParameters(ReflectionParameter ...$parameters): Generator;
 }

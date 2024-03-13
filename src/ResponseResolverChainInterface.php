@@ -13,19 +13,19 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use ReflectionFunction;
+use ReflectionMethod;
+
 /**
  * @since 3.0.0
  */
-interface ClassResolverInterface
+interface ResponseResolverChainInterface
 {
-    /**
-     * Tries to resolve the given named class
-     *
-     * @param class-string<T> $className
-     *
-     * @return T
-     *
-     * @template T of object
-     */
-    public function resolveClass(string $className): object;
+    public function resolveResponse(
+        mixed $response,
+        ReflectionMethod|ReflectionFunction $responder,
+        ServerRequestInterface $request,
+    ): ResponseInterface;
 }

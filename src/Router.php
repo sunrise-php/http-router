@@ -30,6 +30,7 @@ use Sunrise\Http\Router\Helper\RouteBuilder;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Helper\RouteMatcher;
 use Sunrise\Http\Router\Loader\LoaderInterface;
+use Sunrise\Http\Router\ParameterResolver\DefaultValueParameterResolver;
 use Sunrise\Http\Router\ParameterResolver\ObjectInjectionParameterResolver;
 use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
@@ -43,7 +44,9 @@ use function sprintf;
 
 class Router implements RequestHandlerInterface
 {
-    private readonly ReferenceResolver $referenceResolver;
+    private readonly RequestHandlerResolverInterface $requestHandlerResolver;
+
+    private readonly MiddlewareResolverInterface $middlewareResolver;
 
     private ?RequestHandlerInterface $requestHandler = null;
 
@@ -76,17 +79,14 @@ class Router implements RequestHandlerInterface
         ?ContainerInterface $container = null,
     ) {
         $parameterResolvers[] = new ObjectInjectionParameterResolver($this);
+        $parameterResolvers[] = new DefaultValueParameterResolver();
 
-        $parameterResolver = new ParameterResolver($parameterResolvers);
-        $responseResolver = new ResponseResolver($responseResolvers);
-        $classResolver = new ClassResolver($parameterResolver);
+        $parameterResolver = new ParameterResolverChain($parameterResolvers);
+        $responseResolver = new ResponseResolverChain($responseResolvers);
+        $classResolver = new ClassResolver($parameterResolver, $container);
 
-        $this->referenceResolver = new ReferenceResolver(
-            parameterResolver: $parameterResolver,
-            responseResolver: $responseResolver,
-            classResolver: $classResolver,
-            container: $container,
-        );
+        $this->requestHandlerResolver = new RequestHandlerResolver($classResolver, $parameterResolver, $responseResolver);
+        $this->middlewareResolver = new MiddlewareResolver($classResolver, $parameterResolver, $responseResolver);
     }
 
     /**
@@ -249,22 +249,22 @@ class Router implements RequestHandlerInterface
             $route = $this->getRoute($route);
         }
 
-        $routeName = $route->getName();
-        if (isset($this->routeRequestHandlers[$routeName])) {
-            return $this->routeRequestHandlers[$routeName];
+        $name = $route->getName();
+        if (isset($this->routeRequestHandlers[$name])) {
+            return $this->routeRequestHandlers[$name];
         }
 
-        $this->routeRequestHandlers[$routeName] = $this->referenceResolver->resolveRequestHandler($route->getRequestHandler());
+        $this->routeRequestHandlers[$name] = $this->requestHandlerResolver->resolveRequestHandler($route->getRequestHandler());
 
-        $routeMiddlewares = $route->getMiddlewares();
-        if (!empty($routeMiddlewares)) {
-            $this->routeRequestHandlers[$routeName] = new QueueableRequestHandler($this->routeRequestHandlers[$routeName]);
-            foreach ($routeMiddlewares as $routeMiddleware) {
-                $this->routeRequestHandlers[$routeName]->enqueue($this->referenceResolver->resolveMiddleware($routeMiddleware));
+        $middlewares = $route->getMiddlewares();
+        if (!empty($middlewares)) {
+            $this->routeRequestHandlers[$name] = new QueueableRequestHandler($this->routeRequestHandlers[$name]);
+            foreach ($middlewares as $middleware) {
+                $this->routeRequestHandlers[$name]->enqueue($this->middlewareResolver->resolveMiddleware($middleware));
             }
         }
 
-        return $this->routeRequestHandlers[$routeName];
+        return $this->routeRequestHandlers[$name];
     }
 
     /**
@@ -287,7 +287,7 @@ class Router implements RequestHandlerInterface
         if (!empty($this->middlewares)) {
             $this->requestHandler = new QueueableRequestHandler($this->requestHandler);
             foreach ($this->middlewares as $middleware) {
-                $this->requestHandler->enqueue($this->referenceResolver->resolveMiddleware($middleware));
+                $this->requestHandler->enqueue($this->middlewareResolver->resolveMiddleware($middleware));
             }
         }
 

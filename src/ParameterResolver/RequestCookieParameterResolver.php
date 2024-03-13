@@ -49,9 +49,9 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
      *
      * @throws HttpException
      */
-    public function resolveParameter(ReflectionParameter $parameter, ?ServerRequestInterface $request): Generator
+    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
-        if ($request === null) {
+        if (! $context instanceof ServerRequestInterface) {
             return;
         }
 
@@ -61,7 +61,7 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
             return;
         }
 
-        $request = ServerRequest::create($request);
+        $request = ServerRequest::create($context);
         $processParams = $annotations[0]->newInstance();
 
         $cookieName = $processParams->cookieName;
@@ -103,6 +103,6 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
 
     public function getWeight(): int
     {
-        return 60;
+        return 0;
     }
 }

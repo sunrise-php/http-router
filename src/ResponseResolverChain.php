@@ -25,16 +25,21 @@ use Sunrise\Http\Router\Exception\UnsupportedResponseException;
 use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
 
 use function sprintf;
+use function usort;
 
 /**
  * @since 3.0.0
  */
-final class ResponseResolver implements ResponseResolverChainInterface
+final class ResponseResolverChain implements ResponseResolverChainInterface
 {
     public function __construct(
         /** @var ResponseResolverInterface[] */
-        private readonly array $resolvers,
+        private array $resolvers,
     ) {
+        usort($this->resolvers, static fn(
+            ResponseResolverInterface $a,
+            ResponseResolverInterface $b,
+        ): int => $b->getWeight() <=> $a->getWeight());
     }
 
     /**

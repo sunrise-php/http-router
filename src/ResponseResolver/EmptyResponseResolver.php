@@ -41,4 +41,9 @@ final class EmptyResponseResolver implements ResponseResolverInterface
 
         return $this->responseFactory->createResponse(StatusCodeInterface::STATUS_NO_CONTENT);
     }
+
+    public function getWeight(): int
+    {
+        return 0;
+    }
 }

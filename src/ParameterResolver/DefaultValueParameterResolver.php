@@ -14,37 +14,25 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\ParameterResolver;
 
 use Generator;
-use ReflectionNamedType;
 use ReflectionParameter;
-
-use function is_a;
 
 /**
  * @since 3.0.0
  */
-final class ObjectInjectionParameterResolver implements ParameterResolverInterface
+final class DefaultValueParameterResolver implements ParameterResolverInterface
 {
-    public function __construct(private readonly object $object)
-    {
-    }
-
     /**
      * @inheritDoc
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
-        $type = $parameter->getType();
-        if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
-            return;
-        }
-
-        if (is_a($this->object, $type->getName())) {
-            yield $this->object;
+        if ($parameter->isDefaultValueAvailable()) {
+            yield $parameter->getDefaultValue();
         }
     }
 
     public function getWeight(): int
     {
-        return -10;
+        return -1000;
     }
 }

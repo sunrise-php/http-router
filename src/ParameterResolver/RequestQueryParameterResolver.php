@@ -22,7 +22,7 @@ use Sunrise\Http\Router\Annotation\RequestQuery;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\Exception\InvalidParameterException;
-use Sunrise\Http\Router\ParameterResolver;
+use Sunrise\Http\Router\ParameterResolverChain;
 use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
 use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationProxy;
 use Sunrise\Hydrator\Exception\InvalidDataException;
@@ -52,9 +52,9 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
      * @throws InvalidObjectException
      * @throws InvalidParameterException
      */
-    public function resolveParameter(ReflectionParameter $parameter, ?ServerRequestInterface $request): Generator
+    public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
-        if ($request === null) {
+        if (! $context instanceof ServerRequestInterface) {
             return;
         }
 
@@ -68,7 +68,7 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
         if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
             throw new InvalidParameterException(sprintf(
                 'To use the #[RequestQuery] annotation, the parameter %s must be typed with an object.',
-                ParameterResolver::stringifyParameter($parameter),
+                ParameterResolverChain::stringifyParameter($parameter),
             ));
         }
 
@@ -77,7 +77,7 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
         $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
 
         try {
-            $argument = $this->hydrator->hydrate($type->getName(), $request->getQueryParams());
+            $argument = $this->hydrator->hydrate($type->getName(), $context->getQueryParams());
         } catch (InvalidDataException $e) {
             throw HttpExceptionFactory::invalidQuery($processParams->errorMessage, $errorStatusCode, previous: $e)
                 ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), $e->getExceptions()));
@@ -95,6 +95,6 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
 
     public function getWeight(): int
     {
-        return 80;
+        return 0;
     }
 }

@@ -11,11 +11,11 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\ClassResolver;
+namespace Sunrise\Http\Router;
 
 use InvalidArgumentException;
+use Psr\Container\ContainerInterface;
 use ReflectionClass;
-use Sunrise\Http\Router\ParameterResolverChain;
 
 use function class_exists;
 use function sprintf;
@@ -31,7 +31,8 @@ final class ClassResolver implements ClassResolverInterface
     private array $resolvedClasses = [];
 
     public function __construct(
-        private readonly ParameterResolverChain $parameterResolver,
+        private readonly ParameterResolverChainInterface $parameterResolver,
+        private readonly ?ContainerInterface $container = null,
     ) {
     }
 
@@ -51,6 +52,11 @@ final class ClassResolver implements ClassResolverInterface
         if (isset($this->resolvedClasses[$className])) {
             /** @var T */
             return $this->resolvedClasses[$className];
+        }
+
+        if ($this->container?->has($className)) {
+            /** @var T */
+            return $this->container->get($className);
         }
 
         if (!class_exists($className)) {
