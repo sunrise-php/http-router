@@ -57,7 +57,7 @@ final class DescriptorLoader implements LoaderInterface
         /** @var array<array-key, string> */
         private readonly array $resources,
         private readonly ?CacheInterface $cache = null,
-        private readonly string $cacheKey = self::DEFAULT_CACHE_KEY,
+        private readonly ?string $cacheKey = null,
     ) {
     }
 
@@ -100,8 +100,10 @@ final class DescriptorLoader implements LoaderInterface
      */
     private function getDescriptors(): array
     {
+        $cacheKey = $this->cacheKey ?? self::DEFAULT_CACHE_KEY;
+
         /** @var list<Descriptor>|null $descriptors */
-        $descriptors = $this->cache?->get($this->cacheKey);
+        $descriptors = $this->cache?->get($cacheKey);
         if (isset($descriptors)) {
             return $descriptors;
         }
@@ -115,7 +117,7 @@ final class DescriptorLoader implements LoaderInterface
 
         usort($descriptors, static fn(Descriptor $a, Descriptor $b): int => $b->priority <=> $a->priority);
 
-        $this->cache?->set($this->cacheKey, $descriptors);
+        $this->cache?->set($cacheKey, $descriptors);
 
         return $descriptors;
     }

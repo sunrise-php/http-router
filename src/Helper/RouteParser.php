@@ -236,7 +236,7 @@ final class RouteParser
                     throw new InvalidRouteParsingSubjectException(sprintf(
                         'The route %s could not be parsed due to a syntax error. ' .
                         'An invalid character was found at position %d. ' .
-                        'Please note that variable patterns cannot contain the %s character; ' .
+                        'Please note that variable patterns cannot contain the character %s; ' .
                         'use an octal or hexadecimal sequence instead.',
                         $route,
                         $offset,

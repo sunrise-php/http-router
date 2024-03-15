@@ -87,9 +87,9 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
 
     final public function addMessagePlaceholder(string $placeholder, mixed $replacement): static
     {
-        $this->messagePlaceholders[$placeholder] = $replacement;
+        $this->message = strtr($this->message, [$placeholder => $replacement]);
 
-        $this->message = strtr($this->messageTemplate, $this->messagePlaceholders);
+        $this->messagePlaceholders[$placeholder] = $replacement;
 
         return $this;
     }

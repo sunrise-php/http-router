@@ -20,9 +20,11 @@ use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
 use Sunrise\Http\Router\Entity\Language\ClientLanguage;
 use Sunrise\Http\Router\Entity\Language\LanguageComparator;
+use Sunrise\Http\Router\Entity\Language\LanguageComparatorInterface;
 use Sunrise\Http\Router\Entity\Language\LanguageInterface;
 use Sunrise\Http\Router\Entity\MediaType\ClientMediaType;
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeComparator;
+use Sunrise\Http\Router\Entity\MediaType\MediaTypeComparatorInterface;
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 use Sunrise\Http\Router\Helper\HeaderParser;
 
@@ -35,6 +37,10 @@ use function usort;
  */
 final class ServerRequest implements ServerRequestInterface
 {
+    private ?LanguageComparatorInterface $languageComparator = null;
+
+    private ?MediaTypeComparatorInterface $mediaTypeComparator = null;
+
     public function __construct(private ServerRequestInterface $request)
     {
     }
@@ -42,6 +48,37 @@ final class ServerRequest implements ServerRequestInterface
     public static function create(ServerRequestInterface $request): self
     {
         return $request instanceof self ? $request : new self($request);
+    }
+
+    public function getOriginalRequest(): ServerRequestInterface
+    {
+        return $this->request;
+    }
+
+    public function getLanguageComparator(): LanguageComparatorInterface
+    {
+        return $this->languageComparator ??= new LanguageComparator();
+    }
+
+    public function withLanguageComparator(LanguageComparatorInterface $languageComparator): self
+    {
+        $clone = clone $this;
+        $clone->languageComparator = $languageComparator;
+
+        return $clone;
+    }
+
+    public function getMediaTypeComparator(): MediaTypeComparatorInterface
+    {
+        return $this->mediaTypeComparator ??= new MediaTypeComparator();
+    }
+
+    public function withMediaTypeComparator(MediaTypeComparatorInterface $mediaTypeComparator): self
+    {
+        $clone = clone $this;
+        $clone->mediaTypeComparator = $mediaTypeComparator;
+
+        return $clone;
     }
 
     /**
@@ -138,9 +175,10 @@ final class ServerRequest implements ServerRequestInterface
             return null;
         }
 
+        $mediaTypeComparator = $this->getMediaTypeComparator();
         foreach ($this->getClientConsumedMediaTypes() as $clientConsumedMediaType) {
             foreach ($serverProducedMediaTypes as $serverProducedMediaType) {
-                if (MediaTypeComparator::equals($clientConsumedMediaType, $serverProducedMediaType)) {
+                if ($mediaTypeComparator->equals($clientConsumedMediaType, $serverProducedMediaType)) {
                     return $clientConsumedMediaType;
                 }
             }
@@ -155,9 +193,10 @@ final class ServerRequest implements ServerRequestInterface
             return null;
         }
 
+        $languageComparator = $this->getLanguageComparator();
         foreach ($this->getClientConsumedLanguages() as $clientConsumedLanguage) {
             foreach ($serverProducedLanguages as $serverProducedLanguage) {
-                if (LanguageComparator::equals($clientConsumedLanguage, $serverProducedLanguage)) {
+                if ($languageComparator->equals($clientConsumedLanguage, $serverProducedLanguage)) {
                     return $clientConsumedLanguage;
                 }
             }
@@ -178,8 +217,9 @@ final class ServerRequest implements ServerRequestInterface
             return false;
         }
 
+        $mediaTypeComparator = $this->getMediaTypeComparator();
         foreach ($serverConsumedMediaTypes as $serverConsumedMediaType) {
-            if (MediaTypeComparator::equals($clientProducedMediaType, $serverConsumedMediaType)) {
+            if ($mediaTypeComparator->equals($clientProducedMediaType, $serverConsumedMediaType)) {
                 return true;
             }
         }

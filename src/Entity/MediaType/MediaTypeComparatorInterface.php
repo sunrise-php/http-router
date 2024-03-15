@@ -16,11 +16,7 @@ namespace Sunrise\Http\Router\Entity\MediaType;
 /**
  * @since 3.0.0
  */
-final class MediaTypeComparator implements MediaTypeComparatorInterface
+interface MediaTypeComparatorInterface
 {
-    public function equals(MediaTypeInterface $a, MediaTypeInterface $b): bool
-    {
-        return ($a->getType() === $b->getType() || $a->getType() === '*' || $b->getType() === '*')
-            && ($a->getSubtype() === $b->getSubtype() || $a->getSubtype() === '*' || $b->getSubtype() === '*');
-    }
+    public function equals(MediaTypeInterface $a, MediaTypeInterface $b): bool;
 }

@@ -35,9 +35,9 @@ final class ReferenceResolver implements ReferenceResolverInterface
      * @param ResponseResolverInterface[] $responseResolvers
      */
     public static function build(
-        ?ContainerInterface $container = null,
         array $parameterResolvers = [],
         array $responseResolvers = [],
+        ContainerInterface|null $container = null,
     ): ReferenceResolverInterface {
         $parameterResolverChain = new ParameterResolverChain($parameterResolvers);
         $responseResolverChain = new ResponseResolverChain($responseResolvers);
