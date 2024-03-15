@@ -41,7 +41,7 @@ class Router implements RequestHandlerInterface
 {
     private readonly ReferenceResolverInterface $referenceResolver;
 
-    private ?RequestHandlerInterface $requestHandler = null;
+    private array $middlewares;
 
     /**
      * @var array<string, RouteInterface>
@@ -58,14 +58,25 @@ class Router implements RequestHandlerInterface
      */
     private array $routeRequestHandlers = [];
 
+    private ?RequestHandlerInterface $requestHandler = null;
+
     /**
+     * @param LoaderInterface[] $loaders
+     * @param MiddlewareInterface[] $middlewares
+     *
      * @since 3.0.0
      */
     public function __construct(
-        /** @var MiddlewareInterface[] */
-        private readonly array $middlewares = [],
+        array $loaders = [],
+        array $middlewares = [],
         ReferenceResolverInterface $referenceResolver = null,
     ) {
+        foreach ($loaders as $loader) {
+            $this->load($loader);
+        }
+
+        $this->middlewares = $middlewares;
+
         $this->referenceResolver = $referenceResolver ?? ReferenceResolver::build();
     }
 
