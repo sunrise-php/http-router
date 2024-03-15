@@ -165,7 +165,7 @@ final class RouteParserTest extends TestCase
 
         yield [
             '/{<#/',
-            '/variable patterns cannot contain the # character/'
+            '/variable patterns cannot contain the character #/'
         ];
 
         yield [
