@@ -19,6 +19,9 @@ use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\Constraint as RouterConstraint;
 use Symfony\Component\Validator\Constraint as ValidatorConstraint;
 
+use function ltrim;
+use function preg_replace;
+
 /**
  * @since 3.0.0
  */
@@ -36,5 +39,12 @@ final class ValidatorHelper
                 yield $routerConstraint->value;
             }
         }
+    }
+
+    public static function adaptPropertyPath(string $propertyPath): string
+    {
+        $propertyPath = preg_replace('/\x5b([^\x5b\x5d]+)\x5d/', '.$1', $propertyPath);
+
+        return ltrim($propertyPath, '.');
     }
 }

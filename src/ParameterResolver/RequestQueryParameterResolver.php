@@ -22,7 +22,7 @@ use Sunrise\Http\Router\Annotation\RequestQuery;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\Exception\InvalidParameterException;
-use Sunrise\Http\Router\ParameterResolverChain;
+use Sunrise\Http\Router\Helper\Stringifier;
 use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
 use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationProxy;
 use Sunrise\Hydrator\Exception\InvalidDataException;
@@ -68,7 +68,7 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
         if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
             throw new InvalidParameterException(sprintf(
                 'To use the #[RequestQuery] annotation, the parameter %s must be typed with an object.',
-                ParameterResolverChain::stringifyParameter($parameter),
+                Stringifier::stringifyParameter($parameter),
             ));
         }
 

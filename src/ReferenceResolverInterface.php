@@ -11,21 +11,11 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Entity\MediaType;
-
-use Stringable;
+namespace Sunrise\Http\Router;
 
 /**
- * @since 3.0.0
+ * @since 2.10.0
  */
-interface MediaTypeInterface extends Stringable
+interface ReferenceResolverInterface extends MiddlewareResolverInterface, RequestHandlerResolverInterface
 {
-    /**
-     * @link https://datatracker.ietf.org/doc/html/rfc2046
-     */
-    final public const SEPARATOR = '/';
-
-    public function getType(): string;
-
-    public function getSubtype(): string;
 }

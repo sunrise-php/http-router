@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
-use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -30,12 +29,8 @@ use Sunrise\Http\Router\Helper\RouteBuilder;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Helper\RouteMatcher;
 use Sunrise\Http\Router\Loader\LoaderInterface;
-use Sunrise\Http\Router\ParameterResolver\DefaultValueParameterResolver;
-use Sunrise\Http\Router\ParameterResolver\ObjectInjectionParameterResolver;
-use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
-use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
 
 use function array_flip;
 use function array_keys;
@@ -44,9 +39,7 @@ use function sprintf;
 
 class Router implements RequestHandlerInterface
 {
-    private readonly RequestHandlerResolverInterface $requestHandlerResolver;
-
-    private readonly MiddlewareResolverInterface $middlewareResolver;
+    private readonly ReferenceResolverInterface $referenceResolver;
 
     private ?RequestHandlerInterface $requestHandler = null;
 
@@ -66,27 +59,14 @@ class Router implements RequestHandlerInterface
     private array $routeRequestHandlers = [];
 
     /**
-     * @param MiddlewareInterface[] $middlewares
-     * @param ParameterResolverInterface[] $parameterResolvers
-     * @param ResponseResolverInterface[] $responseResolvers
-     *
      * @since 3.0.0
      */
     public function __construct(
+        /** @var MiddlewareInterface[] */
         private readonly array $middlewares = [],
-        array $parameterResolvers = [],
-        array $responseResolvers = [],
-        ?ContainerInterface $container = null,
+        ReferenceResolverInterface $referenceResolver = null,
     ) {
-        $parameterResolvers[] = new ObjectInjectionParameterResolver($this);
-        $parameterResolvers[] = new DefaultValueParameterResolver();
-
-        $parameterResolver = new ParameterResolverChain($parameterResolvers);
-        $responseResolver = new ResponseResolverChain($responseResolvers);
-        $classResolver = new ClassResolver($parameterResolver, $container);
-
-        $this->requestHandlerResolver = new RequestHandlerResolver($classResolver, $parameterResolver, $responseResolver);
-        $this->middlewareResolver = new MiddlewareResolver($classResolver, $parameterResolver, $responseResolver);
+        $this->referenceResolver = $referenceResolver ?? ReferenceResolver::build();
     }
 
     /**
@@ -124,9 +104,7 @@ class Router implements RequestHandlerInterface
     public function load(LoaderInterface ...$loaders): void
     {
         foreach ($loaders as $loader) {
-            foreach ($loader->load() as $route) {
-                $this->routes[$route->getName()] = $route;
-            }
+            $this->addRoute(...$loader->load());
         }
     }
 
@@ -221,6 +199,31 @@ class Router implements RequestHandlerInterface
     }
 
     /**
+     * @throws RouteNotFoundException
+     * @throws InvalidRouteBuildingValueException
+     * @throws InvalidRouteParsingSubjectException
+     *
+     * @since 3.0.0
+     */
+    public function strictBuildRoute(RouteInterface|string $route, array $values = []): string
+    {
+        if (! $route instanceof RouteInterface) {
+            $route = $this->getRoute($route);
+        }
+
+        $result = $this->buildRoute($route, $values);
+
+        if (!RouteMatcher::matchPattern($route->getPath(), $this->compileRoute($route), $result)) {
+            throw new InvalidRouteBuildingValueException(sprintf(
+                'The route %s could not be built because one of the values does not match its pattern.',
+                $route->getName(),
+            ));
+        }
+
+        return $result;
+    }
+
+    /**
      * @return non-empty-string
      *
      * @throws RouteNotFoundException
@@ -254,13 +257,13 @@ class Router implements RequestHandlerInterface
             return $this->routeRequestHandlers[$name];
         }
 
-        $this->routeRequestHandlers[$name] = $this->requestHandlerResolver->resolveRequestHandler($route->getRequestHandler());
+        $this->routeRequestHandlers[$name] = $this->referenceResolver->resolveRequestHandler($route->getRequestHandler());
 
         $middlewares = $route->getMiddlewares();
         if (!empty($middlewares)) {
             $this->routeRequestHandlers[$name] = new QueueableRequestHandler($this->routeRequestHandlers[$name]);
             foreach ($middlewares as $middleware) {
-                $this->routeRequestHandlers[$name]->enqueue($this->middlewareResolver->resolveMiddleware($middleware));
+                $this->routeRequestHandlers[$name]->enqueue($this->referenceResolver->resolveMiddleware($middleware));
             }
         }
 
@@ -287,7 +290,7 @@ class Router implements RequestHandlerInterface
         if (!empty($this->middlewares)) {
             $this->requestHandler = new QueueableRequestHandler($this->requestHandler);
             foreach ($this->middlewares as $middleware) {
-                $this->requestHandler->enqueue($this->middlewareResolver->resolveMiddleware($middleware));
+                $this->requestHandler->enqueue($this->referenceResolver->resolveMiddleware($middleware));
             }
         }
 

@@ -58,13 +58,13 @@ final class HttpExceptionFactory
         );
     }
 
-    public static function missingMediaType(
+    public static function missingContentType(
         ?string $message = null,
         ?int $code = null,
         ?Throwable $previous = null,
     ): HttpException {
         return new HttpException(
-            message: $message ?? ErrorMessage::MISSING_MEDIA_TYPE,
+            message: $message ?? ErrorMessage::MISSING_CONTENT_TYPE,
             code: $code ?? StatusCodeInterface::STATUS_UNSUPPORTED_MEDIA_TYPE,
             previous: $previous,
         );
@@ -190,13 +190,13 @@ final class HttpExceptionFactory
         );
     }
 
-    public static function invalidJsonPayloadForm(
+    public static function invalidJsonPayloadFormat(
         ?string $message = null,
         ?int $code = null,
         ?Throwable $previous = null,
     ): HttpException {
         return new HttpException(
-            message: $message ?? ErrorMessage::INVALID_JSON_PAYLOAD_FORM,
+            message: $message ?? ErrorMessage::INVALID_JSON_PAYLOAD_FORMAT,
             code: $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
             previous: $previous,
         );

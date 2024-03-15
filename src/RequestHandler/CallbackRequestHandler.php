@@ -33,10 +33,15 @@ final class CallbackRequestHandler implements RequestHandlerInterface
     public function __construct(
         callable $callback,
         private readonly ReflectionMethod|ReflectionFunction $callbackReflection,
-        private readonly ParameterResolverChainInterface $parameterResolver,
-        private readonly ResponseResolverChainInterface $responseResolver,
+        private readonly ParameterResolverChainInterface $parameterResolverChain,
+        private readonly ResponseResolverChainInterface $responseResolverChain,
     ) {
         $this->callback = $callback;
+    }
+
+    public function getCallbackReflection(): ReflectionMethod|ReflectionFunction
+    {
+        return $this->callbackReflection;
     }
 
     /**
@@ -44,17 +49,13 @@ final class CallbackRequestHandler implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $arguments = $this->parameterResolver
+        $arguments = $this->parameterResolverChain
             ->withContext($request)
             ->withPriorityResolver(
                 new ObjectInjectionParameterResolver($request)
             )
             ->resolveParameters(...$this->callbackReflection->getParameters());
 
-        return $this->responseResolver->resolveResponse(
-            ($this->callback)(...$arguments),
-            $this->callbackReflection,
-            $request,
-        );
+        return $this->responseResolverChain->resolveResponse(($this->callback)(...$arguments), $this->callbackReflection, $request);
     }
 }

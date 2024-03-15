@@ -31,7 +31,7 @@ final class ClassResolver implements ClassResolverInterface
     private array $resolvedClasses = [];
 
     public function __construct(
-        private readonly ParameterResolverChainInterface $parameterResolver,
+        private readonly ParameterResolverChainInterface $parameterResolverChain,
         private readonly ?ContainerInterface $container = null,
     ) {
     }
@@ -71,7 +71,7 @@ final class ClassResolver implements ClassResolverInterface
         }
 
         $this->resolvedClasses[$className] = $classReflection->newInstance(
-            ...$this->parameterResolver->resolveParameters(
+            ...$this->parameterResolverChain->resolveParameters(
                 ...($classReflection->getConstructor()?->getParameters() ?? [])
             )
         );

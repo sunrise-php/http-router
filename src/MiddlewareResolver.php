@@ -18,6 +18,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\Exception\InvalidReferenceException;
+use Sunrise\Http\Router\Helper\Stringifier;
 use Sunrise\Http\Router\Middleware\CallbackMiddleware;
 
 use function class_exists;
@@ -34,8 +35,8 @@ final class MiddlewareResolver implements MiddlewareResolverInterface
 {
     public function __construct(
         private readonly ClassResolverInterface $classResolver,
-        private readonly ParameterResolverChainInterface $parameterResolver,
-        private readonly ResponseResolverChainInterface $responseResolver,
+        private readonly ParameterResolverChainInterface $parameterResolverChain,
+        private readonly ResponseResolverChainInterface $responseResolverChain,
     ) {
     }
 
@@ -49,8 +50,8 @@ final class MiddlewareResolver implements MiddlewareResolverInterface
             return new CallbackMiddleware(
                 $reference,
                 new ReflectionFunction($reference),
-                $this->parameterResolver,
-                $this->responseResolver,
+                $this->parameterResolverChain,
+                $this->responseResolverChain,
             );
         }
 
@@ -72,20 +73,15 @@ final class MiddlewareResolver implements MiddlewareResolverInterface
                 return new CallbackMiddleware(
                     $reference,
                     new ReflectionMethod($reference[0], $reference[1]),
-                    $this->parameterResolver,
-                    $this->responseResolver,
+                    $this->parameterResolverChain,
+                    $this->responseResolverChain,
                 );
             }
         }
 
         throw new InvalidReferenceException(sprintf(
             'The middleware reference %s could not be resolved.',
-            self::stringifyReference($reference),
+            Stringifier::stringifyReference($reference),
         ));
-    }
-
-    private static function stringifyReference(mixed $reference): string
-    {
-        return is_callable($reference, true, $result) ? $result : get_debug_type($reference);
     }
 }

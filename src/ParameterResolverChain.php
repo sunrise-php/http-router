@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router;
 
 use Generator;
-use ReflectionMethod;
 use ReflectionParameter;
 use Sunrise\Http\Router\Exception\UnsupportedParameterException;
+use Sunrise\Http\Router\Helper\Stringifier;
 use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
 
 use function array_unshift;
@@ -32,7 +32,7 @@ final class ParameterResolverChain implements ParameterResolverChainInterface
 
     public function __construct(
         /** @var ParameterResolverInterface[] */
-        private array $resolvers,
+        private array $resolvers = [],
     ) {
         usort($this->resolvers, static fn(
             ParameterResolverInterface $a,
@@ -85,18 +85,7 @@ final class ParameterResolverChain implements ParameterResolverChainInterface
 
         throw new UnsupportedParameterException(sprintf(
             'The parameter %s is not supported and cannot be resolved.',
-            self::stringifyParameter($parameter),
+            Stringifier::stringifyParameter($parameter),
         ));
-    }
-
-    public static function stringifyParameter(ReflectionParameter $parameter): string
-    {
-        $function = $parameter->getDeclaringFunction();
-
-        if ($function instanceof ReflectionMethod) {
-            return sprintf('%s::%s($%s[%d])', $function->getDeclaringClass()->getName(), $function->getName(), $parameter->getName(), $parameter->getPosition());
-        }
-
-        return sprintf('%s($%s[%d])', $function->getName(), $parameter->getName(), $parameter->getPosition());
     }
 }

@@ -22,8 +22,8 @@ use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\Exception\InvalidParameterException;
 use Sunrise\Http\Router\Helper\RouteSimplifier;
+use Sunrise\Http\Router\Helper\Stringifier;
 use Sunrise\Http\Router\Helper\ValidatorHelper;
-use Sunrise\Http\Router\ParameterResolverChain;
 use Sunrise\Http\Router\ServerRequest;
 use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
 use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationProxy;
@@ -81,7 +81,7 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
                 'The parameter %s expects a value of the variable {%s} from the route %s ' .
                 'which is not present in the request, most likely, because the variable is optional. ' .
                 'To resolve this issue, assign the default value to the parameter.',
-                ParameterResolverChain::stringifyParameter($parameter),
+                Stringifier::stringifyParameter($parameter),
                 $variableName,
                 $route->getName(),
             ));

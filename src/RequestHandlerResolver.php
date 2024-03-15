@@ -18,6 +18,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\Exception\InvalidReferenceException;
+use Sunrise\Http\Router\Helper\Stringifier;
 use Sunrise\Http\Router\RequestHandler\CallbackRequestHandler;
 
 use function class_exists;
@@ -34,8 +35,8 @@ final class RequestHandlerResolver implements RequestHandlerResolverInterface
 {
     public function __construct(
         private readonly ClassResolverInterface $classResolver,
-        private readonly ParameterResolverChainInterface $parameterResolver,
-        private readonly ResponseResolverChainInterface $responseResolver,
+        private readonly ParameterResolverChainInterface $parameterResolverChain,
+        private readonly ResponseResolverChainInterface $responseResolverChain,
     ) {
     }
 
@@ -49,8 +50,8 @@ final class RequestHandlerResolver implements RequestHandlerResolverInterface
             return new CallbackRequestHandler(
                 $reference,
                 new ReflectionFunction($reference),
-                $this->parameterResolver,
-                $this->responseResolver,
+                $this->parameterResolverChain,
+                $this->responseResolverChain,
             );
         }
 
@@ -68,8 +69,8 @@ final class RequestHandlerResolver implements RequestHandlerResolverInterface
                 return new CallbackRequestHandler(
                     $reference,
                     new ReflectionMethod($reference[0], $reference[1]),
-                    $this->parameterResolver,
-                    $this->responseResolver,
+                    $this->parameterResolverChain,
+                    $this->responseResolverChain,
                 );
             }
         }
@@ -80,12 +81,7 @@ final class RequestHandlerResolver implements RequestHandlerResolverInterface
 
         throw new InvalidReferenceException(sprintf(
             'The request handler reference %s could not be resolved.',
-            self::stringifyReference($reference),
+            Stringifier::stringifyReference($reference),
         ));
-    }
-
-    private static function stringifyReference(mixed $reference): string
-    {
-        return is_callable($reference, true, $result) ? $result : get_debug_type($reference);
     }
 }

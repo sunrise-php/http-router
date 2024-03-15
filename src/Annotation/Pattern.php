@@ -25,7 +25,7 @@ use Sunrise\Http\Router\Dictionary\VariablePattern;
 final class Pattern
 {
     public function __construct(
-        public readonly string $name,
+        public readonly string $variableName,
         public readonly string $value,
     ) {
     }

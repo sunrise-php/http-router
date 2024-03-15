@@ -22,6 +22,7 @@ use Sunrise\Http\Router\Annotation\ResponseHeader;
 use Sunrise\Http\Router\Annotation\ResponseStatus;
 use Sunrise\Http\Router\Exception\InvalidResponseException;
 use Sunrise\Http\Router\Exception\UnsupportedResponseException;
+use Sunrise\Http\Router\Helper\Stringifier;
 use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
 
 use function sprintf;
@@ -34,7 +35,7 @@ final class ResponseResolverChain implements ResponseResolverChainInterface
 {
     public function __construct(
         /** @var ResponseResolverInterface[] */
-        private array $resolvers,
+        private array $resolvers = [],
     ) {
         usort($this->resolvers, static fn(
             ResponseResolverInterface $a,
@@ -64,7 +65,7 @@ final class ResponseResolverChain implements ResponseResolverChainInterface
 
         throw new UnsupportedResponseException(sprintf(
             'The responder %s returned an unsupported response that cannot be resolved.',
-            self::stringifyResponder($responder),
+            Stringifier::stringifyResponder($responder),
         ));
     }
 
@@ -87,14 +88,5 @@ final class ResponseResolverChain implements ResponseResolverChainInterface
         }
 
         return $response;
-    }
-
-    public static function stringifyResponder(ReflectionMethod|ReflectionFunction $responder): string
-    {
-        if ($responder instanceof ReflectionMethod) {
-            return sprintf('%s::%s()', $responder->getDeclaringClass()->getName(), $responder->getName());
-        }
-
-        return sprintf('%s()', $responder->getName());
     }
 }

@@ -236,7 +236,7 @@ final class DescriptorLoader implements LoaderInterface
         $annotations = $classOrMethod->getAttributes(Pattern::class);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
-            $descriptor->patterns[$annotation->name] = $annotation->value;
+            $descriptor->patterns[$annotation->variableName] = $annotation->value;
         }
 
         /** @var list<ReflectionAttribute<Method>> $annotations */

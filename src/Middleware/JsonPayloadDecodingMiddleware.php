@@ -81,7 +81,7 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
         }
 
         if (!is_array($data)) {
-            throw HttpExceptionFactory::invalidJsonPayloadForm();
+            throw HttpExceptionFactory::invalidJsonPayloadFormat();
         }
 
         return $data;
