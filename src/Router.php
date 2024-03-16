@@ -15,7 +15,6 @@ namespace Sunrise\Http\Router;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\Exception\HttpExceptionInterface;
@@ -61,19 +60,16 @@ class Router implements RequestHandlerInterface
     private ?RequestHandlerInterface $requestHandler = null;
 
     /**
-     * @param LoaderInterface[] $loaders
-     * @param MiddlewareInterface[] $middlewares
+     * @param list<LoaderInterface> $loaders
      *
      * @since 3.0.0
      */
     public function __construct(
         array $loaders = [],
         array $middlewares = [],
-        ReferenceResolverInterface $referenceResolver = null,
+        ?ReferenceResolverInterface $referenceResolver = null,
     ) {
-        foreach ($loaders as $loader) {
-            $this->load($loader);
-        }
+        $this->load(...$loaders);
 
         $this->middlewares = $middlewares;
 

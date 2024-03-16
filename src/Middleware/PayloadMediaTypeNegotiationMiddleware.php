@@ -28,6 +28,12 @@ use function array_values;
  */
 final class PayloadMediaTypeNegotiationMiddleware implements MiddlewareInterface
 {
+    public function __construct(
+        private readonly ?int $errorStatusCode = null,
+        private readonly ?string $errorMessage = null,
+    ) {
+    }
+
     /**
      * @inheritDoc
      *
@@ -43,12 +49,12 @@ final class PayloadMediaTypeNegotiationMiddleware implements MiddlewareInterface
 
         $clientProducedMediaType = $serverRequest->getClientProducedMediaType();
         if ($clientProducedMediaType === null) {
-            throw HttpExceptionFactory::missingContentType()
+            throw HttpExceptionFactory::missingContentType($this->errorMessage, $this->errorStatusCode)
                 ->addHeaderField('Accept', ...$serverConsumedMediaTypes);
         }
 
         if (!$serverRequest->clientProducesMediaType(...$serverConsumedMediaTypes)) {
-            throw HttpExceptionFactory::unsupportedMediaType()
+            throw HttpExceptionFactory::unsupportedMediaType($this->errorMessage, $this->errorStatusCode)
                 ->addMessagePlaceholder('{{ media_type }}', $clientProducedMediaType)
                 ->addHeaderField('Accept', ...$serverConsumedMediaTypes);
         }

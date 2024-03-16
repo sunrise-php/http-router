@@ -22,8 +22,9 @@ use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\Helper\ValidatorHelper;
 use Sunrise\Http\Router\ServerRequest;
-use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
-use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationProxy;
+use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolation;
+use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolation;
+use Sunrise\Http\Router\Validation\ValidatorProxy;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
@@ -41,6 +42,7 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
         private readonly HydratorInterface $hydrator,
         private readonly ?ValidatorInterface $validator = null,
         private readonly ?int $defaultErrorStatusCode = null,
+        private readonly ?string $defaultErrorMessage = null,
     ) {
     }
 
@@ -66,26 +68,27 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
 
         $cookieName = $processParams->cookieName;
         $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
+        $errorMessage = $processParams->errorMessage ?? $this->defaultErrorMessage;
 
         if (!$request->hasCookieParam($cookieName)) {
             if ($parameter->isDefaultValueAvailable()) {
                 return yield $parameter->getDefaultValue();
             }
 
-            throw HttpExceptionFactory::missingCookie($processParams->errorMessage, $errorStatusCode)
+            throw HttpExceptionFactory::missingCookie($errorMessage, $errorStatusCode)
                 ->addMessagePlaceholder('{{ cookie_name }}', $cookieName);
         }
 
         try {
             $argument = $this->hydrator->castValue($request->getCookieParam($cookieName), Type::fromParameter($parameter), path: [$cookieName]);
         } catch (InvalidValueException $e) {
-            throw HttpExceptionFactory::invalidCookie($processParams->errorMessage, $errorStatusCode, previous: $e)
+            throw HttpExceptionFactory::invalidCookie($errorMessage, $errorStatusCode, previous: $e)
                 ->addMessagePlaceholder('{{ cookie_name }}', $cookieName)
-                ->addConstraintViolation(HydratorConstraintViolationProxy::create($e));
+                ->addConstraintViolation(HydratorConstraintViolation::create($e));
         } catch (InvalidDataException $e) {
-            throw HttpExceptionFactory::invalidCookie($processParams->errorMessage, $errorStatusCode, previous: $e)
+            throw HttpExceptionFactory::invalidCookie($errorMessage, $errorStatusCode, previous: $e)
                 ->addMessagePlaceholder('{{ cookie_name }}', $cookieName)
-                ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), $e->getExceptions()));
+                ->addConstraintViolation(...array_map(HydratorConstraintViolation::create(...), $e->getExceptions()));
         }
 
         if (isset($this->validator)) {
@@ -93,7 +96,7 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
                 if (($violations = $this->validator->validate($argument, [...$constraints]))->count() > 0) {
                     throw HttpExceptionFactory::invalidCookie($processParams->errorMessage, $errorStatusCode)
                         ->addMessagePlaceholder('{{ cookie_name }}', $cookieName)
-                        ->addConstraintViolation(...array_map(ValidatorConstraintViolationProxy::create(...), [...$violations]));
+                        ->addConstraintViolation(...array_map(ValidatorConstraintViolation::create(...), [...$violations]));
                 }
             }
         }
@@ -103,6 +106,6 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
 
     public function getWeight(): int
     {
-        return 0;
+        return 10;
     }
 }

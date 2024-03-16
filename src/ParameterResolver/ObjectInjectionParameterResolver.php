@@ -24,8 +24,9 @@ use function is_a;
  */
 final class ObjectInjectionParameterResolver implements ParameterResolverInterface
 {
-    public function __construct(private readonly object $object)
-    {
+    public function __construct(
+        private readonly object $object,
+    ) {
     }
 
     /**
@@ -45,6 +46,6 @@ final class ObjectInjectionParameterResolver implements ParameterResolverInterfa
 
     public function getWeight(): int
     {
-        return -10;
+        return 100;
     }
 }

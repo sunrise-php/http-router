@@ -20,6 +20,8 @@ use Psr\Http\Server\RequestHandlerInterface;
 use SplQueue;
 
 /**
+ * @since 2.0.0
+ *
  * @extends SplQueue<MiddlewareInterface>
  */
 final class QueueableRequestHandler extends SplQueue implements RequestHandlerInterface

@@ -22,7 +22,6 @@ use Sunrise\Http\Router\Annotation\ResponseHeader;
 use Sunrise\Http\Router\Annotation\ResponseStatus;
 use Sunrise\Http\Router\Exception\InvalidResponseException;
 use Sunrise\Http\Router\Exception\UnsupportedResponseException;
-use Sunrise\Http\Router\Helper\Stringifier;
 use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
 
 use function sprintf;
@@ -33,14 +32,12 @@ use function usort;
  */
 final class ResponseResolverChain implements ResponseResolverChainInterface
 {
+    private bool $isSorted = false;
+
     public function __construct(
-        /** @var ResponseResolverInterface[] */
+        /** @var array<array-key, ResponseResolverInterface> */
         private array $resolvers = [],
     ) {
-        usort($this->resolvers, static fn(
-            ResponseResolverInterface $a,
-            ResponseResolverInterface $b,
-        ): int => $b->getWeight() <=> $a->getWeight());
     }
 
     /**
@@ -56,6 +53,7 @@ final class ResponseResolverChain implements ResponseResolverChainInterface
             return $response;
         }
 
+        $this->isSorted or $this->sortResolvers();
         foreach ($this->resolvers as $resolver) {
             $resolvedResponse = $resolver->resolveResponse($response, $responder, $request);
             if ($resolvedResponse instanceof ResponseInterface) {
@@ -65,7 +63,7 @@ final class ResponseResolverChain implements ResponseResolverChainInterface
 
         throw new UnsupportedResponseException(sprintf(
             'The responder %s returned an unsupported response that cannot be resolved.',
-            Stringifier::stringifyResponder($responder),
+            self::stringifyResponder($responder),
         ));
     }
 
@@ -88,5 +86,22 @@ final class ResponseResolverChain implements ResponseResolverChainInterface
         }
 
         return $response;
+    }
+
+    private function sortResolvers(): void
+    {
+        $this->isSorted = usort($this->resolvers, static fn(
+            ResponseResolverInterface $a,
+            ResponseResolverInterface $b,
+        ): int => $b->getWeight() <=> $a->getWeight());
+    }
+
+    public static function stringifyResponder(ReflectionMethod|ReflectionFunction $responder): string
+    {
+        if ($responder instanceof ReflectionMethod) {
+            return sprintf('%s::%s()', $responder->getDeclaringClass()->getName(), $responder->getName());
+        }
+
+        return sprintf('%s()', $responder->getName());
     }
 }

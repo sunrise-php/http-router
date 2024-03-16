@@ -22,11 +22,11 @@ use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\Exception\InvalidParameterException;
 use Sunrise\Http\Router\Helper\RouteSimplifier;
-use Sunrise\Http\Router\Helper\Stringifier;
 use Sunrise\Http\Router\Helper\ValidatorHelper;
+use Sunrise\Http\Router\ParameterResolverChain;
 use Sunrise\Http\Router\ServerRequest;
-use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
-use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationProxy;
+use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolation;
+use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolation;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
@@ -45,6 +45,7 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
         private readonly HydratorInterface $hydrator,
         private readonly ?ValidatorInterface $validator = null,
         private readonly ?int $defaultErrorStatusCode = null,
+        private readonly ?string $defaultErrorMessage = null,
     ) {
     }
 
@@ -71,6 +72,7 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
 
         $variableName = $processParams->variableName ?? $parameter->getName();
         $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
+        $errorMessage = $processParams->errorMessage ?? $this->defaultErrorMessage;
 
         if (!$route->hasAttribute($variableName)) {
             if ($parameter->isDefaultValueAvailable()) {
@@ -81,7 +83,7 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
                 'The parameter %s expects a value of the variable {%s} from the route %s ' .
                 'which is not present in the request, most likely, because the variable is optional. ' .
                 'To resolve this issue, assign the default value to the parameter.',
-                Stringifier::stringifyParameter($parameter),
+                ParameterResolverChain::stringifyParameter($parameter),
                 $variableName,
                 $route->getName(),
             ));
@@ -90,24 +92,24 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
         try {
             $argument = $this->hydrator->castValue($route->getAttribute($variableName), Type::fromParameter($parameter), path: [$variableName]);
         } catch (InvalidValueException $e) {
-            throw HttpExceptionFactory::invalidVariable($processParams->errorMessage, $errorStatusCode, previous: $e)
+            throw HttpExceptionFactory::invalidVariable($errorMessage, $errorStatusCode, previous: $e)
                 ->addMessagePlaceholder('{{ variable_name }}', $variableName)
                 ->addMessagePlaceholder('{{ route_uri }}', RouteSimplifier::simplifyRoute($route->getPath()))
-                ->addConstraintViolation(HydratorConstraintViolationProxy::create($e));
+                ->addConstraintViolation(HydratorConstraintViolation::create($e));
         } catch (InvalidDataException $e) {
-            throw HttpExceptionFactory::invalidVariable($processParams->errorMessage, $errorStatusCode, previous: $e)
+            throw HttpExceptionFactory::invalidVariable($errorMessage, $errorStatusCode, previous: $e)
                 ->addMessagePlaceholder('{{ variable_name }}', $variableName)
                 ->addMessagePlaceholder('{{ route_uri }}', RouteSimplifier::simplifyRoute($route->getPath()))
-                ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), $e->getExceptions()));
+                ->addConstraintViolation(...array_map(HydratorConstraintViolation::create(...), $e->getExceptions()));
         }
 
         if (isset($this->validator)) {
             if (($constraints = ValidatorHelper::getParameterConstraints($parameter))->valid()) {
                 if (($violations = $this->validator->validate($argument, [...$constraints]))->count() > 0) {
-                    throw HttpExceptionFactory::invalidVariable($processParams->errorMessage, $errorStatusCode)
+                    throw HttpExceptionFactory::invalidVariable($errorMessage, $errorStatusCode)
                         ->addMessagePlaceholder('{{ variable_name }}', $variableName)
                         ->addMessagePlaceholder('{{ route_uri }}', RouteSimplifier::simplifyRoute($route->getPath()))
-                        ->addConstraintViolation(...array_map(ValidatorConstraintViolationProxy::create(...), [...$violations]));
+                        ->addConstraintViolation(...array_map(ValidatorConstraintViolation::create(...), [...$violations]));
                 }
             }
         }
@@ -117,6 +119,6 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
 
     public function getWeight(): int
     {
-        return 0;
+        return 50;
     }
 }

@@ -22,9 +22,9 @@ use Sunrise\Http\Router\Annotation\RequestBody;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\Exception\InvalidParameterException;
-use Sunrise\Http\Router\Helper\Stringifier;
-use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationProxy;
-use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationProxy;
+use Sunrise\Http\Router\ParameterResolverChain;
+use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolation;
+use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolation;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\HydratorInterface;
@@ -42,6 +42,7 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
         private readonly HydratorInterface $hydrator,
         private readonly ?ValidatorInterface $validator = null,
         private readonly ?int $defaultErrorStatusCode = null,
+        private readonly ?string $defaultErrorMessage = null,
     ) {
     }
 
@@ -68,25 +69,26 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
         if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
             throw new InvalidParameterException(sprintf(
                 'To use the #[RequestBody] annotation, the parameter %s must be typed with an object.',
-                Stringifier::stringifyParameter($parameter),
+                ParameterResolverChain::stringifyParameter($parameter),
             ));
         }
 
         $processParams = $annotations[0]->newInstance();
 
         $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
+        $errorMessage = $processParams->errorMessage ?? $this->defaultErrorMessage;
 
         try {
             $argument = $this->hydrator->hydrate($type->getName(), (array) $context->getParsedBody());
         } catch (InvalidDataException $e) {
-            throw HttpExceptionFactory::invalidBody($processParams->errorMessage, $errorStatusCode, previous: $e)
-                ->addConstraintViolation(...array_map(HydratorConstraintViolationProxy::create(...), $e->getExceptions()));
+            throw HttpExceptionFactory::invalidBody($errorMessage, $errorStatusCode, previous: $e)
+                ->addConstraintViolation(...array_map(HydratorConstraintViolation::create(...), $e->getExceptions()));
         }
 
         if (isset($this->validator)) {
             if (($violations = $this->validator->validate($argument))->count() > 0) {
-                throw HttpExceptionFactory::invalidBody($processParams->errorMessage, $errorStatusCode)
-                    ->addConstraintViolation(...array_map(ValidatorConstraintViolationProxy::create(...), [...$violations]));
+                throw HttpExceptionFactory::invalidBody($errorMessage, $errorStatusCode)
+                    ->addConstraintViolation(...array_map(ValidatorConstraintViolation::create(...), [...$violations]));
             }
         }
 
@@ -95,6 +97,6 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
 
     public function getWeight(): int
     {
-        return 0;
+        return 40;
     }
 }

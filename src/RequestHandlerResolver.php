@@ -14,12 +14,14 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router;
 
 use Closure;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\Exception\InvalidReferenceException;
-use Sunrise\Http\Router\Helper\Stringifier;
-use Sunrise\Http\Router\RequestHandler\CallbackRequestHandler;
+use Sunrise\Http\Router\ParameterResolver\ObjectInjectionParameterResolver;
+use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 
 use function class_exists;
 use function is_array;
@@ -47,12 +49,7 @@ final class RequestHandlerResolver implements RequestHandlerResolverInterface
         }
 
         if ($reference instanceof Closure) {
-            return new CallbackRequestHandler(
-                $reference,
-                new ReflectionFunction($reference),
-                $this->parameterResolverChain,
-                $this->responseResolverChain,
-            );
+            return $this->createRequestHandlerCallback($reference, new ReflectionFunction($reference));
         }
 
         // https://github.com/php/php-src/blob/3ed526441400060aa4e618b91b3352371fcd02a8/Zend/zend_API.c#L3884-L3932
@@ -66,12 +63,7 @@ final class RequestHandlerResolver implements RequestHandlerResolverInterface
             if (is_callable($reference)) {
                 /** @var array{0: class-string|object, 1: non-empty-string} $reference */
 
-                return new CallbackRequestHandler(
-                    $reference,
-                    new ReflectionMethod($reference[0], $reference[1]),
-                    $this->parameterResolverChain,
-                    $this->responseResolverChain,
-                );
+                return $this->createRequestHandlerCallback($reference, new ReflectionMethod($reference[0], $reference[1]));
             }
         }
 
@@ -81,7 +73,27 @@ final class RequestHandlerResolver implements RequestHandlerResolverInterface
 
         throw new InvalidReferenceException(sprintf(
             'The request handler reference %s could not be resolved.',
-            Stringifier::stringifyReference($reference),
+            ReferenceResolver::stringifyReference($reference),
         ));
+    }
+
+    private function createRequestHandlerCallback(callable $callback, ReflectionMethod|ReflectionFunction $reflection): RequestHandlerInterface
+    {
+        return new CallableRequestHandler(
+            fn(ServerRequestInterface $request): ResponseInterface => (
+                $this->responseResolverChain->resolveResponse(
+                    $callback(...(
+                        $this->parameterResolverChain
+                            ->withContext($request)
+                            ->withResolver(
+                                new ObjectInjectionParameterResolver($request),
+                            )
+                            ->resolveParameters(...$reflection->getParameters())
+                    )),
+                    $reflection,
+                    $request,
+                )
+            )
+        );
     }
 }

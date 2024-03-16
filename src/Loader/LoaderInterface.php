@@ -15,10 +15,13 @@ namespace Sunrise\Http\Router\Loader;
 
 use Sunrise\Http\Router\RouteInterface;
 
+/**
+ * @since 2.0.0
+ */
 interface LoaderInterface
 {
     /**
-     * @return iterable<mixed, RouteInterface>
+     * @return iterable<int, RouteInterface>
      */
     public function load(): iterable;
 }

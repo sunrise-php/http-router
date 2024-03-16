@@ -24,8 +24,9 @@ use ReflectionParameter;
  */
 final class DependencyInjectionParameterResolver implements ParameterResolverInterface
 {
-    public function __construct(private readonly ContainerInterface $container)
-    {
+    public function __construct(
+        private readonly ContainerInterface $container,
+    ) {
     }
 
     /**

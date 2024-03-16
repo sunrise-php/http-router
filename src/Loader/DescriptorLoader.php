@@ -49,6 +49,9 @@ use function join;
 use function sprintf;
 use function usort;
 
+/**
+ * @since 2.10.0
+ */
 final class DescriptorLoader implements LoaderInterface
 {
     public const DEFAULT_CACHE_KEY = 'router_descriptors';

@@ -24,7 +24,7 @@ interface ParameterResolverChainInterface
 {
     public function withContext(mixed $context): static;
 
-    public function withPriorityResolver(ParameterResolverInterface ...$resolvers): static;
+    public function withResolver(ParameterResolverInterface ...$resolvers): static;
 
     /**
      * @return Generator<int, mixed>

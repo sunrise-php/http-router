@@ -43,8 +43,10 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
      * @since 3.0.0
      */
     public function __construct(
-        private readonly int $decodingFlags = self::DEFAULT_DECODING_FLAGS,
-        private readonly int $decodingDepth = self::DEFAULT_DECODING_DEPTH,
+        private readonly ?int $decodingFlags = null,
+        private readonly ?int $decodingDepth = null,
+        private readonly ?int $errorStatusCode = null,
+        private readonly ?string $errorMessage = null,
     ) {
     }
 
@@ -70,18 +72,21 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
     private function decodePayload(string $payload): array
     {
         if ($payload === '') {
-            throw HttpExceptionFactory::emptyJsonPayload();
+            throw HttpExceptionFactory::emptyJsonPayload($this->errorMessage, $this->errorStatusCode);
         }
+
+        $decodingFlags = $this->decodingFlags ?? self::DEFAULT_DECODING_FLAGS;
+        $decodingDepth = $this->decodingDepth ?? self::DEFAULT_DECODING_DEPTH;
 
         try {
             /** @psalm-suppress ArgumentTypeCoercion */
-            $data = json_decode($payload, true, $this->decodingDepth, $this->decodingFlags | JSON_THROW_ON_ERROR);
+            $data = json_decode($payload, true, $decodingDepth, $decodingFlags | JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
-            throw HttpExceptionFactory::invalidJsonPayload(previous: $e);
+            throw HttpExceptionFactory::invalidJsonPayload($this->errorMessage, $this->errorStatusCode, previous: $e);
         }
 
         if (!is_array($data)) {
-            throw HttpExceptionFactory::invalidJsonPayloadFormat();
+            throw HttpExceptionFactory::invalidJsonPayloadFormat($this->errorMessage, $this->errorStatusCode);
         }
 
         return $data;

@@ -13,10 +13,15 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Helper;
 
+use BackedEnum;
 use InvalidArgumentException;
+use Stringable;
 use Sunrise\Http\Router\Exception\InvalidRouteBuildingValueException;
 use Sunrise\Http\Router\Exception\InvalidRouteParsingSubjectException;
 
+use function get_debug_type;
+use function is_int;
+use function is_string;
 use function sprintf;
 use function str_replace;
 use function substr;
@@ -43,7 +48,7 @@ final class RouteBuilder
                 $value = $values[$variable['name']];
 
                 try {
-                    $value = Stringifier::stringifyValue($value);
+                    $value = self::stringifyValue($value);
                 } catch (InvalidArgumentException $e) {
                     throw new InvalidRouteBuildingValueException(sprintf(
                         'The route %s could not be built with an invalid value for the variable {%s} due to: %s',
@@ -77,5 +82,32 @@ final class RouteBuilder
         $search[] = ')';
 
         return str_replace($search, $replace, $route);
+    }
+
+    /**
+     * Tries to cast the given value to the string type
+     *
+     * @throws InvalidArgumentException
+     */
+    public static function stringifyValue(mixed $value): string
+    {
+        if (is_string($value)) {
+            return $value;
+        }
+        if (is_int($value)) {
+            return (string) $value;
+        }
+        if ($value instanceof BackedEnum) {
+            return (string) $value->value;
+        }
+        if ($value instanceof Stringable) {
+            return $value->__toString();
+        }
+
+        throw new InvalidArgumentException(sprintf(
+            'The %s value could not be converted to a string; ' .
+            'supported types: string, integer, backed enum and stringable object.',
+            get_debug_type($value),
+        ));
     }
 }

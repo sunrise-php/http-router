@@ -14,12 +14,11 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router;
 
 use Generator;
+use ReflectionMethod;
 use ReflectionParameter;
 use Sunrise\Http\Router\Exception\UnsupportedParameterException;
-use Sunrise\Http\Router\Helper\Stringifier;
 use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
 
-use function array_unshift;
 use function sprintf;
 use function usort;
 
@@ -28,16 +27,14 @@ use function usort;
  */
 final class ParameterResolverChain implements ParameterResolverChainInterface
 {
+    private bool $isSorted = false;
+
     private mixed $context = null;
 
     public function __construct(
-        /** @var ParameterResolverInterface[] */
+        /** @var array<array-key, ParameterResolverInterface> */
         private array $resolvers = [],
     ) {
-        usort($this->resolvers, static fn(
-            ParameterResolverInterface $a,
-            ParameterResolverInterface $b,
-        ): int => $b->getWeight() <=> $a->getWeight());
     }
 
     public function withContext(mixed $context): static
@@ -48,11 +45,13 @@ final class ParameterResolverChain implements ParameterResolverChainInterface
         return $clone;
     }
 
-    public function withPriorityResolver(ParameterResolverInterface ...$resolvers): static
+    public function withResolver(ParameterResolverInterface ...$resolvers): static
     {
         $clone = clone $this;
-
-        array_unshift($clone->resolvers, ...$resolvers);
+        $clone->isSorted = false;
+        foreach ($resolvers as $resolver) {
+            $clone->resolvers[] = $resolver;
+        }
 
         return $clone;
     }
@@ -64,6 +63,8 @@ final class ParameterResolverChain implements ParameterResolverChainInterface
      */
     public function resolveParameters(ReflectionParameter ...$parameters): Generator
     {
+        $this->isSorted or $this->sortResolvers();
+
         foreach ($parameters as $parameter) {
             yield from $this->resolveParameter($parameter, $this->context);
         }
@@ -85,7 +86,26 @@ final class ParameterResolverChain implements ParameterResolverChainInterface
 
         throw new UnsupportedParameterException(sprintf(
             'The parameter %s is not supported and cannot be resolved.',
-            Stringifier::stringifyParameter($parameter),
+            self::stringifyParameter($parameter),
         ));
+    }
+
+    private function sortResolvers(): void
+    {
+        $this->isSorted = usort($this->resolvers, static fn(
+            ParameterResolverInterface $a,
+            ParameterResolverInterface $b,
+        ) => $b->getWeight() <=> $a->getWeight());
+    }
+
+    public static function stringifyParameter(ReflectionParameter $parameter): string
+    {
+        $function = $parameter->getDeclaringFunction();
+
+        if ($function instanceof ReflectionMethod) {
+            return sprintf('%s::%s($%s[%d])', $function->getDeclaringClass()->getName(), $function->getName(), $parameter->getName(), $parameter->getPosition());
+        }
+
+        return sprintf('%s($%s[%d])', $function->getName(), $parameter->getName(), $parameter->getPosition());
     }
 }

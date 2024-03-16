@@ -16,7 +16,7 @@ namespace Sunrise\Http\Router\Exception;
 use InvalidArgumentException;
 
 /**
- * @since 3.0.0
+ * @since 2.0.0
  */
 final class RouteNotFoundException extends InvalidArgumentException implements ExceptionInterface
 {

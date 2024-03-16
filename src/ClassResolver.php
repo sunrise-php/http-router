@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router;
 
 use InvalidArgumentException;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
 
@@ -45,7 +46,8 @@ final class ClassResolver implements ClassResolverInterface
      *
      * @template T of object
      *
-     * @throws InvalidArgumentException If the class cannot be resolved.
+     * @throws InvalidArgumentException If the named class cannot be resolved.
+     * @throws ContainerExceptionInterface If something went wrong while working with the container.
      */
     public function resolveClass(string $className): object
     {

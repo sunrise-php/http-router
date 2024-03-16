@@ -18,6 +18,8 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
+ * @since 2.0.0
+ *
  * @template T as callable(ServerRequestInterface=): ResponseInterface
  */
 final class CallableRequestHandler implements RequestHandlerInterface

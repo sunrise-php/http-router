@@ -19,39 +19,40 @@ use Sunrise\Hydrator\Exception\InvalidValueException;
 /**
  * @since 3.0.0
  */
-final class HydratorConstraintViolationProxy implements ConstraintViolationInterface
+final class HydratorConstraintViolation implements ConstraintViolationInterface
 {
-    public function __construct(private readonly InvalidValueException $hydratorConstraintViolation)
-    {
+    public function __construct(
+        private readonly InvalidValueException $constraintViolation,
+    ) {
     }
 
-    public static function create(InvalidValueException $hydratorConstraintViolation): self
+    public static function create(InvalidValueException $constraintViolation): self
     {
-        return new self($hydratorConstraintViolation);
+        return new self($constraintViolation);
     }
 
     public function getMessage(): string
     {
-        return $this->hydratorConstraintViolation->getMessage();
+        return $this->constraintViolation->getMessage();
     }
 
     public function getMessageTemplate(): string
     {
-        return $this->hydratorConstraintViolation->getMessageTemplate();
+        return $this->constraintViolation->getMessageTemplate();
     }
 
     public function getMessagePlaceholders(): array
     {
-        return $this->hydratorConstraintViolation->getMessagePlaceholders();
+        return $this->constraintViolation->getMessagePlaceholders();
     }
 
     public function getPropertyPath(): string
     {
-        return $this->hydratorConstraintViolation->getPropertyPath();
+        return $this->constraintViolation->getPropertyPath();
     }
 
     public function getCode(): ?string
     {
-        return $this->hydratorConstraintViolation->getErrorCode();
+        return $this->constraintViolation->getErrorCode();
     }
 }

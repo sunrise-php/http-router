@@ -14,18 +14,22 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router;
 
 use Closure;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\Exception\InvalidReferenceException;
-use Sunrise\Http\Router\Helper\Stringifier;
-use Sunrise\Http\Router\Middleware\CallbackMiddleware;
+use Sunrise\Http\Router\Middleware\CallableMiddleware;
+use Sunrise\Http\Router\ParameterResolver\ObjectInjectionParameterResolver;
 
 use function class_exists;
 use function is_array;
 use function is_callable;
 use function is_string;
 use function is_subclass_of;
+use function method_exists;
 use function sprintf;
 
 /**
@@ -47,16 +51,20 @@ final class MiddlewareResolver implements MiddlewareResolverInterface
         }
 
         if ($reference instanceof Closure) {
-            return new CallbackMiddleware(
-                $reference,
-                new ReflectionFunction($reference),
-                $this->parameterResolverChain,
-                $this->responseResolverChain,
-            );
+            return $this->createCallbackMiddleware($reference, new ReflectionFunction($reference));
         }
 
         if (is_string($reference) && is_subclass_of($reference, MiddlewareInterface::class)) {
             return $this->classResolver->resolveClass($reference);
+        }
+
+        /** @psalm-suppress ArgumentTypeCoercion */
+        // https://github.com/php/php-src/blob/fcdcfe924a9a1973b24d75bd17660d52c32ef9f7/Zend/zend_builtin_functions.c#L897-L900
+        if (is_string($reference) && method_exists($reference, '__invoke')) {
+            return $this->createCallbackMiddleware(
+                $this->classResolver->resolveClass($reference),
+                new ReflectionMethod($reference, '__invoke'),
+            );
         }
 
         // https://github.com/php/php-src/blob/3ed526441400060aa4e618b91b3352371fcd02a8/Zend/zend_API.c#L3884-L3932
@@ -70,18 +78,34 @@ final class MiddlewareResolver implements MiddlewareResolverInterface
             if (is_callable($reference)) {
                 /** @var array{0: class-string|object, 1: non-empty-string} $reference */
 
-                return new CallbackMiddleware(
-                    $reference,
-                    new ReflectionMethod($reference[0], $reference[1]),
-                    $this->parameterResolverChain,
-                    $this->responseResolverChain,
-                );
+                return $this->createCallbackMiddleware($reference, new ReflectionMethod($reference[0], $reference[1]));
             }
         }
 
         throw new InvalidReferenceException(sprintf(
             'The middleware reference %s could not be resolved.',
-            Stringifier::stringifyReference($reference),
+            ReferenceResolver::stringifyReference($reference),
         ));
+    }
+
+    private function createCallbackMiddleware(callable $callback, ReflectionMethod|ReflectionFunction $reflection): MiddlewareInterface
+    {
+        return new CallableMiddleware(
+            fn(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface => (
+                $this->responseResolverChain->resolveResponse(
+                    $callback(...(
+                        $this->parameterResolverChain
+                            ->withContext($request)
+                            ->withResolver(
+                                new ObjectInjectionParameterResolver($request),
+                                new ObjectInjectionParameterResolver($handler),
+                            )
+                            ->resolveParameters(...$reflection->getParameters())
+                    )),
+                    $reflection,
+                    $request,
+                )
+            )
+        );
     }
 }

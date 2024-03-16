@@ -15,6 +15,9 @@ namespace Sunrise\Http\Router\Exception;
 
 use Throwable;
 
+/**
+ * @since 2.0.0
+ */
 interface ExceptionInterface extends Throwable
 {
 }

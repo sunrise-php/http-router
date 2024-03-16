@@ -19,6 +19,9 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
 use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
 
+use function get_debug_type;
+use function is_callable;
+
 /**
  * @since 2.10.0
  */
@@ -31,13 +34,13 @@ final class ReferenceResolver implements ReferenceResolverInterface
     }
 
     /**
-     * @param ParameterResolverInterface[] $parameterResolvers
-     * @param ResponseResolverInterface[] $responseResolvers
+     * @param array<array-key, ParameterResolverInterface> $parameterResolvers
+     * @param array<array-key, ResponseResolverInterface> $responseResolvers
      */
     public static function build(
         array $parameterResolvers = [],
         array $responseResolvers = [],
-        ContainerInterface|null $container = null,
+        ?ContainerInterface $container = null,
     ): ReferenceResolverInterface {
         $parameterResolverChain = new ParameterResolverChain($parameterResolvers);
         $responseResolverChain = new ResponseResolverChain($responseResolvers);
@@ -56,5 +59,15 @@ final class ReferenceResolver implements ReferenceResolverInterface
     public function resolveRequestHandler(mixed $reference): RequestHandlerInterface
     {
         return $this->requestHandlerResolver->resolveRequestHandler($reference);
+    }
+
+    public static function stringifyReference(mixed $reference): string
+    {
+        // https://github.com/php/php-src/blob/3ed526441400060aa4e618b91b3352371fcd02a8/Zend/zend_API.c#L3884-L3932
+        if (is_callable($reference, true, $result)) {
+            return $result;
+        }
+
+        return get_debug_type($reference);
     }
 }
