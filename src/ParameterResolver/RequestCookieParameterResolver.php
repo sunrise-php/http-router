@@ -24,7 +24,6 @@ use Sunrise\Http\Router\Helper\ValidatorHelper;
 use Sunrise\Http\Router\ServerRequest;
 use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolation;
 use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolation;
-use Sunrise\Http\Router\Validation\ValidatorProxy;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
