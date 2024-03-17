@@ -22,7 +22,6 @@ use Sunrise\Http\Router\Annotation\ResponseHeader;
 use Sunrise\Http\Router\Annotation\ResponseStatus;
 use Sunrise\Http\Router\Exception\InvalidResponseException;
 use Sunrise\Http\Router\Exception\UnsupportedResponseException;
-use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
 
 use function sprintf;
 use function usort;

@@ -20,6 +20,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\EmptyResponse;
+use Sunrise\Http\Router\ResponseResolverInterface;
 
 /**
  * @since 3.0.0

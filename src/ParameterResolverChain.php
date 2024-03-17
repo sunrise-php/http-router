@@ -18,7 +18,6 @@ use ReflectionMethod;
 use ReflectionParameter;
 use Sunrise\Http\Router\Exception\InvalidParameterException;
 use Sunrise\Http\Router\Exception\UnsupportedParameterException;
-use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
 
 use function sprintf;
 use function usort;

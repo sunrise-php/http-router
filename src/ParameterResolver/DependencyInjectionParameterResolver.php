@@ -18,6 +18,7 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use ReflectionNamedType;
 use ReflectionParameter;
+use Sunrise\Http\Router\ParameterResolverInterface;
 
 /**
  * @since 3.0.0

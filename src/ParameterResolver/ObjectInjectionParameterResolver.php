@@ -16,6 +16,7 @@ namespace Sunrise\Http\Router\ParameterResolver;
 use Generator;
 use ReflectionNamedType;
 use ReflectionParameter;
+use Sunrise\Http\Router\ParameterResolverInterface;
 
 use function is_a;
 

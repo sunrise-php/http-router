@@ -24,6 +24,7 @@ use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\JsonResponse;
 use Sunrise\Http\Router\Exception\InvalidResponseException;
 use Sunrise\Http\Router\ResponseResolverChain;
+use Sunrise\Http\Router\ResponseResolverInterface;
 
 use function json_encode;
 use function sprintf;

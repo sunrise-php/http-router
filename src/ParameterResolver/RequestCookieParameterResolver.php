@@ -20,6 +20,7 @@ use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestCookie;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
+use Sunrise\Http\Router\ParameterResolverInterface;
 use Sunrise\Http\Router\ServerRequest;
 use Sunrise\Http\Router\Validation\Constraint\ArgumentConstraint;
 use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationAdapter;

@@ -16,8 +16,6 @@ namespace Sunrise\Http\Router;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
-use Sunrise\Http\Router\ResponseResolver\ResponseResolverInterface;
 
 use function get_debug_type;
 use function is_callable;

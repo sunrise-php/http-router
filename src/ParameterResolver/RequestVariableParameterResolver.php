@@ -23,6 +23,7 @@ use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\Exception\InvalidParameterException;
 use Sunrise\Http\Router\Helper\RouteSimplifier;
 use Sunrise\Http\Router\ParameterResolverChain;
+use Sunrise\Http\Router\ParameterResolverInterface;
 use Sunrise\Http\Router\ServerRequest;
 use Sunrise\Http\Router\Validation\Constraint\ArgumentConstraint;
 use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationAdapter;

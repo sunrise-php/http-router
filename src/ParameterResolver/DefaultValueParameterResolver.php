@@ -15,6 +15,7 @@ namespace Sunrise\Http\Router\ParameterResolver;
 
 use Generator;
 use ReflectionParameter;
+use Sunrise\Http\Router\ParameterResolverInterface;
 
 /**
  * @since 3.0.0
