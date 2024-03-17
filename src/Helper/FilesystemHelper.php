@@ -20,11 +20,11 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionClass;
 use RegexIterator;
+use SplFileInfo;
 
 use function get_declared_classes;
 use function is_dir;
 use function is_file;
-use function iterator_to_array;
 use function realpath;
 use function sprintf;
 
@@ -44,25 +44,27 @@ final class FilesystemHelper
             throw new InvalidArgumentException(sprintf('The directory %s does not exist.', $dirname));
         }
 
-        /** @var array<string, string> $filenames */
-        $filenames = iterator_to_array(
-            new RegexIterator(
-                new RecursiveIteratorIterator(
-                    new RecursiveDirectoryIterator(
-                        $dirname,
-                        FilesystemIterator::KEY_AS_PATHNAME
-                        | FilesystemIterator::CURRENT_AS_PATHNAME
-                        | FilesystemIterator::SKIP_DOTS,
-                    ),
+        /** @var iterable<string, SplFileInfo> $directory */
+        $directory = new RegexIterator(
+            new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator(
+                    $dirname,
+                    FilesystemIterator::KEY_AS_FILENAME
+                    | FilesystemIterator::CURRENT_AS_FILEINFO
+                    | FilesystemIterator::SKIP_DOTS,
                 ),
-                '/\.php$/',
-            )
+            ),
+            '/\.php$/',
         );
 
-        foreach ($filenames as $filename) {
+        /** @var array<string, true> $filenames */
+        $filenames = [];
+        foreach ($directory as $file) {
+            $filenames[$file->getRealPath()] = true;
+
             (static function (string $filename): void {
                 require_once $filename;
-            })($filename);
+            })($file->getRealPath());
         }
 
         foreach (get_declared_classes() as $className) {
