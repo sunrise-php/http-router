@@ -18,5 +18,5 @@ namespace Sunrise\Http\Router\Entity\Language;
  */
 interface LanguageComparatorInterface
 {
-    public function equals(LanguageInterface $a, LanguageInterface $b): bool;
+    public function compare(LanguageInterface $a, LanguageInterface $b): int;
 }

@@ -20,9 +20,9 @@ use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestHeader;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
-use Sunrise\Http\Router\Helper\ValidatorHelper;
-use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolation;
-use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolation;
+use Sunrise\Http\Router\Validation\Constraint\ArgumentConstraint;
+use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationAdapter;
+use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationAdapter;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
@@ -36,6 +36,8 @@ use function array_map;
  */
 final class RequestHeaderParameterResolver implements ParameterResolverInterface
 {
+    private const PLACEHOLDER_HEADER_NAME = '{{ header_name }}';
+
     public function __construct(
         private readonly HydratorInterface $hydrator,
         private readonly ?ValidatorInterface $validator = null,
@@ -63,7 +65,7 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
 
         $processParams = $annotations[0]->newInstance();
 
-        $headerName = $processParams->headerName;
+        $headerName = $processParams->name;
         $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
         $errorMessage = $processParams->errorMessage ?? $this->defaultErrorMessage;
 
@@ -73,28 +75,26 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
             }
 
             throw HttpExceptionFactory::missingHeader($errorMessage, $errorStatusCode)
-                ->addMessagePlaceholder('{{ header_name }}', $headerName);
+                ->addMessagePlaceholder(self::PLACEHOLDER_HEADER_NAME, $headerName);
         }
 
         try {
             $argument = $this->hydrator->castValue($context->getHeaderLine($headerName), Type::fromParameter($parameter), path: [$headerName]);
         } catch (InvalidValueException $e) {
             throw HttpExceptionFactory::invalidHeader($errorMessage, $errorStatusCode, previous: $e)
-                ->addMessagePlaceholder('{{ header_name }}', $headerName)
-                ->addConstraintViolation(HydratorConstraintViolation::create($e));
+                ->addMessagePlaceholder(self::PLACEHOLDER_HEADER_NAME, $headerName)
+                ->addConstraintViolation(HydratorConstraintViolationAdapter::create($e));
         } catch (InvalidDataException $e) {
             throw HttpExceptionFactory::invalidHeader($errorMessage, $errorStatusCode, previous: $e)
-                ->addMessagePlaceholder('{{ header_name }}', $headerName)
-                ->addConstraintViolation(...array_map(HydratorConstraintViolation::create(...), $e->getExceptions()));
+                ->addMessagePlaceholder(self::PLACEHOLDER_HEADER_NAME, $headerName)
+                ->addConstraintViolation(...array_map(HydratorConstraintViolationAdapter::create(...), $e->getExceptions()));
         }
 
         if (isset($this->validator)) {
-            if (($constraints = ValidatorHelper::getParameterConstraints($parameter))->valid()) {
-                if (($violations = $this->validator->validate($argument, [...$constraints]))->count() > 0) {
-                    throw HttpExceptionFactory::invalidHeader($errorMessage, $errorStatusCode)
-                        ->addMessagePlaceholder('{{ header_name }}', $headerName)
-                        ->addConstraintViolation(...array_map(ValidatorConstraintViolation::create(...), [...$violations]));
-                }
+            if (($violations = $this->validator->startContext()->atPath($headerName)->validate($argument, new ArgumentConstraint($parameter))->getViolations())->count() > 0) {
+                throw HttpExceptionFactory::invalidHeader($errorMessage, $errorStatusCode)
+                    ->addMessagePlaceholder(self::PLACEHOLDER_HEADER_NAME, $headerName)
+                    ->addConstraintViolation(...array_map(ValidatorConstraintViolationAdapter::create(...), [...$violations]));
             }
         }
 
@@ -103,6 +103,6 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
 
     public function getWeight(): int
     {
-        return 20;
+        return 0;
     }
 }

@@ -93,6 +93,6 @@ final class JsonResponseResolver implements ResponseResolverInterface
 
     public function getWeight(): int
     {
-        return 20;
+        return 0;
     }
 }

@@ -54,10 +54,11 @@ final class ResponseResolverChain implements ResponseResolverChainInterface
         }
 
         $this->isSorted or $this->sortResolvers();
+
         foreach ($this->resolvers as $resolver) {
-            $resolvedResponse = $resolver->resolveResponse($response, $responder, $request);
-            if ($resolvedResponse instanceof ResponseInterface) {
-                return $this->completeResponse($resolvedResponse, $responder);
+            $result = $resolver->resolveResponse($response, $responder, $request);
+            if ($result instanceof ResponseInterface) {
+                return $this->completeResponse($result, $responder);
             }
         }
 

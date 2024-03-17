@@ -15,8 +15,12 @@ namespace Sunrise\Http\Router;
 
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 
+use function array_key_exists;
 use function in_array;
 
+/**
+ * @since 1.0.0
+ */
 final class Route implements RouteInterface
 {
     public function __construct(
@@ -102,18 +106,7 @@ final class Route implements RouteInterface
 
     public function hasAttribute(string $name): bool
     {
-        return isset($this->attributes[$name]);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function withAttributes(array $attributes): static
-    {
-        $clone = clone $this;
-        $clone->attributes = $attributes;
-
-        return $clone;
+        return array_key_exists($name, $this->attributes);
     }
 
     /**

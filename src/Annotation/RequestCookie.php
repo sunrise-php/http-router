@@ -22,7 +22,7 @@ use Attribute;
 final class RequestCookie
 {
     public function __construct(
-        public readonly string $cookieName,
+        public readonly string $name,
         public readonly ?int $errorStatusCode = null,
         public readonly ?string $errorMessage = null,
     ) {

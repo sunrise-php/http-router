@@ -18,9 +18,13 @@ namespace Sunrise\Http\Router\Entity\MediaType;
  */
 final class MediaTypeComparator implements MediaTypeComparatorInterface
 {
-    public function equals(MediaTypeInterface $a, MediaTypeInterface $b): bool
+    public function compare(MediaTypeInterface $a, MediaTypeInterface $b): int
     {
-        return ($a->getType() === $b->getType() || $a->getType() === '*' || $b->getType() === '*')
-            && ($a->getSubtype() === $b->getSubtype() || $a->getSubtype() === '*' || $b->getSubtype() === '*');
+        if (($a->getType() === $b->getType() || $a->getType() === '*' || $b->getType() === '*') &&
+            ($a->getSubtype() === $b->getSubtype() || $a->getSubtype() === '*' || $b->getSubtype() === '*')) {
+            return 0;
+        }
+
+        return $a->__toString() <=> $b->__toString();
     }
 }

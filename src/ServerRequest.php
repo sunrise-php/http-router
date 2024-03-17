@@ -178,7 +178,7 @@ final class ServerRequest implements ServerRequestInterface
         $mediaTypeComparator = $this->getMediaTypeComparator();
         foreach ($this->getClientConsumedMediaTypes() as $clientConsumedMediaType) {
             foreach ($serverProducedMediaTypes as $serverProducedMediaType) {
-                if ($mediaTypeComparator->equals($clientConsumedMediaType, $serverProducedMediaType)) {
+                if ($mediaTypeComparator->compare($clientConsumedMediaType, $serverProducedMediaType) === 0) {
                     return $clientConsumedMediaType;
                 }
             }
@@ -196,7 +196,7 @@ final class ServerRequest implements ServerRequestInterface
         $languageComparator = $this->getLanguageComparator();
         foreach ($this->getClientConsumedLanguages() as $clientConsumedLanguage) {
             foreach ($serverProducedLanguages as $serverProducedLanguage) {
-                if ($languageComparator->equals($clientConsumedLanguage, $serverProducedLanguage)) {
+                if ($languageComparator->compare($clientConsumedLanguage, $serverProducedLanguage) === 0) {
                     return $clientConsumedLanguage;
                 }
             }
@@ -219,7 +219,7 @@ final class ServerRequest implements ServerRequestInterface
 
         $mediaTypeComparator = $this->getMediaTypeComparator();
         foreach ($serverConsumedMediaTypes as $serverConsumedMediaType) {
-            if ($mediaTypeComparator->equals($clientProducedMediaType, $serverConsumedMediaType)) {
+            if ($mediaTypeComparator->compare($clientProducedMediaType, $serverConsumedMediaType) === 0) {
                 return true;
             }
         }

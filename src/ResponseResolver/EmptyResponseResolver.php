@@ -50,6 +50,6 @@ final class EmptyResponseResolver implements ResponseResolverInterface
 
     public function getWeight(): int
     {
-        return 10;
+        return 0;
     }
 }

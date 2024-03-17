@@ -18,8 +18,12 @@ namespace Sunrise\Http\Router\Entity\Language;
  */
 final class LanguageComparator implements LanguageComparatorInterface
 {
-    public function equals(LanguageInterface $a, LanguageInterface $b): bool
+    public function compare(LanguageInterface $a, LanguageInterface $b): int
     {
-        return $a->getCode() === $b->getCode() || $a->getCode() === '*' || $b->getCode() === '*';
+        if ($a->getCode() === $b->getCode() || $a->getCode() === '*' || $b->getCode() === '*') {
+            return 0;
+        }
+
+        return $a->getCode() <=> $b->getCode();
     }
 }

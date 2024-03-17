@@ -82,14 +82,14 @@ final class RequestHandlerResolver implements RequestHandlerResolverInterface
         return new CallableRequestHandler(
             fn(ServerRequestInterface $request): ResponseInterface => (
                 $this->responseResolverChain->resolveResponse(
-                    $callback(...(
-                        $this->parameterResolverChain
+                    $callback(
+                        ...$this->parameterResolverChain
                             ->withContext($request)
                             ->withResolver(
                                 new ObjectInjectionParameterResolver($request),
                             )
                             ->resolveParameters(...$reflection->getParameters())
-                    )),
+                    ),
                     $reflection,
                     $request,
                 )

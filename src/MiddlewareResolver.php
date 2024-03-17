@@ -29,7 +29,6 @@ use function is_array;
 use function is_callable;
 use function is_string;
 use function is_subclass_of;
-use function method_exists;
 use function sprintf;
 
 /**
@@ -58,15 +57,6 @@ final class MiddlewareResolver implements MiddlewareResolverInterface
             return $this->classResolver->resolveClass($reference);
         }
 
-        /** @psalm-suppress ArgumentTypeCoercion */
-        // https://github.com/php/php-src/blob/fcdcfe924a9a1973b24d75bd17660d52c32ef9f7/Zend/zend_builtin_functions.c#L897-L900
-        if (is_string($reference) && method_exists($reference, '__invoke')) {
-            return $this->createCallbackMiddleware(
-                $this->classResolver->resolveClass($reference),
-                new ReflectionMethod($reference, '__invoke'),
-            );
-        }
-
         // https://github.com/php/php-src/blob/3ed526441400060aa4e618b91b3352371fcd02a8/Zend/zend_API.c#L3884-L3932
         if (is_array($reference) && is_callable($reference, true)) {
             /** @var array{0: string|object, 1: string} $reference */
@@ -93,15 +83,15 @@ final class MiddlewareResolver implements MiddlewareResolverInterface
         return new CallableMiddleware(
             fn(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface => (
                 $this->responseResolverChain->resolveResponse(
-                    $callback(...(
-                        $this->parameterResolverChain
+                    $callback(
+                        ...$this->parameterResolverChain
                             ->withContext($request)
                             ->withResolver(
                                 new ObjectInjectionParameterResolver($request),
                                 new ObjectInjectionParameterResolver($handler),
                             )
                             ->resolveParameters(...$reflection->getParameters())
-                    )),
+                    ),
                     $reflection,
                     $request,
                 )

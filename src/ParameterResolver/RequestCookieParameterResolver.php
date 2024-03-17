@@ -20,10 +20,10 @@ use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestCookie;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
-use Sunrise\Http\Router\Helper\ValidatorHelper;
 use Sunrise\Http\Router\ServerRequest;
-use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolation;
-use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolation;
+use Sunrise\Http\Router\Validation\Constraint\ArgumentConstraint;
+use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationAdapter;
+use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationAdapter;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
@@ -37,6 +37,8 @@ use function array_map;
  */
 final class RequestCookieParameterResolver implements ParameterResolverInterface
 {
+    private const PLACEHOLDER_COOKIE_NAME = '{{ cookie_name }}';
+
     public function __construct(
         private readonly HydratorInterface $hydrator,
         private readonly ?ValidatorInterface $validator = null,
@@ -65,7 +67,7 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
         $request = ServerRequest::create($context);
         $processParams = $annotations[0]->newInstance();
 
-        $cookieName = $processParams->cookieName;
+        $cookieName = $processParams->name;
         $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
         $errorMessage = $processParams->errorMessage ?? $this->defaultErrorMessage;
 
@@ -75,28 +77,26 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
             }
 
             throw HttpExceptionFactory::missingCookie($errorMessage, $errorStatusCode)
-                ->addMessagePlaceholder('{{ cookie_name }}', $cookieName);
+                ->addMessagePlaceholder(self::PLACEHOLDER_COOKIE_NAME, $cookieName);
         }
 
         try {
             $argument = $this->hydrator->castValue($request->getCookieParam($cookieName), Type::fromParameter($parameter), path: [$cookieName]);
         } catch (InvalidValueException $e) {
             throw HttpExceptionFactory::invalidCookie($errorMessage, $errorStatusCode, previous: $e)
-                ->addMessagePlaceholder('{{ cookie_name }}', $cookieName)
-                ->addConstraintViolation(HydratorConstraintViolation::create($e));
+                ->addMessagePlaceholder(self::PLACEHOLDER_COOKIE_NAME, $cookieName)
+                ->addConstraintViolation(HydratorConstraintViolationAdapter::create($e));
         } catch (InvalidDataException $e) {
             throw HttpExceptionFactory::invalidCookie($errorMessage, $errorStatusCode, previous: $e)
-                ->addMessagePlaceholder('{{ cookie_name }}', $cookieName)
-                ->addConstraintViolation(...array_map(HydratorConstraintViolation::create(...), $e->getExceptions()));
+                ->addMessagePlaceholder(self::PLACEHOLDER_COOKIE_NAME, $cookieName)
+                ->addConstraintViolation(...array_map(HydratorConstraintViolationAdapter::create(...), $e->getExceptions()));
         }
 
         if (isset($this->validator)) {
-            if (($constraints = ValidatorHelper::getParameterConstraints($parameter))->valid()) {
-                if (($violations = $this->validator->validate($argument, [...$constraints]))->count() > 0) {
-                    throw HttpExceptionFactory::invalidCookie($processParams->errorMessage, $errorStatusCode)
-                        ->addMessagePlaceholder('{{ cookie_name }}', $cookieName)
-                        ->addConstraintViolation(...array_map(ValidatorConstraintViolation::create(...), [...$violations]));
-                }
+            if (($violations = $this->validator->startContext()->atPath($cookieName)->validate($argument, new ArgumentConstraint($parameter))->getViolations())->count() > 0) {
+                throw HttpExceptionFactory::invalidCookie($errorMessage, $errorStatusCode)
+                    ->addMessagePlaceholder(self::PLACEHOLDER_COOKIE_NAME, $cookieName)
+                    ->addConstraintViolation(...array_map(ValidatorConstraintViolationAdapter::create(...), [...$violations]));
             }
         }
 
@@ -105,6 +105,6 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
 
     public function getWeight(): int
     {
-        return 10;
+        return 0;
     }
 }

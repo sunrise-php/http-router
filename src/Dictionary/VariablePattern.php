@@ -18,13 +18,5 @@ namespace Sunrise\Http\Router\Dictionary;
  */
 final class VariablePattern
 {
-    public const ALNUM = '[0-9A-Za-z]+';
-    public const ALPHA = '[A-Za-z]+';
-    public const DIGIT = '[0-9]+';
-    public const LOWER = '[a-z]+';
-    public const UPPER = '[A-Z]+';
-    public const WORD = '[0-9A-Za-z_]+';
-    public const SLUG = '[0-9A-Za-z-]+';
     public const UUID = '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}';
-    public const LANG = '[a-z]{2}';
 }

@@ -16,6 +16,7 @@ namespace Sunrise\Http\Router;
 use Generator;
 use ReflectionMethod;
 use ReflectionParameter;
+use Sunrise\Http\Router\Exception\InvalidParameterException;
 use Sunrise\Http\Router\Exception\UnsupportedParameterException;
 use Sunrise\Http\Router\ParameterResolver\ParameterResolverInterface;
 
@@ -27,9 +28,9 @@ use function usort;
  */
 final class ParameterResolverChain implements ParameterResolverChainInterface
 {
-    private bool $isSorted = false;
-
     private mixed $context = null;
+
+    private bool $isSorted = false;
 
     public function __construct(
         /** @var array<array-key, ParameterResolverInterface> */
@@ -59,6 +60,7 @@ final class ParameterResolverChain implements ParameterResolverChainInterface
     /**
      * @inheritDoc
      *
+     * @throws InvalidParameterException
      * @throws UnsupportedParameterException
      */
     public function resolveParameters(ReflectionParameter ...$parameters): Generator
@@ -73,6 +75,7 @@ final class ParameterResolverChain implements ParameterResolverChainInterface
     /**
      * @return Generator<int, mixed>
      *
+     * @throws InvalidParameterException
      * @throws UnsupportedParameterException
      */
     private function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator

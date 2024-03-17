@@ -20,7 +20,8 @@ final class ClientLanguage implements LanguageInterface
 {
     public function __construct(
         private readonly string $code,
-        private readonly string $locale,
+        // One of the Accept-Language header's identifier.
+        private readonly string $identifier,
         /** @var array<string, string> */
         private readonly array $parameters,
     ) {
@@ -31,9 +32,9 @@ final class ClientLanguage implements LanguageInterface
         return $this->code;
     }
 
-    public function getLocale(): string
+    public function getIdentifier(): string
     {
-        return $this->locale;
+        return $this->identifier;
     }
 
     /**

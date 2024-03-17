@@ -23,8 +23,8 @@ use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\Exception\InvalidParameterException;
 use Sunrise\Http\Router\ParameterResolverChain;
-use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolation;
-use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolation;
+use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationAdapter;
+use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationAdapter;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\HydratorInterface;
@@ -82,13 +82,13 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
             $argument = $this->hydrator->hydrate($type->getName(), $context->getQueryParams());
         } catch (InvalidDataException $e) {
             throw HttpExceptionFactory::invalidQuery($errorMessage, $errorStatusCode, previous: $e)
-                ->addConstraintViolation(...array_map(HydratorConstraintViolation::create(...), $e->getExceptions()));
+                ->addConstraintViolation(...array_map(HydratorConstraintViolationAdapter::create(...), $e->getExceptions()));
         }
 
         if (isset($this->validator)) {
             if (($violations = $this->validator->validate($argument))->count() > 0) {
                 throw HttpExceptionFactory::invalidQuery($errorMessage, $errorStatusCode)
-                    ->addConstraintViolation(...array_map(ValidatorConstraintViolation::create(...), [...$violations]));
+                    ->addConstraintViolation(...array_map(ValidatorConstraintViolationAdapter::create(...), [...$violations]));
             }
         }
 
@@ -97,6 +97,6 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
 
     public function getWeight(): int
     {
-        return 30;
+        return 0;
     }
 }

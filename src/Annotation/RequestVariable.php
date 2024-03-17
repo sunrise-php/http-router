@@ -22,7 +22,7 @@ use Attribute;
 final class RequestVariable
 {
     public function __construct(
-        public readonly ?string $variableName = null,
+        public readonly ?string $name = null,
         public readonly ?int $errorStatusCode = null,
         public readonly ?string $errorMessage = null,
     ) {

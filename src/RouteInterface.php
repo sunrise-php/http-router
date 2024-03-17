@@ -67,13 +67,6 @@ interface RouteInterface
     /**
      * @param array<string, mixed> $attributes
      *
-     * @since 3.0.0
-     */
-    public function withAttributes(array $attributes): static;
-
-    /**
-     * @param array<string, mixed> $attributes
-     *
      * @since 2.0.0
      */
     public function withAddedAttributes(array $attributes): static;

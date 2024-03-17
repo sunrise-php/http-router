@@ -20,11 +20,6 @@ use Stringable;
  */
 interface MediaTypeInterface extends Stringable
 {
-    /**
-     * @link https://datatracker.ietf.org/doc/html/rfc2046
-     */
-    final public const SEPARATOR = '/';
-
     public function getType(): string;
 
     public function getSubtype(): string;
