@@ -47,7 +47,7 @@ final class ServerRequest implements ServerRequestInterface
 
     public static function create(ServerRequestInterface $request): self
     {
-        return $request instanceof self ? $request : new self($request);
+        return new self($request);
     }
 
     public function getOriginalRequest(): ServerRequestInterface
@@ -96,12 +96,7 @@ final class ServerRequest implements ServerRequestInterface
 
     public function getClientProducedMediaType(): ?ClientMediaType
     {
-        $header = $this->request->getHeaderLine('Content-Type');
-        if ($header === '') {
-            return null;
-        }
-
-        $values = HeaderParser::parseHeader($header);
+        $values = HeaderParser::parseHeader($this->request->getHeaderLine('Content-Type'));
         if ($values === []) {
             return null;
         }
@@ -120,12 +115,7 @@ final class ServerRequest implements ServerRequestInterface
      */
     public function getClientConsumedMediaTypes(): Generator
     {
-        $header = $this->request->getHeaderLine('Accept');
-        if ($header === '') {
-            return;
-        }
-
-        $values = HeaderParser::parseHeader($header);
+        $values = HeaderParser::parseHeader($this->request->getHeaderLine('Accept'));
         if ($values === []) {
             return;
         }
@@ -147,12 +137,7 @@ final class ServerRequest implements ServerRequestInterface
      */
     public function getClientConsumedLanguages(): Generator
     {
-        $header = $this->request->getHeaderLine('Accept-Language');
-        if ($header === '') {
-            return;
-        }
-
-        $values = HeaderParser::parseHeader($header);
+        $values = HeaderParser::parseHeader($this->request->getHeaderLine('Accept-Language'));
         if ($values === []) {
             return;
         }
