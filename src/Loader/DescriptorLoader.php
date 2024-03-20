@@ -20,7 +20,6 @@ use Psr\SimpleCache\CacheInterface;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
-use SplStack;
 use Sunrise\Http\Router\Annotation\Attribute;
 use Sunrise\Http\Router\Annotation\Constraint;
 use Sunrise\Http\Router\Annotation\Consumes;
@@ -38,7 +37,7 @@ use Sunrise\Http\Router\Annotation\Summary;
 use Sunrise\Http\Router\Annotation\Tag;
 use Sunrise\Http\Router\Exception\InvalidRouteLoadingResourceException;
 use Sunrise\Http\Router\Exception\InvalidRouteParsingSubjectException;
-use Sunrise\Http\Router\Helper\FilesystemHelper;
+use Sunrise\Http\Router\Helper\ClassFinder;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Route;
 
@@ -134,7 +133,7 @@ final class DescriptorLoader implements LoaderInterface
     private function getResourceDescriptors(string $resource): Generator
     {
         if (is_dir($resource)) {
-            foreach (FilesystemHelper::getDirClasses($resource) as $class) {
+            foreach (ClassFinder::getDirClasses($resource) as $class) {
                 yield from $this->getClassDescriptors($class);
             }
 
@@ -142,7 +141,7 @@ final class DescriptorLoader implements LoaderInterface
         }
 
         if (is_file($resource)) {
-            foreach (FilesystemHelper::getFileClasses($resource) as $class) {
+            foreach (ClassFinder::getFileClasses($resource) as $class) {
                 yield from $this->getClassDescriptors($class);
             }
 
@@ -150,11 +149,7 @@ final class DescriptorLoader implements LoaderInterface
         }
 
         if (class_exists($resource)) {
-            yield from $this->getClassDescriptors(
-                new ReflectionClass($resource)
-            );
-
-            return;
+            return yield from $this->getClassDescriptors(new ReflectionClass($resource));
         }
 
         throw new InvalidRouteLoadingResourceException(sprintf(
@@ -182,8 +177,8 @@ final class DescriptorLoader implements LoaderInterface
             if (isset($annotations[0])) {
                 $descriptor = $annotations[0]->newInstance();
                 $descriptor->holder = $class->getName();
-                $this->supplementDescriptorFromParentClasses($descriptor, $class);
-                $this->supplementDescriptorFromClassOrMethod($descriptor, $class);
+                $this->enrichDescriptorFromParentClasses($descriptor, $class);
+                $this->enrichDescriptorFromClassOrMethod($descriptor, $class);
                 $this->completeDescriptor($descriptor);
                 yield $descriptor;
             }
@@ -199,29 +194,23 @@ final class DescriptorLoader implements LoaderInterface
             if (isset($annotations[0])) {
                 $descriptor = $annotations[0]->newInstance();
                 $descriptor->holder = [$class->getName(), $method->getName()];
-                $this->supplementDescriptorFromParentClasses($descriptor, $class);
-                $this->supplementDescriptorFromClassOrMethod($descriptor, $class);
-                $this->supplementDescriptorFromClassOrMethod($descriptor, $method);
+                $this->enrichDescriptorFromParentClasses($descriptor, $class);
+                $this->enrichDescriptorFromClassOrMethod($descriptor, $class);
+                $this->enrichDescriptorFromClassOrMethod($descriptor, $method);
                 $this->completeDescriptor($descriptor);
                 yield $descriptor;
             }
         }
     }
 
-    private function supplementDescriptorFromParentClasses(Descriptor $descriptor, ReflectionClass $class): void
+    private function enrichDescriptorFromParentClasses(Descriptor $descriptor, ReflectionClass $class): void
     {
-        /** @var SplStack<ReflectionClass> $parents */
-        $parents = new SplStack();
-        while ($class = $class->getParentClass()) {
-            $parents->push($class);
-        }
-
-        foreach ($parents as $parent) {
-            $this->supplementDescriptorFromClassOrMethod($descriptor, $parent);
+        foreach (ClassFinder::getParentClasses($class) as $parent) {
+            $this->enrichDescriptorFromClassOrMethod($descriptor, $parent);
         }
     }
 
-    private function supplementDescriptorFromClassOrMethod(Descriptor $descriptor, ReflectionClass|ReflectionMethod $classOrMethod): void
+    private function enrichDescriptorFromClassOrMethod(Descriptor $descriptor, ReflectionClass|ReflectionMethod $classOrMethod): void
     {
         /** @var list<ReflectionAttribute<Prefix>> $annotations */
         $annotations = $classOrMethod->getAttributes(Prefix::class);

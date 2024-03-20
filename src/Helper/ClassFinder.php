@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Helper;
 
-use FilesystemIterator;
 use Generator;
 use InvalidArgumentException;
 use RecursiveDirectoryIterator;
@@ -21,6 +20,7 @@ use RecursiveIteratorIterator;
 use ReflectionClass;
 use RegexIterator;
 use SplFileInfo;
+use SplStack;
 
 use function get_declared_classes;
 use function is_dir;
@@ -31,7 +31,7 @@ use function sprintf;
 /**
  * @since 3.0.0
  */
-final class FilesystemHelper
+final class ClassFinder
 {
     /**
      * @return Generator<int, ReflectionClass>
@@ -45,17 +45,7 @@ final class FilesystemHelper
         }
 
         /** @var iterable<string, SplFileInfo> $directory */
-        $directory = new RegexIterator(
-            new RecursiveIteratorIterator(
-                new RecursiveDirectoryIterator(
-                    $dirname,
-                    FilesystemIterator::KEY_AS_FILENAME
-                    | FilesystemIterator::CURRENT_AS_FILEINFO
-                    | FilesystemIterator::SKIP_DOTS,
-                ),
-            ),
-            '/\.php$/',
-        );
+        $directory = new RegexIterator(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dirname)), '/\.php$/');
 
         /** @var array<string, true> $filenames */
         $filenames = [];
@@ -98,5 +88,19 @@ final class FilesystemHelper
                 yield $classReflection;
             }
         }
+    }
+
+    /**
+     * @return SplStack<ReflectionClass>
+     */
+    public static function getParentClasses(ReflectionClass $class): SplStack
+    {
+        /** @var SplStack<ReflectionClass> $parents */
+        $parents = new SplStack();
+        while ($class = $class->getParentClass()) {
+            $parents->push($class);
+        }
+
+        return $parents;
     }
 }

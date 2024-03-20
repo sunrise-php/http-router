@@ -22,8 +22,9 @@ use function DI\get;
 
 return [
     'router.loaders' => [],
-
     'router.middlewares' => [],
+    'router.parameter_resolvers' => [],
+    'router.response_resolvers' => [],
 
     ParameterResolverChainInterface::class => create(ParameterResolverChain::class)
         ->constructor(

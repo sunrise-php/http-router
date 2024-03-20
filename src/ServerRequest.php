@@ -103,7 +103,7 @@ final class ServerRequest implements ServerRequestInterface
 
         [$identifier, $parameters] = current($values);
 
-        if (preg_match('|^([^/*]+)/([^/*]+)$|', $identifier, $matches)) {
+        if (preg_match('|^([^/*]+)/([^/*]+)$|', $identifier, $matches) === 1) {
             return new ClientMediaType($matches[1], $matches[2], $parameters);
         }
 
@@ -126,7 +126,7 @@ final class ServerRequest implements ServerRequestInterface
         ));
 
         foreach ($values as $index => [$identifier, $parameters]) {
-            if (preg_match('|^([^/]+)/([^/]+)$|', $identifier, $matches)) {
+            if (preg_match('|^([^/]+)/([^/]+)$|', $identifier, $matches) === 1) {
                 yield $index => new ClientMediaType($matches[1], $matches[2], $parameters);
             }
         }
@@ -148,7 +148,7 @@ final class ServerRequest implements ServerRequestInterface
         ));
 
         foreach ($values as $index => [$identifier, $parameters]) {
-            if (preg_match('|^(?:i-)?([^-]+)(?:-[^-]+)*$|', $identifier, $matches)) {
+            if (preg_match('|^(?:i-)?([^-]+)(?:-[^-]+)*$|', $identifier, $matches) === 1) {
                 yield $index => new ClientLanguage($matches[1], $identifier, $parameters);
             }
         }
