@@ -149,7 +149,9 @@ final class DescriptorLoader implements LoaderInterface
         }
 
         if (class_exists($resource)) {
-            return yield from $this->getClassDescriptors(new ReflectionClass($resource));
+            yield from $this->getClassDescriptors(new ReflectionClass($resource));
+
+            return;
         }
 
         throw new InvalidRouteLoadingResourceException(sprintf(

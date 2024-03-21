@@ -23,7 +23,8 @@ use Sunrise\Http\Router\Exception\InvalidRouteBuildingValueException;
 use Sunrise\Http\Router\Exception\InvalidRouteMatchingPatternException;
 use Sunrise\Http\Router\Exception\InvalidRouteMatchingSubjectException;
 use Sunrise\Http\Router\Exception\InvalidRouteParsingSubjectException;
-use Sunrise\Http\Router\Exception\RouteNotFoundException;
+use Sunrise\Http\Router\Exception\NoRouteFoundException;
+use Sunrise\Http\Router\Exception\NoRoutesRegisteredException;
 use Sunrise\Http\Router\Helper\RouteBuilder;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Helper\RouteMatcher;
@@ -38,45 +39,33 @@ use function sprintf;
 
 class Router implements RequestHandlerInterface
 {
+    public const REQUEST_ATTRIBUTE_ROUTE = '@route';
+
     private readonly ReferenceResolverInterface $referenceResolver;
 
-    /**
-     * The router's middlewares
-     */
-    private readonly array $middlewares;
+    private ?RequestHandlerInterface $requestHandler = null;
 
-    /**
-     * @var array<string, RouteInterface>
-     */
+    private bool $isLoaded = false;
+
+    /** @var array<string, RouteInterface> */
     private array $routes = [];
 
-    /**
-     * @var array<string, non-empty-string>
-     */
+    /** @var array<string, non-empty-string> */
     private array $routePatterns = [];
 
-    /**
-     * @var array<string, RequestHandlerInterface>
-     */
+    /** @var array<string, RequestHandlerInterface> */
     private array $routeRequestHandlers = [];
 
     /**
-     * The router's request handler
-     */
-    private ?RequestHandlerInterface $requestHandler = null;
-
-    /**
-     * @param list<LoaderInterface> $loaders
-     *
      * @since 3.0.0
      */
     public function __construct(
-        array $loaders = [],
-        array $middlewares = [],
+        /** @var array<array-key, LoaderInterface> */
+        private readonly array $loaders = [],
+        /** @var array<array-key, mixed> */
+        private readonly array $middlewares = [],
         ?ReferenceResolverInterface $referenceResolver = null,
     ) {
-        $this->load(...$loaders);
-        $this->middlewares = $middlewares;
         $this->referenceResolver = $referenceResolver ?? ReferenceResolver::build();
     }
 
@@ -85,24 +74,30 @@ class Router implements RequestHandlerInterface
      */
     public function getRoutes(): array
     {
+        $this->lazyLoad();
+
         return $this->routes;
     }
 
     /**
-     * @throws RouteNotFoundException
+     * @throws NoRouteFoundException
      */
     public function getRoute(string $name): RouteInterface
     {
-        if (isset($this->routes[$name])) {
-            return $this->routes[$name];
+        $routes = $this->getRoutes();
+
+        if (isset($routes[$name])) {
+            return $routes[$name];
         }
 
-        throw new RouteNotFoundException(sprintf('The route %s does not exist.', $name));
+        throw new NoRouteFoundException(sprintf('The route %s does not exist.', $name));
     }
 
     public function hasRoute(string $name): bool
     {
-        return isset($this->routes[$name]);
+        $routes = $this->getRoutes();
+
+        return isset($routes[$name]);
     }
 
     public function addRoute(RouteInterface ...$routes): void
@@ -123,25 +118,33 @@ class Router implements RequestHandlerInterface
      * @throws HttpExceptionInterface
      * @throws InvalidRouteMatchingPatternException
      * @throws InvalidRouteParsingSubjectException
+     * @throws NoRoutesRegisteredException
      */
     public function match(ServerRequestInterface $request): RouteInterface
     {
+        $routes = $this->getRoutes();
+        if ($routes === []) {
+            throw new NoRoutesRegisteredException('No routes are registered in the router.');
+        }
+
         $requestPath = rawurldecode($request->getUri()->getPath());
+        $requestMethod = $request->getMethod();
         $allowedMethods = [];
-        foreach ($this->routes as $route) {
+
+        foreach ($routes as $route) {
             $routePattern = $this->compileRoute($route);
 
             try {
                 $isRouteMatched = RouteMatcher::matchPattern($route->getPath(), $routePattern, $requestPath, $matches);
             } catch (InvalidRouteMatchingSubjectException $e) {
-                throw HttpExceptionFactory::invalidUri(previous: $e);
+                throw HttpExceptionFactory::malformedUri(previous: $e);
             }
 
             if (!$isRouteMatched) {
                 continue;
             }
 
-            if (!$route->allowsMethod($request->getMethod())) {
+            if (!$route->allowsMethod($requestMethod)) {
                 $allowedMethods += array_flip($route->getMethods());
                 continue;
             }
@@ -151,7 +154,7 @@ class Router implements RequestHandlerInterface
 
         if (!empty($allowedMethods)) {
             throw HttpExceptionFactory::methodNotAllowed()
-                ->addMessagePlaceholder('{{ request_method }}', $request->getMethod())
+                ->addMessagePlaceholder('{{ request_method }}', $requestMethod)
                 ->addHeaderField('Allow', ...array_keys($allowedMethods));
         }
 
@@ -166,6 +169,7 @@ class Router implements RequestHandlerInterface
      * @throws InvalidReferenceException
      * @throws InvalidRouteMatchingPatternException
      * @throws InvalidRouteParsingSubjectException
+     * @throws NoRoutesRegisteredException
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
@@ -173,7 +177,7 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @throws RouteNotFoundException
+     * @throws NoRouteFoundException
      * @throws InvalidReferenceException
      *
      * @since 3.0.0
@@ -189,12 +193,12 @@ class Router implements RequestHandlerInterface
         }
 
         return $this->getRouteRequestHandler($route)->handle(
-            $request->withAttribute('@route', $route)
+            $request->withAttribute(self::REQUEST_ATTRIBUTE_ROUTE, $route)
         );
     }
 
     /**
-     * @throws RouteNotFoundException
+     * @throws NoRouteFoundException
      * @throws InvalidRouteBuildingValueException
      * @throws InvalidRouteParsingSubjectException
      *
@@ -210,7 +214,7 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @throws RouteNotFoundException
+     * @throws NoRouteFoundException
      * @throws InvalidRouteBuildingValueException
      * @throws InvalidRouteParsingSubjectException
      *
@@ -237,7 +241,7 @@ class Router implements RequestHandlerInterface
     /**
      * @return non-empty-string
      *
-     * @throws RouteNotFoundException
+     * @throws NoRouteFoundException
      * @throws InvalidRouteParsingSubjectException
      *
      * @since 3.0.0
@@ -252,7 +256,7 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @throws RouteNotFoundException
+     * @throws NoRouteFoundException
      * @throws InvalidReferenceException
      *
      * @since 3.0.0
@@ -283,6 +287,7 @@ class Router implements RequestHandlerInterface
 
     /**
      * @throws InvalidReferenceException
+     * @throws NoRoutesRegisteredException
      *
      * @since 3.0.0
      */
@@ -306,5 +311,18 @@ class Router implements RequestHandlerInterface
         }
 
         return $this->requestHandler;
+    }
+
+    private function lazyLoad(): void
+    {
+        if ($this->isLoaded) {
+            return;
+        }
+
+        foreach ($this->loaders as $loader) {
+            $this->load($loader);
+        }
+
+        $this->isLoaded = true;
     }
 }

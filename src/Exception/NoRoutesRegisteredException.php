@@ -11,18 +11,13 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Entity\MediaType;
+namespace Sunrise\Http\Router\Exception;
 
-use Stringable;
+use LogicException;
 
 /**
  * @since 3.0.0
  */
-interface MediaTypeInterface extends Stringable
+final class NoRoutesRegisteredException extends LogicException implements ExceptionInterface
 {
-    final public const SEPARATOR = '/';
-
-    public function getType(): string;
-
-    public function getSubtype(): string;
 }

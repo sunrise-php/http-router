@@ -18,7 +18,7 @@ namespace Sunrise\Http\Router\Dictionary;
  */
 final class ErrorMessage
 {
-    public const INVALID_URI = 'The request URI is invalid and cannot be accepted by the server.';
+    public const MALFORMED_URI = 'The request URI is malformed and cannot be accepted by the server.';
     public const RESOURCE_NOT_FOUND = 'The requested resource was not found for this URI.';
     public const METHOD_NOT_ALLOWED = 'The requested method is not allowed for this resource; Check the Allow response header for allowed methods.';
     public const MISSING_CONTENT_TYPE = 'The request header Content-Type must be provided and cannot be empty; Check the Accept response header for supported media types.';

@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Sunrise\Http\Router\Dictionary\ErrorMessage;
 
 return [
-    ErrorMessage::INVALID_URI => 'URI zahtev je nevažeći i ne može biti prihvaćen od strane servera.',
+    ErrorMessage::MALFORMED_URI => 'URI zahtev je nevažeći i ne može biti prihvaćen od strane servera.',
     ErrorMessage::RESOURCE_NOT_FOUND => 'Zatraženi resurs nije pronađen za ovaj URI.',
     ErrorMessage::METHOD_NOT_ALLOWED => 'Zatražena metoda nije dozvoljena za ovaj resurs; Proverite zaglavlje odgovora "Allow" za dozvoljene metode.',
     ErrorMessage::MISSING_CONTENT_TYPE => 'Zaglavlje zahteva Content-Type mora biti navedeno i ne može biti prazno; Proverite zaglavlje odgovora "Accept" za podržane tipove medija.',

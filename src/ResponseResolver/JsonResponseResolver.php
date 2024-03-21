@@ -39,15 +39,10 @@ final class JsonResponseResolver implements ResponseResolverInterface
     public const DEFAULT_ENCODING_FLAGS = 0;
     public const DEFAULT_ENCODING_DEPTH = 512;
 
-    public const DEFAULT_STATUS_CODE = StatusCodeInterface::STATUS_OK;
-    public const DEFAULT_CONTENT_TYPE = 'application/json; charset=UTF-8';
-
     public function __construct(
         private readonly ResponseFactoryInterface $responseFactory,
         private readonly ?int $defaultEncodingFlags = null,
         private readonly ?int $defaultEncodingDepth = null,
-        private readonly ?int $defaultStatusCode = null,
-        private readonly ?string $defaultContentType = null,
     ) {
     }
 
@@ -81,11 +76,8 @@ final class JsonResponseResolver implements ResponseResolverInterface
             ), previous: $e);
         }
 
-        $statusCode = $this->defaultStatusCode ?? self::DEFAULT_STATUS_CODE;
-        $contentType = $this->defaultContentType ?? self::DEFAULT_CONTENT_TYPE;
-
-        $jsonResponse = $this->responseFactory->createResponse($statusCode)
-            ->withHeader('Content-Type', $contentType);
+        $jsonResponse = $this->responseFactory->createResponse(StatusCodeInterface::STATUS_OK)
+            ->withHeader('Content-Type', 'application/json; charset=UTF-8');
 
         $jsonResponse->getBody()->write($payload);
 

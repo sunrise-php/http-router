@@ -94,7 +94,8 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
         }
 
         if (isset($this->validator)) {
-            if (($violations = $this->validator->startContext()->atPath($cookieName)->validate($argument, new ArgumentConstraint($parameter))->getViolations())->count() > 0) {
+            $violations = $this->validator->startContext()->atPath($cookieName)->validate($argument, new ArgumentConstraint($parameter))->getViolations();
+            if ($violations->count() > 0) {
                 throw HttpExceptionFactory::invalidCookie($errorMessage, $errorStatusCode)
                     ->addMessagePlaceholder(self::PLACEHOLDER_COOKIE_NAME, $cookieName)
                     ->addConstraintViolation(...array_map(ValidatorConstraintViolationAdapter::create(...), [...$violations]));

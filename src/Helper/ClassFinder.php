@@ -44,12 +44,12 @@ final class ClassFinder
             throw new InvalidArgumentException(sprintf('The directory %s does not exist.', $dirname));
         }
 
-        /** @var iterable<string, SplFileInfo> $directory */
-        $directory = new RegexIterator(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dirname)), '/\.php$/');
+        /** @var iterable<string, SplFileInfo> $files */
+        $files = new RegexIterator(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dirname)), '/\.php$/');
 
         /** @var array<string, true> $filenames */
         $filenames = [];
-        foreach ($directory as $file) {
+        foreach ($files as $file) {
             $filenames[$file->getRealPath()] = true;
 
             (static function (string $filename): void {

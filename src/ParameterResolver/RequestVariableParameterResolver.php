@@ -108,7 +108,8 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
         }
 
         if (isset($this->validator)) {
-            if (($violations = $this->validator->startContext()->atPath($variableName)->validate($argument, new ArgumentConstraint($parameter))->getViolations())->count() > 0) {
+            $violations = $this->validator->startContext()->atPath($variableName)->validate($argument, new ArgumentConstraint($parameter))->getViolations();
+            if ($violations->count() > 0) {
                 throw HttpExceptionFactory::invalidVariable($errorMessage, $errorStatusCode)
                     ->addMessagePlaceholder(self::PLACEHOLDER_VARIABLE_NAME, $variableName)
                     ->addMessagePlaceholder(self::PLACEHOLDER_ROUTE_URI, RouteSimplifier::simplifyRoute($route->getPath()))

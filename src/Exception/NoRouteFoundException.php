@@ -18,6 +18,6 @@ use InvalidArgumentException;
 /**
  * @since 2.0.0
  */
-final class RouteNotFoundException extends InvalidArgumentException implements ExceptionInterface
+final class NoRouteFoundException extends InvalidArgumentException implements ExceptionInterface
 {
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Sunrise\Http\Router\Dictionary\ErrorMessage;
 
 return [
-    ErrorMessage::INVALID_URI => 'URI запроса невалиден и не может быть принят сервером.',
+    ErrorMessage::MALFORMED_URI => 'URI запроса невалиден и не может быть принят сервером.',
     ErrorMessage::RESOURCE_NOT_FOUND => 'Запрашиваемый ресурс не найден для данного URI.',
     ErrorMessage::METHOD_NOT_ALLOWED => 'Запрашиваемый метод не разрешен для данного ресурса; Проверьте заголовок ответа "Allow" на разрешенные методы.',
     ErrorMessage::MISSING_CONTENT_TYPE => 'Заголовок запроса Content-Type должен быть предоставлен и не может быть пустым; Проверьте заголовок ответа "Accept" на поддерживаемые типы медиа.',

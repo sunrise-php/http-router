@@ -72,9 +72,7 @@ final class RouteMatcher
             }
 
             throw new InvalidRouteMatchingPatternException(sprintf(
-                'The route %s could not be matched due to: %s; ' .
-                'most likely, this problem is related to one of the route patterns. ' .
-                'Please refer to the official documentation: https://www.php.net/preg_last_error',
+                'The route %s could not be matched due to: %s; most likely, this problem is related to one of the route patterns.',
                 $route,
                 preg_last_error_msg(),
             ), preg_last_error());

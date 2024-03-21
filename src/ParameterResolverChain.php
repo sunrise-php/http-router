@@ -97,7 +97,7 @@ final class ParameterResolverChain implements ParameterResolverChainInterface
         $this->isSorted = usort($this->resolvers, static fn(
             ParameterResolverInterface $a,
             ParameterResolverInterface $b,
-        ) => $b->getWeight() <=> $a->getWeight());
+        ): int => $b->getWeight() <=> $a->getWeight());
     }
 
     public static function stringifyParameter(ReflectionParameter $parameter): string

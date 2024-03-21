@@ -92,7 +92,8 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
         }
 
         if (isset($this->validator)) {
-            if (($violations = $this->validator->startContext()->atPath($headerName)->validate($argument, new ArgumentConstraint($parameter))->getViolations())->count() > 0) {
+            $violations = $this->validator->startContext()->atPath($headerName)->validate($argument, new ArgumentConstraint($parameter))->getViolations();
+            if ($violations->count() > 0) {
                 throw HttpExceptionFactory::invalidHeader($errorMessage, $errorStatusCode)
                     ->addMessagePlaceholder(self::PLACEHOLDER_HEADER_NAME, $headerName)
                     ->addConstraintViolation(...array_map(ValidatorConstraintViolationAdapter::create(...), [...$violations]));

@@ -46,6 +46,6 @@ final class ClientMediaType implements MediaTypeInterface
 
     public function __toString(): string
     {
-        return $this->type . '/' . $this->subtype;
+        return $this->type . $this::SEPARATOR . $this->subtype;
     }
 }
