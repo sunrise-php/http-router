@@ -29,7 +29,7 @@ return [
     'router.middlewares' => [],
     'router.parameter_resolvers' => [],
     'router.response_resolvers' => [],
-    'router.event_listener' => null,
+    'router.event_dispatcher' => null,
 
     ParameterResolverChainInterface::class => create(ParameterResolverChain::class)
         ->constructor(
@@ -72,7 +72,7 @@ return [
             loaders: get('router.loaders'),
             middlewares: get('router.middlewares'),
             referenceResolver: get(ReferenceResolverInterface::class),
-            eventDispatcher: get('router.event_listener'),
+            eventDispatcher: get('router.event_dispatcher'),
         ),
 
     MediaTypeComparatorInterface::class => create(MediaTypeComparator::class),
