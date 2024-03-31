@@ -5,6 +5,10 @@ declare(strict_types=1);
 use Psr\Container\ContainerInterface;
 use Sunrise\Http\Router\ClassResolver;
 use Sunrise\Http\Router\ClassResolverInterface;
+use Sunrise\Http\Router\Entity\Language\LanguageComparator;
+use Sunrise\Http\Router\Entity\Language\LanguageComparatorInterface;
+use Sunrise\Http\Router\Entity\MediaType\MediaTypeComparator;
+use Sunrise\Http\Router\Entity\MediaType\MediaTypeComparatorInterface;
 use Sunrise\Http\Router\MiddlewareResolver;
 use Sunrise\Http\Router\MiddlewareResolverInterface;
 use Sunrise\Http\Router\ParameterResolverChain;
@@ -25,6 +29,7 @@ return [
     'router.middlewares' => [],
     'router.parameter_resolvers' => [],
     'router.response_resolvers' => [],
+    'router.event_listener' => null,
 
     ParameterResolverChainInterface::class => create(ParameterResolverChain::class)
         ->constructor(
@@ -64,8 +69,12 @@ return [
 
     Router::class => create()
         ->constructor(
-            get('router.loaders'),
-            get('router.middlewares'),
-            get(ReferenceResolverInterface::class),
+            loaders: get('router.loaders'),
+            middlewares: get('router.middlewares'),
+            referenceResolver: get(ReferenceResolverInterface::class),
+            eventDispatcher: get('router.event_listener'),
         ),
+
+    MediaTypeComparatorInterface::class => create(MediaTypeComparator::class),
+    LanguageComparatorInterface::class => create(LanguageComparator::class),
 ];

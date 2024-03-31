@@ -13,9 +13,12 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Router\Event\RoutePostRunEvent;
+use Sunrise\Http\Router\Event\RoutePreRunEvent;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 use Sunrise\Http\Router\Exception\InvalidReferenceException;
@@ -65,6 +68,7 @@ class Router implements RequestHandlerInterface
         /** @var array<array-key, mixed> */
         private readonly array $middlewares = [],
         ?ReferenceResolverInterface $referenceResolver = null,
+        private readonly ?EventDispatcherInterface $eventDispatcher = null,
     ) {
         $this->referenceResolver = $referenceResolver ?? ReferenceResolver::build();
     }
@@ -192,9 +196,23 @@ class Router implements RequestHandlerInterface
             $request = $request->withAttribute($name, $value);
         }
 
-        return $this->getRouteRequestHandler($route)->handle(
-            $request->withAttribute(self::REQUEST_ATTRIBUTE_ROUTE, $route)
-        );
+        $request = $request->withAttribute(self::REQUEST_ATTRIBUTE_ROUTE, $route);
+
+        if (isset($this->eventDispatcher)) {
+            $event = new RoutePreRunEvent($route, $request);
+            $this->eventDispatcher->dispatch($event);
+            $request = $event->getRequest();
+        }
+
+        $response = $this->getRouteRequestHandler($route)->handle($request);
+
+        if (isset($this->eventDispatcher)) {
+            $event = new RoutePostRunEvent($route, $request, $response);
+            $this->eventDispatcher->dispatch($event);
+            $response = $event->getResponse();
+        }
+
+        return $response;
     }
 
     /**
