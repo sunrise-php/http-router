@@ -27,6 +27,7 @@ use function DI\get;
 return [
     'router.loaders' => [],
     'router.middlewares' => [],
+    'router.route_middlewares' => [],
     'router.parameter_resolvers' => [],
     'router.response_resolvers' => [],
     'router.event_dispatcher' => null,
@@ -71,6 +72,7 @@ return [
         ->constructor(
             loaders: get('router.loaders'),
             middlewares: get('router.middlewares'),
+            routeMiddlewares: get('router.route_middlewares'),
             referenceResolver: get(ReferenceResolverInterface::class),
             eventDispatcher: get('router.event_dispatcher'),
         ),

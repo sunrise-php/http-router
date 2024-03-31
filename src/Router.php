@@ -37,6 +37,7 @@ use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
 
 use function array_flip;
 use function array_keys;
+use function array_merge;
 use function rawurldecode;
 use function sprintf;
 
@@ -67,6 +68,7 @@ class Router implements RequestHandlerInterface
         private readonly array $loaders = [],
         /** @var array<array-key, mixed> */
         private readonly array $middlewares = [],
+        private readonly array $routeMiddlewares = [],
         ?ReferenceResolverInterface $referenceResolver = null,
         private readonly ?EventDispatcherInterface $eventDispatcher = null,
     ) {
@@ -292,7 +294,7 @@ class Router implements RequestHandlerInterface
 
         $this->routeRequestHandlers[$name] = $this->referenceResolver->resolveRequestHandler($route->getRequestHandler());
 
-        $middlewares = $route->getMiddlewares();
+        $middlewares = array_merge($this->routeMiddlewares, $route->getMiddlewares());
         if (!empty($middlewares)) {
             $this->routeRequestHandlers[$name] = new QueueableRequestHandler($this->routeRequestHandlers[$name]);
             foreach ($middlewares as $middleware) {
