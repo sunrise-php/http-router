@@ -23,7 +23,7 @@ use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 final class Produces
 {
     public function __construct(
-        public readonly MediaTypeInterface $value,
+        public readonly string|MediaTypeInterface $value,
     ) {
     }
 }

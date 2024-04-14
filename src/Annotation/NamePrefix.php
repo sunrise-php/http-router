@@ -16,10 +16,10 @@ namespace Sunrise\Http\Router\Annotation;
 use Attribute;
 
 /**
- * @since 2.11.0
+ * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
-final class Postfix
+final class NamePrefix
 {
     public function __construct(
         public readonly string $value,

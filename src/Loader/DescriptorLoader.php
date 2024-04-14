@@ -27,14 +27,16 @@ use Sunrise\Http\Router\Annotation\Deprecated;
 use Sunrise\Http\Router\Annotation\Description;
 use Sunrise\Http\Router\Annotation\Method;
 use Sunrise\Http\Router\Annotation\Middleware;
+use Sunrise\Http\Router\Annotation\NamePrefix;
+use Sunrise\Http\Router\Annotation\PathPostfix;
+use Sunrise\Http\Router\Annotation\PathPrefix;
 use Sunrise\Http\Router\Annotation\Pattern;
-use Sunrise\Http\Router\Annotation\Postfix;
-use Sunrise\Http\Router\Annotation\Prefix;
 use Sunrise\Http\Router\Annotation\Priority;
 use Sunrise\Http\Router\Annotation\Produces;
 use Sunrise\Http\Router\Annotation\Route as Descriptor;
 use Sunrise\Http\Router\Annotation\Summary;
 use Sunrise\Http\Router\Annotation\Tag;
+use Sunrise\Http\Router\Entity\MediaType\ServerMediaType;
 use Sunrise\Http\Router\Exception\InvalidRouteLoadingResourceException;
 use Sunrise\Http\Router\Exception\InvalidRouteParsingSubjectException;
 use Sunrise\Http\Router\Helper\ClassFinder;
@@ -44,6 +46,7 @@ use Sunrise\Http\Router\Route;
 use function class_exists;
 use function is_dir;
 use function is_file;
+use function is_string;
 use function join;
 use function sprintf;
 use function usort;
@@ -214,15 +217,22 @@ final class DescriptorLoader implements LoaderInterface
 
     private function enrichDescriptorFromClassOrMethod(Descriptor $descriptor, ReflectionClass|ReflectionMethod $classOrMethod): void
     {
-        /** @var list<ReflectionAttribute<Prefix>> $annotations */
-        $annotations = $classOrMethod->getAttributes(Prefix::class);
+        /** @var list<ReflectionAttribute<NamePrefix>> $annotations */
+        $annotations = $classOrMethod->getAttributes(NamePrefix::class);
         if (isset($annotations[0])) {
             $annotation = $annotations[0]->newInstance();
-            $descriptor->prefixes[] = $annotation->value;
+            $descriptor->namePrefixes[] = $annotation->value;
         }
 
-        /** @var list<ReflectionAttribute<Postfix>> $annotations */
-        $annotations = $classOrMethod->getAttributes(Postfix::class);
+        /** @var list<ReflectionAttribute<PathPrefix>> $annotations */
+        $annotations = $classOrMethod->getAttributes(PathPrefix::class);
+        if (isset($annotations[0])) {
+            $annotation = $annotations[0]->newInstance();
+            $descriptor->pathPrefixes[] = $annotation->value;
+        }
+
+        /** @var list<ReflectionAttribute<PathPostfix>> $annotations */
+        $annotations = $classOrMethod->getAttributes(PathPostfix::class);
         if (isset($annotations[0])) {
             $annotation = $annotations[0]->newInstance();
             $descriptor->path .= $annotation->value;
@@ -267,14 +277,20 @@ final class DescriptorLoader implements LoaderInterface
         $annotations = $classOrMethod->getAttributes(Consumes::class);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
-            $descriptor->consumes[] = $annotation->value;
+
+            $descriptor->consumes[] = is_string($annotation->value) ?
+                ServerMediaType::fromString($annotation->value) :
+                $annotation->value;
         }
 
         /** @var list<ReflectionAttribute<Produces>> $annotations */
         $annotations = $classOrMethod->getAttributes(Produces::class);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
-            $descriptor->produces[] = $annotation->value;
+
+            $descriptor->produces[] = is_string($annotation->value) ?
+                ServerMediaType::fromString($annotation->value) :
+                $annotation->value;
         }
 
         /** @var list<ReflectionAttribute<Tag>> $annotations */
@@ -317,7 +333,8 @@ final class DescriptorLoader implements LoaderInterface
      */
     private function completeDescriptor(Descriptor $descriptor): void
     {
-        $descriptor->path = join($descriptor->prefixes) . $descriptor->path;
+        $descriptor->name = join($descriptor->namePrefixes) . $descriptor->name;
+        $descriptor->path = join($descriptor->pathPrefixes) . $descriptor->path;
 
         $descriptor->pattern = RouteCompiler::compileRoute($descriptor->path, $descriptor->patterns);
     }

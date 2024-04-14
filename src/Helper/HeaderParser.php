@@ -33,6 +33,10 @@ final class HeaderParser
      */
     public static function parseHeader(string $header): array
     {
+        if ($header === '') {
+            return [];
+        }
+
         $cursor = self::IN_IDENTIFIER;
         $value = 0;
         $param = -1;

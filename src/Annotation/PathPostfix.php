@@ -19,7 +19,7 @@ use Attribute;
  * @since 2.11.0
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
-final class Prefix
+final class PathPostfix
 {
     public function __construct(
         public readonly string $value,

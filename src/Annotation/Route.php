@@ -25,13 +25,16 @@ final class Route
     public mixed $holder = null;
 
     /** @var array<array-key, string> */
-    public array $prefixes = [];
+    public array $namePrefixes = [];
+
+    /** @var array<array-key, string> */
+    public array $pathPrefixes = [];
 
     /** @var non-empty-string|null */
     public ?string $pattern = null;
 
     public function __construct(
-        public readonly string $name,
+        public string $name,
         public string $path,
         /** @var array<string, string> */
         public array $patterns = [],
