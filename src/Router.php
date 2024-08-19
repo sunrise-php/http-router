@@ -23,6 +23,7 @@ use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 use Sunrise\Http\Router\Exception\InvalidReferenceException;
 use Sunrise\Http\Router\Exception\InvalidRouteBuildingValueException;
+use Sunrise\Http\Router\Exception\InvalidRouteLoadingResourceException;
 use Sunrise\Http\Router\Exception\InvalidRouteMatchingPatternException;
 use Sunrise\Http\Router\Exception\InvalidRouteMatchingSubjectException;
 use Sunrise\Http\Router\Exception\InvalidRouteParsingSubjectException;
@@ -41,15 +42,11 @@ use function array_merge;
 use function rawurldecode;
 use function sprintf;
 
-class Router implements RequestHandlerInterface
+final class Router implements RouterInterface
 {
-    public const REQUEST_ATTRIBUTE_ROUTE = '@route';
-
     private readonly ReferenceResolverInterface $referenceResolver;
 
     private ?RequestHandlerInterface $requestHandler = null;
-
-    private bool $isLoaded = false;
 
     /** @var array<string, RouteInterface> */
     private array $routes = [];
@@ -60,6 +57,8 @@ class Router implements RequestHandlerInterface
     /** @var array<string, RequestHandlerInterface> */
     private array $routeRequestHandlers = [];
 
+    private bool $isLoaded = false;
+
     /**
      * @since 3.0.0
      */
@@ -68,6 +67,7 @@ class Router implements RequestHandlerInterface
         private readonly array $loaders = [],
         /** @var array<array-key, mixed> */
         private readonly array $middlewares = [],
+        /** @var array<array-key, mixed> */
         private readonly array $routeMiddlewares = [],
         ?ReferenceResolverInterface $referenceResolver = null,
         private readonly ?EventDispatcherInterface $eventDispatcher = null,
@@ -76,7 +76,7 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @return array<string, RouteInterface>
+     * @inheritDoc
      */
     public function getRoutes(): array
     {
@@ -86,6 +86,8 @@ class Router implements RequestHandlerInterface
     }
 
     /**
+     * @inheritDoc
+     *
      * @throws NoRouteFoundException
      */
     public function getRoute(string $name): RouteInterface
@@ -99,6 +101,9 @@ class Router implements RequestHandlerInterface
         throw new NoRouteFoundException(sprintf('The route %s does not exist.', $name));
     }
 
+    /**
+     * @inheritDoc
+     */
     public function hasRoute(string $name): bool
     {
         $routes = $this->getRoutes();
@@ -106,6 +111,9 @@ class Router implements RequestHandlerInterface
         return isset($routes[$name]);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function addRoute(RouteInterface ...$routes): void
     {
         foreach ($routes as $route) {
@@ -113,6 +121,11 @@ class Router implements RequestHandlerInterface
         }
     }
 
+    /**
+     * @inheritDoc
+     *
+     * @throws InvalidRouteLoadingResourceException {@see LoaderInterface::load()}
+     */
     public function load(LoaderInterface ...$loaders): void
     {
         foreach ($loaders as $loader) {
@@ -121,6 +134,8 @@ class Router implements RequestHandlerInterface
     }
 
     /**
+     * @inheritDoc
+     *
      * @throws HttpExceptionInterface
      * @throws InvalidRouteMatchingPatternException
      * @throws InvalidRouteParsingSubjectException
@@ -138,16 +153,12 @@ class Router implements RequestHandlerInterface
         $allowedMethods = [];
 
         foreach ($routes as $route) {
-            $routePattern = $this->compileRoute($route);
-
             try {
-                $isRouteMatched = RouteMatcher::matchPattern($route->getPath(), $routePattern, $requestPath, $matches);
+                if (!RouteMatcher::matchPattern($route->getPath(), $this->compileRoute($route), $requestPath, $matches)) {
+                    continue;
+                }
             } catch (InvalidRouteMatchingSubjectException $e) {
                 throw HttpExceptionFactory::malformedUri(previous: $e);
-            }
-
-            if (!$isRouteMatched) {
-                continue;
             }
 
             if (!$route->allowsMethod($requestMethod)) {
@@ -183,10 +194,10 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @throws NoRouteFoundException
-     * @throws InvalidReferenceException
+     * @inheritDoc
      *
-     * @since 3.0.0
+     * @throws InvalidReferenceException
+     * @throws NoRouteFoundException
      */
     public function runRoute(RouteInterface|string $route, ServerRequestInterface $request): ResponseInterface
     {
@@ -218,37 +229,21 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @throws NoRouteFoundException
+     * @inheritDoc
+     *
      * @throws InvalidRouteBuildingValueException
      * @throws InvalidRouteParsingSubjectException
-     *
-     * @since 3.0.0
+     * @throws NoRouteFoundException
      */
-    public function buildRoute(RouteInterface|string $route, array $values = []): string
+    public function buildRoute(RouteInterface|string $route, array $values = [], bool $strictly = false): string
     {
         if (! $route instanceof RouteInterface) {
             $route = $this->getRoute($route);
         }
 
-        return RouteBuilder::buildRoute($route->getPath(), $values + $route->getAttributes());
-    }
+        $result = RouteBuilder::buildRoute($route->getPath(), $values + $route->getAttributes());
 
-    /**
-     * @throws NoRouteFoundException
-     * @throws InvalidRouteBuildingValueException
-     * @throws InvalidRouteParsingSubjectException
-     *
-     * @since 3.0.0
-     */
-    public function strictBuildRoute(RouteInterface|string $route, array $values = []): string
-    {
-        if (! $route instanceof RouteInterface) {
-            $route = $this->getRoute($route);
-        }
-
-        $result = $this->buildRoute($route, $values);
-
-        if (!RouteMatcher::matchPattern($route->getPath(), $this->compileRoute($route), $result)) {
+        if ($strictly && !RouteMatcher::matchPattern($route->getPath(), $this->compileRoute($route), $result)) {
             throw new InvalidRouteBuildingValueException(sprintf(
                 'The route %s could not be built because one of the values does not match its pattern.',
                 $route->getName(),
@@ -259,12 +254,10 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @return non-empty-string
+     * @inheritDoc
      *
-     * @throws NoRouteFoundException
      * @throws InvalidRouteParsingSubjectException
-     *
-     * @since 3.0.0
+     * @throws NoRouteFoundException
      */
     public function compileRoute(RouteInterface|string $route): string
     {
@@ -276,10 +269,10 @@ class Router implements RequestHandlerInterface
     }
 
     /**
-     * @throws NoRouteFoundException
-     * @throws InvalidReferenceException
+     * @inheritDoc
      *
-     * @since 3.0.0
+     * @throws InvalidReferenceException
+     * @throws NoRouteFoundException
      */
     public function getRouteRequestHandler(RouteInterface|string $route): RequestHandlerInterface
     {
@@ -298,7 +291,9 @@ class Router implements RequestHandlerInterface
         if (!empty($middlewares)) {
             $this->routeRequestHandlers[$name] = new QueueableRequestHandler($this->routeRequestHandlers[$name]);
             foreach ($middlewares as $middleware) {
-                $this->routeRequestHandlers[$name]->enqueue($this->referenceResolver->resolveMiddleware($middleware));
+                $this->routeRequestHandlers[$name]->enqueue(
+                    $this->referenceResolver->resolveMiddleware($middleware)
+                );
             }
         }
 
@@ -307,11 +302,10 @@ class Router implements RequestHandlerInterface
 
     /**
      * @throws InvalidReferenceException
-     * @throws NoRoutesRegisteredException
      *
      * @since 3.0.0
      */
-    public function getRequestHandler(): RequestHandlerInterface
+    private function getRequestHandler(): RequestHandlerInterface
     {
         if (isset($this->requestHandler)) {
             return $this->requestHandler;
@@ -326,7 +320,9 @@ class Router implements RequestHandlerInterface
         if (!empty($this->middlewares)) {
             $this->requestHandler = new QueueableRequestHandler($this->requestHandler);
             foreach ($this->middlewares as $middleware) {
-                $this->requestHandler->enqueue($this->referenceResolver->resolveMiddleware($middleware));
+                $this->requestHandler->enqueue(
+                    $this->referenceResolver->resolveMiddleware($middleware)
+                );
             }
         }
 

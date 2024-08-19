@@ -11,18 +11,20 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router;
-
-use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Exception\InvalidReferenceException;
+namespace Sunrise\Http\Router\Entity\Language;
 
 /**
  * @since 3.0.0
  */
-interface RequestHandlerResolverInterface
+final class ServerLanguage implements LanguageInterface
 {
-    /**
-     * @throws InvalidReferenceException
-     */
-    public function resolveRequestHandler(mixed $reference): RequestHandlerInterface;
+    public function __construct(
+        private readonly string $code,
+    ) {
+    }
+
+    public function getCode(): string
+    {
+        return $this->code;
+    }
 }

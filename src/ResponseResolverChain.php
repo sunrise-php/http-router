@@ -20,7 +20,6 @@ use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\ResponseHeader;
 use Sunrise\Http\Router\Annotation\ResponseStatus;
-use Sunrise\Http\Router\Exception\InvalidResponseException;
 use Sunrise\Http\Router\Exception\UnsupportedResponseException;
 
 use function sprintf;
@@ -40,8 +39,7 @@ final class ResponseResolverChain implements ResponseResolverChainInterface
     }
 
     /**
-     * @throws InvalidResponseException
-     * @throws UnsupportedResponseException
+     * @inheritDoc
      */
     public function resolveResponse(
         mixed $response,

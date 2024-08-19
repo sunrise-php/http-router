@@ -15,6 +15,8 @@ namespace Sunrise\Http\Router;
 
 use Generator;
 use ReflectionParameter;
+use Sunrise\Http\Router\Exception\InvalidParameterException;
+use Sunrise\Http\Router\Exception\UnsupportedParameterException;
 
 /**
  * @since 3.0.0
@@ -27,6 +29,9 @@ interface ParameterResolverChainInterface
 
     /**
      * @return Generator<int, mixed>
+     *
+     * @throws InvalidParameterException {@see ParameterResolverInterface::resolveParameter()}
+     * @throws UnsupportedParameterException
      */
     public function resolveParameters(ReflectionParameter ...$parameters): Generator;
 }

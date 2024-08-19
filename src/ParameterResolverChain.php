@@ -58,9 +58,6 @@ final class ParameterResolverChain implements ParameterResolverChainInterface
 
     /**
      * @inheritDoc
-     *
-     * @throws InvalidParameterException
-     * @throws UnsupportedParameterException
      */
     public function resolveParameters(ReflectionParameter ...$parameters): Generator
     {
@@ -74,7 +71,7 @@ final class ParameterResolverChain implements ParameterResolverChainInterface
     /**
      * @return Generator<int, mixed>
      *
-     * @throws InvalidParameterException
+     * @throws InvalidParameterException {@see ParameterResolverInterface::resolveParameter()}
      * @throws UnsupportedParameterException
      */
     private function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator

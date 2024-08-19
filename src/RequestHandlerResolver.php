@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router;
 
 use Closure;
+use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -42,6 +43,12 @@ final class RequestHandlerResolver implements RequestHandlerResolverInterface
     ) {
     }
 
+    /**
+     * @inheritDoc
+     *
+     * @throws InvalidArgumentException {@see ClassResolverInterface::resolveClass()}
+     * @throws InvalidReferenceException
+     */
     public function resolveRequestHandler(mixed $reference): RequestHandlerInterface
     {
         if ($reference instanceof RequestHandlerInterface) {

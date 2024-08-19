@@ -14,11 +14,15 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router;
 
 use Psr\Http\Server\MiddlewareInterface;
+use Sunrise\Http\Router\Exception\InvalidReferenceException;
 
 /**
  * @since 3.0.0
  */
 interface MiddlewareResolverInterface
 {
+    /**
+     * @throws InvalidReferenceException
+     */
     public function resolveMiddleware(mixed $reference): MiddlewareInterface;
 }

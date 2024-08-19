@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
+use InvalidArgumentException;
+
 /**
  * @since 3.0.0
  */
@@ -26,6 +28,8 @@ interface ClassResolverInterface
      * @return T
      *
      * @template T of object
+     *
+     * @throws InvalidArgumentException
      */
     public function resolveClass(string $className): object;
 }

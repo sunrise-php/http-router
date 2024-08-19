@@ -38,7 +38,6 @@ use function usort;
 final class ServerRequest implements ServerRequestInterface
 {
     private ?LanguageComparatorInterface $languageComparator = null;
-
     private ?MediaTypeComparatorInterface $mediaTypeComparator = null;
 
     public function __construct(private ServerRequestInterface $request)
@@ -52,7 +51,7 @@ final class ServerRequest implements ServerRequestInterface
 
     public function getOriginalRequest(): ServerRequestInterface
     {
-        return $this->request;
+        return ($this->request instanceof self) ? $this->request->getOriginalRequest() : $this->request;
     }
 
     public function getLanguageComparator(): LanguageComparatorInterface
@@ -86,7 +85,7 @@ final class ServerRequest implements ServerRequestInterface
      */
     public function getRoute(): RouteInterface
     {
-        $route = $this->request->getAttribute(Router::REQUEST_ATTRIBUTE_ROUTE);
+        $route = $this->request->getAttribute(RouterInterface::REQUEST_ATTRIBUTE_ROUTE);
         if (! $route instanceof RouteInterface) {
             throw new LogicException('At this level of the application, the request does not contain information about the requested route.');
         }

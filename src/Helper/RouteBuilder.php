@@ -33,7 +33,7 @@ final class RouteBuilder
 {
     /**
      * @throws InvalidRouteBuildingValueException
-     * @throws InvalidRouteParsingSubjectException
+     * @throws InvalidRouteParsingSubjectException {@see RouteParser::parseRoute()}
      */
     public static function buildRoute(string $route, array $values = []): string
     {

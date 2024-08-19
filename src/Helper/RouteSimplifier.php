@@ -24,7 +24,7 @@ use function substr;
 final class RouteSimplifier
 {
     /**
-     * @throws InvalidRouteParsingSubjectException
+     * @throws InvalidRouteParsingSubjectException {@see RouteParser::parseRoute()}
      */
     public static function simplifyRoute(string $route): string
     {

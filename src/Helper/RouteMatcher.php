@@ -38,7 +38,7 @@ final class RouteMatcher
      * @param array<string, string> $patterns
      * @param-out array<string, string> $matches
      *
-     * @throws InvalidRouteParsingSubjectException
+     * @throws InvalidRouteParsingSubjectException {@see RouteCompiler::compileRoute()}
      * @throws InvalidRouteMatchingPatternException
      * @throws InvalidRouteMatchingSubjectException
      */

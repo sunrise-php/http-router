@@ -20,6 +20,7 @@ use Sunrise\Http\Router\RequestHandlerResolverInterface;
 use Sunrise\Http\Router\ResponseResolverChain;
 use Sunrise\Http\Router\ResponseResolverChainInterface;
 use Sunrise\Http\Router\Router;
+use Sunrise\Http\Router\RouterInterface;
 
 use function DI\create;
 use function DI\get;
@@ -68,7 +69,7 @@ return [
             get(RequestHandlerResolverInterface::class),
         ),
 
-    Router::class => create()
+    RouterInterface::class => create(Router::class)
         ->constructor(
             loaders: get('router.loaders'),
             middlewares: get('router.middlewares'),

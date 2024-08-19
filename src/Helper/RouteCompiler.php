@@ -31,7 +31,7 @@ final class RouteCompiler
      *
      * @return non-empty-string
      *
-     * @throws InvalidRouteParsingSubjectException
+     * @throws InvalidRouteParsingSubjectException {@see RouteParser::parseRoute()}
      */
     public static function compileRoute(string $route, array $patterns = []): string
     {

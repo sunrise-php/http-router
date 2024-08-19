@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Command;
 
-use Sunrise\Http\Router\Router;
+use Sunrise\Http\Router\RouterInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
@@ -28,7 +28,7 @@ use function join;
 #[AsCommand('router:route-list', 'Lists all routes.')]
 final class RouteListCommand extends Command
 {
-    public function __construct(private readonly Router $router)
+    public function __construct(private readonly RouterInterface $router)
     {
         parent::__construct();
     }

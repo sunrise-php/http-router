@@ -49,11 +49,17 @@ final class ReferenceResolver implements ReferenceResolverInterface
         return new self($middlewareResolver, $requestHandlerResolver);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function resolveMiddleware(mixed $reference): MiddlewareInterface
     {
         return $this->middlewareResolver->resolveMiddleware($reference);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function resolveRequestHandler(mixed $reference): RequestHandlerInterface
     {
         return $this->requestHandlerResolver->resolveRequestHandler($reference);

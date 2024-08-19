@@ -17,12 +17,16 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionFunction;
 use ReflectionMethod;
+use Sunrise\Http\Router\Exception\InvalidResponseException;
 
 /**
  * @since 3.0.0
  */
 interface ResponseResolverInterface
 {
+    /**
+     * @throws InvalidResponseException
+     */
     public function resolveResponse(
         mixed $response,
         ReflectionMethod|ReflectionFunction $responder,

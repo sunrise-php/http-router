@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Tests\Helper;
+namespace Sunrise\Http\Router\Tests\Unit\Helper;
 
-use Generator;
+use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Exception\InvalidRouteParsingSubjectException;
 use Sunrise\Http\Router\Helper\RouteParser;
-use PHPUnit\Framework\TestCase;
 
 final class RouteParserTest extends TestCase
 {
@@ -32,7 +31,7 @@ final class RouteParserTest extends TestCase
         RouteParser::parseRoute($route);
     }
 
-    private function validRouteDataProvider(): Generator
+    private function validRouteDataProvider(): iterable
     {
         yield [
             '',
@@ -96,7 +95,7 @@ final class RouteParserTest extends TestCase
         ];
     }
 
-    private function invalidRouteDataProvider(): Generator
+    private function invalidRouteDataProvider(): iterable
     {
         yield [
             '((',

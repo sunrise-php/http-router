@@ -47,6 +47,8 @@ final class JsonResponseResolver implements ResponseResolverInterface
     }
 
     /**
+     * @inheritDoc
+     *
      * @throws InvalidResponseException
      */
     public function resolveResponse(

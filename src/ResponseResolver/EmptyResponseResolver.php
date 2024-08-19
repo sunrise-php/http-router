@@ -35,6 +35,9 @@ final class EmptyResponseResolver implements ResponseResolverInterface
     ) {
     }
 
+    /**
+     * @inheritDoc
+     */
     public function resolveResponse(
         mixed $response,
         ReflectionMethod|ReflectionFunction $responder,
