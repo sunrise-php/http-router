@@ -56,13 +56,12 @@ use function usort;
  */
 final class DescriptorLoader implements LoaderInterface
 {
-    public const DEFAULT_CACHE_KEY = 'router_descriptors';
+    public const CACHE_KEY = 'router_descriptors';
 
     public function __construct(
         /** @var array<array-key, string> */
         private readonly array $resources,
         private readonly ?CacheInterface $cache = null,
-        private readonly ?string $cacheKey = null,
     ) {
     }
 
@@ -105,11 +104,9 @@ final class DescriptorLoader implements LoaderInterface
      */
     private function getDescriptors(): array
     {
-        $cacheKey = $this->cacheKey ?? self::DEFAULT_CACHE_KEY;
-
         /** @var list<Descriptor>|null $descriptors */
-        $descriptors = $this->cache?->get($cacheKey);
-        if (isset($descriptors)) {
+        $descriptors = $this->cache?->get(self::CACHE_KEY);
+        if ($descriptors !== null) {
             return $descriptors;
         }
 
@@ -122,7 +119,7 @@ final class DescriptorLoader implements LoaderInterface
 
         usort($descriptors, static fn(Descriptor $a, Descriptor $b): int => $b->priority <=> $a->priority);
 
-        $this->cache?->set($cacheKey, $descriptors);
+        $this->cache?->set(self::CACHE_KEY, $descriptors);
 
         return $descriptors;
     }
