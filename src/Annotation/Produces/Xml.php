@@ -13,12 +13,14 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Annotation\Produces;
 
+use Attribute;
 use Sunrise\Http\Router\Annotation\Produces;
 use Sunrise\Http\Router\Entity\MediaType\ServerMediaType;
 
 /**
  * @since 3.0.0
  */
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 final class Xml extends Produces
 {
     public function __construct()

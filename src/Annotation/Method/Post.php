@@ -13,12 +13,14 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Annotation\Method;
 
+use Attribute;
 use Fig\Http\Message\RequestMethodInterface;
 use Sunrise\Http\Router\Annotation\Method;
 
 /**
  * @since 3.0.0
  */
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 final class Post extends Method
 {
     public function __construct()

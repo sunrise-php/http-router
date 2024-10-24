@@ -13,12 +13,14 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Annotation\Pattern;
 
+use Attribute;
 use Sunrise\Http\Router\Annotation\Pattern;
 use Sunrise\Http\Router\Dictionary\VariablePattern;
 
 /**
  * @since 3.0.0
  */
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 final class Uuid extends Pattern
 {
     public function __construct(string $variableName)
