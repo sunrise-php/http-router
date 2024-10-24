@@ -55,7 +55,7 @@ final class ResponseResolverChain implements ResponseResolverChainInterface
         foreach ($this->resolvers as $resolver) {
             $result = $resolver->resolveResponse($response, $responder, $request);
             if ($result instanceof ResponseInterface) {
-                return $this->completeResponse($result, $responder);
+                return self::completeResponse($result, $responder);
             }
         }
 
@@ -65,7 +65,7 @@ final class ResponseResolverChain implements ResponseResolverChainInterface
         ));
     }
 
-    private function completeResponse(
+    private static function completeResponse(
         ResponseInterface $response,
         ReflectionMethod|ReflectionFunction $responder,
     ): ResponseInterface {

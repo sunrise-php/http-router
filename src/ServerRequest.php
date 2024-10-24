@@ -85,7 +85,8 @@ final class ServerRequest implements ServerRequestInterface
      */
     public function getRoute(): RouteInterface
     {
-        $route = $this->request->getAttribute(RouterInterface::REQUEST_ATTRIBUTE_ROUTE);
+        $route = $this->request->getAttribute(RouteInterface::class);
+
         if (! $route instanceof RouteInterface) {
             throw new LogicException('At this level of the application, the request does not contain information about the requested route.');
         }

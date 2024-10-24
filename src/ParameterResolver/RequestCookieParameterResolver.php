@@ -93,7 +93,7 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
                 ->addConstraintViolation(...array_map(HydratorConstraintViolationAdapter::create(...), $e->getExceptions()));
         }
 
-        if (isset($this->validator)) {
+        if ($processParams->validation && isset($this->validator)) {
             $violations = $this->validator->startContext()->atPath($cookieName)->validate($argument, new ArgumentConstraint($parameter))->getViolations();
             if ($violations->count() > 0) {
                 throw HttpExceptionFactory::invalidCookie($errorMessage, $errorStatusCode)

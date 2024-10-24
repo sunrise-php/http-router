@@ -11,22 +11,18 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Annotation;
+namespace Sunrise\Http\Router\Annotation\Pattern;
 
-use Attribute;
+use Sunrise\Http\Router\Annotation\Pattern;
 use Sunrise\Http\Router\Dictionary\VariablePattern;
 
 /**
- * Pay attention to the {@see VariablePattern} dictionary.
- *
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-class Pattern
+final class Uuid extends Pattern
 {
-    public function __construct(
-        public readonly string $variableName,
-        public readonly string $value,
-    ) {
+    public function __construct(string $variableName)
+    {
+        parent::__construct($variableName, VariablePattern::UUID);
     }
 }

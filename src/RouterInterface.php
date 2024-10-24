@@ -27,8 +27,6 @@ use Sunrise\Http\Router\Loader\LoaderInterface;
  */
 interface RouterInterface extends RequestHandlerInterface
 {
-    public const REQUEST_ATTRIBUTE_ROUTE = '@route';
-
     /**
      * @return array<string, RouteInterface>
      *

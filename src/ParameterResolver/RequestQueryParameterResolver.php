@@ -86,7 +86,7 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
                 ->addConstraintViolation(...array_map(HydratorConstraintViolationAdapter::create(...), $e->getExceptions()));
         }
 
-        if (isset($this->validator)) {
+        if ($processParams->validation && isset($this->validator)) {
             if (($violations = $this->validator->validate($argument))->count() > 0) {
                 throw HttpExceptionFactory::invalidQuery($errorMessage, $errorStatusCode)
                     ->addConstraintViolation(...array_map(ValidatorConstraintViolationAdapter::create(...), [...$violations]));

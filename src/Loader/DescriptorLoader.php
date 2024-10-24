@@ -112,7 +112,7 @@ final class DescriptorLoader implements LoaderInterface
 
         $descriptors = [];
         foreach ($this->resources as $resource) {
-            foreach ($this->getResourceDescriptors($resource) as $descriptor) {
+            foreach (self::getResourceDescriptors($resource) as $descriptor) {
                 $descriptors[] = $descriptor;
             }
         }
@@ -130,11 +130,11 @@ final class DescriptorLoader implements LoaderInterface
      * @throws InvalidRouteLoadingResourceException
      * @throws InvalidRouteParsingSubjectException
      */
-    private function getResourceDescriptors(string $resource): Generator
+    private static function getResourceDescriptors(string $resource): Generator
     {
         if (is_dir($resource)) {
             foreach (ClassFinder::getDirClasses($resource) as $class) {
-                yield from $this->getClassDescriptors($class);
+                yield from self::getClassDescriptors($class);
             }
 
             return;
@@ -142,14 +142,14 @@ final class DescriptorLoader implements LoaderInterface
 
         if (is_file($resource)) {
             foreach (ClassFinder::getFileClasses($resource) as $class) {
-                yield from $this->getClassDescriptors($class);
+                yield from self::getClassDescriptors($class);
             }
 
             return;
         }
 
         if (class_exists($resource)) {
-            yield from $this->getClassDescriptors(new ReflectionClass($resource));
+            yield from self::getClassDescriptors(new ReflectionClass($resource));
 
             return;
         }
@@ -157,7 +157,7 @@ final class DescriptorLoader implements LoaderInterface
         throw new InvalidRouteLoadingResourceException(sprintf(
             'The loader %s only accepts directory, file or class names; ' .
             'however, the resource %s is not one of them.',
-            $this::class,
+            self::class,
             $resource,
         ));
     }
@@ -167,7 +167,7 @@ final class DescriptorLoader implements LoaderInterface
      *
      * @throws InvalidRouteParsingSubjectException
      */
-    private function getClassDescriptors(ReflectionClass $class): Generator
+    private static function getClassDescriptors(ReflectionClass $class): Generator
     {
         if (!$class->isInstantiable()) {
             return;
@@ -179,9 +179,9 @@ final class DescriptorLoader implements LoaderInterface
             if (isset($annotations[0])) {
                 $descriptor = $annotations[0]->newInstance();
                 $descriptor->holder = $class->getName();
-                $this->enrichDescriptorFromParentClasses($descriptor, $class);
-                $this->enrichDescriptorFromClassOrMethod($descriptor, $class);
-                $this->completeDescriptor($descriptor);
+                self::enrichDescriptorFromParentClasses($descriptor, $class);
+                self::enrichDescriptorFromClassOrMethod($descriptor, $class);
+                self::completeDescriptor($descriptor);
                 yield $descriptor;
             }
         }
@@ -196,23 +196,23 @@ final class DescriptorLoader implements LoaderInterface
             if (isset($annotations[0])) {
                 $descriptor = $annotations[0]->newInstance();
                 $descriptor->holder = [$class->getName(), $method->getName()];
-                $this->enrichDescriptorFromParentClasses($descriptor, $class);
-                $this->enrichDescriptorFromClassOrMethod($descriptor, $class);
-                $this->enrichDescriptorFromClassOrMethod($descriptor, $method);
-                $this->completeDescriptor($descriptor);
+                self::enrichDescriptorFromParentClasses($descriptor, $class);
+                self::enrichDescriptorFromClassOrMethod($descriptor, $class);
+                self::enrichDescriptorFromClassOrMethod($descriptor, $method);
+                self::completeDescriptor($descriptor);
                 yield $descriptor;
             }
         }
     }
 
-    private function enrichDescriptorFromParentClasses(Descriptor $descriptor, ReflectionClass $class): void
+    private static function enrichDescriptorFromParentClasses(Descriptor $descriptor, ReflectionClass $class): void
     {
         foreach (ClassFinder::getParentClasses($class) as $parent) {
-            $this->enrichDescriptorFromClassOrMethod($descriptor, $parent);
+            self::enrichDescriptorFromClassOrMethod($descriptor, $parent);
         }
     }
 
-    private function enrichDescriptorFromClassOrMethod(Descriptor $descriptor, ReflectionClass|ReflectionMethod $classOrMethod): void
+    private static function enrichDescriptorFromClassOrMethod(Descriptor $descriptor, ReflectionClass|ReflectionMethod $classOrMethod): void
     {
         /** @var list<ReflectionAttribute<NamePrefix>> $annotations */
         $annotations = $classOrMethod->getAttributes(NamePrefix::class);
@@ -236,14 +236,14 @@ final class DescriptorLoader implements LoaderInterface
         }
 
         /** @var list<ReflectionAttribute<Pattern>> $annotations */
-        $annotations = $classOrMethod->getAttributes(Pattern::class);
+        $annotations = $classOrMethod->getAttributes(Pattern::class, ReflectionAttribute::IS_INSTANCEOF);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
             $descriptor->patterns[$annotation->variableName] = $annotation->value;
         }
 
         /** @var list<ReflectionAttribute<Method>> $annotations */
-        $annotations = $classOrMethod->getAttributes(Method::class);
+        $annotations = $classOrMethod->getAttributes(Method::class, ReflectionAttribute::IS_INSTANCEOF);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
             $descriptor->methods[] = $annotation->value;
@@ -271,7 +271,7 @@ final class DescriptorLoader implements LoaderInterface
         }
 
         /** @var list<ReflectionAttribute<Consumes>> $annotations */
-        $annotations = $classOrMethod->getAttributes(Consumes::class);
+        $annotations = $classOrMethod->getAttributes(Consumes::class, ReflectionAttribute::IS_INSTANCEOF);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
 
@@ -281,7 +281,7 @@ final class DescriptorLoader implements LoaderInterface
         }
 
         /** @var list<ReflectionAttribute<Produces>> $annotations */
-        $annotations = $classOrMethod->getAttributes(Produces::class);
+        $annotations = $classOrMethod->getAttributes(Produces::class, ReflectionAttribute::IS_INSTANCEOF);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
 
@@ -328,7 +328,7 @@ final class DescriptorLoader implements LoaderInterface
     /**
      * @throws InvalidRouteParsingSubjectException
      */
-    private function completeDescriptor(Descriptor $descriptor): void
+    private static function completeDescriptor(Descriptor $descriptor): void
     {
         $descriptor->name = join($descriptor->namePrefixes) . $descriptor->name;
         $descriptor->path = join($descriptor->pathPrefixes) . $descriptor->path;

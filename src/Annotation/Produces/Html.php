@@ -11,18 +11,18 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Annotation;
+namespace Sunrise\Http\Router\Annotation\Produces;
 
-use Attribute;
+use Sunrise\Http\Router\Annotation\Produces;
+use Sunrise\Http\Router\Entity\MediaType\ServerMediaType;
 
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-class Method
+final class Html extends Produces
 {
-    public function __construct(
-        public readonly string $value,
-    ) {
+    public function __construct()
+    {
+        parent::__construct(ServerMediaType::html());
     }
 }

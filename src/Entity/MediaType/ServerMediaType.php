@@ -26,6 +26,31 @@ final class ServerMediaType implements MediaTypeInterface
     ) {
     }
 
+    public static function json(): self
+    {
+        return new self('application', 'json');
+    }
+
+    public static function xml(): self
+    {
+        return new self('application', 'xml');
+    }
+
+    public static function html(): self
+    {
+        return new self('text', 'html');
+    }
+
+    public static function text(): self
+    {
+        return new self('text', 'plain');
+    }
+
+    public static function image(): self
+    {
+        return new self('image', '*');
+    }
+
     public static function fromString(string $string): self
     {
         $parts = explode(self::SEPARATOR, $string, 2);

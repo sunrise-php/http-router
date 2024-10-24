@@ -50,7 +50,7 @@ final class ValidatorConstraintViolationAdapter implements RouterConstraintViola
 
     public function getPropertyPath(): string
     {
-        return $this->adaptPropertyPath($this->validatorConstraintViolation->getPropertyPath());
+        return self::adaptPropertyPath($this->validatorConstraintViolation->getPropertyPath());
     }
 
     public function getCode(): ?string
@@ -58,7 +58,7 @@ final class ValidatorConstraintViolationAdapter implements RouterConstraintViola
         return $this->validatorConstraintViolation->getCode();
     }
 
-    private function adaptPropertyPath(string $propertyPath): string
+    private static function adaptPropertyPath(string $propertyPath): string
     {
         return preg_replace(['/\x5b([^\x5b\x5d]+)\x5d/', '/^\x2e/'], ['.$1'], $propertyPath);
     }

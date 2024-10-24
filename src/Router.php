@@ -209,7 +209,7 @@ final class Router implements RouterInterface
             $request = $request->withAttribute($name, $value);
         }
 
-        $request = $request->withAttribute(self::REQUEST_ATTRIBUTE_ROUTE, $route);
+        $request = $request->withAttribute(RouteInterface::class, $route);
 
         if (isset($this->eventDispatcher)) {
             $event = new RoutePreRunEvent($route, $request);
