@@ -13,11 +13,11 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
+use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionFunction;
 use ReflectionMethod;
-use Sunrise\Http\Router\Exception\InvalidResponseException;
 
 /**
  * @since 3.0.0
@@ -25,7 +25,7 @@ use Sunrise\Http\Router\Exception\InvalidResponseException;
 interface ResponseResolverInterface
 {
     /**
-     * @throws InvalidResponseException
+     * @throws InvalidArgumentException
      */
     public function resolveResponse(
         mixed $response,

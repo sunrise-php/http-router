@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Tests\Unit\Helper;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\Exception\InvalidRouteParsingSubjectException;
 use Sunrise\Http\Router\Helper\RouteParser;
 
 final class RouteParserTest extends TestCase
@@ -25,7 +25,7 @@ final class RouteParserTest extends TestCase
      */
     public function testParseInvalidRoute(string $route, string $expectedMessageRegex): void
     {
-        $this->expectException(InvalidRouteParsingSubjectException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessageMatches($expectedMessageRegex);
 
         RouteParser::parseRoute($route);

@@ -13,20 +13,22 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Command;
 
-use Psr\SimpleCache\CacheInterface;
-use Sunrise\Http\Router\Loader\DescriptorLoader;
+use Sunrise\Http\Router\RouterInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+use function join;
+
 /**
- * @since 3.0.0
+ * @since 2.9.0
  */
-#[AsCommand('router:clear-descriptors-cache', 'Clears the descriptors cache.')]
-final class RouterClearDescriptorsCacheCommand extends Command
+#[AsCommand('router:list-routes', 'Lists all routes.')]
+final class RouterListRoutesCommand extends Command
 {
-    public function __construct(private readonly ?CacheInterface $cache)
+    public function __construct(private readonly RouterInterface $router)
     {
         parent::__construct();
     }
@@ -36,9 +38,23 @@ final class RouterClearDescriptorsCacheCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->cache?->delete(DescriptorLoader::CACHE_KEY);
+        $table = new Table($output);
 
-        $output->writeln('Done');
+        $table->setHeaders([
+            'Name',
+            'Path',
+            'Methods',
+        ]);
+
+        foreach ($this->router->getRoutes() as $route) {
+            $table->addRow([
+                $route->getName(),
+                $route->getPath(),
+                $route->getMethods() === [] ? '*' : join(', ', $route->getMethods()),
+            ]);
+        }
+
+        $table->render();
 
         return self::SUCCESS;
     }

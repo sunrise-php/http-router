@@ -18,6 +18,7 @@ use InvalidArgumentException;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionClass;
+use ReflectionException;
 use RegexIterator;
 use SplFileInfo;
 use SplStack;
@@ -36,7 +37,8 @@ final class ClassFinder
     /**
      * @return Generator<int, ReflectionClass>
      *
-     * @throws InvalidArgumentException If the directory doesn't exist.
+     * @throws InvalidArgumentException
+     * @throws ReflectionException
      */
     public static function getDirClasses(string $dirname): Generator
     {
@@ -68,7 +70,8 @@ final class ClassFinder
     /**
      * @return Generator<int, ReflectionClass>
      *
-     * @throws InvalidArgumentException If the file doesn't exist.
+     * @throws InvalidArgumentException
+     * @throws ReflectionException
      */
     public static function getFileClasses(string $filename): Generator
     {

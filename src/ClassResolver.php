@@ -17,8 +17,7 @@ use InvalidArgumentException;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
-use Sunrise\Http\Router\Exception\InvalidParameterException;
-use Sunrise\Http\Router\Exception\UnsupportedParameterException;
+use ReflectionException;
 
 use function class_exists;
 use function sprintf;
@@ -48,10 +47,9 @@ final class ClassResolver implements ClassResolverInterface
      *
      * @template T of object
      *
-     * @throws InvalidArgumentException If the named class cannot be resolved.
-     * @throws ContainerExceptionInterface If something went wrong while working with the container.
-     * @throws InvalidParameterException {@see ParameterResolverChainInterface::resolveParameters()}
-     * @throws UnsupportedParameterException {@see ParameterResolverChainInterface::resolveParameters()}
+     * @throws ContainerExceptionInterface
+     * @throws InvalidArgumentException
+     * @throws ReflectionException
      */
     public function resolveClass(string $className): object
     {

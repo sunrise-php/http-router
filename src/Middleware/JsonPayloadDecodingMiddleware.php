@@ -18,9 +18,9 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Entity\MediaType\ServerMediaType;
-use Sunrise\Http\Router\Exception\HttpException;
+use Sunrise\Http\Router\Entity\MediaType\MediaTypeFactory;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
+use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 use Sunrise\Http\Router\ServerRequest;
 
 use function is_array;
@@ -53,12 +53,12 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
     /**
      * @inheritDoc
      *
-     * @throws HttpException If the request's payload couldn't be decoded.
+     * @throws HttpExceptionInterface If the request's payload couldn't be decoded.
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        if (ServerRequest::create($request)->clientProducesMediaType(ServerMediaType::json())) {
-            $request = $request->withParsedBody($this->decodePayload($request->getBody()->__toString()));
+        if (ServerRequest::create($request)->clientProducesMediaType(MediaTypeFactory::json())) {
+            $request = $request->withParsedBody($this->decodePayload((string) $request->getBody()));
         }
 
         return $handler->handle($request);
@@ -67,7 +67,7 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
     /**
      * @return array<array-key, mixed>
      *
-     * @throws HttpException If the payload couldn't be decoded.
+     * @throws HttpExceptionInterface If the payload couldn't be decoded.
      */
     private function decodePayload(string $payload): array
     {

@@ -13,22 +13,20 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Command;
 
-use Sunrise\Http\Router\RouterInterface;
+use Psr\SimpleCache\CacheInterface;
+use Sunrise\Http\Router\Dictionary\CacheKey;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-use function join;
-
 /**
- * @since 2.9.0
+ * @since 3.0.0
  */
-#[AsCommand('router:list-routes', 'Lists all routes.', ['router:route-list'])]
-final class RouteListCommand extends Command
+#[AsCommand('router:clear-cache', 'Clears the cache.')]
+final class RouterClearCacheCommand extends Command
 {
-    public function __construct(private readonly RouterInterface $router)
+    public function __construct(private readonly ?CacheInterface $cache)
     {
         parent::__construct();
     }
@@ -38,23 +36,9 @@ final class RouteListCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $table = new Table($output);
+        $this->cache?->delete(CacheKey::DESCRIPTORS);
 
-        $table->setHeaders([
-            'Name',
-            'Path',
-            'Methods',
-        ]);
-
-        foreach ($this->router->getRoutes() as $route) {
-            $table->addRow([
-                $route->getName(),
-                $route->getPath(),
-                $route->getMethods() === [] ? '*' : join(', ', $route->getMethods()),
-            ]);
-        }
-
-        $table->render();
+        $output->writeln('Done');
 
         return self::SUCCESS;
     }

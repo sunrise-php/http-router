@@ -16,8 +16,6 @@ namespace Sunrise\Http\Router\Helper;
 use BackedEnum;
 use InvalidArgumentException;
 use Stringable;
-use Sunrise\Http\Router\Exception\InvalidRouteBuildingValueException;
-use Sunrise\Http\Router\Exception\InvalidRouteParsingSubjectException;
 
 use function get_debug_type;
 use function is_int;
@@ -32,8 +30,7 @@ use function substr;
 final class RouteBuilder
 {
     /**
-     * @throws InvalidRouteBuildingValueException
-     * @throws InvalidRouteParsingSubjectException {@see RouteParser::parseRoute()}
+     * @throws InvalidArgumentException
      */
     public static function buildRoute(string $route, array $values = []): string
     {
@@ -50,8 +47,8 @@ final class RouteBuilder
                 try {
                     $value = self::stringifyValue($value);
                 } catch (InvalidArgumentException $e) {
-                    throw new InvalidRouteBuildingValueException(sprintf(
-                        'The route %s could not be built with an invalid value for the variable {%s} due to: %s',
+                    throw new InvalidArgumentException(sprintf(
+                        'The route %s could not be built due to an invalid value for the variable {%s}: %s.',
                         $route,
                         $variable['name'],
                         $e->getMessage(),
@@ -69,8 +66,8 @@ final class RouteBuilder
                 continue;
             }
 
-            throw new InvalidRouteBuildingValueException(sprintf(
-                'The route %s could not be built without a required value for the variable {%s}.',
+            throw new InvalidArgumentException(sprintf(
+                'The route %s could not be built because the required value for the variable {%s} is missing.',
                 $route,
                 $variable['name'],
             ));
@@ -106,7 +103,7 @@ final class RouteBuilder
 
         throw new InvalidArgumentException(sprintf(
             'The %s value could not be converted to a string; ' .
-            'supported types: string, integer, backed enum and stringable object.',
+            'supported types are: string, integer, backed enum and stringable object.',
             get_debug_type($value),
         ));
     }

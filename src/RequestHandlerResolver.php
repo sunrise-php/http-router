@@ -18,10 +18,10 @@ use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use ReflectionException;
 use ReflectionFunction;
 use ReflectionMethod;
-use Sunrise\Http\Router\Exception\InvalidReferenceException;
-use Sunrise\Http\Router\ParameterResolver\ObjectInjectionParameterResolver;
+use Sunrise\Http\Router\ParameterResolver\DirectObjectInjectionParameterResolver;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 
 use function class_exists;
@@ -46,8 +46,8 @@ final class RequestHandlerResolver implements RequestHandlerResolverInterface
     /**
      * @inheritDoc
      *
-     * @throws InvalidArgumentException {@see ClassResolverInterface::resolveClass()}
-     * @throws InvalidReferenceException
+     * @throws InvalidArgumentException
+     * @throws ReflectionException
      */
     public function resolveRequestHandler(mixed $reference): RequestHandlerInterface
     {
@@ -78,7 +78,7 @@ final class RequestHandlerResolver implements RequestHandlerResolverInterface
             return $this->classResolver->resolveClass($reference);
         }
 
-        throw new InvalidReferenceException(sprintf(
+        throw new InvalidArgumentException(sprintf(
             'The request handler reference %s could not be resolved.',
             ReferenceResolver::stringifyReference($reference),
         ));
@@ -93,7 +93,7 @@ final class RequestHandlerResolver implements RequestHandlerResolverInterface
                         ...$this->parameterResolverChain
                             ->withContext($request)
                             ->withResolver(
-                                new ObjectInjectionParameterResolver($request),
+                                new DirectObjectInjectionParameterResolver($request),
                             )
                             ->resolveParameters(...$reflection->getParameters())
                     ),

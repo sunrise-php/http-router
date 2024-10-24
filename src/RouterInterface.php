@@ -13,14 +13,11 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
+use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Exception\HttpExceptionInterface;
-use Sunrise\Http\Router\Exception\InvalidRouteLoadingResourceException;
-use Sunrise\Http\Router\Exception\NoRouteFoundException;
-use Sunrise\Http\Router\Exception\NoRoutesRegisteredException;
-use Sunrise\Http\Router\Loader\LoaderInterface;
 
 /**
  * @since 3.0.0
@@ -35,7 +32,7 @@ interface RouterInterface extends RequestHandlerInterface
     public function getRoutes(): array;
 
     /**
-     * @throws NoRouteFoundException
+     * @throws InvalidArgumentException
      *
      * @since 2.0.0
      */
@@ -48,19 +45,13 @@ interface RouterInterface extends RequestHandlerInterface
 
     /**
      * @since 1.0.0
+     *
+     * @throws InvalidArgumentException
      */
     public function addRoute(RouteInterface ...$routes): void;
 
     /**
-     * @since 2.0.0
-     *
-     * @throws InvalidRouteLoadingResourceException {@see LoaderInterface::load()}
-     */
-    public function load(LoaderInterface ...$loaders): void;
-
-    /**
      * @throws HttpExceptionInterface
-     * @throws NoRoutesRegisteredException
      *
      * @since 1.0.0
      */
@@ -70,21 +61,20 @@ interface RouterInterface extends RequestHandlerInterface
      * @inheritDoc
      *
      * @throws HttpExceptionInterface
-     * @throws NoRoutesRegisteredException
      *
      * @since 1.0.0
      */
     public function handle(ServerRequestInterface $request): ResponseInterface;
 
     /**
-     * @throws NoRouteFoundException
+     * @throws InvalidArgumentException
      *
      * @since 3.0.0
      */
     public function runRoute(RouteInterface|string $route, ServerRequestInterface $request): ResponseInterface;
 
     /**
-     * @throws NoRouteFoundException
+     * @throws InvalidArgumentException
      *
      * @since 3.0.0
      */
@@ -93,14 +83,14 @@ interface RouterInterface extends RequestHandlerInterface
     /**
      * @return non-empty-string
      *
-     * @throws NoRouteFoundException
+     * @throws InvalidArgumentException
      *
      * @since 3.0.0
      */
     public function compileRoute(RouteInterface|string $route): string;
 
     /**
-     * @throws NoRouteFoundException
+     * @throws InvalidArgumentException
      *
      * @since 3.0.0
      */

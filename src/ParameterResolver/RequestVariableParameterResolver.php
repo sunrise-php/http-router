@@ -14,13 +14,13 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\ParameterResolver;
 
 use Generator;
+use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestVariable;
-use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
-use Sunrise\Http\Router\Exception\InvalidParameterException;
+use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 use Sunrise\Http\Router\Helper\RouteSimplifier;
 use Sunrise\Http\Router\ParameterResolverChain;
 use Sunrise\Http\Router\ParameterResolverInterface;
@@ -29,6 +29,7 @@ use Sunrise\Http\Router\Validation\Constraint\ArgumentConstraint;
 use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationAdapter;
 use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationAdapter;
 use Sunrise\Hydrator\Exception\InvalidDataException;
+use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
 use Sunrise\Hydrator\Type;
@@ -56,8 +57,9 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
     /**
      * @inheritDoc
      *
-     * @throws HttpException
-     * @throws InvalidParameterException
+     * @throws HttpExceptionInterface
+     * @throws InvalidArgumentException
+     * @throws InvalidObjectException
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
@@ -83,9 +85,9 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
                 return yield $parameter->getDefaultValue();
             }
 
-            throw new InvalidParameterException(sprintf(
-                'The parameter %s expects a value of the variable {%s} from the route %s ' .
-                'which is not present in the request, most likely, because the variable is optional. ' .
+            throw new InvalidArgumentException(sprintf(
+                'The parameter %s expects a value of the variable {%s} from the route %s, ' .
+                'which is not present in the request, likely because the variable is optional. ' .
                 'To resolve this issue, assign the default value to the parameter.',
                 ParameterResolverChain::stringifyParameter($parameter),
                 $variableName,
@@ -107,7 +109,7 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
                 ->addConstraintViolation(...array_map(HydratorConstraintViolationAdapter::create(...), $e->getExceptions()));
         }
 
-        if (isset($this->validator)) {
+        if ($this->validator !== null) {
             $violations = $this->validator->startContext()->atPath($variableName)->validate($argument, new ArgumentConstraint($parameter))->getViolations();
             if ($violations->count() > 0) {
                 throw HttpExceptionFactory::invalidVariable($errorMessage, $errorStatusCode)

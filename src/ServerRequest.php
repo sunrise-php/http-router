@@ -390,16 +390,12 @@ final class ServerRequest implements ServerRequestInterface
 
     public function hasQueryParam(string $name): bool
     {
-        $params = $this->request->getQueryParams();
-
-        return isset($params[$name]);
+        return isset($this->request->getQueryParams()[$name]);
     }
 
     public function getQueryParam(string $name, mixed $default = null): mixed
     {
-        $params = $this->request->getQueryParams();
-
-        return $params[$name] ?? $default;
+        return $this->request->getQueryParams()[$name] ?? $default;
     }
 
     /**
@@ -423,16 +419,12 @@ final class ServerRequest implements ServerRequestInterface
 
     public function hasCookieParam(string $name): bool
     {
-        $params = $this->request->getCookieParams();
-
-        return isset($params[$name]);
+        return isset($this->request->getCookieParams()[$name]);
     }
 
     public function getCookieParam(string $name, mixed $default = null): mixed
     {
-        $params = $this->request->getCookieParams();
-
-        return $params[$name] ?? $default;
+        return $this->request->getCookieParams()[$name] ?? $default;
     }
 
     /**

@@ -14,8 +14,8 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router;
 
 use Generator;
+use InvalidArgumentException;
 use ReflectionParameter;
-use Sunrise\Http\Router\Exception\InvalidParameterException;
 
 /**
  * @since 3.0.0
@@ -25,7 +25,7 @@ interface ParameterResolverInterface
     /**
      * @return Generator<int, mixed>
      *
-     * @throws InvalidParameterException
+     * @throws InvalidArgumentException
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator;
 

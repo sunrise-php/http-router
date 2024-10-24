@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
+use InvalidArgumentException;
+use LogicException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -21,20 +23,13 @@ use Sunrise\Http\Router\Event\RoutePostRunEvent;
 use Sunrise\Http\Router\Event\RoutePreRunEvent;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\Exception\HttpExceptionInterface;
-use Sunrise\Http\Router\Exception\InvalidReferenceException;
-use Sunrise\Http\Router\Exception\InvalidRouteBuildingValueException;
-use Sunrise\Http\Router\Exception\InvalidRouteLoadingResourceException;
-use Sunrise\Http\Router\Exception\InvalidRouteMatchingPatternException;
-use Sunrise\Http\Router\Exception\InvalidRouteMatchingSubjectException;
-use Sunrise\Http\Router\Exception\InvalidRouteParsingSubjectException;
-use Sunrise\Http\Router\Exception\NoRouteFoundException;
-use Sunrise\Http\Router\Exception\NoRoutesRegisteredException;
 use Sunrise\Http\Router\Helper\RouteBuilder;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Helper\RouteMatcher;
 use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
+use UnexpectedValueException;
 
 use function array_flip;
 use function array_keys;
@@ -77,10 +72,12 @@ final class Router implements RouterInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws InvalidArgumentException
      */
     public function getRoutes(): array
     {
-        $this->lazyLoad();
+        $this->isLoaded or $this->load();
 
         return $this->routes;
     }
@@ -88,21 +85,23 @@ final class Router implements RouterInterface
     /**
      * @inheritDoc
      *
-     * @throws NoRouteFoundException
+     * @throws InvalidArgumentException
      */
     public function getRoute(string $name): RouteInterface
     {
         $routes = $this->getRoutes();
 
-        if (isset($routes[$name])) {
-            return $routes[$name];
+        if (!isset($routes[$name])) {
+            throw new InvalidArgumentException(sprintf('The route %s does not exist.', $name));
         }
 
-        throw new NoRouteFoundException(sprintf('The route %s does not exist.', $name));
+        return $routes[$name];
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws InvalidArgumentException
      */
     public function hasRoute(string $name): bool
     {
@@ -113,23 +112,19 @@ final class Router implements RouterInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws InvalidArgumentException
      */
     public function addRoute(RouteInterface ...$routes): void
     {
         foreach ($routes as $route) {
-            $this->routes[$route->getName()] = $route;
-        }
-    }
+            $name = $route->getName();
 
-    /**
-     * @inheritDoc
-     *
-     * @throws InvalidRouteLoadingResourceException {@see LoaderInterface::load()}
-     */
-    public function load(LoaderInterface ...$loaders): void
-    {
-        foreach ($loaders as $loader) {
-            $this->addRoute(...$loader->load());
+            if (isset($this->routes[$name])) {
+                throw new InvalidArgumentException(sprintf('The route %s already exists.', $name));
+            }
+
+            $this->routes[$name] = $route;
         }
     }
 
@@ -137,15 +132,15 @@ final class Router implements RouterInterface
      * @inheritDoc
      *
      * @throws HttpExceptionInterface
-     * @throws InvalidRouteMatchingPatternException
-     * @throws InvalidRouteParsingSubjectException
-     * @throws NoRoutesRegisteredException
+     * @throws InvalidArgumentException
+     * @throws LogicException
      */
     public function match(ServerRequestInterface $request): RouteInterface
     {
         $routes = $this->getRoutes();
+
         if ($routes === []) {
-            throw new NoRoutesRegisteredException('No routes are registered in the router.');
+            throw new LogicException('No routes are registered in the router.');
         }
 
         $requestPath = rawurldecode($request->getUri()->getPath());
@@ -157,7 +152,7 @@ final class Router implements RouterInterface
                 if (!RouteMatcher::matchPattern($route->getPath(), $this->compileRoute($route), $requestPath, $matches)) {
                     continue;
                 }
-            } catch (InvalidRouteMatchingSubjectException $e) {
+            } catch (UnexpectedValueException $e) {
                 throw HttpExceptionFactory::malformedUri(previous: $e);
             }
 
@@ -169,7 +164,7 @@ final class Router implements RouterInterface
             return $route->withAddedAttributes($matches);
         }
 
-        if (!empty($allowedMethods)) {
+        if ($allowedMethods !== []) {
             throw HttpExceptionFactory::methodNotAllowed()
                 ->addMessagePlaceholder('{{ request_method }}', $requestMethod)
                 ->addHeaderField('Allow', ...array_keys($allowedMethods));
@@ -183,10 +178,8 @@ final class Router implements RouterInterface
      * @inheritDoc
      *
      * @throws HttpExceptionInterface
-     * @throws InvalidReferenceException
-     * @throws InvalidRouteMatchingPatternException
-     * @throws InvalidRouteParsingSubjectException
-     * @throws NoRoutesRegisteredException
+     * @throws InvalidArgumentException
+     * @throws LogicException
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
@@ -196,8 +189,7 @@ final class Router implements RouterInterface
     /**
      * @inheritDoc
      *
-     * @throws InvalidReferenceException
-     * @throws NoRouteFoundException
+     * @throws InvalidArgumentException
      */
     public function runRoute(RouteInterface|string $route, ServerRequestInterface $request): ResponseInterface
     {
@@ -211,7 +203,7 @@ final class Router implements RouterInterface
 
         $request = $request->withAttribute(RouteInterface::class, $route);
 
-        if (isset($this->eventDispatcher)) {
+        if ($this->eventDispatcher !== null) {
             $event = new RoutePreRunEvent($route, $request);
             $this->eventDispatcher->dispatch($event);
             $request = $event->getRequest();
@@ -219,7 +211,7 @@ final class Router implements RouterInterface
 
         $response = $this->getRouteRequestHandler($route)->handle($request);
 
-        if (isset($this->eventDispatcher)) {
+        if ($this->eventDispatcher !== null) {
             $event = new RoutePostRunEvent($route, $request, $response);
             $this->eventDispatcher->dispatch($event);
             $response = $event->getResponse();
@@ -231,9 +223,7 @@ final class Router implements RouterInterface
     /**
      * @inheritDoc
      *
-     * @throws InvalidRouteBuildingValueException
-     * @throws InvalidRouteParsingSubjectException
-     * @throws NoRouteFoundException
+     * @throws InvalidArgumentException
      */
     public function buildRoute(RouteInterface|string $route, array $values = [], bool $strictly = false): string
     {
@@ -244,7 +234,7 @@ final class Router implements RouterInterface
         $result = RouteBuilder::buildRoute($route->getPath(), $values + $route->getAttributes());
 
         if ($strictly && !RouteMatcher::matchPattern($route->getPath(), $this->compileRoute($route), $result)) {
-            throw new InvalidRouteBuildingValueException(sprintf(
+            throw new InvalidArgumentException(sprintf(
                 'The route %s could not be built because one of the values does not match its pattern.',
                 $route->getName(),
             ));
@@ -256,8 +246,7 @@ final class Router implements RouterInterface
     /**
      * @inheritDoc
      *
-     * @throws InvalidRouteParsingSubjectException
-     * @throws NoRouteFoundException
+     * @throws InvalidArgumentException
      */
     public function compileRoute(RouteInterface|string $route): string
     {
@@ -271,8 +260,7 @@ final class Router implements RouterInterface
     /**
      * @inheritDoc
      *
-     * @throws InvalidReferenceException
-     * @throws NoRouteFoundException
+     * @throws InvalidArgumentException
      */
     public function getRouteRequestHandler(RouteInterface|string $route): RequestHandlerInterface
     {
@@ -288,7 +276,7 @@ final class Router implements RouterInterface
         $this->routeRequestHandlers[$name] = $this->referenceResolver->resolveRequestHandler($route->getRequestHandler());
 
         $middlewares = array_merge($this->routeMiddlewares, $route->getMiddlewares());
-        if (!empty($middlewares)) {
+        if ($middlewares !== []) {
             $this->routeRequestHandlers[$name] = new QueueableRequestHandler($this->routeRequestHandlers[$name]);
             foreach ($middlewares as $middleware) {
                 $this->routeRequestHandlers[$name]->enqueue(
@@ -301,23 +289,22 @@ final class Router implements RouterInterface
     }
 
     /**
-     * @throws InvalidReferenceException
+     * @throws InvalidArgumentException
      *
      * @since 3.0.0
      */
     private function getRequestHandler(): RequestHandlerInterface
     {
-        if (isset($this->requestHandler)) {
+        if ($this->requestHandler !== null) {
             return $this->requestHandler;
         }
 
         $this->requestHandler = new CallableRequestHandler(
-            fn(ServerRequestInterface $request): ResponseInterface => (
-                $this->runRoute($this->match($request), $request)
-            )
+            fn(ServerRequestInterface $request): ResponseInterface
+                => $this->runRoute($this->match($request), $request)
         );
 
-        if (!empty($this->middlewares)) {
+        if ($this->middlewares !== []) {
             $this->requestHandler = new QueueableRequestHandler($this->requestHandler);
             foreach ($this->middlewares as $middleware) {
                 $this->requestHandler->enqueue(
@@ -329,14 +316,15 @@ final class Router implements RouterInterface
         return $this->requestHandler;
     }
 
-    private function lazyLoad(): void
+    /**
+     * @throws InvalidArgumentException
+     *
+     * @since 3.0.0 The method was removed from the contract.
+     */
+    private function load(): void
     {
-        if ($this->isLoaded) {
-            return;
-        }
-
         foreach ($this->loaders as $loader) {
-            $this->load($loader);
+            $this->addRoute(...$loader->load());
         }
 
         $this->isLoaded = true;

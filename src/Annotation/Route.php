@@ -35,7 +35,7 @@ final class Route
 
     public function __construct(
         public string $name,
-        public string $path,
+        public string $path = '',
         /** @var array<string, string> */
         public array $patterns = [],
         /** @var array<array-key, string> */

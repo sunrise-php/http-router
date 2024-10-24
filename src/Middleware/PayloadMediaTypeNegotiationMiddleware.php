@@ -17,8 +17,8 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
+use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 use Sunrise\Http\Router\ServerRequest;
 
 use function array_values;
@@ -37,7 +37,7 @@ final class PayloadMediaTypeNegotiationMiddleware implements MiddlewareInterface
     /**
      * @inheritDoc
      *
-     * @throws HttpException If the request's payload media type isn't supported by the server.
+     * @throws HttpExceptionInterface If the request payload's media type isn't supported by the server.
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {

@@ -11,13 +11,19 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Exception;
+namespace Sunrise\Http\Router\Annotation;
 
-use LogicException;
+use Attribute;
+use Sunrise\Http\Router\Entity\MediaType\MediaTypeFactory;
 
 /**
  * @since 3.0.0
  */
-final class NoRoutesRegisteredException extends LogicException implements ExceptionInterface
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
+final class ConsumesImage extends Consumes
 {
+    public function __construct()
+    {
+        parent::__construct(MediaTypeFactory::image());
+    }
 }

@@ -14,10 +14,9 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Helper;
 
 use ErrorException;
-use Sunrise\Http\Router\Exception\InvalidRouteParsingSubjectException;
-use Sunrise\Http\Router\Exception\InvalidRouteMatchingPatternException;
-use Sunrise\Http\Router\Exception\InvalidRouteMatchingSubjectException;
+use InvalidArgumentException;
 use Throwable;
+use UnexpectedValueException;
 
 use function is_int;
 use function preg_last_error;
@@ -38,9 +37,8 @@ final class RouteMatcher
      * @param array<string, string> $patterns
      * @param-out array<string, string> $matches
      *
-     * @throws InvalidRouteParsingSubjectException {@see RouteCompiler::compileRoute()}
-     * @throws InvalidRouteMatchingPatternException
-     * @throws InvalidRouteMatchingSubjectException
+     * @throws InvalidArgumentException
+     * @throws UnexpectedValueException
      */
     public static function matchRoute(string $route, array $patterns, string $subject, ?array &$matches = null): bool
     {
@@ -53,8 +51,8 @@ final class RouteMatcher
      * @param non-empty-string $pattern
      * @param-out array<string, string> $matches
      *
-     * @throws InvalidRouteMatchingPatternException
-     * @throws InvalidRouteMatchingSubjectException
+     * @throws InvalidArgumentException
+     * @throws UnexpectedValueException
      */
     public static function matchPattern(string $route, string $pattern, string $subject, ?array &$matches = null): bool
     {
@@ -64,15 +62,16 @@ final class RouteMatcher
             }
         } catch (Throwable) {
             if (preg_last_error() === PREG_BAD_UTF8_ERROR) {
-                throw new InvalidRouteMatchingSubjectException(sprintf(
-                    'The route %s could not be matched with an invalid subject due to: %s.',
+                throw new UnexpectedValueException(sprintf(
+                    'The route %s could not be matched due to an invalid subject: %s.',
                     $route,
                     preg_last_error_msg(),
                 ));
             }
 
-            throw new InvalidRouteMatchingPatternException(sprintf(
-                'The route %s could not be matched due to: %s; most likely, this problem is related to one of the route patterns.',
+            throw new InvalidArgumentException(sprintf(
+                'The route %s could not be matched due to: %s. ' .
+                'This problem is most likely related to one of the route patterns',
                 $route,
                 preg_last_error_msg(),
             ), preg_last_error());

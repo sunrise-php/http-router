@@ -14,14 +14,14 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\ParameterResolver;
 
 use Generator;
+use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionNamedType;
 use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestBody;
-use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
-use Sunrise\Http\Router\Exception\InvalidParameterException;
+use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 use Sunrise\Http\Router\ParameterResolverChain;
 use Sunrise\Http\Router\ParameterResolverInterface;
 use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationAdapter;
@@ -50,9 +50,9 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
     /**
      * @inheritDoc
      *
-     * @throws HttpException
+     * @throws HttpExceptionInterface
+     * @throws InvalidArgumentException
      * @throws InvalidObjectException
-     * @throws InvalidParameterException
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
@@ -68,7 +68,7 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
 
         $type = $parameter->getType();
         if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
-            throw new InvalidParameterException(sprintf(
+            throw new InvalidArgumentException(sprintf(
                 'To use the #[RequestBody] annotation, the parameter %s must be typed with an object.',
                 ParameterResolverChain::stringifyParameter($parameter),
             ));
@@ -86,7 +86,7 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
                 ->addConstraintViolation(...array_map(HydratorConstraintViolationAdapter::create(...), $e->getExceptions()));
         }
 
-        if ($processParams->validation && isset($this->validator)) {
+        if ($processParams->validation && $this->validator !== null) {
             if (($violations = $this->validator->validate($argument))->count() > 0) {
                 throw HttpExceptionFactory::invalidBody($errorMessage, $errorStatusCode)
                     ->addConstraintViolation(...array_map(ValidatorConstraintViolationAdapter::create(...), [...$violations]));

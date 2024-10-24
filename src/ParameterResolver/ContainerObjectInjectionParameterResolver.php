@@ -14,24 +14,26 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\ParameterResolver;
 
 use Generator;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
 use ReflectionNamedType;
 use ReflectionParameter;
 use Sunrise\Http\Router\ParameterResolverInterface;
 
-use function is_a;
-
 /**
  * @since 3.0.0
  */
-final class ObjectInjectionParameterResolver implements ParameterResolverInterface
+final class ContainerObjectInjectionParameterResolver implements ParameterResolverInterface
 {
     public function __construct(
-        private readonly object $object,
+        private readonly ContainerInterface $container,
     ) {
     }
 
     /**
      * @inheritDoc
+     *
+     * @throws ContainerExceptionInterface
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
@@ -40,13 +42,14 @@ final class ObjectInjectionParameterResolver implements ParameterResolverInterfa
             return;
         }
 
-        if (is_a($this->object, $type->getName())) {
-            yield $this->object;
+        $typeName = $type->getName();
+        if ($this->container->has($typeName)) {
+            yield $this->container->get($typeName);
         }
     }
 
     public function getWeight(): int
     {
-        return 100;
+        return -100;
     }
 }

@@ -18,13 +18,14 @@ use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestHeader;
-use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
+use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 use Sunrise\Http\Router\ParameterResolverInterface;
 use Sunrise\Http\Router\Validation\Constraint\ArgumentConstraint;
 use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationAdapter;
 use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationAdapter;
 use Sunrise\Hydrator\Exception\InvalidDataException;
+use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
 use Sunrise\Hydrator\Type;
@@ -50,7 +51,8 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
     /**
      * @inheritDoc
      *
-     * @throws HttpException
+     * @throws HttpExceptionInterface
+     * @throws InvalidObjectException
      */
     public function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
@@ -91,7 +93,7 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
                 ->addConstraintViolation(...array_map(HydratorConstraintViolationAdapter::create(...), $e->getExceptions()));
         }
 
-        if ($processParams->validation && isset($this->validator)) {
+        if ($processParams->validation && $this->validator !== null) {
             $violations = $this->validator->startContext()->atPath($headerName)->validate($argument, new ArgumentConstraint($parameter))->getViolations();
             if ($violations->count() > 0) {
                 throw HttpExceptionFactory::invalidHeader($errorMessage, $errorStatusCode)

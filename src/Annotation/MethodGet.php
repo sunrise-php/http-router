@@ -11,20 +11,19 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Annotation\Produces;
+namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
-use Sunrise\Http\Router\Annotation\Produces;
-use Sunrise\Http\Router\Entity\MediaType\ServerMediaType;
+use Fig\Http\Message\RequestMethodInterface;
 
 /**
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class Xml extends Produces
+final class MethodGet extends Method
 {
     public function __construct()
     {
-        parent::__construct(ServerMediaType::xml());
+        parent::__construct(RequestMethodInterface::METHOD_GET);
     }
 }

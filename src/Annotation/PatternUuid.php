@@ -11,20 +11,19 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Annotation\Method;
+namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
-use Fig\Http\Message\RequestMethodInterface;
-use Sunrise\Http\Router\Annotation\Method;
+use Sunrise\Http\Router\Dictionary\VariablePattern;
 
 /**
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class Purge extends Method
+final class PatternUuid extends Pattern
 {
-    public function __construct()
+    public function __construct(string $variableName)
     {
-        parent::__construct(RequestMethodInterface::METHOD_PURGE);
+        parent::__construct($variableName, VariablePattern::UUID);
     }
 }

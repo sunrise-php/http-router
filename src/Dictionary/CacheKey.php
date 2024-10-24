@@ -11,13 +11,12 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Exception;
-
-use InvalidArgumentException;
+namespace Sunrise\Http\Router\Dictionary;
 
 /**
- * @since 2.0.0
+ * @since 3.0.0
  */
-final class NoRouteFoundException extends InvalidArgumentException implements ExceptionInterface
+final class CacheKey
 {
+    public const DESCRIPTORS = 'router_descriptors';
 }

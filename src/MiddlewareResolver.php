@@ -19,11 +19,11 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use ReflectionException;
 use ReflectionFunction;
 use ReflectionMethod;
-use Sunrise\Http\Router\Exception\InvalidReferenceException;
 use Sunrise\Http\Router\Middleware\CallableMiddleware;
-use Sunrise\Http\Router\ParameterResolver\ObjectInjectionParameterResolver;
+use Sunrise\Http\Router\ParameterResolver\DirectObjectInjectionParameterResolver;
 
 use function class_exists;
 use function is_array;
@@ -47,8 +47,8 @@ final class MiddlewareResolver implements MiddlewareResolverInterface
     /**
      * @inheritDoc
      *
-     * @throws InvalidArgumentException {@see ClassResolverInterface::resolveClass()}
-     * @throws InvalidReferenceException
+     * @throws InvalidArgumentException
+     * @throws ReflectionException
      */
     public function resolveMiddleware(mixed $reference): MiddlewareInterface
     {
@@ -79,7 +79,7 @@ final class MiddlewareResolver implements MiddlewareResolverInterface
             }
         }
 
-        throw new InvalidReferenceException(sprintf(
+        throw new InvalidArgumentException(sprintf(
             'The middleware reference %s could not be resolved.',
             ReferenceResolver::stringifyReference($reference),
         ));
@@ -88,14 +88,17 @@ final class MiddlewareResolver implements MiddlewareResolverInterface
     private function createCallbackMiddleware(callable $callback, ReflectionMethod|ReflectionFunction $reflection): MiddlewareInterface
     {
         return new CallableMiddleware(
-            fn(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface => (
+            fn(
+                ServerRequestInterface $request,
+                RequestHandlerInterface $handler,
+            ): ResponseInterface => (
                 $this->responseResolverChain->resolveResponse(
                     $callback(
                         ...$this->parameterResolverChain
                             ->withContext($request)
                             ->withResolver(
-                                new ObjectInjectionParameterResolver($request),
-                                new ObjectInjectionParameterResolver($handler),
+                                new DirectObjectInjectionParameterResolver($request),
+                                new DirectObjectInjectionParameterResolver($handler),
                             )
                             ->resolveParameters(...$reflection->getParameters())
                     ),

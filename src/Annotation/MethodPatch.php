@@ -11,13 +11,19 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Exception;
+namespace Sunrise\Http\Router\Annotation;
 
-use InvalidArgumentException;
+use Attribute;
+use Fig\Http\Message\RequestMethodInterface;
 
 /**
  * @since 3.0.0
  */
-final class InvalidParameterException extends InvalidArgumentException implements ExceptionInterface
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
+final class MethodPatch extends Method
 {
+    public function __construct()
+    {
+        parent::__construct(RequestMethodInterface::METHOD_PATCH);
+    }
 }

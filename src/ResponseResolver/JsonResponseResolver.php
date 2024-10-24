@@ -21,8 +21,8 @@ use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionFunction;
 use ReflectionMethod;
+use RuntimeException;
 use Sunrise\Http\Router\Annotation\JsonResponse;
-use Sunrise\Http\Router\Exception\InvalidResponseException;
 use Sunrise\Http\Router\ResponseResolverChain;
 use Sunrise\Http\Router\ResponseResolverInterface;
 
@@ -49,7 +49,7 @@ final class JsonResponseResolver implements ResponseResolverInterface
     /**
      * @inheritDoc
      *
-     * @throws InvalidResponseException
+     * @throws RuntimeException
      */
     public function resolveResponse(
         mixed $response,
@@ -71,7 +71,7 @@ final class JsonResponseResolver implements ResponseResolverInterface
             /** @psalm-suppress ArgumentTypeCoercion */
             $payload = json_encode($response, $encodingFlags | JSON_THROW_ON_ERROR, $encodingDepth);
         } catch (JsonException $e) {
-            throw new InvalidResponseException(sprintf(
+            throw new RuntimeException(sprintf(
                 'The responder %s returned a response that could not be encoded to JSON due to: %s',
                 ResponseResolverChain::stringifyResponder($responder),
                 $e->getMessage(),

@@ -11,20 +11,19 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Annotation\Consumes;
+namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
-use Sunrise\Http\Router\Annotation\Consumes;
-use Sunrise\Http\Router\Entity\MediaType\ServerMediaType;
+use Fig\Http\Message\RequestMethodInterface;
 
 /**
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class Image extends Consumes
+final class MethodPurge extends Method
 {
     public function __construct()
     {
-        parent::__construct(ServerMediaType::image());
+        parent::__construct(RequestMethodInterface::METHOD_PURGE);
     }
 }

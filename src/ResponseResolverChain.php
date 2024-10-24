@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
+use InvalidArgumentException;
+use LogicException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
@@ -20,7 +22,6 @@ use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\ResponseHeader;
 use Sunrise\Http\Router\Annotation\ResponseStatus;
-use Sunrise\Http\Router\Exception\UnsupportedResponseException;
 
 use function sprintf;
 use function usort;
@@ -40,6 +41,9 @@ final class ResponseResolverChain implements ResponseResolverChainInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws InvalidArgumentException
+     * @throws LogicException
      */
     public function resolveResponse(
         mixed $response,
@@ -59,7 +63,7 @@ final class ResponseResolverChain implements ResponseResolverChainInterface
             }
         }
 
-        throw new UnsupportedResponseException(sprintf(
+        throw new LogicException(sprintf(
             'The responder %s returned an unsupported response that cannot be resolved.',
             self::stringifyResponder($responder),
         ));

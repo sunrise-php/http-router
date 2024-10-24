@@ -14,11 +14,13 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Loader;
 
 use Generator;
+use InvalidArgumentException;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\SimpleCache\CacheException;
 use Psr\SimpleCache\CacheInterface;
 use ReflectionAttribute;
 use ReflectionClass;
+use ReflectionException;
 use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\Attribute;
 use Sunrise\Http\Router\Annotation\Constraint;
@@ -36,9 +38,8 @@ use Sunrise\Http\Router\Annotation\Produces;
 use Sunrise\Http\Router\Annotation\Route as Descriptor;
 use Sunrise\Http\Router\Annotation\Summary;
 use Sunrise\Http\Router\Annotation\Tag;
-use Sunrise\Http\Router\Entity\MediaType\ServerMediaType;
-use Sunrise\Http\Router\Exception\InvalidRouteLoadingResourceException;
-use Sunrise\Http\Router\Exception\InvalidRouteParsingSubjectException;
+use Sunrise\Http\Router\Dictionary\CacheKey;
+use Sunrise\Http\Router\Entity\MediaType\MediaTypeFactory;
 use Sunrise\Http\Router\Helper\ClassFinder;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Route;
@@ -56,8 +57,6 @@ use function usort;
  */
 final class DescriptorLoader implements LoaderInterface
 {
-    public const CACHE_KEY = 'router_descriptors';
-
     public function __construct(
         /** @var array<array-key, string> */
         private readonly array $resources,
@@ -69,8 +68,8 @@ final class DescriptorLoader implements LoaderInterface
      * @inheritDoc
      *
      * @throws CacheException
-     * @throws InvalidRouteLoadingResourceException
-     * @throws InvalidRouteParsingSubjectException
+     * @throws InvalidArgumentException
+     * @throws ReflectionException
      */
     public function load(): Generator
     {
@@ -99,13 +98,13 @@ final class DescriptorLoader implements LoaderInterface
      * @return list<Descriptor>
      *
      * @throws CacheException
-     * @throws InvalidRouteLoadingResourceException
-     * @throws InvalidRouteParsingSubjectException
+     * @throws InvalidArgumentException
+     * @throws ReflectionException
      */
     private function getDescriptors(): array
     {
         /** @var list<Descriptor>|null $descriptors */
-        $descriptors = $this->cache?->get(self::CACHE_KEY);
+        $descriptors = $this->cache?->get(CacheKey::DESCRIPTORS);
         if ($descriptors !== null) {
             return $descriptors;
         }
@@ -119,7 +118,7 @@ final class DescriptorLoader implements LoaderInterface
 
         usort($descriptors, static fn(Descriptor $a, Descriptor $b): int => $b->priority <=> $a->priority);
 
-        $this->cache?->set(self::CACHE_KEY, $descriptors);
+        $this->cache?->set(CacheKey::DESCRIPTORS, $descriptors);
 
         return $descriptors;
     }
@@ -127,8 +126,8 @@ final class DescriptorLoader implements LoaderInterface
     /**
      * @return Generator<int, Descriptor>
      *
-     * @throws InvalidRouteLoadingResourceException
-     * @throws InvalidRouteParsingSubjectException
+     * @throws InvalidArgumentException
+     * @throws ReflectionException
      */
     private static function getResourceDescriptors(string $resource): Generator
     {
@@ -154,7 +153,7 @@ final class DescriptorLoader implements LoaderInterface
             return;
         }
 
-        throw new InvalidRouteLoadingResourceException(sprintf(
+        throw new InvalidArgumentException(sprintf(
             'The loader %s only accepts directory, file or class names; ' .
             'however, the resource %s is not one of them.',
             self::class,
@@ -165,7 +164,7 @@ final class DescriptorLoader implements LoaderInterface
     /**
      * @return Generator<int, Descriptor>
      *
-     * @throws InvalidRouteParsingSubjectException
+     * @throws InvalidArgumentException
      */
     private static function getClassDescriptors(ReflectionClass $class): Generator
     {
@@ -276,7 +275,7 @@ final class DescriptorLoader implements LoaderInterface
             $annotation = $annotation->newInstance();
 
             $descriptor->consumes[] = is_string($annotation->value) ?
-                ServerMediaType::fromString($annotation->value) :
+                MediaTypeFactory::fromString($annotation->value) :
                 $annotation->value;
         }
 
@@ -286,7 +285,7 @@ final class DescriptorLoader implements LoaderInterface
             $annotation = $annotation->newInstance();
 
             $descriptor->produces[] = is_string($annotation->value) ?
-                ServerMediaType::fromString($annotation->value) :
+                MediaTypeFactory::fromString($annotation->value) :
                 $annotation->value;
         }
 
@@ -326,7 +325,7 @@ final class DescriptorLoader implements LoaderInterface
     }
 
     /**
-     * @throws InvalidRouteParsingSubjectException
+     * @throws InvalidArgumentException
      */
     private static function completeDescriptor(Descriptor $descriptor): void
     {

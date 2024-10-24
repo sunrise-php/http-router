@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Loader;
 
-use Sunrise\Http\Router\Exception\InvalidRouteLoadingResourceException;
 use Sunrise\Http\Router\RouteInterface;
 
 /**
@@ -23,8 +22,6 @@ interface LoaderInterface
 {
     /**
      * @return iterable<int, RouteInterface>
-     *
-     * @throws InvalidRouteLoadingResourceException
      */
     public function load(): iterable;
 }

@@ -11,20 +11,19 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Annotation\Consumes;
+namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
-use Sunrise\Http\Router\Annotation\Consumes;
-use Sunrise\Http\Router\Entity\MediaType\ServerMediaType;
+use Sunrise\Http\Router\Entity\MediaType\MediaTypeFactory;
 
 /**
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class Xml extends Consumes
+final class ProducesXml extends Produces
 {
     public function __construct()
     {
-        parent::__construct(ServerMediaType::xml());
+        parent::__construct(MediaTypeFactory::xml());
     }
 }

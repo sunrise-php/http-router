@@ -14,10 +14,10 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router;
 
 use Generator;
+use InvalidArgumentException;
+use LogicException;
 use ReflectionMethod;
 use ReflectionParameter;
-use Sunrise\Http\Router\Exception\InvalidParameterException;
-use Sunrise\Http\Router\Exception\UnsupportedParameterException;
 
 use function sprintf;
 use function usort;
@@ -58,6 +58,9 @@ final class ParameterResolverChain implements ParameterResolverChainInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws InvalidArgumentException
+     * @throws LogicException
      */
     public function resolveParameters(ReflectionParameter ...$parameters): Generator
     {
@@ -71,8 +74,8 @@ final class ParameterResolverChain implements ParameterResolverChainInterface
     /**
      * @return Generator<int, mixed>
      *
-     * @throws InvalidParameterException {@see ParameterResolverInterface::resolveParameter()}
-     * @throws UnsupportedParameterException
+     * @throws InvalidArgumentException
+     * @throws LogicException
      */
     private function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
     {
@@ -83,7 +86,7 @@ final class ParameterResolverChain implements ParameterResolverChainInterface
             }
         }
 
-        throw new UnsupportedParameterException(sprintf(
+        throw new LogicException(sprintf(
             'The parameter %s is not supported and cannot be resolved.',
             self::stringifyParameter($parameter),
         ));

@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
+use InvalidArgumentException;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Exception\InvalidReferenceException;
 
 /**
  * @since 3.0.0
@@ -22,7 +22,7 @@ use Sunrise\Http\Router\Exception\InvalidReferenceException;
 interface RequestHandlerResolverInterface
 {
     /**
-     * @throws InvalidReferenceException
+     * @throws InvalidArgumentException
      */
     public function resolveRequestHandler(mixed $reference): RequestHandlerInterface;
 }
