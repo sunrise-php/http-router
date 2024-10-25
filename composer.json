@@ -45,7 +45,7 @@
         "sunrise/hydrator": "^3.7",
         "symfony/console": "^6.0",
         "symfony/validator": "^6.0",
-        "monolog/monolog": "^2.9",
+        "monolog/monolog": "^3.0",
         "doctrine/persistence": "^3.2",
         "filp/whoops": "^2.15",
         "symfony/event-dispatcher": "^6.0",
