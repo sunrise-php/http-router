@@ -30,6 +30,7 @@ use Sunrise\Http\Router\Annotation\Description;
 use Sunrise\Http\Router\Annotation\Method;
 use Sunrise\Http\Router\Annotation\Middleware;
 use Sunrise\Http\Router\Annotation\NamePrefix;
+use Sunrise\Http\Router\Annotation\Path;
 use Sunrise\Http\Router\Annotation\PathPostfix;
 use Sunrise\Http\Router\Annotation\PathPrefix;
 use Sunrise\Http\Router\Annotation\Pattern;
@@ -218,6 +219,13 @@ final class DescriptorLoader implements LoaderInterface
         if (isset($annotations[0])) {
             $annotation = $annotations[0]->newInstance();
             $descriptor->namePrefixes[] = $annotation->value;
+        }
+
+        /** @var list<ReflectionAttribute<Path>> $annotations */
+        $annotations = $classOrMethod->getAttributes(Path::class, ReflectionAttribute::IS_INSTANCEOF);
+        if (isset($annotations[0])) {
+            $annotation = $annotations[0]->newInstance();
+            $descriptor->path = $annotation->value;
         }
 
         /** @var list<ReflectionAttribute<PathPrefix>> $annotations */
