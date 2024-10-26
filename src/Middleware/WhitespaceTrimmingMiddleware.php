@@ -38,7 +38,7 @@ final class WhitespaceTrimmingMiddleware implements MiddlewareInterface
     /**
      * @param null|callable(string):string $trimmer
      */
-    public function __construct(?callable $trimmer)
+    public function __construct(?callable $trimmer = null)
     {
         $trimmer ??= trim(...);
 
