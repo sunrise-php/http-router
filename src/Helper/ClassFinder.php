@@ -35,7 +35,7 @@ use function sprintf;
 final class ClassFinder
 {
     /**
-     * @return Generator<int, ReflectionClass>
+     * @return Generator<int, ReflectionClass<object>>
      *
      * @throws InvalidArgumentException
      * @throws ReflectionException
@@ -55,6 +55,7 @@ final class ClassFinder
             $filenames[$file->getRealPath()] = true;
 
             (static function (string $filename): void {
+                /** @psalm-suppress UnresolvableInclude */
                 require_once $filename;
             })($file->getRealPath());
         }
@@ -68,7 +69,7 @@ final class ClassFinder
     }
 
     /**
-     * @return Generator<int, ReflectionClass>
+     * @return Generator<int, ReflectionClass<object>>
      *
      * @throws InvalidArgumentException
      * @throws ReflectionException
@@ -79,9 +80,11 @@ final class ClassFinder
             throw new InvalidArgumentException(sprintf('The file %s does not exist.', $filename));
         }
 
+        /** @var string $filename */
         $filename = realpath($filename);
 
         (static function (string $filename): void {
+            /** @psalm-suppress UnresolvableInclude */
             require_once $filename;
         })($filename);
 
@@ -94,11 +97,13 @@ final class ClassFinder
     }
 
     /**
-     * @return SplStack<ReflectionClass>
+     * @param ReflectionClass<object> $class
+     *
+     * @return SplStack<ReflectionClass<object>>
      */
     public static function getParentClasses(ReflectionClass $class): SplStack
     {
-        /** @var SplStack<ReflectionClass> $parents */
+        /** @var SplStack<ReflectionClass<object>> $parents */
         $parents = new SplStack();
         while ($class = $class->getParentClass()) {
             $parents->push($class);

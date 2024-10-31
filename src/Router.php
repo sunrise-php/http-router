@@ -140,7 +140,7 @@ final class Router implements RouterInterface
         $routes = $this->getRoutes();
 
         if ($routes === []) {
-            throw new LogicException('No routes are registered in the router.');
+            throw new LogicException('The router does not contain any routes.');
         }
 
         $requestPath = rawurldecode($request->getUri()->getPath());
@@ -148,8 +148,10 @@ final class Router implements RouterInterface
         $allowedMethods = [];
 
         foreach ($routes as $route) {
+            $routeRegex = $this->compileRoute($route);
+
             try {
-                if (!RouteMatcher::matchPattern($route->getPath(), $this->compileRoute($route), $requestPath, $matches)) {
+                if (!RouteMatcher::matchPattern($route->getPath(), $routeRegex, $requestPath, $matches)) {
                     continue;
                 }
             } catch (UnexpectedValueException $e) {
@@ -197,6 +199,7 @@ final class Router implements RouterInterface
             $route = $this->getRoute($route);
         }
 
+        /** @var mixed $value */
         foreach ($route->getAttributes() as $name => $value) {
             $request = $request->withAttribute($name, $value);
         }
@@ -254,7 +257,8 @@ final class Router implements RouterInterface
             $route = $this->getRoute($route);
         }
 
-        return $this->routePatterns[$route->getName()] ??= $route->getPattern() ?? RouteCompiler::compileRoute($route->getPath(), $route->getPatterns());
+        return $this->routePatterns[$route->getName()] ??= $route->getPattern()
+            ?? RouteCompiler::compileRoute($route->getPath(), $route->getPatterns());
     }
 
     /**
@@ -278,10 +282,9 @@ final class Router implements RouterInterface
         $middlewares = array_merge($this->routeMiddlewares, $route->getMiddlewares());
         if ($middlewares !== []) {
             $this->routeRequestHandlers[$name] = new QueueableRequestHandler($this->routeRequestHandlers[$name]);
+            /** @var mixed $middleware */
             foreach ($middlewares as $middleware) {
-                $this->routeRequestHandlers[$name]->enqueue(
-                    $this->referenceResolver->resolveMiddleware($middleware)
-                );
+                $this->routeRequestHandlers[$name]->enqueue($this->referenceResolver->resolveMiddleware($middleware));
             }
         }
 
@@ -301,15 +304,14 @@ final class Router implements RouterInterface
 
         $this->requestHandler = new CallableRequestHandler(
             fn(ServerRequestInterface $request): ResponseInterface
-                => $this->runRoute($this->match($request), $request)
+                => $this->runRoute($this->match($request), $request),
         );
 
         if ($this->middlewares !== []) {
             $this->requestHandler = new QueueableRequestHandler($this->requestHandler);
+            /** @var mixed $middleware */
             foreach ($this->middlewares as $middleware) {
-                $this->requestHandler->enqueue(
-                    $this->referenceResolver->resolveMiddleware($middleware)
-                );
+                $this->requestHandler->enqueue($this->referenceResolver->resolveMiddleware($middleware));
             }
         }
 

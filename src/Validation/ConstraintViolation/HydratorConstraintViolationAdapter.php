@@ -41,6 +41,9 @@ final class HydratorConstraintViolationAdapter implements ConstraintViolationInt
         return $this->hydratorConstraintViolation->getMessageTemplate();
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getMessagePlaceholders(): array
     {
         return $this->hydratorConstraintViolation->getMessagePlaceholders();
@@ -54,5 +57,10 @@ final class HydratorConstraintViolationAdapter implements ConstraintViolationInt
     public function getCode(): ?string
     {
         return $this->hydratorConstraintViolation->getErrorCode();
+    }
+
+    public function getInvalidValue(): mixed
+    {
+        return $this->hydratorConstraintViolation->getInvalidValue();
     }
 }

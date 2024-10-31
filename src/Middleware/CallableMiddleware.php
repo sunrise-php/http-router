@@ -20,20 +20,18 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * @since 2.8.0
- *
- * @template T as callable(ServerRequestInterface=, RequestHandlerInterface=): ResponseInterface
  */
 final class CallableMiddleware implements MiddlewareInterface
 {
     /**
-     * @var T
+     * @var callable(ServerRequestInterface, RequestHandlerInterface): ResponseInterface
      *
      * @readonly
      */
     private $callback;
 
     /**
-     * @param T $callback
+     * @param callable(ServerRequestInterface, RequestHandlerInterface): ResponseInterface $callback
      */
     public function __construct(callable $callback)
     {

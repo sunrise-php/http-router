@@ -28,8 +28,8 @@ use Sunrise\Http\Router\Entity\MediaType\MediaTypeComparatorInterface;
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 use Sunrise\Http\Router\Helper\HeaderParser;
 
-use function current;
 use function preg_match;
+use function reset;
 use function usort;
 
 /**
@@ -101,8 +101,7 @@ final class ServerRequest implements ServerRequestInterface
             return null;
         }
 
-        [$identifier, $parameters] = current($values);
-
+        [$identifier, $parameters] = reset($values);
         if (preg_match('|^([^/*]+)/([^/*]+)$|', $identifier, $matches) === 1) {
             return new ClientMediaType($matches[1], $matches[2], $parameters);
         }
@@ -125,6 +124,7 @@ final class ServerRequest implements ServerRequestInterface
             (float) ($b[1]['q'] ?? '1') <=> (float) ($a[1]['q'] ?? '1')
         ));
 
+        /** @phpstan-var int<0, max> $index */
         foreach ($values as $index => [$identifier, $parameters]) {
             if (preg_match('|^([^/]+)/([^/]+)$|', $identifier, $matches) === 1) {
                 yield $index => new ClientMediaType($matches[1], $matches[2], $parameters);
@@ -147,6 +147,7 @@ final class ServerRequest implements ServerRequestInterface
             (float) ($b[1]['q'] ?? '1') <=> (float) ($a[1]['q'] ?? '1')
         ));
 
+        /** @phpstan-var int<0, max> $index */
         foreach ($values as $index => [$identifier, $parameters]) {
             if (preg_match('|^(?:i-)?([^-]+)(?:-[^-]+)*$|', $identifier, $matches) === 1) {
                 yield $index => new ClientLanguage($matches[1], $identifier, $parameters);
@@ -373,7 +374,9 @@ final class ServerRequest implements ServerRequestInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
+     *
+     * @return array<array-key, mixed>
      */
     public function getServerParams(): array
     {
@@ -381,7 +384,9 @@ final class ServerRequest implements ServerRequestInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
+     *
+     * @return array<array-key, mixed>
      */
     public function getQueryParams(): array
     {
@@ -399,7 +404,11 @@ final class ServerRequest implements ServerRequestInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
+     *
+     * @param array<array-key, mixed> $query
+     *
+     * @return static
      */
     public function withQueryParams(array $query): self
     {
@@ -410,7 +419,9 @@ final class ServerRequest implements ServerRequestInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
+     *
+     * @return array<array-key, mixed>
      */
     public function getCookieParams(): array
     {
@@ -428,7 +439,11 @@ final class ServerRequest implements ServerRequestInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
+     *
+     * @param array<array-key, mixed> $cookies
+     *
+     * @return static
      */
     public function withCookieParams(array $cookies): self
     {
@@ -439,7 +454,9 @@ final class ServerRequest implements ServerRequestInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
+     *
+     * @return array<array-key, mixed>
      */
     public function getUploadedFiles(): array
     {
@@ -447,7 +464,11 @@ final class ServerRequest implements ServerRequestInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
+     *
+     * @param array<array-key, mixed> $uploadedFiles
+     *
+     * @return static
      */
     public function withUploadedFiles(array $uploadedFiles): self
     {
@@ -458,7 +479,9 @@ final class ServerRequest implements ServerRequestInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
+     *
+     * @return array<array-key, mixed>|object|null
      */
     public function getParsedBody(): mixed
     {
@@ -466,7 +489,11 @@ final class ServerRequest implements ServerRequestInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
+     *
+     * @param array<array-key, mixed>|object|null $data
+     *
+     * @return static
      */
     public function withParsedBody($data): self
     {
@@ -477,7 +504,9 @@ final class ServerRequest implements ServerRequestInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
+     *
+     * @return array<array-key, mixed>
      */
     public function getAttributes(): array
     {
@@ -485,7 +514,12 @@ final class ServerRequest implements ServerRequestInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
+     *
+     * @param string $name
+     * @param mixed $default
+     *
+     * @return mixed
      */
     public function getAttribute($name, $default = null): mixed
     {
@@ -493,7 +527,12 @@ final class ServerRequest implements ServerRequestInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
+     *
+     * @param string $name
+     * @param mixed $value
+     *
+     * @return static
      */
     public function withAttribute($name, $value): self
     {
@@ -504,7 +543,11 @@ final class ServerRequest implements ServerRequestInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
+     *
+     * @param string $name
+     *
+     * @return static
      */
     public function withoutAttribute($name): self
     {

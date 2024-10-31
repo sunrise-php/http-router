@@ -74,13 +74,15 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
             ));
         }
 
+        /** @var class-string $className */
+        $className = $type->getName();
         $processParams = $annotations[0]->newInstance();
 
         $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
         $errorMessage = $processParams->errorMessage ?? $this->defaultErrorMessage;
 
         try {
-            $argument = $this->hydrator->hydrate($type->getName(), $context->getQueryParams());
+            $argument = $this->hydrator->hydrate($className, $context->getQueryParams());
         } catch (InvalidDataException $e) {
             throw HttpExceptionFactory::invalidQuery($errorMessage, $errorStatusCode, previous: $e)
                 ->addConstraintViolation(...array_map(HydratorConstraintViolationAdapter::create(...), $e->getExceptions()));

@@ -40,17 +40,18 @@ use Sunrise\Http\Router\Annotation\Route as Descriptor;
 use Sunrise\Http\Router\Annotation\Summary;
 use Sunrise\Http\Router\Annotation\Tag;
 use Sunrise\Http\Router\Dictionary\CacheKey;
-use Sunrise\Http\Router\Entity\MediaType\MediaTypeFactory;
+use Sunrise\Http\Router\Entity\MediaType\ServerMediaTypeFactory;
 use Sunrise\Http\Router\Helper\ClassFinder;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Route;
 
+use function array_map;
 use function class_exists;
 use function is_dir;
 use function is_file;
-use function is_string;
 use function join;
 use function sprintf;
+use function strtoupper;
 use function usort;
 
 /**
@@ -163,6 +164,8 @@ final class DescriptorLoader implements LoaderInterface
     }
 
     /**
+     * @param ReflectionClass<object> $class
+     *
      * @return Generator<int, Descriptor>
      *
      * @throws InvalidArgumentException
@@ -205,6 +208,9 @@ final class DescriptorLoader implements LoaderInterface
         }
     }
 
+    /**
+     * @param ReflectionClass<object> $class
+     */
     private static function enrichDescriptorFromParentClasses(Descriptor $descriptor, ReflectionClass $class): void
     {
         foreach (ClassFinder::getParentClasses($class) as $parent) {
@@ -212,6 +218,11 @@ final class DescriptorLoader implements LoaderInterface
         }
     }
 
+    /**
+     * @param ReflectionClass<object>|ReflectionMethod $classOrMethod
+     *
+     * @throws InvalidArgumentException
+     */
     private static function enrichDescriptorFromClassOrMethod(Descriptor $descriptor, ReflectionClass|ReflectionMethod $classOrMethod): void
     {
         /** @var list<ReflectionAttribute<NamePrefix>> $annotations */
@@ -281,20 +292,14 @@ final class DescriptorLoader implements LoaderInterface
         $annotations = $classOrMethod->getAttributes(Consumes::class, ReflectionAttribute::IS_INSTANCEOF);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
-
-            $descriptor->consumes[] = is_string($annotation->value) ?
-                MediaTypeFactory::fromString($annotation->value) :
-                $annotation->value;
+            $descriptor->consumes[] = ServerMediaTypeFactory::create($annotation->value);
         }
 
         /** @var list<ReflectionAttribute<Produces>> $annotations */
         $annotations = $classOrMethod->getAttributes(Produces::class, ReflectionAttribute::IS_INSTANCEOF);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
-
-            $descriptor->produces[] = is_string($annotation->value) ?
-                MediaTypeFactory::fromString($annotation->value) :
-                $annotation->value;
+            $descriptor->produces[] = ServerMediaTypeFactory::create($annotation->value);
         }
 
         /** @var list<ReflectionAttribute<Tag>> $annotations */
@@ -339,6 +344,8 @@ final class DescriptorLoader implements LoaderInterface
     {
         $descriptor->name = join($descriptor->namePrefixes) . $descriptor->name;
         $descriptor->path = join($descriptor->pathPrefixes) . $descriptor->path;
+
+        $descriptor->methods = array_map(strtoupper(...), $descriptor->methods);
 
         $descriptor->pattern = RouteCompiler::compileRoute($descriptor->path, $descriptor->patterns);
     }

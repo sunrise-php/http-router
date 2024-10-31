@@ -21,9 +21,11 @@ final class ConstraintViolation implements ConstraintViolationInterface
     public function __construct(
         private readonly string $message,
         private readonly string $messageTemplate,
+        /** @var array<array-key, mixed> */
         private readonly array $messagePlaceholders,
         private readonly string $propertyPath,
         private readonly ?string $code,
+        private readonly mixed $invalidValue,
     ) {
     }
 
@@ -37,6 +39,9 @@ final class ConstraintViolation implements ConstraintViolationInterface
         return $this->messageTemplate;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getMessagePlaceholders(): array
     {
         return $this->messagePlaceholders;
@@ -50,5 +55,10 @@ final class ConstraintViolation implements ConstraintViolationInterface
     public function getCode(): ?string
     {
         return $this->code;
+    }
+
+    public function getInvalidValue(): mixed
+    {
+        return $this->invalidValue;
     }
 }

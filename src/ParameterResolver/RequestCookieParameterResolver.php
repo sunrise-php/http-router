@@ -84,6 +84,7 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
         }
 
         try {
+            /** @var mixed $argument */
             $argument = $this->hydrator->castValue($request->getCookieParam($cookieName), Type::fromParameter($parameter), path: [$cookieName]);
         } catch (InvalidValueException $e) {
             throw HttpExceptionFactory::invalidCookie($errorMessage, $errorStatusCode, previous: $e)

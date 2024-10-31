@@ -35,6 +35,7 @@ final class RouteMatcher
 {
     /**
      * @param array<string, string> $patterns
+     * @param ?array<string, string> $matches
      * @param-out array<string, string> $matches
      *
      * @throws InvalidArgumentException
@@ -49,6 +50,7 @@ final class RouteMatcher
 
     /**
      * @param non-empty-string $pattern
+     * @param ?array<string, string> $matches
      * @param-out array<string, string> $matches
      *
      * @throws InvalidArgumentException

@@ -96,6 +96,7 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
         }
 
         try {
+            /** @var mixed $argument */
             $argument = $this->hydrator->castValue($route->getAttribute($variableName), Type::fromParameter($parameter), path: [$variableName]);
         } catch (InvalidValueException $e) {
             throw HttpExceptionFactory::invalidVariable($errorMessage, $errorStatusCode, previous: $e)

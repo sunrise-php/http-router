@@ -74,13 +74,15 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
             ));
         }
 
+        /** @var class-string $className */
+        $className = $type->getName();
         $processParams = $annotations[0]->newInstance();
 
         $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
         $errorMessage = $processParams->errorMessage ?? $this->defaultErrorMessage;
 
         try {
-            $argument = $this->hydrator->hydrate($type->getName(), (array) $context->getParsedBody());
+            $argument = $this->hydrator->hydrate($className, (array) $context->getParsedBody());
         } catch (InvalidDataException $e) {
             throw HttpExceptionFactory::invalidBody($errorMessage, $errorStatusCode, previous: $e)
                 ->addConstraintViolation(...array_map(HydratorConstraintViolationAdapter::create(...), $e->getExceptions()));

@@ -18,5 +18,8 @@ namespace Sunrise\Http\Router\Entity\MediaType;
  */
 interface MediaTypeComparatorInterface
 {
+    /**
+     * @return int<-1, 1>
+     */
     public function compare(MediaTypeInterface $a, MediaTypeInterface $b): int;
 }

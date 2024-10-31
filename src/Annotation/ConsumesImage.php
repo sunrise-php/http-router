@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
-use Sunrise\Http\Router\Entity\MediaType\MediaTypeFactory;
+use Sunrise\Http\Router\Entity\MediaType\ServerMediaTypeFactory;
 
 /**
  * @since 3.0.0
@@ -24,6 +24,6 @@ final class ConsumesImage extends Consumes
 {
     public function __construct()
     {
-        parent::__construct(MediaTypeFactory::image());
+        parent::__construct(ServerMediaTypeFactory::image());
     }
 }

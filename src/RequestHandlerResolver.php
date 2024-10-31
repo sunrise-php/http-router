@@ -15,6 +15,7 @@ namespace Sunrise\Http\Router;
 
 use Closure;
 use InvalidArgumentException;
+use LogicException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -47,6 +48,7 @@ final class RequestHandlerResolver implements RequestHandlerResolverInterface
      * @inheritDoc
      *
      * @throws InvalidArgumentException
+     * @throws LogicException
      * @throws ReflectionException
      */
     public function resolveRequestHandler(mixed $reference): RequestHandlerInterface
@@ -56,21 +58,23 @@ final class RequestHandlerResolver implements RequestHandlerResolverInterface
         }
 
         if ($reference instanceof Closure) {
-            return $this->createRequestHandlerCallback($reference, new ReflectionFunction($reference));
+            return new CallableRequestHandler($this->createCallback($reference, new ReflectionFunction($reference)));
         }
 
         // https://github.com/php/php-src/blob/3ed526441400060aa4e618b91b3352371fcd02a8/Zend/zend_API.c#L3884-L3932
         if (is_array($reference) && is_callable($reference, true)) {
             /** @var array{0: string|object, 1: string} $reference */
-
             if (is_string($reference[0]) && class_exists($reference[0])) {
                 $reference[0] = $this->classResolver->resolveClass($reference[0]);
             }
 
             if (is_callable($reference)) {
                 /** @var array{0: class-string|object, 1: non-empty-string} $reference */
+                $reflection = new ReflectionMethod($reference[0], $reference[1]);
 
-                return $this->createRequestHandlerCallback($reference, new ReflectionMethod($reference[0], $reference[1]));
+                /** @var callable $reference */
+
+                return new CallableRequestHandler($this->createCallback($reference, $reflection));
             }
         }
 
@@ -84,22 +88,26 @@ final class RequestHandlerResolver implements RequestHandlerResolverInterface
         ));
     }
 
-    private function createRequestHandlerCallback(callable $callback, ReflectionMethod|ReflectionFunction $reflection): RequestHandlerInterface
+    /**
+     * @return callable(ServerRequestInterface): ResponseInterface
+     *
+     * @throws InvalidArgumentException
+     * @throws LogicException
+     */
+    private function createCallback(callable $callback, ReflectionMethod|ReflectionFunction $reflection): callable
     {
-        return new CallableRequestHandler(
-            fn(ServerRequestInterface $request): ResponseInterface => (
-                $this->responseResolverChain->resolveResponse(
-                    $callback(
-                        ...$this->parameterResolverChain
-                            ->withContext($request)
-                            ->withResolver(
-                                new DirectObjectInjectionParameterResolver($request),
-                            )
-                            ->resolveParameters(...$reflection->getParameters())
-                    ),
-                    $reflection,
-                    $request,
-                )
+        return fn(ServerRequestInterface $request): ResponseInterface => (
+            $this->responseResolverChain->resolveResponse(
+                $callback(
+                    ...$this->parameterResolverChain
+                        ->withContext($request)
+                        ->withResolver(
+                            new DirectObjectInjectionParameterResolver($request),
+                        )
+                        ->resolveParameters(...$reflection->getParameters())
+                ),
+                $reflection,
+                $request,
             )
         );
     }

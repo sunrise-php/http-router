@@ -43,6 +43,9 @@ final class ValidatorConstraintViolationAdapter implements RouterConstraintViola
         return $this->validatorConstraintViolation->getMessageTemplate();
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getMessagePlaceholders(): array
     {
         return $this->validatorConstraintViolation->getParameters();
@@ -58,8 +61,13 @@ final class ValidatorConstraintViolationAdapter implements RouterConstraintViola
         return $this->validatorConstraintViolation->getCode();
     }
 
+    public function getInvalidValue(): mixed
+    {
+        return $this->validatorConstraintViolation->getInvalidValue();
+    }
+
     private static function adaptPropertyPath(string $propertyPath): string
     {
-        return preg_replace(['/\x5b([^\x5b\x5d]+)\x5d/', '/^\x2e/'], ['.$1'], $propertyPath);
+        return (string) preg_replace(['/\x5b([^\x5b\x5d]+)\x5d/', '/^\x2e/'], ['.$1'], $propertyPath);
     }
 }

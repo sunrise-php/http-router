@@ -18,5 +18,8 @@ namespace Sunrise\Http\Router\Entity\Language;
  */
 interface LanguageComparatorInterface
 {
+    /**
+     * @return int<-1, 1>
+     */
     public function compare(LanguageInterface $a, LanguageInterface $b): int;
 }

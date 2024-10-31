@@ -13,13 +13,43 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Entity\MediaType;
 
-use function explode;
+use InvalidArgumentException;
+
+use function preg_match;
+use function sprintf;
 
 /**
  * @since 3.0.0
  */
-final class MediaTypeFactory
+final class ServerMediaTypeFactory
 {
+    /**
+     * @throws InvalidArgumentException See {@see fromString()}.
+     */
+    public static function create(MediaTypeInterface|string $mediaType): MediaTypeInterface
+    {
+        if ($mediaType instanceof MediaTypeInterface) {
+            return $mediaType;
+        }
+
+        return self::fromString($mediaType);
+    }
+
+    /**
+     * @throws InvalidArgumentException If the given media type <b>doesn't look</b> like a media type.
+     */
+    public static function fromString(string $mediaType): MediaTypeInterface
+    {
+        if (!preg_match('|^([^/;]+)/([^/;]+)$|', $mediaType, $matches)) {
+            throw new InvalidArgumentException(sprintf(
+                'The string %s does not look like a media type.',
+                $mediaType,
+            ));
+        }
+
+        return new ServerMediaType($matches[1], $matches[2]);
+    }
+
     public static function json(): MediaTypeInterface
     {
         return new ServerMediaType('application', 'json');
@@ -43,15 +73,5 @@ final class MediaTypeFactory
     public static function image(): MediaTypeInterface
     {
         return new ServerMediaType('image', '*');
-    }
-
-    public static function fromString(string $string): MediaTypeInterface
-    {
-        $parts = explode(MediaTypeInterface::SEPARATOR, $string, 2);
-
-        return new ServerMediaType(
-            type: isset($parts[0][0]) ? $parts[0] : '*',
-            subtype: isset($parts[1][0]) ? $parts[1] : '*',
-        );
     }
 }

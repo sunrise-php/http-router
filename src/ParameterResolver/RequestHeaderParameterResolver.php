@@ -82,6 +82,7 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
         }
 
         try {
+            /** @var mixed $argument */
             $argument = $this->hydrator->castValue($context->getHeaderLine($headerName), Type::fromParameter($parameter), path: [$headerName]);
         } catch (InvalidValueException $e) {
             throw HttpExceptionFactory::invalidHeader($errorMessage, $errorStatusCode, previous: $e)

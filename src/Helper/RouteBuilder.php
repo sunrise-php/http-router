@@ -30,6 +30,8 @@ use function substr;
 final class RouteBuilder
 {
     /**
+     * @param array<array-key, mixed> $values
+     *
      * @throws InvalidArgumentException
      */
     public static function buildRoute(string $route, array $values = []): string
@@ -42,6 +44,7 @@ final class RouteBuilder
             $statement = substr($route, $variable['offset'], $variable['length']);
 
             if (isset($values[$variable['name']])) {
+                /** @var mixed $value */
                 $value = $values[$variable['name']];
 
                 try {

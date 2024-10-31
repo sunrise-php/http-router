@@ -65,10 +65,10 @@ final class JsonResponseResolver implements ResponseResolverInterface
         $processParams = $annotations[0]->newInstance();
 
         $encodingFlags = $processParams->encodingFlags ?? $this->defaultEncodingFlags ?? self::DEFAULT_ENCODING_FLAGS;
+        /** @psalm-var int<1, 2147483647> $encodingDepth */
         $encodingDepth = $processParams->encodingDepth ?? $this->defaultEncodingDepth ?? self::DEFAULT_ENCODING_DEPTH;
 
         try {
-            /** @psalm-suppress ArgumentTypeCoercion */
             $payload = json_encode($response, $encodingFlags | JSON_THROW_ON_ERROR, $encodingDepth);
         } catch (JsonException $e) {
             throw new RuntimeException(sprintf(

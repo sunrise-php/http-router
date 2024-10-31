@@ -1,7 +1,7 @@
 {
     "name": "sunrise/http-router",
     "homepage": "https://github.com/sunrise-php/http-router",
-    "description": "HTTP router for PHP 7.4+ based on PSR-7 and PSR-15 with support for annotations/attributes and OpenAPI (Swagger) Specification",
+    "description": "HTTP router for PHP 8.1+ based on PSR-7 and PSR-15 with support for attributes and Swagger",
     "license": "MIT",
     "keywords": [
         "fenric",
@@ -10,13 +10,11 @@
         "router",
         "request-handler",
         "middlewares",
-        "annotations",
         "attributes",
         "openapi",
         "swagger",
         "psr-7",
         "psr-15",
-        "php7",
         "php8"
     ],
     "authors": [
@@ -31,33 +29,22 @@
         "fig/http-message-util": "^1.1",
         "psr/container": "^1.0 || ^2.0",
         "psr/event-dispatcher": "^1.0",
-        "psr/http-message": "^1.0 || ^2.0",
+        "psr/http-factory": "^1.0",
+        "psr/http-message": "^1.0",
         "psr/http-server-handler": "^1.0",
         "psr/http-server-middleware": "^1.0",
         "psr/log": "^1.0 || ^2.0 || ^3.0",
         "psr/simple-cache": "^1.0 || ^2.0 || ^3.0"
     },
     "require-dev": {
+        "php-di/php-di": "^7.0",
+        "phpstan/phpstan": "^1.12",
         "phpunit/phpunit": "^9.6",
-        "vimeo/psalm": "^5.15",
         "sunrise/coding-standard": "^1.0",
-        "sunrise/http-message": "^3.0",
-        "sunrise/hydrator": "^3.7",
-        "symfony/console": "^6.0",
-        "symfony/validator": "^6.0",
-        "monolog/monolog": "^2.9",
-        "doctrine/persistence": "^3.2",
-        "filp/whoops": "^2.15",
-        "symfony/event-dispatcher": "^6.0",
-        "symfony/serializer": "^6.0",
-        "twig/twig": "^3.7",
-        "symfony/property-access": "^6.0",
-        "doctrine/dbal": "^3.7",
-        "doctrine/orm": "^2.16",
-        "symfony/uid": "^6.0",
-        "ramsey/uuid": "^4.7",
-        "neomerx/cors-psr7": "^3.0",
-        "php-di/php-di": "^7.0"
+        "sunrise/hydrator": "^3.13",
+        "symfony/console": "^6.4",
+        "symfony/validator": "^6.4",
+        "vimeo/psalm": "^5.26"
     },
     "autoload": {
         "files": [
@@ -76,7 +63,7 @@
         "test": [
             "phpcs --colors",
             "psalm --no-cache",
-            "phpstan analyse src --level=5 --memory-limit=-1",
+            "phpstan analyse src --level=9 --memory-limit=-1",
             "XDEBUG_MODE=coverage phpunit --coverage-text --colors=always"
         ],
         "build": [

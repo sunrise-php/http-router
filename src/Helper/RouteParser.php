@@ -40,6 +40,8 @@ final class RouteParser
     {
         $cursor = 0;
         $variable = -1;
+
+        /** @var list<array{name?: string, pattern?: string, optional?: array{left: string, right: string}, offset: int, length: int}> $variables */
         $variables = [];
 
         $left = $right = '';
@@ -132,7 +134,6 @@ final class RouteParser
                 }
 
                 $cursor &= ~(self::IN_VARIABLE | self::IN_VARIABLE_NAME);
-                /** @psalm-suppress PossiblyUndefinedArrayOffset */
                 $variables[$variable]['length'] = $offset - $variables[$variable]['offset'] + 1;
                 continue;
             }

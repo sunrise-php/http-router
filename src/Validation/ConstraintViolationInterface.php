@@ -22,9 +22,14 @@ interface ConstraintViolationInterface
 
     public function getMessageTemplate(): string;
 
+    /**
+     * @return array<array-key, mixed>
+     */
     public function getMessagePlaceholders(): array;
 
     public function getPropertyPath(): string;
 
     public function getCode(): ?string;
+
+    public function getInvalidValue(): mixed;
 }

@@ -19,20 +19,18 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * @since 2.0.0
- *
- * @template T as callable(ServerRequestInterface=): ResponseInterface
  */
 final class CallableRequestHandler implements RequestHandlerInterface
 {
     /**
-     * @var T
+     * @var callable(ServerRequestInterface): ResponseInterface
      *
      * @readonly
      */
     private $callback;
 
     /**
-     * @param T $callback
+     * @param callable(ServerRequestInterface): ResponseInterface $callback
      */
     public function __construct(callable $callback)
     {
@@ -40,8 +38,6 @@ final class CallableRequestHandler implements RequestHandlerInterface
     }
 
     /**
-     * @return T
-     *
      * @since 2.10.0
      */
     public function getCallback(): callable
