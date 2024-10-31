@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Tests\Unit\Entity\Language;
+namespace Sunrise\Http\Router\Tests\Entity\Language;
 
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Entity\Language\ClientLanguage;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Tests\Unit\Helper;
+namespace Sunrise\Http\Router\Tests\Helper;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;

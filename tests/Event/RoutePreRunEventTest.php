@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Tests\Unit\Event;
+namespace Sunrise\Http\Router\Tests\Event;
 
+use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Sunrise\Http\Router\Event\RoutePreRunEvent;
-use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\RouteInterface;
 
 final class RoutePreRunEventTest extends TestCase

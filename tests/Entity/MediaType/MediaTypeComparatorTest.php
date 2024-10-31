@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Tests\Unit\Entity\MediaType;
+namespace Sunrise\Http\Router\Tests\Entity\MediaType;
 
-use Sunrise\Http\Router\Entity\MediaType\MediaTypeComparator;
 use PHPUnit\Framework\TestCase;
+use Sunrise\Http\Router\Entity\MediaType\MediaTypeComparator;
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 use Sunrise\Http\Router\Entity\MediaType\ServerMediaType;
 

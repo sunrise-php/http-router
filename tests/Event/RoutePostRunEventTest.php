@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Tests\Unit\Event;
+namespace Sunrise\Http\Router\Tests\Event;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
