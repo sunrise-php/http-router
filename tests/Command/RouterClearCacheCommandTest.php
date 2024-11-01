@@ -20,7 +20,7 @@ final class RouterClearCacheCommandTest extends TestCase
         $this->cacheMock = $this->createMock(CacheInterface::class);
     }
 
-    public function testExecute(): void
+    public function testExecuteWithCache(): void
     {
         $this->cacheMock->expects($this->once())->method('delete')->with(CacheKey::DESCRIPTORS);
 

@@ -13,15 +13,12 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Annotation;
 
+use Attribute;
+
 /**
  * @since 3.0.0
  */
-#[\Attribute(\Attribute::TARGET_CLASS | \Attribute::TARGET_METHOD | \Attribute::IS_REPEATABLE)]
-final class Attribute
+#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION)]
+final class ResponseEmpty
 {
-    public function __construct(
-        public readonly string $name,
-        public readonly mixed $value,
-    ) {
-    }
 }

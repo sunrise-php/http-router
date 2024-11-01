@@ -27,7 +27,6 @@ final class MediaTypeComparator implements MediaTypeComparatorInterface
     {
         $aType = $a->getType();
         $aSubtype = $a->getSubtype();
-
         $bType = $b->getType();
         $bSubtype = $b->getSubtype();
 

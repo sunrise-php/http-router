@@ -19,13 +19,13 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionFunction;
 use ReflectionMethod;
-use Sunrise\Http\Router\Annotation\EmptyResponse;
+use Sunrise\Http\Router\Annotation\ResponseEmpty;
 use Sunrise\Http\Router\ResponseResolverInterface;
 
 /**
  * @since 3.0.0
  */
-final class EmptyResponseResolver implements ResponseResolverInterface
+final class ResponseEmptyResolver implements ResponseResolverInterface
 {
     public const DEFAULT_STATUS_CODE = StatusCodeInterface::STATUS_NO_CONTENT;
 
@@ -43,7 +43,7 @@ final class EmptyResponseResolver implements ResponseResolverInterface
         ReflectionMethod|ReflectionFunction $responder,
         ServerRequestInterface $request,
     ): ?ResponseInterface {
-        if ($responder->getAttributes(EmptyResponse::class) === []) {
+        if ($responder->getAttributes(ResponseEmpty::class) === []) {
             return null;
         }
 

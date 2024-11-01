@@ -18,12 +18,12 @@ use Attribute;
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION)]
-final class JsonResponse
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
+final class DefaultAttribute
 {
     public function __construct(
-        public readonly ?int $encodingFlags = null,
-        public readonly ?int $encodingDepth = null,
+        public readonly string $name,
+        public readonly mixed $value,
     ) {
     }
 }

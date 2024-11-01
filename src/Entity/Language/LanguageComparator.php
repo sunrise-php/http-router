@@ -23,10 +23,6 @@ final class LanguageComparator implements LanguageComparatorInterface
         $aCode = $a->getCode();
         $bCode = $b->getCode();
 
-        if ($aCode === $bCode || $aCode === '*' || $bCode === '*') {
-            return 0;
-        }
-
-        return $aCode <=> $bCode;
+        return ($aCode === '*' || $bCode === '*') ? 0 : $aCode <=> $bCode;
     }
 }

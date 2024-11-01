@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Tests\Entity\Language;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Entity\Language\LanguageComparator;
@@ -11,51 +12,25 @@ use Sunrise\Http\Router\Entity\Language\LanguageInterface;
 
 final class LanguageComparatorTest extends TestCase
 {
-    /**
-     * @dataProvider compareDataProvider
-     */
-    public function testCompare(LanguageInterface $a, LanguageInterface $b, int $expected): void
+    #[DataProvider('compareDataProvider')]
+    public function testCompare(string $aCode, string $bCode, int $expectedResult): void
     {
-        $this->assertSame($expected, (new LanguageComparator())->compare($a, $b));
+        $comparator = new LanguageComparator();
+
+        $a = $this->mockLanguage($aCode);
+        $b = $this->mockLanguage($bCode);
+
+        $this->assertSame($expectedResult, $comparator->compare($a, $b));
     }
 
-    private function compareDataProvider(): iterable
+    public static function compareDataProvider(): iterable
     {
-        yield [
-            $this->mockLanguage('sr'),
-            $this->mockLanguage('sr'),
-            0,
-        ];
-
-        yield [
-            $this->mockLanguage('*'),
-            $this->mockLanguage('*'),
-            0,
-        ];
-
-        yield [
-            $this->mockLanguage('*'),
-            $this->mockLanguage('sr'),
-            0,
-        ];
-
-        yield [
-            $this->mockLanguage('sr'),
-            $this->mockLanguage('*'),
-            0,
-        ];
-
-        yield [
-            $this->mockLanguage('sr'),
-            $this->mockLanguage('bs'),
-            'sr' <=> 'bs',
-        ];
-
-        yield [
-            $this->mockLanguage('bs'),
-            $this->mockLanguage('sr'),
-            'bs' <=> 'sr',
-        ];
+        yield ['sr', 'sr', 0];
+        yield ['*', '*', 0];
+        yield ['*', 'sr', 0];
+        yield ['sr', '*', 0];
+        yield ['sr', 'bs', 'sr' <=> 'bs'];
+        yield ['bs', 'sr', 'bs' <=> 'sr'];
     }
 
     private function mockLanguage(string $code): LanguageInterface&MockObject

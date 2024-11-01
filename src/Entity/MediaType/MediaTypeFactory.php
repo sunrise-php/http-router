@@ -21,7 +21,7 @@ use function sprintf;
 /**
  * @since 3.0.0
  */
-final class ServerMediaTypeFactory
+final class MediaTypeFactory
 {
     /**
      * @throws InvalidArgumentException See {@see fromString()}.
@@ -35,43 +35,52 @@ final class ServerMediaTypeFactory
         return self::fromString($mediaType);
     }
 
+    public static function any(): MediaTypeInterface
+    {
+        return new MediaType('*', '*');
+    }
+
+    public static function json(): MediaTypeInterface
+    {
+        return new MediaType('application', 'json');
+    }
+
+    public static function xml(): MediaTypeInterface
+    {
+        return new MediaType('application', 'xml');
+    }
+
+    public static function html(): MediaTypeInterface
+    {
+        return new MediaType('text', 'html');
+    }
+
+    public static function text(): MediaTypeInterface
+    {
+        return new MediaType('text', 'plain');
+    }
+
+    public static function image(): MediaTypeInterface
+    {
+        return new MediaType('image', '*');
+    }
+
     /**
      * @throws InvalidArgumentException If the given media type <b>doesn't look</b> like a media type.
      */
     public static function fromString(string $mediaType): MediaTypeInterface
     {
+        if ($mediaType === '') {
+            throw new InvalidArgumentException('The media type cannot be an empty string.');
+        }
+
         if (!preg_match('|^([^/;]+)/([^/;]+)$|', $mediaType, $matches)) {
             throw new InvalidArgumentException(sprintf(
-                'The string %s does not look like a media type.',
+                'The string %s does not look like a media type (type/subtype).',
                 $mediaType,
             ));
         }
 
-        return new ServerMediaType($matches[1], $matches[2]);
-    }
-
-    public static function json(): MediaTypeInterface
-    {
-        return new ServerMediaType('application', 'json');
-    }
-
-    public static function xml(): MediaTypeInterface
-    {
-        return new ServerMediaType('application', 'xml');
-    }
-
-    public static function html(): MediaTypeInterface
-    {
-        return new ServerMediaType('text', 'html');
-    }
-
-    public static function text(): MediaTypeInterface
-    {
-        return new ServerMediaType('text', 'plain');
-    }
-
-    public static function image(): MediaTypeInterface
-    {
-        return new ServerMediaType('image', '*');
+        return new MediaType($matches[1], $matches[2]);
     }
 }

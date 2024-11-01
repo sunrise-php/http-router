@@ -22,9 +22,9 @@ use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
-use Sunrise\Http\Router\Annotation\Attribute;
 use Sunrise\Http\Router\Annotation\Constraint;
 use Sunrise\Http\Router\Annotation\Consumes;
+use Sunrise\Http\Router\Annotation\DefaultAttribute;
 use Sunrise\Http\Router\Annotation\Deprecated;
 use Sunrise\Http\Router\Annotation\Description;
 use Sunrise\Http\Router\Annotation\Method;
@@ -40,7 +40,7 @@ use Sunrise\Http\Router\Annotation\Route as Descriptor;
 use Sunrise\Http\Router\Annotation\Summary;
 use Sunrise\Http\Router\Annotation\Tag;
 use Sunrise\Http\Router\Dictionary\CacheKey;
-use Sunrise\Http\Router\Entity\MediaType\ServerMediaTypeFactory;
+use Sunrise\Http\Router\Entity\MediaType\MediaTypeFactory;
 use Sunrise\Http\Router\Helper\ClassFinder;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Route;
@@ -269,8 +269,8 @@ final class DescriptorLoader implements LoaderInterface
             $descriptor->methods[] = $annotation->value;
         }
 
-        /** @var list<ReflectionAttribute<Attribute>> $annotations */
-        $annotations = $classOrMethod->getAttributes(Attribute::class);
+        /** @var list<ReflectionAttribute<DefaultAttribute>> $annotations */
+        $annotations = $classOrMethod->getAttributes(DefaultAttribute::class);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
             $descriptor->attributes[$annotation->name] = $annotation->value;
@@ -294,14 +294,14 @@ final class DescriptorLoader implements LoaderInterface
         $annotations = $classOrMethod->getAttributes(Consumes::class, ReflectionAttribute::IS_INSTANCEOF);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
-            $descriptor->consumes[] = ServerMediaTypeFactory::create($annotation->value);
+            $descriptor->consumes[] = MediaTypeFactory::create($annotation->value);
         }
 
         /** @var list<ReflectionAttribute<Produces>> $annotations */
         $annotations = $classOrMethod->getAttributes(Produces::class, ReflectionAttribute::IS_INSTANCEOF);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
-            $descriptor->produces[] = ServerMediaTypeFactory::create($annotation->value);
+            $descriptor->produces[] = MediaTypeFactory::create($annotation->value);
         }
 
         /** @var list<ReflectionAttribute<Tag>> $annotations */
