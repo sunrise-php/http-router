@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Tests\Event;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Sunrise\Http\Router\Event\RoutePreRunEvent;
@@ -11,26 +12,31 @@ use Sunrise\Http\Router\RouteInterface;
 
 final class RoutePreRunEventTest extends TestCase
 {
+    private RouteInterface&MockObject $routeMock;
+    private ServerRequestInterface&MockObject $serverRequestMock;
+
+    protected function setUp(): void
+    {
+        $this->routeMock = $this->createMock(RouteInterface::class);
+        $this->serverRequestMock = $this->createMock(ServerRequestInterface::class);
+    }
+
     public function testConstructor(): void
     {
-        $route = $this->createMock(RouteInterface::class);
-        $request = $this->createMock(ServerRequestInterface::class);
+        $event = new RoutePreRunEvent($this->routeMock, $this->serverRequestMock);
 
-        $event = new RoutePreRunEvent($route, $request);
-
-        $this->assertSame($route, $event->getRoute());
-        $this->assertSame($request, $event->getRequest());
+        $this->assertSame($this->routeMock, $event->getRoute());
+        $this->assertSame($this->serverRequestMock, $event->getRequest());
     }
 
     public function testSetRequest(): void
     {
-        $event = new RoutePreRunEvent(
-            $this->createMock(RouteInterface::class),
-            $this->createMock(ServerRequestInterface::class),
-        );
+        $event = new RoutePreRunEvent($this->routeMock, $this->serverRequestMock);
 
-        $request = $this->createMock(ServerRequestInterface::class);
-        $event->setRequest($request);
-        $this->assertSame($request, $event->getRequest());
+        $newServerRequest = clone $this->serverRequestMock;
+        $this->assertNotSame($this->serverRequestMock, $newServerRequest);
+
+        $event->setRequest($newServerRequest);
+        $this->assertSame($newServerRequest, $event->getRequest());
     }
 }

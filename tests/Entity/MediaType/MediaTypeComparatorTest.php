@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Tests\Entity\MediaType;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeComparator;
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
-use Sunrise\Http\Router\Entity\MediaType\ServerMediaType;
 
 final class MediaTypeComparatorTest extends TestCase
 {
@@ -22,57 +22,67 @@ final class MediaTypeComparatorTest extends TestCase
     private function compareDataProvider(): iterable
     {
         yield [
-            new ServerMediaType('application', 'json'),
-            new ServerMediaType('application', 'json'),
+            $this->mockMediaType('application', 'json'),
+            $this->mockMediaType('application', 'json'),
             0,
         ];
 
         yield [
-            new ServerMediaType('*', '*'),
-            new ServerMediaType('*', '*'),
+            $this->mockMediaType('*', '*'),
+            $this->mockMediaType('*', '*'),
             0,
         ];
 
         yield [
-            new ServerMediaType('*', '*'),
-            new ServerMediaType('application', 'json'),
+            $this->mockMediaType('*', '*'),
+            $this->mockMediaType('application', 'json'),
             0,
         ];
 
         yield [
-            new ServerMediaType('application', 'json'),
-            new ServerMediaType('*', '*'),
+            $this->mockMediaType('application', 'json'),
+            $this->mockMediaType('*', '*'),
             0,
         ];
 
         yield [
-            new ServerMediaType('image', '*'),
-            new ServerMediaType('image', '*'),
+            $this->mockMediaType('image', '*'),
+            $this->mockMediaType('image', '*'),
             0,
         ];
 
         yield [
-            new ServerMediaType('image', '*'),
-            new ServerMediaType('image', 'webp'),
+            $this->mockMediaType('image', '*'),
+            $this->mockMediaType('image', 'webp'),
             0,
         ];
 
         yield [
-            new ServerMediaType('image', 'webp'),
-            new ServerMediaType('image', '*'),
+            $this->mockMediaType('image', 'webp'),
+            $this->mockMediaType('image', '*'),
             0,
         ];
 
         yield [
-            new ServerMediaType('application', 'json'),
-            new ServerMediaType('application', 'xml'),
+            $this->mockMediaType('application', 'json'),
+            $this->mockMediaType('application', 'xml'),
             'application/json' <=> 'application/xml',
         ];
 
         yield [
-            new ServerMediaType('application', 'xml'),
-            new ServerMediaType('application', 'json'),
+            $this->mockMediaType('application', 'xml'),
+            $this->mockMediaType('application', 'json'),
             'application/xml' <=> 'application/json',
         ];
+    }
+
+    private function mockMediaType(string $type, string $subtype): MediaTypeInterface&MockObject
+    {
+        $mediaTypeMock = $this->createMock(MediaTypeInterface::class);
+        $mediaTypeMock->method('getType')->willReturn($type);
+        $mediaTypeMock->method('getSubtype')->willReturn($subtype);
+        $mediaTypeMock->method('__toString')->willReturn($type . '/' . $subtype);
+
+        return $mediaTypeMock;
     }
 }

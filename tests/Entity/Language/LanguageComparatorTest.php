@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Tests\Entity\Language;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Entity\Language\LanguageComparator;
 use Sunrise\Http\Router\Entity\Language\LanguageInterface;
-use Sunrise\Http\Router\Entity\Language\ServerLanguage;
 
 final class LanguageComparatorTest extends TestCase
 {
@@ -22,39 +22,47 @@ final class LanguageComparatorTest extends TestCase
     private function compareDataProvider(): iterable
     {
         yield [
-            new ServerLanguage('sr'),
-            new ServerLanguage('sr'),
+            $this->mockLanguage('sr'),
+            $this->mockLanguage('sr'),
             0,
         ];
 
         yield [
-            new ServerLanguage('*'),
-            new ServerLanguage('*'),
+            $this->mockLanguage('*'),
+            $this->mockLanguage('*'),
             0,
         ];
 
         yield [
-            new ServerLanguage('*'),
-            new ServerLanguage('sr'),
+            $this->mockLanguage('*'),
+            $this->mockLanguage('sr'),
             0,
         ];
 
         yield [
-            new ServerLanguage('sr'),
-            new ServerLanguage('*'),
+            $this->mockLanguage('sr'),
+            $this->mockLanguage('*'),
             0,
         ];
 
         yield [
-            new ServerLanguage('sr'),
-            new ServerLanguage('bs'),
+            $this->mockLanguage('sr'),
+            $this->mockLanguage('bs'),
             'sr' <=> 'bs',
         ];
 
         yield [
-            new ServerLanguage('bs'),
-            new ServerLanguage('sr'),
+            $this->mockLanguage('bs'),
+            $this->mockLanguage('sr'),
             'bs' <=> 'sr',
         ];
+    }
+
+    private function mockLanguage(string $code): LanguageInterface&MockObject
+    {
+        $languageMock = $this->createMock(LanguageInterface::class);
+        $languageMock->method('getCode')->willReturn($code);
+
+        return $languageMock;
     }
 }

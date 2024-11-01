@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Tests\Event;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -12,29 +13,34 @@ use Sunrise\Http\Router\RouteInterface;
 
 final class RoutePostRunEventTest extends TestCase
 {
+    private RouteInterface&MockObject $routeMock;
+    private ServerRequestInterface&MockObject $serverRequestMock;
+    private ResponseInterface&MockObject $responseMock;
+
+    protected function setUp(): void
+    {
+        $this->routeMock = $this->createMock(RouteInterface::class);
+        $this->serverRequestMock = $this->createMock(ServerRequestInterface::class);
+        $this->responseMock = $this->createMock(ResponseInterface::class);
+    }
+
     public function testConstructor(): void
     {
-        $route = $this->createMock(RouteInterface::class);
-        $request = $this->createMock(ServerRequestInterface::class);
-        $response = $this->createMock(ResponseInterface::class);
+        $event = new RoutePostRunEvent($this->routeMock, $this->serverRequestMock, $this->responseMock);
 
-        $event = new RoutePostRunEvent($route, $request, $response);
-
-        $this->assertSame($route, $event->getRoute());
-        $this->assertSame($request, $event->getRequest());
-        $this->assertSame($response, $event->getResponse());
+        $this->assertSame($this->routeMock, $event->getRoute());
+        $this->assertSame($this->serverRequestMock, $event->getRequest());
+        $this->assertSame($this->responseMock, $event->getResponse());
     }
 
     public function testSetResponse(): void
     {
-        $event = new RoutePostRunEvent(
-            $this->createMock(RouteInterface::class),
-            $this->createMock(ServerRequestInterface::class),
-            $this->createMock(ResponseInterface::class),
-        );
+        $event = new RoutePostRunEvent($this->routeMock, $this->serverRequestMock, $this->responseMock);
 
-        $response = $this->createMock(ResponseInterface::class);
-        $event->setResponse($response);
-        $this->assertSame($response, $event->getResponse());
+        $newResponse = clone $this->responseMock;
+        $this->assertNotSame($this->responseMock, $newResponse);
+
+        $event->setResponse($newResponse);
+        $this->assertSame($newResponse, $event->getResponse());
     }
 }

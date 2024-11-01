@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Tests\Command;
 
 use PHPUnit\Framework\MockObject\MockObject;
-use Sunrise\Http\Router\Command\RouterListRoutesCommand;
 use PHPUnit\Framework\TestCase;
+use Sunrise\Http\Router\Command\RouterListRoutesCommand;
 use Sunrise\Http\Router\RouterInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 
