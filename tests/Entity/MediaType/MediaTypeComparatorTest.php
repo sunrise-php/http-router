@@ -16,7 +16,7 @@ final class MediaTypeComparatorTest extends TestCase
      */
     public function testCompare(MediaTypeInterface $a, MediaTypeInterface $b, int $expected): void
     {
-        $this->assertSame($expected, (new MediaTypeComparator)->compare($a, $b));
+        $this->assertSame($expected, (new MediaTypeComparator())->compare($a, $b));
     }
 
     private function compareDataProvider(): iterable

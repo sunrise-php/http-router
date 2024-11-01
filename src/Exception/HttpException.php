@@ -15,9 +15,12 @@ namespace Sunrise\Http\Router\Exception;
 
 use RuntimeException;
 use Stringable;
+use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationAdapter;
+use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationAdapter;
 use Sunrise\Http\Router\Validation\ConstraintViolationInterface;
 use Throwable;
 
+use function array_map;
 use function join;
 use function strtr;
 
@@ -111,5 +114,23 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
         }
 
         return $this;
+    }
+
+    final public function addHydratorConstraintViolations(
+        \Sunrise\Hydrator\Exception\InvalidValueException ...$constraintViolations
+    ): static {
+        return $this->addConstraintViolation(...array_map(
+            HydratorConstraintViolationAdapter::create(...),
+            $constraintViolations,
+        ));
+    }
+
+    final public function addValidatorConstraintViolations(
+        \Symfony\Component\Validator\ConstraintViolationInterface ...$constraintViolations
+    ): static {
+        return $this->addConstraintViolation(...array_map(
+            ValidatorConstraintViolationAdapter::create(...),
+            $constraintViolations,
+        ));
     }
 }

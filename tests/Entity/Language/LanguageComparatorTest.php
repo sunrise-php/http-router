@@ -16,7 +16,7 @@ final class LanguageComparatorTest extends TestCase
      */
     public function testCompare(LanguageInterface $a, LanguageInterface $b, int $expected): void
     {
-        $this->assertSame($expected, (new LanguageComparator)->compare($a, $b));
+        $this->assertSame($expected, (new LanguageComparator())->compare($a, $b));
     }
 
     private function compareDataProvider(): iterable

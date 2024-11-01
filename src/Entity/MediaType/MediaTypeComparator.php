@@ -25,11 +25,19 @@ final class MediaTypeComparator implements MediaTypeComparatorInterface
      */
     public function compare(MediaTypeInterface $a, MediaTypeInterface $b): int
     {
-        if (($a->getType() === '*' || $b->getType() === '*' || strcasecmp($a->getType(), $b->getType()) === 0) &&
-            ($a->getSubtype() === '*' || $b->getSubtype() === '*' || strcasecmp($a->getSubtype(), $b->getSubtype()) === 0)) {
+        $aType = $a->getType();
+        $aSubtype = $a->getSubtype();
+
+        $bType = $b->getType();
+        $bSubtype = $b->getSubtype();
+
+        if (
+            ($aType === '*' || $bType === '*' || strcasecmp($aType, $bType) === 0) &&
+            ($aSubtype === '*' || $bSubtype === '*' || strcasecmp($aSubtype, $bSubtype) === 0)
+        ) {
             return 0;
         }
 
-        return strcasecmp($a->__toString(), $b->__toString()) < 0 ? -1 : 1;
+        return strcasecmp((string) $a, (string) $b) < 0 ? -1 : 1;
     }
 }

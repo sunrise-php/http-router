@@ -277,7 +277,8 @@ final class Router implements RouterInterface
             return $this->routeRequestHandlers[$name];
         }
 
-        $this->routeRequestHandlers[$name] = $this->referenceResolver->resolveRequestHandler($route->getRequestHandler());
+        $this->routeRequestHandlers[$name] = $this->referenceResolver
+            ->resolveRequestHandler($route->getRequestHandler());
 
         $middlewares = array_merge($this->routeMiddlewares, $route->getMiddlewares());
         if ($middlewares !== []) {

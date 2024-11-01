@@ -158,7 +158,7 @@ final class RouteParserTest extends TestCase
         ];
 
         yield [
-            '{aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+            '{xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '/variable names must not exceed 32 characters/'
         ];
 

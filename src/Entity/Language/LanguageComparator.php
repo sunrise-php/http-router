@@ -20,10 +20,13 @@ final class LanguageComparator implements LanguageComparatorInterface
 {
     public function compare(LanguageInterface $a, LanguageInterface $b): int
     {
-        if ($a->getCode() === $b->getCode() || $a->getCode() === '*' || $b->getCode() === '*') {
+        $aCode = $a->getCode();
+        $bCode = $b->getCode();
+
+        if ($aCode === $bCode || $aCode === '*' || $bCode === '*') {
             return 0;
         }
 
-        return $a->getCode() <=> $b->getCode();
+        return $aCode <=> $bCode;
     }
 }

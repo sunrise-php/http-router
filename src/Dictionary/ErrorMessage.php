@@ -18,6 +18,7 @@ namespace Sunrise\Http\Router\Dictionary;
  */
 final class ErrorMessage
 {
+    // phpcs:disable Generic.Files.LineLength.TooLong
     public const MALFORMED_URI = 'The request URI is malformed and cannot be accepted by the server.';
     public const RESOURCE_NOT_FOUND = 'The requested resource was not found for this URI.';
     public const METHOD_NOT_ALLOWED = 'The requested method is not allowed for this resource; Check the Allow response header for allowed methods.';
@@ -33,4 +34,5 @@ final class ErrorMessage
     public const EMPTY_JSON_PAYLOAD = 'The JSON payload cannot be empty.';
     public const INVALID_JSON_PAYLOAD = 'The JSON payload is invalid.';
     public const INVALID_JSON_PAYLOAD_FORMAT = 'The JSON payload must be in the format of an array or an object.';
+    // phpcs:enable Generic.Files.LineLength.TooLong
 }

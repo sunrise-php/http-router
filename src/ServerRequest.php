@@ -88,7 +88,9 @@ final class ServerRequest implements ServerRequestInterface
         $route = $this->request->getAttribute(RouteInterface::class);
 
         if (! $route instanceof RouteInterface) {
-            throw new LogicException('At this level of the application, the request does not contain information about the requested route.');
+            throw new LogicException(
+                'At this level of the application, the request does not contain information about the requested route.'
+            );
         }
 
         return $route;

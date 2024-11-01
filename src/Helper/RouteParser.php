@@ -32,7 +32,16 @@ final class RouteParser
     /**
      * Parses the given route and returns its variables
      *
-     * @return list<array{name: string, pattern?: string, optional?: array{left: string, right: string}, offset: int, length: int}>
+     * @return list<array{
+     *           name: string,
+     *           pattern?: string,
+     *           optional?: array{
+     *             left: string,
+     *             right: string
+     *           },
+     *           offset: int,
+     *           length: int
+     *         }>
      *
      * @throws InvalidArgumentException
      */

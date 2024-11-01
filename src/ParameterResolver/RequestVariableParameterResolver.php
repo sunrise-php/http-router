@@ -26,8 +26,6 @@ use Sunrise\Http\Router\ParameterResolverChain;
 use Sunrise\Http\Router\ParameterResolverInterface;
 use Sunrise\Http\Router\ServerRequest;
 use Sunrise\Http\Router\Validation\Constraint\ArgumentConstraint;
-use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationAdapter;
-use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationAdapter;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
@@ -35,7 +33,6 @@ use Sunrise\Hydrator\HydratorInterface;
 use Sunrise\Hydrator\Type;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-use function array_map;
 use function sprintf;
 
 /**
@@ -97,26 +94,36 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
 
         try {
             /** @var mixed $argument */
-            $argument = $this->hydrator->castValue($route->getAttribute($variableName), Type::fromParameter($parameter), path: [$variableName]);
+            $argument = $this->hydrator->castValue(
+                $route->getAttribute($variableName),
+                Type::fromParameter($parameter),
+                path: [$variableName],
+            );
         } catch (InvalidValueException $e) {
             throw HttpExceptionFactory::invalidVariable($errorMessage, $errorStatusCode, previous: $e)
                 ->addMessagePlaceholder(self::PLACEHOLDER_VARIABLE_NAME, $variableName)
                 ->addMessagePlaceholder(self::PLACEHOLDER_ROUTE_URI, RouteSimplifier::simplifyRoute($route->getPath()))
-                ->addConstraintViolation(HydratorConstraintViolationAdapter::create($e));
+                ->addHydratorConstraintViolations($e);
         } catch (InvalidDataException $e) {
             throw HttpExceptionFactory::invalidVariable($errorMessage, $errorStatusCode, previous: $e)
                 ->addMessagePlaceholder(self::PLACEHOLDER_VARIABLE_NAME, $variableName)
                 ->addMessagePlaceholder(self::PLACEHOLDER_ROUTE_URI, RouteSimplifier::simplifyRoute($route->getPath()))
-                ->addConstraintViolation(...array_map(HydratorConstraintViolationAdapter::create(...), $e->getExceptions()));
+                ->addHydratorConstraintViolations(...$e->getExceptions());
         }
 
         if ($this->validator !== null) {
-            $violations = $this->validator->startContext()->atPath($variableName)->validate($argument, new ArgumentConstraint($parameter))->getViolations();
+            $violations = $this->validator->startContext()
+                ->atPath($variableName)
+                ->validate($argument, new ArgumentConstraint($parameter))
+                ->getViolations();
             if ($violations->count() > 0) {
                 throw HttpExceptionFactory::invalidVariable($errorMessage, $errorStatusCode)
                     ->addMessagePlaceholder(self::PLACEHOLDER_VARIABLE_NAME, $variableName)
-                    ->addMessagePlaceholder(self::PLACEHOLDER_ROUTE_URI, RouteSimplifier::simplifyRoute($route->getPath()))
-                    ->addConstraintViolation(...array_map(ValidatorConstraintViolationAdapter::create(...), [...$violations]));
+                    ->addMessagePlaceholder(
+                        self::PLACEHOLDER_ROUTE_URI,
+                        RouteSimplifier::simplifyRoute($route->getPath()),
+                    )
+                    ->addValidatorConstraintViolations(...$violations);
             }
         }
 

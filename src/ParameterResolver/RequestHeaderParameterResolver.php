@@ -22,16 +22,12 @@ use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 use Sunrise\Http\Router\ParameterResolverInterface;
 use Sunrise\Http\Router\Validation\Constraint\ArgumentConstraint;
-use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationAdapter;
-use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationAdapter;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
 use Sunrise\Hydrator\Type;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-
-use function array_map;
 
 /**
  * @since 3.0.0
@@ -83,23 +79,30 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
 
         try {
             /** @var mixed $argument */
-            $argument = $this->hydrator->castValue($context->getHeaderLine($headerName), Type::fromParameter($parameter), path: [$headerName]);
+            $argument = $this->hydrator->castValue(
+                $context->getHeaderLine($headerName),
+                Type::fromParameter($parameter),
+                path: [$headerName],
+            );
         } catch (InvalidValueException $e) {
             throw HttpExceptionFactory::invalidHeader($errorMessage, $errorStatusCode, previous: $e)
                 ->addMessagePlaceholder(self::PLACEHOLDER_HEADER_NAME, $headerName)
-                ->addConstraintViolation(HydratorConstraintViolationAdapter::create($e));
+                ->addHydratorConstraintViolations($e);
         } catch (InvalidDataException $e) {
             throw HttpExceptionFactory::invalidHeader($errorMessage, $errorStatusCode, previous: $e)
                 ->addMessagePlaceholder(self::PLACEHOLDER_HEADER_NAME, $headerName)
-                ->addConstraintViolation(...array_map(HydratorConstraintViolationAdapter::create(...), $e->getExceptions()));
+                ->addHydratorConstraintViolations(...$e->getExceptions());
         }
 
         if ($processParams->validation && $this->validator !== null) {
-            $violations = $this->validator->startContext()->atPath($headerName)->validate($argument, new ArgumentConstraint($parameter))->getViolations();
+            $violations = $this->validator->startContext()
+                ->atPath($headerName)
+                ->validate($argument, new ArgumentConstraint($parameter))
+                ->getViolations();
             if ($violations->count() > 0) {
                 throw HttpExceptionFactory::invalidHeader($errorMessage, $errorStatusCode)
                     ->addMessagePlaceholder(self::PLACEHOLDER_HEADER_NAME, $headerName)
-                    ->addConstraintViolation(...array_map(ValidatorConstraintViolationAdapter::create(...), [...$violations]));
+                    ->addValidatorConstraintViolations(...$violations);
             }
         }
 

@@ -24,14 +24,11 @@ use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 use Sunrise\Http\Router\ParameterResolverChain;
 use Sunrise\Http\Router\ParameterResolverInterface;
-use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationAdapter;
-use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationAdapter;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\HydratorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-use function array_map;
 use function sprintf;
 
 /**
@@ -85,13 +82,13 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
             $argument = $this->hydrator->hydrate($className, $context->getQueryParams());
         } catch (InvalidDataException $e) {
             throw HttpExceptionFactory::invalidQuery($errorMessage, $errorStatusCode, previous: $e)
-                ->addConstraintViolation(...array_map(HydratorConstraintViolationAdapter::create(...), $e->getExceptions()));
+                ->addHydratorConstraintViolations(...$e->getExceptions());
         }
 
         if ($processParams->validation && $this->validator !== null) {
             if (($violations = $this->validator->validate($argument))->count() > 0) {
                 throw HttpExceptionFactory::invalidQuery($errorMessage, $errorStatusCode)
-                    ->addConstraintViolation(...array_map(ValidatorConstraintViolationAdapter::create(...), [...$violations]));
+                    ->addValidatorConstraintViolations(...$violations);
             }
         }
 

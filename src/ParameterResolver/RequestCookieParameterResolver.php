@@ -23,16 +23,12 @@ use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 use Sunrise\Http\Router\ParameterResolverInterface;
 use Sunrise\Http\Router\ServerRequest;
 use Sunrise\Http\Router\Validation\Constraint\ArgumentConstraint;
-use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationAdapter;
-use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationAdapter;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
 use Sunrise\Hydrator\Type;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-
-use function array_map;
 
 /**
  * @since 3.0.0
@@ -85,23 +81,30 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
 
         try {
             /** @var mixed $argument */
-            $argument = $this->hydrator->castValue($request->getCookieParam($cookieName), Type::fromParameter($parameter), path: [$cookieName]);
+            $argument = $this->hydrator->castValue(
+                $request->getCookieParam($cookieName),
+                Type::fromParameter($parameter),
+                path: [$cookieName],
+            );
         } catch (InvalidValueException $e) {
             throw HttpExceptionFactory::invalidCookie($errorMessage, $errorStatusCode, previous: $e)
                 ->addMessagePlaceholder(self::PLACEHOLDER_COOKIE_NAME, $cookieName)
-                ->addConstraintViolation(HydratorConstraintViolationAdapter::create($e));
+                ->addHydratorConstraintViolations($e);
         } catch (InvalidDataException $e) {
             throw HttpExceptionFactory::invalidCookie($errorMessage, $errorStatusCode, previous: $e)
                 ->addMessagePlaceholder(self::PLACEHOLDER_COOKIE_NAME, $cookieName)
-                ->addConstraintViolation(...array_map(HydratorConstraintViolationAdapter::create(...), $e->getExceptions()));
+                ->addHydratorConstraintViolations(...$e->getExceptions());
         }
 
         if ($processParams->validation && $this->validator !== null) {
-            $violations = $this->validator->startContext()->atPath($cookieName)->validate($argument, new ArgumentConstraint($parameter))->getViolations();
+            $violations = $this->validator->startContext()
+                ->atPath($cookieName)
+                ->validate($argument, new ArgumentConstraint($parameter))
+                ->getViolations();
             if ($violations->count() > 0) {
                 throw HttpExceptionFactory::invalidCookie($errorMessage, $errorStatusCode)
                     ->addMessagePlaceholder(self::PLACEHOLDER_COOKIE_NAME, $cookieName)
-                    ->addConstraintViolation(...array_map(ValidatorConstraintViolationAdapter::create(...), [...$violations]));
+                    ->addValidatorConstraintViolations(...$violations);
             }
         }
 

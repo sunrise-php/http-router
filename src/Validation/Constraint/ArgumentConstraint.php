@@ -19,7 +19,7 @@ use Symfony\Component\Validator\Constraint;
 /**
  * @since 3.0.0
  *
- * @psalm-suppress PropertyNotSetInConstructor https://github.com/symfony/validator/blob/33e1f3bb76ef70e3170e12f878aefb9c69b0fc4c/Constraint.php#L71
+ * @psalm-suppress PropertyNotSetInConstructor See {@see parent::$groups}.
  */
 final class ArgumentConstraint extends Constraint
 {

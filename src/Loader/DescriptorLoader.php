@@ -223,8 +223,10 @@ final class DescriptorLoader implements LoaderInterface
      *
      * @throws InvalidArgumentException
      */
-    private static function enrichDescriptorFromClassOrMethod(Descriptor $descriptor, ReflectionClass|ReflectionMethod $classOrMethod): void
-    {
+    private static function enrichDescriptorFromClassOrMethod(
+        Descriptor $descriptor,
+        ReflectionClass|ReflectionMethod $classOrMethod,
+    ): void {
         /** @var list<ReflectionAttribute<NamePrefix>> $annotations */
         $annotations = $classOrMethod->getAttributes(NamePrefix::class);
         if (isset($annotations[0])) {

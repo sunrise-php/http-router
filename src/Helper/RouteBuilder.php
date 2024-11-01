@@ -101,7 +101,7 @@ final class RouteBuilder
             return (string) $value->value;
         }
         if ($value instanceof Stringable) {
-            return $value->__toString();
+            return (string) $value;
         }
 
         throw new InvalidArgumentException(sprintf(

@@ -105,7 +105,13 @@ final class ParameterResolverChain implements ParameterResolverChainInterface
         $function = $parameter->getDeclaringFunction();
 
         if ($function instanceof ReflectionMethod) {
-            return sprintf('%s::%s($%s[%d])', $function->getDeclaringClass()->getName(), $function->getName(), $parameter->getName(), $parameter->getPosition());
+            return sprintf(
+                '%s::%s($%s[%d])',
+                $function->getDeclaringClass()->getName(),
+                $function->getName(),
+                $parameter->getName(),
+                $parameter->getPosition(),
+            );
         }
 
         return sprintf('%s($%s[%d])', $function->getName(), $parameter->getName(), $parameter->getPosition());
