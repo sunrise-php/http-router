@@ -11,8 +11,7 @@ final class ServerLanguageTest extends TestCase
 {
     public function testConstructor(): void
     {
-        $language = new ServerLanguage('sr');
-
-        $this->assertSame('sr', $language->getCode());
+        $serverLanguage = new ServerLanguage('sr');
+        $this->assertSame('sr', $serverLanguage->getCode());
     }
 }

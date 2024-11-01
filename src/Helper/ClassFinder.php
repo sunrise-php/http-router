@@ -35,7 +35,7 @@ use function sprintf;
 final class ClassFinder
 {
     /**
-     * @return Generator<int, ReflectionClass<object>>
+     * @return Generator<class-string, ReflectionClass<object>>
      *
      * @throws InvalidArgumentException
      * @throws ReflectionException
@@ -63,13 +63,13 @@ final class ClassFinder
         foreach (get_declared_classes() as $className) {
             $classReflection = new ReflectionClass($className);
             if (isset($filenames[$classReflection->getFileName()])) {
-                yield $classReflection;
+                yield $className => $classReflection;
             }
         }
     }
 
     /**
-     * @return Generator<int, ReflectionClass<object>>
+     * @return Generator<class-string, ReflectionClass<object>>
      *
      * @throws InvalidArgumentException
      * @throws ReflectionException
@@ -91,7 +91,7 @@ final class ClassFinder
         foreach (get_declared_classes() as $className) {
             $classReflection = new ReflectionClass($className);
             if ($classReflection->getFileName() === $filename) {
-                yield $classReflection;
+                yield $className => $classReflection;
             }
         }
     }

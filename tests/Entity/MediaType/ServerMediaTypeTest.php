@@ -11,16 +11,14 @@ final class ServerMediaTypeTest extends TestCase
 {
     public function testConstructor(): void
     {
-        $mediaType = new ServerMediaType('application', 'json');
-
-        $this->assertSame('application', $mediaType->getType());
-        $this->assertSame('json', $mediaType->getSubtype());
+        $serverMediaType = new ServerMediaType('application', 'json');
+        $this->assertSame('application', $serverMediaType->getType());
+        $this->assertSame('json', $serverMediaType->getSubtype());
     }
 
     public function testToString(): void
     {
-        $mediaType = new ServerMediaType('application', 'json');
-
-        $this->assertSame('application/json', (string) $mediaType);
+        $serverMediaType = new ServerMediaType('application', 'json');
+        $this->assertSame('application/json', (string) $serverMediaType);
     }
 }

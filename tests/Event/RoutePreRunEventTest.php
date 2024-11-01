@@ -24,7 +24,6 @@ final class RoutePreRunEventTest extends TestCase
     public function testConstructor(): void
     {
         $event = new RoutePreRunEvent($this->routeMock, $this->serverRequestMock);
-
         $this->assertSame($this->routeMock, $event->getRoute());
         $this->assertSame($this->serverRequestMock, $event->getRequest());
     }
@@ -32,11 +31,7 @@ final class RoutePreRunEventTest extends TestCase
     public function testSetRequest(): void
     {
         $event = new RoutePreRunEvent($this->routeMock, $this->serverRequestMock);
-
-        $newServerRequest = clone $this->serverRequestMock;
-        $this->assertNotSame($this->serverRequestMock, $newServerRequest);
-
-        $event->setRequest($newServerRequest);
+        $event->setRequest($newServerRequest = clone $this->serverRequestMock);
         $this->assertSame($newServerRequest, $event->getRequest());
     }
 }

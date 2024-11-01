@@ -11,10 +11,9 @@ final class ClientLanguageTest extends TestCase
 {
     public function testConstructor(): void
     {
-        $language = new ClientLanguage('sr', 'sr-RS', ['q' => '1.0']);
-
-        $this->assertSame('sr', $language->getCode());
-        $this->assertSame('sr-RS', $language->getIdentifier());
-        $this->assertSame(['q' => '1.0'], $language->getParameters());
+        $clientLanguage = new ClientLanguage('sr', 'sr-RS', ['q' => '1.0']);
+        $this->assertSame('sr', $clientLanguage->getCode());
+        $this->assertSame('sr-RS', $clientLanguage->getIdentifier());
+        $this->assertSame(['q' => '1.0'], $clientLanguage->getParameters());
     }
 }

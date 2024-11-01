@@ -27,7 +27,6 @@ final class RoutePostRunEventTest extends TestCase
     public function testConstructor(): void
     {
         $event = new RoutePostRunEvent($this->routeMock, $this->serverRequestMock, $this->responseMock);
-
         $this->assertSame($this->routeMock, $event->getRoute());
         $this->assertSame($this->serverRequestMock, $event->getRequest());
         $this->assertSame($this->responseMock, $event->getResponse());
@@ -36,11 +35,7 @@ final class RoutePostRunEventTest extends TestCase
     public function testSetResponse(): void
     {
         $event = new RoutePostRunEvent($this->routeMock, $this->serverRequestMock, $this->responseMock);
-
-        $newResponse = clone $this->responseMock;
-        $this->assertNotSame($this->responseMock, $newResponse);
-
-        $event->setResponse($newResponse);
+        $event->setResponse($newResponse = clone $this->responseMock);
         $this->assertSame($newResponse, $event->getResponse());
     }
 }

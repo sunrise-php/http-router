@@ -16,7 +16,6 @@ final class RouteParserTest extends TestCase
     public function testParseValidRoute(string $route, array $expectedVariables): void
     {
         $actualVariables = RouteParser::parseRoute($route);
-
         $this->assertEquals($expectedVariables, $actualVariables);
     }
 
@@ -27,7 +26,6 @@ final class RouteParserTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessageMatches($expectedMessageRegex);
-
         RouteParser::parseRoute($route);
     }
 

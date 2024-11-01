@@ -11,17 +11,15 @@ final class ClientMediaTypeTest extends TestCase
 {
     public function testConstructor(): void
     {
-        $mediaType = new ClientMediaType('application', 'json', ['q' => '1.0']);
-
-        $this->assertSame('application', $mediaType->getType());
-        $this->assertSame('json', $mediaType->getSubtype());
-        $this->assertSame(['q' => '1.0'], $mediaType->getParameters());
+        $clientMediaType = new ClientMediaType('application', 'json', ['q' => '1.0']);
+        $this->assertSame('application', $clientMediaType->getType());
+        $this->assertSame('json', $clientMediaType->getSubtype());
+        $this->assertSame(['q' => '1.0'], $clientMediaType->getParameters());
     }
 
     public function testToString(): void
     {
-        $mediaType = new ClientMediaType('application', 'json', ['q' => '1.0']);
-
-        $this->assertSame('application/json', (string) $mediaType);
+        $clientMediaType = new ClientMediaType('application', 'json', ['q' => '1.0']);
+        $this->assertSame('application/json', (string) $clientMediaType);
     }
 }
