@@ -31,7 +31,8 @@ final class RoutePreRunEventTest extends TestCase
     public function testSetRequest(): void
     {
         $event = new RoutePreRunEvent($this->routeMock, $this->serverRequestMock);
-        $event->setRequest($newServerRequest = clone $this->serverRequestMock);
+        $newServerRequest = $this->createMock(ServerRequestInterface::class);
+        $event->setRequest($newServerRequest);
         $this->assertSame($newServerRequest, $event->getRequest());
     }
 }

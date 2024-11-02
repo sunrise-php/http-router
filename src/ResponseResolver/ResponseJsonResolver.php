@@ -22,7 +22,7 @@ use ReflectionAttribute;
 use ReflectionFunction;
 use ReflectionMethod;
 use RuntimeException;
-use Sunrise\Http\Router\Annotation\ResponseJson;
+use Sunrise\Http\Router\Annotation\Response\JsonResponse;
 use Sunrise\Http\Router\ResponseResolverChain;
 use Sunrise\Http\Router\ResponseResolverInterface;
 
@@ -56,8 +56,8 @@ final class ResponseJsonResolver implements ResponseResolverInterface
         ReflectionMethod|ReflectionFunction $responder,
         ServerRequestInterface $request,
     ): ?ResponseInterface {
-        /** @var list<ReflectionAttribute<ResponseJson>> $annotations */
-        $annotations = $responder->getAttributes(ResponseJson::class);
+        /** @var list<ReflectionAttribute<JsonResponse>> $annotations */
+        $annotations = $responder->getAttributes(JsonResponse::class);
         if ($annotations === []) {
             return null;
         }

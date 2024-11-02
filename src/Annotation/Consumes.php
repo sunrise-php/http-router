@@ -22,8 +22,13 @@ use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 class Consumes
 {
-    public function __construct(
-        public readonly MediaTypeInterface|string $value,
-    ) {
+    /**
+     * @var array<array-key, MediaTypeInterface>
+     */
+    public readonly array $values;
+
+    public function __construct(MediaTypeInterface ...$values)
+    {
+        $this->values = $values;
     }
 }

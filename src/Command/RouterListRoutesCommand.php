@@ -25,7 +25,7 @@ use function join;
 /**
  * @since 2.9.0
  */
-#[AsCommand('router:list-routes', 'Lists all routes.')]
+#[AsCommand('router:list-routes', 'Lists routes.')]
 final class RouterListRoutesCommand extends Command
 {
     public function __construct(private readonly RouterInterface $router)

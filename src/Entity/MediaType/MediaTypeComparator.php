@@ -13,7 +13,8 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Entity\MediaType;
 
-use function strcasecmp;
+use function explode;
+use function strtolower;
 
 /**
  * @since 3.0.0
@@ -21,22 +22,21 @@ use function strcasecmp;
 final class MediaTypeComparator implements MediaTypeComparatorInterface
 {
     /**
-     * @link https://datatracker.ietf.org/doc/html/rfc2045#section-5.1
+     * @inheritDoc
      */
     public function compare(MediaTypeInterface $a, MediaTypeInterface $b): int
     {
-        $aType = $a->getType();
-        $aSubtype = $a->getSubtype();
-        $bType = $b->getType();
-        $bSubtype = $b->getSubtype();
+        $aId = strtolower($a->getIdentifier());
+        $aParts = explode('/', $aId, 2);
+        $aParts[1] ??= '';
 
-        if (
-            ($aType === '*' || $bType === '*' || strcasecmp($aType, $bType) === 0) &&
-            ($aSubtype === '*' || $bSubtype === '*' || strcasecmp($aSubtype, $bSubtype) === 0)
-        ) {
-            return 0;
-        }
+        $bId = strtolower($b->getIdentifier());
+        $bParts = explode('/', $bId, 2);
+        $bParts[1] ??= '';
 
-        return strcasecmp((string) $a, (string) $b) < 0 ? -1 : 1;
+        $sameTypes = $aParts[0] === '*' || $bParts[0] === '*' || $aParts[0] === $bParts[0];
+        $sameSubtypes = $aParts[1] === '*' || $bParts[1] === '*' || $aParts[1] === $bParts[1];
+
+        return ($sameTypes && $sameSubtypes) ? 0 : $aId <=> $bId;
     }
 }

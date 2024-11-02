@@ -17,10 +17,12 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Router\Entity\MediaType\StringableMediaType;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 use Sunrise\Http\Router\ServerRequest;
 
+use function array_map;
 use function array_values;
 
 /**
@@ -50,13 +52,13 @@ final class PayloadMediaTypeNegotiationMiddleware implements MiddlewareInterface
         $clientProducedMediaType = $serverRequest->getClientProducedMediaType();
         if ($clientProducedMediaType === null) {
             throw HttpExceptionFactory::missingContentType($this->errorMessage, $this->errorStatusCode)
-                ->addHeaderField('Accept', ...$serverConsumedMediaTypes);
+                ->addHeaderField('Accept', ...array_map(StringableMediaType::create(...), $serverConsumedMediaTypes));
         }
 
         if (!$serverRequest->clientProducesMediaType(...$serverConsumedMediaTypes)) {
             throw HttpExceptionFactory::unsupportedMediaType($this->errorMessage, $this->errorStatusCode)
                 ->addMessagePlaceholder('{{ media_type }}', $clientProducedMediaType)
-                ->addHeaderField('Accept', ...$serverConsumedMediaTypes);
+                ->addHeaderField('Accept', ...array_map(StringableMediaType::create(...), $serverConsumedMediaTypes));
         }
 
         return $handler->handle($request);

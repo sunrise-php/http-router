@@ -27,7 +27,10 @@ final class RouterListRoutesCommandTest extends TestCase
     public function testExecuteWithRoutes(): void
     {
         $this->mockRoute();
-        $this->routerMock->expects($this->once())->method('getRoutes')->willReturn($this->routeMocks);
+
+        $this->routerMock->expects(self::once())
+            ->method('getRoutes')
+            ->willReturn($this->routeMocks);
 
         $command = new RouterListRoutesCommand($this->routerMock);
         $commandTester = new CommandTester($command);
@@ -36,8 +39,6 @@ final class RouterListRoutesCommandTest extends TestCase
 
     public function testExecuteWithoutRoutes(): void
     {
-        $this->routerMock->expects($this->once())->method('getRoutes')->willReturn($this->routeMocks);
-
         $command = new RouterListRoutesCommand($this->routerMock);
         $commandTester = new CommandTester($command);
         $this->assertSame(0, $commandTester->execute([]));

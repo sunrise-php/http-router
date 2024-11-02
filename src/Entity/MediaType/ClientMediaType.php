@@ -16,29 +16,18 @@ namespace Sunrise\Http\Router\Entity\MediaType;
 /**
  * @since 3.0.0
  */
-final class MediaType implements MediaTypeInterface
+final class ClientMediaType implements MediaTypeInterface
 {
     public function __construct(
-        private readonly string $type,
-        private readonly string $subtype,
+        private readonly string $identifier,
         /** @var array<string, string> */
-        private readonly array $parameters = [],
+        private readonly array $parameters,
     ) {
-    }
-
-    public function getType(): string
-    {
-        return $this->type;
-    }
-
-    public function getSubtype(): string
-    {
-        return $this->subtype;
     }
 
     public function getIdentifier(): string
     {
-        return $this->type . $this::SEPARATOR . $this->subtype;
+        return $this->identifier;
     }
 
     /**
@@ -47,10 +36,5 @@ final class MediaType implements MediaTypeInterface
     public function getParameters(): array
     {
         return $this->parameters;
-    }
-
-    public function __toString(): string
-    {
-        return $this->getIdentifier();
     }
 }

@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Validation\Constraint;
 
 use ReflectionAttribute;
-use Sunrise\Http\Router\Annotation\Constraint as ParameterConstraint;
+use Sunrise\Http\Router\Annotation\Constraint as ConstraintAnnotation;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
@@ -36,12 +36,16 @@ final class ArgumentConstraintValidator extends ConstraintValidator
         }
 
         $constraints = [];
-        /** @var list<ReflectionAttribute<ParameterConstraint>> $parameterAnnotations */
-        $parameterAnnotations = $constraint->getParameter()->getAttributes(ParameterConstraint::class);
-        foreach ($parameterAnnotations as $parameterAnnotation) {
-            $parameterConstraint = $parameterAnnotation->newInstance();
-            if ($parameterConstraint->value instanceof Constraint) {
-                $constraints[] = $parameterConstraint->value;
+
+        /** @var list<ReflectionAttribute<ConstraintAnnotation>> $constraintAnnotations */
+        $constraintAnnotations = $constraint->getParameter()->getAttributes(ConstraintAnnotation::class);
+        foreach ($constraintAnnotations as $constraintAnnotation) {
+            $parameterConstraints = $constraintAnnotation->newInstance()->values;
+            /** @var mixed $parameterConstraint */
+            foreach ($parameterConstraints as $parameterConstraint) {
+                if ($parameterConstraint instanceof Constraint) {
+                    $constraints[] = $parameterConstraint;
+                }
             }
         }
 

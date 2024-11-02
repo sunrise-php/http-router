@@ -11,14 +11,13 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Annotation;
-
-use Attribute;
+namespace Sunrise\Http\Router\Dictionary;
 
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION)]
-final class ResponseEmpty
+final class MediaType
 {
+    public const JSON = 'application/json';
+    public const XML = 'application/xml';
 }

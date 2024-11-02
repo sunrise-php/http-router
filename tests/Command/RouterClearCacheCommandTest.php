@@ -22,7 +22,9 @@ final class RouterClearCacheCommandTest extends TestCase
 
     public function testExecuteWithCache(): void
     {
-        $this->cacheMock->expects($this->once())->method('delete')->with(CacheKey::DESCRIPTORS);
+        $this->cacheMock->expects(self::once())
+            ->method('delete')
+            ->with(CacheKey::DESCRIPTORS);
 
         $command = new RouterClearCacheCommand($this->cacheMock);
         $commandTester = new CommandTester($command);

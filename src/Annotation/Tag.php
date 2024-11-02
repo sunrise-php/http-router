@@ -21,8 +21,13 @@ use Attribute;
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 final class Tag
 {
-    public function __construct(
-        public readonly string $value,
-    ) {
+    /**
+     * @var array<array-key, string>
+     */
+    public readonly array $values;
+
+    public function __construct(string ...$values)
+    {
+        $this->values = $values;
     }
 }

@@ -11,19 +11,17 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Annotation;
+namespace Sunrise\Http\Router\Entity\MediaType;
 
-use Attribute;
-use Fig\Http\Message\RequestMethodInterface;
+use Sunrise\Http\Router\Dictionary\MediaType;
 
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class MethodPurge extends Method
+final class JsonMediaType implements MediaTypeInterface
 {
-    public function __construct()
+    public function getIdentifier(): string
     {
-        parent::__construct(RequestMethodInterface::METHOD_PURGE);
+        return MediaType::JSON;
     }
 }

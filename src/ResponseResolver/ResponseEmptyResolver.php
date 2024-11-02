@@ -19,7 +19,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionFunction;
 use ReflectionMethod;
-use Sunrise\Http\Router\Annotation\ResponseEmpty;
+use Sunrise\Http\Router\Annotation\Response\EmptyResponse;
 use Sunrise\Http\Router\ResponseResolverInterface;
 
 /**
@@ -43,7 +43,7 @@ final class ResponseEmptyResolver implements ResponseResolverInterface
         ReflectionMethod|ReflectionFunction $responder,
         ServerRequestInterface $request,
     ): ?ResponseInterface {
-        if ($responder->getAttributes(ResponseEmpty::class) === []) {
+        if ($responder->getAttributes(EmptyResponse::class) === []) {
             return null;
         }
 

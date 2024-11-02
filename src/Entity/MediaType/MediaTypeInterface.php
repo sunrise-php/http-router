@@ -13,16 +13,10 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Entity\MediaType;
 
-use Stringable;
-
 /**
  * @since 3.0.0
  */
-interface MediaTypeInterface extends Stringable
+interface MediaTypeInterface
 {
-    final public const SEPARATOR = '/';
-
-    public function getType(): string;
-
-    public function getSubtype(): string;
+    public function getIdentifier(): string;
 }

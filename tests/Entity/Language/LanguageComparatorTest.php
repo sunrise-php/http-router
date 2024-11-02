@@ -13,31 +13,88 @@ use Sunrise\Http\Router\Entity\Language\LanguageInterface;
 final class LanguageComparatorTest extends TestCase
 {
     #[DataProvider('compareDataProvider')]
-    public function testCompare(string $aCode, string $bCode, int $expectedResult): void
+    public function testCompare(string $aCode, string $bCode, int $expected): void
     {
-        $comparator = new LanguageComparator();
+        $a = $this->mockLanguage(code: $aCode);
+        $b = $this->mockLanguage(code: $bCode);
 
-        $a = $this->mockLanguage($aCode);
-        $b = $this->mockLanguage($bCode);
-
-        $this->assertSame($expectedResult, $comparator->compare($a, $b));
+        $this->assertSame($expected, (new LanguageComparator())->compare($a, $b));
     }
 
     public static function compareDataProvider(): iterable
     {
-        yield ['sr', 'sr', 0];
-        yield ['*', '*', 0];
-        yield ['*', 'sr', 0];
-        yield ['sr', '*', 0];
-        yield ['sr', 'bs', 'sr' <=> 'bs'];
-        yield ['bs', 'sr', 'bs' <=> 'sr'];
+        yield [
+            'sr',
+            'sr',
+            0,
+        ];
+
+        yield [
+            '*',
+            '*',
+            0,
+        ];
+
+        yield [
+            '*',
+            'sr',
+            0,
+        ];
+
+        yield [
+            'sr',
+            '*',
+            0,
+        ];
+
+        yield [
+            'sr',
+            'bs',
+            1,
+        ];
+
+        yield [
+            'bs',
+            'sr',
+            -1,
+        ];
+
+        yield [
+            'it',
+            'IT',
+            1,
+        ];
+
+        yield [
+            'IT',
+            'it',
+            -1,
+        ];
+
+        yield [
+            '',
+            '',
+            0,
+        ];
+
+        yield [
+            'sr',
+            '',
+            1,
+        ];
+
+        yield [
+            '',
+            'sr',
+            -1,
+        ];
     }
 
     private function mockLanguage(string $code): LanguageInterface&MockObject
     {
-        $languageMock = $this->createMock(LanguageInterface::class);
-        $languageMock->method('getCode')->willReturn($code);
+        $language = $this->createMock(LanguageInterface::class);
+        $language->method('getCode')->willReturn($code);
 
-        return $languageMock;
+        return $language;
     }
 }

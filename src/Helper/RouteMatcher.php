@@ -73,7 +73,7 @@ final class RouteMatcher
 
             throw new InvalidArgumentException(sprintf(
                 'The route %s could not be matched due to: %s. ' .
-                'This problem is most likely related to one of the route patterns',
+                'This problem is most likely related to one of the route patterns.',
                 $route,
                 preg_last_error_msg(),
             ), preg_last_error());

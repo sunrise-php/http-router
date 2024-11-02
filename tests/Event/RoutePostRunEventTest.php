@@ -35,7 +35,8 @@ final class RoutePostRunEventTest extends TestCase
     public function testSetResponse(): void
     {
         $event = new RoutePostRunEvent($this->routeMock, $this->serverRequestMock, $this->responseMock);
-        $event->setResponse($newResponse = clone $this->responseMock);
+        $newResponse = $this->createMock(ResponseInterface::class);
+        $event->setResponse($newResponse);
         $this->assertSame($newResponse, $event->getResponse());
     }
 }

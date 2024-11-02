@@ -11,18 +11,20 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Annotation;
+namespace Sunrise\Http\Router\Annotation\Method;
 
 use Attribute;
+use Sunrise\Http\Router\Annotation\Method;
+use Sunrise\Http\Router\Dictionary\RequestMethod;
 
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
-final class PathHome extends Path
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
+final class DeleteMethod extends Method
 {
     public function __construct()
     {
-        parent::__construct('/');
+        parent::__construct(RequestMethod::DELETE);
     }
 }

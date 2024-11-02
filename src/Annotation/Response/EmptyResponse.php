@@ -11,19 +11,14 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Annotation;
+namespace Sunrise\Http\Router\Annotation\Response;
 
 use Attribute;
-use Sunrise\Http\Router\Entity\MediaType\MediaTypeFactory;
 
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class ProducesText extends Produces
+#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION)]
+final class EmptyResponse
 {
-    public function __construct()
-    {
-        parent::__construct(MediaTypeFactory::text());
-    }
 }

@@ -16,14 +16,13 @@ namespace Sunrise\Http\Router\Entity\Language;
 /**
  * @since 3.0.0
  */
-final class Language implements LanguageInterface
+final class ClientLanguage implements LanguageInterface
 {
     public function __construct(
         private readonly string $code,
-        // As an example, this could be one of the identifiers in the Accept-Language header.
-        private readonly ?string $identifier = null,
+        private readonly string $locale,
         /** @var array<string, string> */
-        private readonly array $parameters = [],
+        private readonly array $parameters,
     ) {
     }
 
@@ -32,9 +31,9 @@ final class Language implements LanguageInterface
         return $this->code;
     }
 
-    public function getIdentifier(): string
+    public function getLocale(): string
     {
-        return $this->identifier ?? $this->code;
+        return $this->locale;
     }
 
     /**

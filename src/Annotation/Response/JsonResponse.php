@@ -11,19 +11,19 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Annotation;
+namespace Sunrise\Http\Router\Annotation\Response;
 
 use Attribute;
-use Sunrise\Http\Router\Dictionary\VariablePattern;
 
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class PatternAsciiSlug extends Pattern
+#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION)]
+final class JsonResponse
 {
-    public function __construct(string $variableName)
-    {
-        parent::__construct($variableName, VariablePattern::ASCII_SLUG);
+    public function __construct(
+        public readonly ?int $encodingFlags = null,
+        public readonly ?int $encodingDepth = null,
+    ) {
     }
 }

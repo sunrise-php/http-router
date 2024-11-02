@@ -22,8 +22,13 @@ use Attribute;
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::TARGET_PARAMETER | Attribute::IS_REPEATABLE)]
 final class Constraint
 {
-    public function __construct(
-        public readonly mixed $value,
-    ) {
+    /**
+     * @var array<array-key, mixed>
+     */
+    public readonly array $values;
+
+    public function __construct(mixed ...$values)
+    {
+        $this->values = $values;
     }
 }
