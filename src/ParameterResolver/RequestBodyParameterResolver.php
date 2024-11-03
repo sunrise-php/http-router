@@ -82,13 +82,13 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
             $argument = $this->hydrator->hydrate($className, (array) $context->getParsedBody());
         } catch (InvalidDataException $e) {
             throw HttpExceptionFactory::invalidBody($errorMessage, $errorStatusCode, previous: $e)
-                ->addHydratorConstraintViolations(...$e->getExceptions());
+                ->addHydratorConstraintViolation(...$e->getExceptions());
         }
 
         if ($processParams->validation && $this->validator !== null) {
             if (($violations = $this->validator->validate($argument))->count() > 0) {
                 throw HttpExceptionFactory::invalidBody($errorMessage, $errorStatusCode)
-                    ->addValidatorConstraintViolations(...$violations);
+                    ->addValidatorConstraintViolation(...$violations);
             }
         }
 

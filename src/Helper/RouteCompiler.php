@@ -24,8 +24,6 @@ use function substr;
  */
 final class RouteCompiler
 {
-    public const PATTERN_DELIMITER = '#';
-
     /**
      * @param array<string, string> $patterns
      *

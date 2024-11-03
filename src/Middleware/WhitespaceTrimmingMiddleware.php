@@ -29,40 +29,29 @@ use function trim;
 final class WhitespaceTrimmingMiddleware implements MiddlewareInterface
 {
     /**
-     * @var callable
-     *
-     * @readonly
+     * @inheritDoc
      */
-    private $walker;
-
-    /**
-     * @param ?callable(string):string $trimmer
-     */
-    public function __construct(?callable $trimmer = null)
-    {
-        $trimmer ??= trim(...);
-
-        $this->walker = static function (mixed &$value) use ($trimmer): void {
-            if (is_string($value)) {
-                $value = $trimmer($value);
-            }
-        };
-    }
-
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $parsedBody = $request->getParsedBody();
         if ($parsedBody !== [] && is_array($parsedBody)) {
-            array_walk_recursive($parsedBody, $this->walker);
+            array_walk_recursive($parsedBody, self::trim(...));
             $request = $request->withParsedBody($parsedBody);
         }
 
         $queryParams = $request->getQueryParams();
         if ($queryParams !== []) {
-            array_walk_recursive($queryParams, $this->walker);
+            array_walk_recursive($queryParams, self::trim(...));
             $request = $request->withQueryParams($queryParams);
         }
 
         return $handler->handle($request);
+    }
+
+    private static function trim(mixed &$value): void
+    {
+        if (is_string($value)) {
+            $value = trim($value);
+        }
     }
 }

@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Helper;
 
 use InvalidArgumentException;
-use Sunrise\Http\Router\Dictionary\Charset;
 
 use function sprintf;
 
@@ -28,6 +27,22 @@ final class RouteParser
     private const IN_VARIABLE_PATTERN = 8;
     private const IN_OPTIONAL_PART = 16;
     private const IN_OCCUPIED_PART = 32;
+
+    /**
+     * @link https://www.pcre.org/original/doc/html/pcrepattern.html#SEC16
+     */
+    private const PCRE_SUBPATTERN_NAME = [
+        "\x30" => 1, "\x31" => 1, "\x32" => 1, "\x33" => 1, "\x34" => 1, "\x35" => 1, "\x36" => 1, "\x37" => 1,
+        "\x38" => 1, "\x39" => 1, "\x41" => 1, "\x42" => 1, "\x43" => 1, "\x44" => 1, "\x45" => 1, "\x46" => 1,
+        "\x47" => 1, "\x48" => 1, "\x49" => 1, "\x4a" => 1, "\x4b" => 1, "\x4c" => 1, "\x4d" => 1, "\x4e" => 1,
+        "\x4f" => 1, "\x50" => 1, "\x51" => 1, "\x52" => 1, "\x53" => 1, "\x54" => 1, "\x55" => 1, "\x56" => 1,
+        "\x57" => 1, "\x58" => 1, "\x59" => 1, "\x5a" => 1, "\x5f" => 1, "\x61" => 1, "\x62" => 1, "\x63" => 1,
+        "\x64" => 1, "\x65" => 1, "\x66" => 1, "\x67" => 1, "\x68" => 1, "\x69" => 1, "\x6a" => 1, "\x6b" => 1,
+        "\x6c" => 1, "\x6d" => 1, "\x6e" => 1, "\x6f" => 1, "\x70" => 1, "\x71" => 1, "\x72" => 1, "\x73" => 1,
+        "\x74" => 1, "\x75" => 1, "\x76" => 1, "\x77" => 1, "\x78" => 1, "\x79" => 1, "\x7a" => 1,
+    ];
+
+    private const REGEX_DELIMITER = '#';
 
     /**
      * Parses the given route and returns its variables
@@ -217,7 +232,7 @@ final class RouteParser
                         $offset,
                     ));
                 }
-                if (!isset(Charset::PCRE_SUBPATTERN_NAME[$route[$offset]])) {
+                if (!isset(self::PCRE_SUBPATTERN_NAME[$route[$offset]])) {
                     throw new InvalidArgumentException(sprintf(
                         'The route %s could not be parsed due to a syntax error. ' .
                         'An invalid character was found at position %d. ' .
@@ -242,7 +257,7 @@ final class RouteParser
             }
 
             if (($cursor & self::IN_VARIABLE_PATTERN)) {
-                if ($route[$offset] === RouteCompiler::PATTERN_DELIMITER) {
+                if ($route[$offset] === self::REGEX_DELIMITER) {
                     throw new InvalidArgumentException(sprintf(
                         'The route %s could not be parsed due to a syntax error. ' .
                         'An invalid character was found at position %d. ' .
@@ -250,7 +265,7 @@ final class RouteParser
                         'use an octal or hexadecimal sequence instead.',
                         $route,
                         $offset,
-                        RouteCompiler::PATTERN_DELIMITER,
+                        self::REGEX_DELIMITER,
                     ));
                 }
 

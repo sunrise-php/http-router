@@ -89,22 +89,24 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
         } catch (InvalidValueException $e) {
             throw HttpExceptionFactory::invalidCookie($errorMessage, $errorStatusCode, previous: $e)
                 ->addMessagePlaceholder(self::PLACEHOLDER_COOKIE_NAME, $cookieName)
-                ->addHydratorConstraintViolations($e);
+                ->addHydratorConstraintViolation($e);
         } catch (InvalidDataException $e) {
             throw HttpExceptionFactory::invalidCookie($errorMessage, $errorStatusCode, previous: $e)
                 ->addMessagePlaceholder(self::PLACEHOLDER_COOKIE_NAME, $cookieName)
-                ->addHydratorConstraintViolations(...$e->getExceptions());
+                ->addHydratorConstraintViolation(...$e->getExceptions());
         }
 
         if ($processParams->validation && $this->validator !== null) {
-            $violations = $this->validator->startContext()
+            $violations = $this->validator
+                ->startContext()
                 ->atPath($cookieName)
                 ->validate($argument, new ArgumentConstraint($parameter))
                 ->getViolations();
+
             if ($violations->count() > 0) {
                 throw HttpExceptionFactory::invalidCookie($errorMessage, $errorStatusCode)
                     ->addMessagePlaceholder(self::PLACEHOLDER_COOKIE_NAME, $cookieName)
-                    ->addValidatorConstraintViolations(...$violations);
+                    ->addValidatorConstraintViolation(...$violations);
             }
         }
 

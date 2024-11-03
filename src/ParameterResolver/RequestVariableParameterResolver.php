@@ -103,27 +103,27 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
             throw HttpExceptionFactory::invalidVariable($errorMessage, $errorStatusCode, previous: $e)
                 ->addMessagePlaceholder(self::PLACEHOLDER_VARIABLE_NAME, $variableName)
                 ->addMessagePlaceholder(self::PLACEHOLDER_ROUTE_URI, RouteSimplifier::simplifyRoute($route->getPath()))
-                ->addHydratorConstraintViolations($e);
+                ->addHydratorConstraintViolation($e);
         } catch (InvalidDataException $e) {
             throw HttpExceptionFactory::invalidVariable($errorMessage, $errorStatusCode, previous: $e)
                 ->addMessagePlaceholder(self::PLACEHOLDER_VARIABLE_NAME, $variableName)
                 ->addMessagePlaceholder(self::PLACEHOLDER_ROUTE_URI, RouteSimplifier::simplifyRoute($route->getPath()))
-                ->addHydratorConstraintViolations(...$e->getExceptions());
+                ->addHydratorConstraintViolation(...$e->getExceptions());
         }
 
-        if ($this->validator !== null) {
-            $violations = $this->validator->startContext()
+        if ($processParams->validation && $this->validator !== null) {
+            $violations = $this->validator
+                ->startContext()
                 ->atPath($variableName)
                 ->validate($argument, new ArgumentConstraint($parameter))
                 ->getViolations();
+
             if ($violations->count() > 0) {
                 throw HttpExceptionFactory::invalidVariable($errorMessage, $errorStatusCode)
                     ->addMessagePlaceholder(self::PLACEHOLDER_VARIABLE_NAME, $variableName)
-                    ->addMessagePlaceholder(
-                        self::PLACEHOLDER_ROUTE_URI,
-                        RouteSimplifier::simplifyRoute($route->getPath()),
-                    )
-                    ->addValidatorConstraintViolations(...$violations);
+                    // phpcs:ignore Generic.Files.LineLength.TooLong
+                    ->addMessagePlaceholder(self::PLACEHOLDER_ROUTE_URI, RouteSimplifier::simplifyRoute($route->getPath()))
+                    ->addValidatorConstraintViolation(...$violations);
             }
         }
 

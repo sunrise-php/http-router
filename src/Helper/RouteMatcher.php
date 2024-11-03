@@ -34,21 +34,6 @@ use const PREG_UNMATCHED_AS_NULL;
 final class RouteMatcher
 {
     /**
-     * @param array<string, string> $patterns
-     * @param ?array<string, string> $matches
-     * @param-out array<string, string> $matches
-     *
-     * @throws InvalidArgumentException
-     * @throws UnexpectedValueException
-     */
-    public static function matchRoute(string $route, array $patterns, string $subject, ?array &$matches = null): bool
-    {
-        $pattern = RouteCompiler::compileRoute($route, $patterns);
-
-        return self::matchPattern($route, $pattern, $subject, $matches);
-    }
-
-    /**
      * @param non-empty-string $pattern
      * @param ?array<string, string> $matches
      * @param-out array<string, string> $matches
@@ -56,7 +41,7 @@ final class RouteMatcher
      * @throws InvalidArgumentException
      * @throws UnexpectedValueException
      */
-    public static function matchPattern(string $route, string $pattern, string $subject, ?array &$matches = null): bool
+    public static function matchRoute(string $route, string $pattern, string $subject, ?array &$matches = null): bool
     {
         try {
             if (($result = @preg_match($pattern, $subject, $matches, PREG_UNMATCHED_AS_NULL)) === false) {

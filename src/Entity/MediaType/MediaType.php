@@ -13,15 +13,23 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Entity\MediaType;
 
-use Sunrise\Http\Router\Dictionary\MediaType;
-
 /**
  * @since 3.0.0
  */
-final class JsonMediaType implements MediaTypeInterface
+final class MediaType implements MediaTypeInterface
 {
+    public function __construct(
+        private readonly string $identifier,
+    ) {
+    }
+
+    public static function create(string $identifier): self
+    {
+        return new self(identifier: $identifier);
+    }
+
     public function getIdentifier(): string
     {
-        return MediaType::JSON;
+        return $this->identifier;
     }
 }

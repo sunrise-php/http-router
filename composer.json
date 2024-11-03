@@ -48,7 +48,7 @@
     },
     "autoload": {
         "files": [
-            "src/functions.php"
+            "src/functions/emit.php"
         ],
         "psr-4": {
             "Sunrise\\Http\\Router\\": "src/"

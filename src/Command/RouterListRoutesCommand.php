@@ -28,8 +28,9 @@ use function join;
 #[AsCommand('router:list-routes', 'Lists routes.')]
 final class RouterListRoutesCommand extends Command
 {
-    public function __construct(private readonly RouterInterface $router)
-    {
+    public function __construct(
+        private readonly RouterInterface $router,
+    ) {
         parent::__construct();
     }
 

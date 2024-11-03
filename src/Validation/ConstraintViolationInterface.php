@@ -23,7 +23,7 @@ interface ConstraintViolationInterface
     public function getMessageTemplate(): string;
 
     /**
-     * @return array<array-key, mixed>
+     * @return array<string, mixed>
      */
     public function getMessagePlaceholders(): array;
 

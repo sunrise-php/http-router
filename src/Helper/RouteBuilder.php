@@ -30,7 +30,7 @@ use function substr;
 final class RouteBuilder
 {
     /**
-     * @param array<array-key, mixed> $values
+     * @param array<string, mixed> $values Values for the route's variables.
      *
      * @throws InvalidArgumentException
      */
@@ -89,7 +89,7 @@ final class RouteBuilder
      *
      * @throws InvalidArgumentException
      */
-    public static function stringifyValue(mixed $value): string
+    private static function stringifyValue(mixed $value): string
     {
         if (is_string($value)) {
             return $value;

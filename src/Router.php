@@ -148,10 +148,10 @@ final class Router implements RouterInterface
         $allowedMethods = [];
 
         foreach ($routes as $route) {
-            $routeRegex = $this->compileRoute($route);
+            $routePattern = $this->compileRoute($route);
 
             try {
-                if (!RouteMatcher::matchPattern($route->getPath(), $routeRegex, $requestPath, $matches)) {
+                if (!RouteMatcher::matchRoute($route->getName(), $routePattern, $requestPath, $matches)) {
                     continue;
                 }
             } catch (UnexpectedValueException $e) {
@@ -236,7 +236,7 @@ final class Router implements RouterInterface
 
         $result = RouteBuilder::buildRoute($route->getPath(), $values + $route->getAttributes());
 
-        if ($strictly && !RouteMatcher::matchPattern($route->getPath(), $this->compileRoute($route), $result)) {
+        if ($strictly && !RouteMatcher::matchRoute($route->getName(), $this->compileRoute($route), $result)) {
             throw new InvalidArgumentException(sprintf(
                 'The route %s could not be built because one of the values does not match its pattern.',
                 $route->getName(),

@@ -39,7 +39,6 @@ use Sunrise\Http\Router\Annotation\Produces;
 use Sunrise\Http\Router\Annotation\Route as Descriptor;
 use Sunrise\Http\Router\Annotation\Summary;
 use Sunrise\Http\Router\Annotation\Tag;
-use Sunrise\Http\Router\Dictionary\CacheKey;
 use Sunrise\Http\Router\Helper\ClassFinder;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Route;
@@ -58,6 +57,11 @@ use function usort;
  */
 final class DescriptorLoader implements LoaderInterface
 {
+    /**
+     * @since 3.0.0
+     */
+    public const DESCRIPTORS_CACHE_KEY = 'sunrise_http_router_descriptors';
+
     public function __construct(
         /** @var array<array-key, string> */
         private readonly array $resources,
@@ -96,6 +100,16 @@ final class DescriptorLoader implements LoaderInterface
     }
 
     /**
+     * @throws CacheException
+     *
+     * @since 3.0.0
+     */
+    public function clearCache(): void
+    {
+        $this->cache?->delete(self::DESCRIPTORS_CACHE_KEY);
+    }
+
+    /**
      * @return list<Descriptor>
      *
      * @throws CacheException
@@ -105,7 +119,7 @@ final class DescriptorLoader implements LoaderInterface
     private function getDescriptors(): array
     {
         /** @var list<Descriptor>|null $descriptors */
-        $descriptors = $this->cache?->get(CacheKey::DESCRIPTORS);
+        $descriptors = $this->cache?->get(self::DESCRIPTORS_CACHE_KEY);
         if ($descriptors !== null) {
             return $descriptors;
         }
@@ -119,7 +133,7 @@ final class DescriptorLoader implements LoaderInterface
 
         usort($descriptors, static fn(Descriptor $a, Descriptor $b): int => $b->priority <=> $a->priority);
 
-        $this->cache?->set(CacheKey::DESCRIPTORS, $descriptors);
+        $this->cache?->set(self::DESCRIPTORS_CACHE_KEY, $descriptors);
 
         return $descriptors;
     }

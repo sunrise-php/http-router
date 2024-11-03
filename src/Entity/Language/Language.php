@@ -11,17 +11,25 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Entity\MediaType;
-
-use Sunrise\Http\Router\Dictionary\MediaType;
+namespace Sunrise\Http\Router\Entity\Language;
 
 /**
  * @since 3.0.0
  */
-final class XmlMediaType implements MediaTypeInterface
+final class Language implements LanguageInterface
 {
-    public function getIdentifier(): string
+    public function __construct(
+        private readonly string $code,
+    ) {
+    }
+
+    public static function create(string $code): self
     {
-        return MediaType::XML;
+        return new self(code: $code);
+    }
+
+    public function getCode(): string
+    {
+        return $this->code;
     }
 }

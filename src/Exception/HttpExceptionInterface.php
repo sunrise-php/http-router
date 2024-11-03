@@ -13,12 +13,13 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Exception;
 
+use Fig\Http\Message\StatusCodeInterface;
 use Sunrise\Http\Router\Validation\ConstraintViolationInterface;
 
 /**
  * @since 3.0.0
  */
-interface HttpExceptionInterface extends ExceptionInterface
+interface HttpExceptionInterface extends ExceptionInterface, StatusCodeInterface
 {
     /**
      * Returns the exception's non-interpolated message.

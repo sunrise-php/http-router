@@ -25,6 +25,7 @@ use Sunrise\Http\Router\Entity\Language\LanguageInterface;
 use Sunrise\Http\Router\Entity\MediaType\ClientMediaType;
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeComparator;
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeComparatorInterface;
+use Sunrise\Http\Router\Entity\MediaType\MediaTypeFactory;
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 use Sunrise\Http\Router\Helper\HeaderParser;
 
@@ -213,6 +214,16 @@ final class ServerRequest implements ServerRequestInterface
         }
 
         return false;
+    }
+
+    public function isJsonPayload(): bool
+    {
+        return $this->clientProducesMediaType(MediaTypeFactory::json());
+    }
+
+    public function isXmlPayload(): bool
+    {
+        return $this->clientProducesMediaType(MediaTypeFactory::xml());
     }
 
     /**

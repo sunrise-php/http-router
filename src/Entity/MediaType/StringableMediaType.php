@@ -20,13 +20,14 @@ use Stringable;
  */
 final class StringableMediaType implements MediaTypeInterface, Stringable
 {
-    public function __construct(private readonly MediaTypeInterface $mediaType)
-    {
+    public function __construct(
+        private readonly MediaTypeInterface $mediaType,
+    ) {
     }
 
     public static function create(MediaTypeInterface $mediaType): self
     {
-        return new self($mediaType);
+        return new self(mediaType: $mediaType);
     }
 
     public function getIdentifier(): string

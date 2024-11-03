@@ -14,12 +14,15 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
+use Fig\Http\Message\RequestMethodInterface;
 
 /**
+ * Pay attention to the {@see RequestMethodInterface} dictionary.
+ *
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-class Method
+class Method implements RequestMethodInterface
 {
     /**
      * @var array<array-key, string>

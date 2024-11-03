@@ -48,6 +48,7 @@ final class ValidatorConstraintViolationAdapter implements RouterConstraintViola
      */
     public function getMessagePlaceholders(): array
     {
+        /** @var array<string, mixed> */
         return $this->validatorConstraintViolation->getParameters();
     }
 

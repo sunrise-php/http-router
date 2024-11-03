@@ -20,13 +20,14 @@ use Stringable;
  */
 final class StringableLanguage implements LanguageInterface, Stringable
 {
-    public function __construct(private readonly LanguageInterface $language)
-    {
+    public function __construct(
+        private readonly LanguageInterface $language,
+    ) {
     }
 
     public static function create(LanguageInterface $language): self
     {
-        return new self($language);
+        return new self(language: $language);
     }
 
     public function getCode(): string

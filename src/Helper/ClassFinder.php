@@ -35,7 +35,7 @@ use function sprintf;
 final class ClassFinder
 {
     /**
-     * @return Generator<class-string, ReflectionClass<object>>
+     * @return Generator<int, ReflectionClass<object>>
      *
      * @throws InvalidArgumentException
      * @throws ReflectionException
@@ -52,24 +52,25 @@ final class ClassFinder
         /** @var array<string, true> $filenames */
         $filenames = [];
         foreach ($files as $file) {
-            $filenames[$file->getRealPath()] = true;
+            $filename = $file->getRealPath();
+            $filenames[$filename] = true;
 
             (static function (string $filename): void {
                 /** @psalm-suppress UnresolvableInclude */
                 require_once $filename;
-            })($file->getRealPath());
+            })($filename);
         }
 
         foreach (get_declared_classes() as $className) {
             $classReflection = new ReflectionClass($className);
             if (isset($filenames[$classReflection->getFileName()])) {
-                yield $className => $classReflection;
+                yield $classReflection;
             }
         }
     }
 
     /**
-     * @return Generator<class-string, ReflectionClass<object>>
+     * @return Generator<int, ReflectionClass<object>>
      *
      * @throws InvalidArgumentException
      * @throws ReflectionException
@@ -91,7 +92,7 @@ final class ClassFinder
         foreach (get_declared_classes() as $className) {
             $classReflection = new ReflectionClass($className);
             if ($classReflection->getFileName() === $filename) {
-                yield $className => $classReflection;
+                yield $classReflection;
             }
         }
     }

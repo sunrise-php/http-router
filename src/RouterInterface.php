@@ -74,7 +74,7 @@ interface RouterInterface extends RequestHandlerInterface
     public function runRoute(RouteInterface|string $route, ServerRequestInterface $request): ResponseInterface;
 
     /**
-     * @param array<array-key, mixed> $values
+     * @param array<string, mixed> $values
      *
      * @throws InvalidArgumentException
      *

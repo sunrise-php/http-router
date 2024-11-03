@@ -21,7 +21,7 @@ final class ConstraintViolation implements ConstraintViolationInterface
     public function __construct(
         private readonly string $message,
         private readonly string $messageTemplate,
-        /** @var array<array-key, mixed> */
+        /** @var array<string, mixed> */
         private readonly array $messagePlaceholders,
         private readonly string $propertyPath,
         private readonly ?string $code,

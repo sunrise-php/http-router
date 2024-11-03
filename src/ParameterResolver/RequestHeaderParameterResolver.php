@@ -87,22 +87,24 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
         } catch (InvalidValueException $e) {
             throw HttpExceptionFactory::invalidHeader($errorMessage, $errorStatusCode, previous: $e)
                 ->addMessagePlaceholder(self::PLACEHOLDER_HEADER_NAME, $headerName)
-                ->addHydratorConstraintViolations($e);
+                ->addHydratorConstraintViolation($e);
         } catch (InvalidDataException $e) {
             throw HttpExceptionFactory::invalidHeader($errorMessage, $errorStatusCode, previous: $e)
                 ->addMessagePlaceholder(self::PLACEHOLDER_HEADER_NAME, $headerName)
-                ->addHydratorConstraintViolations(...$e->getExceptions());
+                ->addHydratorConstraintViolation(...$e->getExceptions());
         }
 
         if ($processParams->validation && $this->validator !== null) {
-            $violations = $this->validator->startContext()
+            $violations = $this->validator
+                ->startContext()
                 ->atPath($headerName)
                 ->validate($argument, new ArgumentConstraint($parameter))
                 ->getViolations();
+
             if ($violations->count() > 0) {
                 throw HttpExceptionFactory::invalidHeader($errorMessage, $errorStatusCode)
                     ->addMessagePlaceholder(self::PLACEHOLDER_HEADER_NAME, $headerName)
-                    ->addValidatorConstraintViolations(...$violations);
+                    ->addValidatorConstraintViolation(...$violations);
             }
         }
 

@@ -78,7 +78,8 @@ final class ResponseJsonResolver implements ResponseResolverInterface
             ), previous: $e);
         }
 
-        $jsonResponse = $this->responseFactory->createResponse(StatusCodeInterface::STATUS_OK)
+        $jsonResponse = $this->responseFactory
+            ->createResponse(StatusCodeInterface::STATUS_OK)
             ->withHeader('Content-Type', 'application/json; charset=UTF-8');
 
         $jsonResponse->getBody()->write($payload);

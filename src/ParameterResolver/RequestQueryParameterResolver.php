@@ -82,13 +82,13 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
             $argument = $this->hydrator->hydrate($className, $context->getQueryParams());
         } catch (InvalidDataException $e) {
             throw HttpExceptionFactory::invalidQuery($errorMessage, $errorStatusCode, previous: $e)
-                ->addHydratorConstraintViolations(...$e->getExceptions());
+                ->addHydratorConstraintViolation(...$e->getExceptions());
         }
 
         if ($processParams->validation && $this->validator !== null) {
             if (($violations = $this->validator->validate($argument))->count() > 0) {
                 throw HttpExceptionFactory::invalidQuery($errorMessage, $errorStatusCode)
-                    ->addValidatorConstraintViolations(...$violations);
+                    ->addValidatorConstraintViolation(...$violations);
             }
         }
 

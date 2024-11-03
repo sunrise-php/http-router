@@ -18,7 +18,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Entity\MediaType\JsonMediaType;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 use Sunrise\Http\Router\ServerRequest;
@@ -57,8 +56,12 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        if (ServerRequest::create($request)->clientProducesMediaType(new JsonMediaType())) {
-            $request = $request->withParsedBody($this->decodePayload((string) $request->getBody()));
+        if (ServerRequest::create($request)->isJsonPayload()) {
+            $request = $request->withParsedBody(
+                $this->decodePayload(
+                    (string) $request->getBody()
+                )
+            );
         }
 
         return $handler->handle($request);

@@ -14,12 +14,15 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
+use Fig\Http\Message\StatusCodeInterface;
 
 /**
+ * Pay attention to the {@see StatusCodeInterface} dictionary.
+ *
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION)]
-final class ResponseStatus
+final class ResponseStatus implements StatusCodeInterface
 {
     public function __construct(
         public readonly int $code,

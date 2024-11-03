@@ -114,8 +114,8 @@ final class HttpExceptionTest extends TestCase
         );
 
         $httpException = new HttpException('foo', 400);
-        $httpException->addHydratorConstraintViolations(...$hydratorConstraintViolations);
-        $httpException->addHydratorConstraintViolations($additionalHydratorConstraintViolation);
+        $httpException->addHydratorConstraintViolation(...$hydratorConstraintViolations);
+        $httpException->addHydratorConstraintViolation($additionalHydratorConstraintViolation);
         $constraintViolations = $httpException->getConstraintViolations();
         $this->assertCount(3, $constraintViolations);
 
@@ -181,8 +181,8 @@ final class HttpExceptionTest extends TestCase
         );
 
         $httpException = new HttpException('foo', 400);
-        $httpException->addValidatorConstraintViolations(...$validatorConstraintViolations);
-        $httpException->addValidatorConstraintViolations($additionalValidatorConstraintViolation);
+        $httpException->addValidatorConstraintViolation(...$validatorConstraintViolations);
+        $httpException->addValidatorConstraintViolation($additionalValidatorConstraintViolation);
         $constraintViolations = $httpException->getConstraintViolations();
         $this->assertCount(3, $constraintViolations);
 

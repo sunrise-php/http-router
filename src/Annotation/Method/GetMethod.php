@@ -15,7 +15,6 @@ namespace Sunrise\Http\Router\Annotation\Method;
 
 use Attribute;
 use Sunrise\Http\Router\Annotation\Method;
-use Sunrise\Http\Router\Dictionary\RequestMethod;
 
 /**
  * @since 3.0.0
@@ -25,6 +24,6 @@ final class GetMethod extends Method
 {
     public function __construct()
     {
-        parent::__construct(RequestMethod::GET);
+        parent::__construct(self::METHOD_GET);
     }
 }

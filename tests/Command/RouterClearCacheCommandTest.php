@@ -7,8 +7,8 @@ namespace Sunrise\Http\Router\Tests\Command;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\SimpleCache\CacheInterface;
-use Sunrise\Http\Router\Command\RouterClearCacheCommand;
-use Sunrise\Http\Router\Dictionary\CacheKey;
+use Sunrise\Http\Router\Command\RouterClearDescriptorsCacheCommand;
+use Sunrise\Http\Router\Loader\DescriptorLoader;
 use Symfony\Component\Console\Tester\CommandTester;
 
 final class RouterClearCacheCommandTest extends TestCase
@@ -24,16 +24,18 @@ final class RouterClearCacheCommandTest extends TestCase
     {
         $this->cacheMock->expects(self::once())
             ->method('delete')
-            ->with(CacheKey::DESCRIPTORS);
+            ->with(DescriptorLoader::DESCRIPTORS_CACHE_KEY);
 
-        $command = new RouterClearCacheCommand($this->cacheMock);
+        $descriptorLoader = new DescriptorLoader([], $this->cacheMock);
+        $command = new RouterClearDescriptorsCacheCommand($descriptorLoader);
         $commandTester = new CommandTester($command);
         $this->assertSame(0, $commandTester->execute([]));
     }
 
     public function testExecuteWithoutCache(): void
     {
-        $command = new RouterClearCacheCommand(null);
+        $descriptorLoader = new DescriptorLoader([]);
+        $command = new RouterClearDescriptorsCacheCommand($descriptorLoader);
         $commandTester = new CommandTester($command);
         $this->assertSame(0, $commandTester->execute([]));
     }

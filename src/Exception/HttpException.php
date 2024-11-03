@@ -116,7 +116,7 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
         return $this;
     }
 
-    final public function addHydratorConstraintViolations(
+    final public function addHydratorConstraintViolation(
         \Sunrise\Hydrator\Exception\InvalidValueException ...$constraintViolations
     ): static {
         return $this->addConstraintViolation(...array_map(
@@ -125,7 +125,7 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
         ));
     }
 
-    final public function addValidatorConstraintViolations(
+    final public function addValidatorConstraintViolation(
         \Symfony\Component\Validator\ConstraintViolationInterface ...$constraintViolations
     ): static {
         return $this->addConstraintViolation(...array_map(
