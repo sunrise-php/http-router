@@ -26,16 +26,31 @@ final class MediaTypeComparator implements MediaTypeComparatorInterface
      */
     public function compare(MediaTypeInterface $a, MediaTypeInterface $b): int
     {
-        $aId = strtolower($a->getIdentifier());
+        $aId = $a->getIdentifier();
+        if ($aId === '*/*') {
+            return 0;
+        }
+
+        $bId = $b->getIdentifier();
+        if ($bId === '*/*') {
+            return 0;
+        }
+
+        $aId = strtolower($aId);
+        $bId = strtolower($bId);
+
+        if ($aId === $bId) {
+            return 0;
+        }
+
         $aParts = explode('/', $aId, 2);
         $aParts[1] ??= '';
 
-        $bId = strtolower($b->getIdentifier());
         $bParts = explode('/', $bId, 2);
         $bParts[1] ??= '';
 
-        $sameTypes = $aParts[0] === '*' || $bParts[0] === '*' || $aParts[0] === $bParts[0];
-        $sameSubtypes = $aParts[1] === '*' || $bParts[1] === '*' || $aParts[1] === $bParts[1];
+        $sameTypes = $aParts[0] === $bParts[0] || $aParts[0] === '*' || $bParts[0] === '*';
+        $sameSubtypes = $aParts[1] === $bParts[1] || $aParts[1] === '*' || $bParts[1] === '*';
 
         return ($sameTypes && $sameSubtypes) ? 0 : $aId <=> $bId;
     }

@@ -32,6 +32,8 @@ use const JSON_THROW_ON_ERROR;
  * JSON payload decoding middleware
  *
  * @since 2.15.0
+ *
+ * @todo Use the Simdjson extension as needed.
  */
 final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
 {
@@ -57,11 +59,7 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         if (ServerRequest::create($request)->isJsonPayload()) {
-            $request = $request->withParsedBody(
-                $this->decodePayload(
-                    (string) $request->getBody()
-                )
-            );
+            $request = $request->withParsedBody($this->decodeJson((string) $request->getBody()));
         }
 
         return $handler->handle($request);
@@ -70,11 +68,11 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
     /**
      * @return array<array-key, mixed>
      *
-     * @throws HttpExceptionInterface If the payload couldn't be decoded.
+     * @throws HttpExceptionInterface If the JSON couldn't be decoded.
      */
-    private function decodePayload(string $payload): array
+    private function decodeJson(string $json): array
     {
-        if ($payload === '') {
+        if ($json === '') {
             throw HttpExceptionFactory::emptyJsonPayload($this->errorMessage, $this->errorStatusCode);
         }
 
@@ -83,7 +81,7 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
         $decodingDepth = $this->decodingDepth ?? self::DEFAULT_DECODING_DEPTH;
 
         try {
-            $data = json_decode($payload, true, $decodingDepth, $decodingFlags | JSON_THROW_ON_ERROR);
+            $data = json_decode($json, true, $decodingDepth, $decodingFlags | JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
             throw HttpExceptionFactory::invalidJsonPayload($this->errorMessage, $this->errorStatusCode, previous: $e);
         }

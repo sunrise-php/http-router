@@ -94,10 +94,12 @@ final class ParameterResolverChain implements ParameterResolverChainInterface
 
     private function sortResolvers(): void
     {
-        $this->isSorted = usort($this->resolvers, static fn(
-            ParameterResolverInterface $a,
-            ParameterResolverInterface $b,
-        ): int => $b->getWeight() <=> $a->getWeight());
+        $this->isSorted = usort($this->resolvers, self::resolversSorter(...));
+    }
+
+    private static function resolversSorter(ParameterResolverInterface $a, ParameterResolverInterface $b): int
+    {
+        return $b->getWeight() <=> $a->getWeight();
     }
 
     public static function stringifyParameter(ReflectionParameter $parameter): string

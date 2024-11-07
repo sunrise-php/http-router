@@ -11,25 +11,26 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Entity\Language;
+namespace Sunrise\Http\Router\Entity\Locale;
 
 /**
  * @since 3.0.0
  */
-final class Language implements LanguageInterface
+final class Locale implements LocaleInterface
 {
     public function __construct(
-        private readonly string $code,
+        private readonly string $languageCode,
+        private readonly ?string $regionCode,
     ) {
     }
 
-    public static function create(string $code): self
+    public function getLanguageCode(): string
     {
-        return new self(code: $code);
+        return $this->languageCode;
     }
 
-    public function getCode(): string
+    public function getRegionCode(): string
     {
-        return $this->code;
+        return $this->regionCode;
     }
 }

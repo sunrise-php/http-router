@@ -53,6 +53,9 @@ final class ArgumentConstraintValidator extends ConstraintValidator
             return;
         }
 
-        $this->context->getValidator()->inContext($this->context)->validate($value, $constraints);
+        $this->context
+            ->getValidator()
+            ->inContext($this->context)
+            ->validate($value, $constraints);
     }
 }

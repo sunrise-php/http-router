@@ -18,6 +18,9 @@ use Psr\Http\Message\ResponseInterface;
 use function header;
 use function sprintf;
 
+/**
+ * @since 2.0.0
+ */
 function emit(ResponseInterface $response): void
 {
     header(sprintf(

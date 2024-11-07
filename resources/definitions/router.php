@@ -5,8 +5,8 @@ declare(strict_types=1);
 use Psr\Container\ContainerInterface;
 use Sunrise\Http\Router\ClassResolver;
 use Sunrise\Http\Router\ClassResolverInterface;
-use Sunrise\Http\Router\Entity\Language\LanguageComparator;
-use Sunrise\Http\Router\Entity\Language\LanguageComparatorInterface;
+use Sunrise\Http\Router\Entity\Locale\LocaleComparator;
+use Sunrise\Http\Router\Entity\Locale\LocaleComparatorInterface;
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeComparator;
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeComparatorInterface;
 use Sunrise\Http\Router\MiddlewareResolver;
@@ -79,5 +79,5 @@ return [
         ),
 
     MediaTypeComparatorInterface::class => create(MediaTypeComparator::class),
-    LanguageComparatorInterface::class => create(LanguageComparator::class),
+    LocaleComparatorInterface::class => create(LocaleComparator::class),
 ];

@@ -18,17 +18,17 @@ use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
-use Sunrise\Http\Router\Entity\Language\ClientLanguage;
-use Sunrise\Http\Router\Entity\Language\LanguageComparator;
-use Sunrise\Http\Router\Entity\Language\LanguageComparatorInterface;
-use Sunrise\Http\Router\Entity\Language\LanguageInterface;
-use Sunrise\Http\Router\Entity\MediaType\ClientMediaType;
+use Sunrise\Http\Router\Entity\Locale\Locale;
+use Sunrise\Http\Router\Entity\Locale\LocaleComparator;
+use Sunrise\Http\Router\Entity\Locale\LocaleComparatorInterface;
+use Sunrise\Http\Router\Entity\Locale\LocaleInterface;
+use Sunrise\Http\Router\Entity\MediaType\MediaType;
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeComparator;
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeComparatorInterface;
-use Sunrise\Http\Router\Entity\MediaType\MediaTypeFactory;
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 use Sunrise\Http\Router\Helper\HeaderParser;
 
+use function extension_loaded;
 use function preg_match;
 use function reset;
 use function usort;
@@ -38,47 +38,26 @@ use function usort;
  */
 final class ServerRequest implements ServerRequestInterface
 {
-    private ?LanguageComparatorInterface $languageComparator = null;
-    private ?MediaTypeComparatorInterface $mediaTypeComparator = null;
+    private readonly LocaleComparatorInterface $localeComparator;
+    private readonly MediaTypeComparatorInterface $mediaTypeComparator;
 
-    public function __construct(private ServerRequestInterface $request)
-    {
+    public function __construct(
+        private ServerRequestInterface $request,
+        ?LocaleComparatorInterface $localeComparator = null,
+        ?MediaTypeComparatorInterface $mediaTypeComparator = null,
+    ) {
+        $this->localeComparator = $localeComparator ?? new LocaleComparator();
+        $this->mediaTypeComparator = $mediaTypeComparator ?? new MediaTypeComparator();
     }
 
     public static function create(ServerRequestInterface $request): self
     {
-        return new self($request);
+        return ($request instanceof self) ? $request : new self($request);
     }
 
     public function getOriginalRequest(): ServerRequestInterface
     {
         return ($this->request instanceof self) ? $this->request->getOriginalRequest() : $this->request;
-    }
-
-    public function getLanguageComparator(): LanguageComparatorInterface
-    {
-        return $this->languageComparator ??= new LanguageComparator();
-    }
-
-    public function withLanguageComparator(LanguageComparatorInterface $languageComparator): self
-    {
-        $clone = clone $this;
-        $clone->languageComparator = $languageComparator;
-
-        return $clone;
-    }
-
-    public function getMediaTypeComparator(): MediaTypeComparatorInterface
-    {
-        return $this->mediaTypeComparator ??= new MediaTypeComparator();
-    }
-
-    public function withMediaTypeComparator(MediaTypeComparatorInterface $mediaTypeComparator): self
-    {
-        $clone = clone $this;
-        $clone->mediaTypeComparator = $mediaTypeComparator;
-
-        return $clone;
     }
 
     /**
@@ -97,26 +76,35 @@ final class ServerRequest implements ServerRequestInterface
         return $route;
     }
 
-    public function getClientProducedMediaType(): ?ClientMediaType
+    public function getClientProducedMediaType(): ?MediaType
     {
         $values = HeaderParser::parseHeader($this->request->getHeaderLine('Content-Type'));
         if ($values === []) {
             return null;
         }
 
-        [$identifier, $parameters] = reset($values);
+        [$identifier] = reset($values);
         if (preg_match('|^([^/*]+)/([^/*]+)$|', $identifier) === 1) {
-            return new ClientMediaType($identifier, $parameters);
+            return new MediaType($identifier);
         }
 
         return null;
     }
 
     /**
-     * @return Generator<int<0, max>, ClientLanguage>
+     * @return Generator<int, Locale>
+     *
+     * @throws LogicException
      */
-    public function getClientConsumedLanguages(): Generator
+    public function getClientConsumedLocales(): Generator
     {
+        if (!extension_loaded('intl')) {
+            throw new LogicException(
+                'To get the locales consumed by the client, ' .
+                'the Intl (https://www.php.net/intl) extension must be installed.'
+            );
+        }
+
         $values = HeaderParser::parseHeader($this->request->getHeaderLine('Accept-Language'));
         if ($values === []) {
             return;
@@ -127,16 +115,16 @@ final class ServerRequest implements ServerRequestInterface
             (float) ($b[1]['q'] ?? '1') <=> (float) ($a[1]['q'] ?? '1')
         ));
 
-        /** @phpstan-var int<0, max> $index */
-        foreach ($values as $index => [$identifier, $parameters]) {
-            if (preg_match('|^(?:i-)?([^-]+)(?:-[^-]+)*$|', $identifier, $matches) === 1) {
-                yield $index => new ClientLanguage($matches[1], $identifier, $parameters);
+        foreach ($values as [$identifier]) {
+            $subtags = \Locale::parseLocale($identifier);
+            if (isset($subtags['language'])) {
+                yield new Locale($subtags['language'], $subtags['region'] ?? null);
             }
         }
     }
 
     /**
-     * @return Generator<int<0, max>, ClientMediaType>
+     * @return Generator<int<0, max>, MediaType>
      */
     public function getClientConsumedMediaTypes(): Generator
     {
@@ -151,24 +139,30 @@ final class ServerRequest implements ServerRequestInterface
         ));
 
         /** @phpstan-var int<0, max> $index */
-        foreach ($values as $index => [$identifier, $parameters]) {
+        foreach ($values as $index => [$identifier]) {
             if (preg_match('|^([^/]+)/([^/]+)$|', $identifier) === 1) {
-                yield $index => new ClientMediaType($identifier, $parameters);
+                yield $index => new MediaType($identifier);
             }
         }
     }
 
-    public function getClientPreferredLanguage(LanguageInterface ...$serverProducedLanguages): ?ClientLanguage
+    /**
+     * @param T ...$serverProducedLocales
+     *
+     * @return T|null
+     *
+     * @template T of LocaleInterface
+     */
+    public function getClientPreferredLocale(LocaleInterface ...$serverProducedLocales): ?LocaleInterface
     {
-        if ($serverProducedLanguages === []) {
+        if ($serverProducedLocales === []) {
             return null;
         }
 
-        $languageComparator = $this->getLanguageComparator();
-        foreach ($this->getClientConsumedLanguages() as $clientConsumedLanguage) {
-            foreach ($serverProducedLanguages as $serverProducedLanguage) {
-                if ($languageComparator->compare($clientConsumedLanguage, $serverProducedLanguage) === 0) {
-                    return $clientConsumedLanguage;
+        foreach ($this->getClientConsumedLocales() as $clientConsumedLanguage) {
+            foreach ($serverProducedLocales as $serverProducedLanguage) {
+                if ($this->localeComparator->compare($clientConsumedLanguage, $serverProducedLanguage) === 0) {
+                    return $serverProducedLanguage;
                 }
             }
         }
@@ -176,17 +170,23 @@ final class ServerRequest implements ServerRequestInterface
         return null;
     }
 
-    public function getClientPreferredMediaType(MediaTypeInterface ...$serverProducedMediaTypes): ?ClientMediaType
+    /**
+     * @param T ...$serverProducedMediaTypes
+     *
+     * @return T|null
+     *
+     * @template T of MediaTypeInterface
+     */
+    public function getClientPreferredMediaType(MediaTypeInterface ...$serverProducedMediaTypes): ?MediaTypeInterface
     {
         if ($serverProducedMediaTypes === []) {
             return null;
         }
 
-        $mediaTypeComparator = $this->getMediaTypeComparator();
         foreach ($this->getClientConsumedMediaTypes() as $clientConsumedMediaType) {
             foreach ($serverProducedMediaTypes as $serverProducedMediaType) {
-                if ($mediaTypeComparator->compare($clientConsumedMediaType, $serverProducedMediaType) === 0) {
-                    return $clientConsumedMediaType;
+                if ($this->mediaTypeComparator->compare($clientConsumedMediaType, $serverProducedMediaType) === 0) {
+                    return $serverProducedMediaType;
                 }
             }
         }
@@ -206,9 +206,8 @@ final class ServerRequest implements ServerRequestInterface
             return false;
         }
 
-        $mediaTypeComparator = $this->getMediaTypeComparator();
         foreach ($serverConsumedMediaTypes as $serverConsumedMediaType) {
-            if ($mediaTypeComparator->compare($clientProducedMediaType, $serverConsumedMediaType) === 0) {
+            if ($this->mediaTypeComparator->compare($clientProducedMediaType, $serverConsumedMediaType) === 0) {
                 return true;
             }
         }
@@ -218,12 +217,12 @@ final class ServerRequest implements ServerRequestInterface
 
     public function isJsonPayload(): bool
     {
-        return $this->clientProducesMediaType(MediaTypeFactory::json());
+        return $this->clientProducesMediaType(MediaType::json());
     }
 
     public function isXmlPayload(): bool
     {
-        return $this->clientProducesMediaType(MediaTypeFactory::xml());
+        return $this->clientProducesMediaType(MediaType::xml());
     }
 
     /**

@@ -27,7 +27,7 @@ final class StringableMediaType implements MediaTypeInterface, Stringable
 
     public static function create(MediaTypeInterface $mediaType): self
     {
-        return new self(mediaType: $mediaType);
+        return new self($mediaType);
     }
 
     public function getIdentifier(): string

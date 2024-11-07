@@ -19,12 +19,13 @@ use Symfony\Component\Validator\Constraint;
 /**
  * @since 3.0.0
  *
- * @psalm-suppress PropertyNotSetInConstructor See {@see parent::$groups}.
+ * @psalm-suppress PropertyNotSetInConstructor {@see parent::$groups}
  */
 final class ArgumentConstraint extends Constraint
 {
-    public function __construct(private readonly ReflectionParameter $parameter)
-    {
+    public function __construct(
+        private readonly ReflectionParameter $parameter,
+    ) {
         parent::__construct();
     }
 

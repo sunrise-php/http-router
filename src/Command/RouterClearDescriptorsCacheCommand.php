@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Command;
 
-use Sunrise\Http\Router\Loader\DescriptorLoader;
+use Sunrise\Http\Router\Loader\DescriptorLoaderInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -26,7 +26,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class RouterClearDescriptorsCacheCommand extends Command
 {
     public function __construct(
-        private readonly DescriptorLoader $descriptorLoader,
+        private readonly DescriptorLoaderInterface $descriptorLoader,
     ) {
         parent::__construct();
     }

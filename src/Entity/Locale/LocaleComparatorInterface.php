@@ -11,15 +11,15 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Entity\Language;
+namespace Sunrise\Http\Router\Entity\Locale;
 
 /**
  * @since 3.0.0
  */
-interface LanguageComparatorInterface
+interface LocaleComparatorInterface
 {
     /**
      * @return int<-1, 1>
      */
-    public function compare(LanguageInterface $a, LanguageInterface $b): int;
+    public function compare(LocaleInterface $a, LocaleInterface $b): int;
 }

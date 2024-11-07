@@ -59,7 +59,7 @@ final class MiddlewareResolver implements MiddlewareResolverInterface
         }
 
         if ($reference instanceof Closure) {
-            return new CallableMiddleware($this->createCallback($reference, new ReflectionFunction($reference)));
+            return new CallableMiddleware($this->normalizeCallback($reference, new ReflectionFunction($reference)));
         }
 
         if (is_string($reference) && is_subclass_of($reference, MiddlewareInterface::class)) {
@@ -79,7 +79,7 @@ final class MiddlewareResolver implements MiddlewareResolverInterface
 
                 /** @var callable $reference */
 
-                return new CallableMiddleware($this->createCallback($reference, $reflection));
+                return new CallableMiddleware($this->normalizeCallback($reference, $reflection));
             }
         }
 
@@ -95,7 +95,7 @@ final class MiddlewareResolver implements MiddlewareResolverInterface
      * @throws InvalidArgumentException
      * @throws LogicException
      */
-    private function createCallback(callable $callback, ReflectionMethod|ReflectionFunction $reflection): callable
+    private function normalizeCallback(callable $callback, ReflectionMethod|ReflectionFunction $reflection): callable
     {
         return fn(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface => (
             $this->responseResolverChain->resolveResponse(

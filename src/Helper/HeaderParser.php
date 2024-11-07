@@ -76,7 +76,7 @@ final class HeaderParser
         /** @var array<int<0, max>, array{0?: string, 1?: array<int<0, max>, array{0?: string, 1?: string}>}> $values */
         $values = [];
 
-        for ($offset = 0; isset($header[$offset]) && $offset < 1024; $offset++) {
+        for ($offset = 0; isset($header[$offset]) && $offset < 512; $offset++) {
             if (!isset(self::RFC7230_FIELD_VALUE[$header[$offset]])) {
                 continue;
             }

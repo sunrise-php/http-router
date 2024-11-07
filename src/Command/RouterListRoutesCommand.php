@@ -41,11 +41,7 @@ final class RouterListRoutesCommand extends Command
     {
         $table = new Table($output);
 
-        $table->setHeaders([
-            'Name',
-            'Path',
-            'Methods',
-        ]);
+        $table->setHeaders(['NAME', 'PATH', 'VERBS']);
 
         foreach ($this->router->getRoutes() as $route) {
             $table->addRow([

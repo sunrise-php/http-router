@@ -58,7 +58,7 @@ final class RequestHandlerResolver implements RequestHandlerResolverInterface
         }
 
         if ($reference instanceof Closure) {
-            return new CallableRequestHandler($this->createCallback($reference, new ReflectionFunction($reference)));
+            return new CallableRequestHandler($this->normalizeCallback($reference, new ReflectionFunction($reference)));
         }
 
         // https://github.com/php/php-src/blob/3ed526441400060aa4e618b91b3352371fcd02a8/Zend/zend_API.c#L3884-L3932
@@ -74,7 +74,7 @@ final class RequestHandlerResolver implements RequestHandlerResolverInterface
 
                 /** @var callable $reference */
 
-                return new CallableRequestHandler($this->createCallback($reference, $reflection));
+                return new CallableRequestHandler($this->normalizeCallback($reference, $reflection));
             }
         }
 
@@ -94,7 +94,7 @@ final class RequestHandlerResolver implements RequestHandlerResolverInterface
      * @throws InvalidArgumentException
      * @throws LogicException
      */
-    private function createCallback(callable $callback, ReflectionMethod|ReflectionFunction $reflection): callable
+    private function normalizeCallback(callable $callback, ReflectionMethod|ReflectionFunction $reflection): callable
     {
         return fn(ServerRequestInterface $request): ResponseInterface => (
             $this->responseResolverChain->resolveResponse(

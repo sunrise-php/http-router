@@ -33,16 +33,16 @@ final class WhitespaceTrimmingMiddleware implements MiddlewareInterface
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $parsedBody = $request->getParsedBody();
-        if ($parsedBody !== [] && is_array($parsedBody)) {
-            array_walk_recursive($parsedBody, self::trim(...));
-            $request = $request->withParsedBody($parsedBody);
-        }
-
         $queryParams = $request->getQueryParams();
         if ($queryParams !== []) {
             array_walk_recursive($queryParams, self::trim(...));
             $request = $request->withQueryParams($queryParams);
+        }
+
+        $parsedBody = $request->getParsedBody();
+        if ($parsedBody !== [] && is_array($parsedBody)) {
+            array_walk_recursive($parsedBody, self::trim(...));
+            $request = $request->withParsedBody($parsedBody);
         }
 
         return $handler->handle($request);

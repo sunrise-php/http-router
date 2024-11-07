@@ -11,12 +11,12 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Entity\Language;
+namespace Sunrise\Http\Router\Loader;
 
 /**
  * @since 3.0.0
  */
-interface LanguageInterface
+interface DescriptorLoaderInterface extends LoaderInterface
 {
-    public function getCode(): string;
+    public function clearCache(): void;
 }

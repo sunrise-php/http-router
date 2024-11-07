@@ -11,18 +11,14 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Entity\Language;
+namespace Sunrise\Http\Router\Entity\Locale;
 
 /**
  * @since 3.0.0
  */
-final class LanguageComparator implements LanguageComparatorInterface
+interface LocaleInterface
 {
-    /**
-     * @inheritDoc
-     */
-    public function compare(LanguageInterface $a, LanguageInterface $b): int
-    {
-        return ($a->getCode() === '*' || $b->getCode() === '*') ? 0 : $a->getCode() <=> $b->getCode();
-    }
+    public function getLanguageCode(): string;
+
+    public function getRegionCode(): ?string;
 }

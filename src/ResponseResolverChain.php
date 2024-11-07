@@ -92,10 +92,12 @@ final class ResponseResolverChain implements ResponseResolverChainInterface
 
     private function sortResolvers(): void
     {
-        $this->isSorted = usort($this->resolvers, static fn(
-            ResponseResolverInterface $a,
-            ResponseResolverInterface $b,
-        ): int => $b->getWeight() <=> $a->getWeight());
+        $this->isSorted = usort($this->resolvers, self::resolversSorter(...));
+    }
+
+    private static function resolversSorter(ResponseResolverInterface $a, ResponseResolverInterface $b): int
+    {
+        return $b->getWeight() <=> $a->getWeight();
     }
 
     public static function stringifyResponder(ReflectionMethod|ReflectionFunction $responder): string

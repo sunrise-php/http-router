@@ -7,8 +7,8 @@ namespace Sunrise\Http\Router\Tests\Entity\Language;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\Entity\Language\LanguageComparator;
-use Sunrise\Http\Router\Entity\Language\LanguageInterface;
+use Sunrise\Http\Router\Entity\Locale\LocaleComparator;
+use Sunrise\Http\Router\Entity\Locale\LocaleInterface;
 
 final class LanguageComparatorTest extends TestCase
 {
@@ -18,7 +18,7 @@ final class LanguageComparatorTest extends TestCase
         $a = $this->mockLanguage(code: $aCode);
         $b = $this->mockLanguage(code: $bCode);
 
-        $this->assertSame($expected, (new LanguageComparator())->compare($a, $b));
+        $this->assertSame($expected, (new LocaleComparator())->compare($a, $b));
     }
 
     public static function compareDataProvider(): iterable
@@ -90,10 +90,10 @@ final class LanguageComparatorTest extends TestCase
         ];
     }
 
-    private function mockLanguage(string $code): LanguageInterface&MockObject
+    private function mockLanguage(string $code): LocaleInterface&MockObject
     {
-        $language = $this->createMock(LanguageInterface::class);
-        $language->method('getCode')->willReturn($code);
+        $language = $this->createMock(LocaleInterface::class);
+        $language->method('getLanguageCode')->willReturn($code);
 
         return $language;
     }

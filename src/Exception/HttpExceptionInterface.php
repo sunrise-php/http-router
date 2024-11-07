@@ -22,7 +22,7 @@ use Sunrise\Http\Router\Validation\ConstraintViolationInterface;
 interface HttpExceptionInterface extends ExceptionInterface, StatusCodeInterface
 {
     /**
-     * Returns the exception's non-interpolated message.
+     * Returns the exception's <b>non-interpolated</b> message.
      */
     public function getMessageTemplate(): string;
 

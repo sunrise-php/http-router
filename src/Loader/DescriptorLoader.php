@@ -55,7 +55,7 @@ use function usort;
 /**
  * @since 2.10.0
  */
-final class DescriptorLoader implements LoaderInterface
+final class DescriptorLoader implements DescriptorLoaderInterface
 {
     /**
      * @since 3.0.0
@@ -101,8 +101,6 @@ final class DescriptorLoader implements LoaderInterface
 
     /**
      * @throws CacheException
-     *
-     * @since 3.0.0
      */
     public function clearCache(): void
     {
