@@ -20,7 +20,7 @@ use Throwable;
 /**
  * @since 3.0.0
  */
-final class HttpExceptionFactory implements StatusCodeInterface
+final class HttpExceptionFactory
 {
     public static function malformedUri(
         ?string $message = null,
@@ -29,7 +29,7 @@ final class HttpExceptionFactory implements StatusCodeInterface
     ): HttpException {
         return new HttpException(
             $message ?? ErrorMessage::MALFORMED_URI,
-            $code ?? self::STATUS_BAD_REQUEST,
+            $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
             $previous,
         );
     }
@@ -41,7 +41,7 @@ final class HttpExceptionFactory implements StatusCodeInterface
     ): HttpException {
         return new HttpException(
             $message ?? ErrorMessage::RESOURCE_NOT_FOUND,
-            $code ?? self::STATUS_NOT_FOUND,
+            $code ?? StatusCodeInterface::STATUS_NOT_FOUND,
             $previous,
         );
     }
@@ -53,7 +53,7 @@ final class HttpExceptionFactory implements StatusCodeInterface
     ): HttpException {
         return new HttpException(
             $message ?? ErrorMessage::METHOD_NOT_ALLOWED,
-            $code ?? self::STATUS_METHOD_NOT_ALLOWED,
+            $code ?? StatusCodeInterface::STATUS_METHOD_NOT_ALLOWED,
             $previous,
         );
     }
@@ -65,7 +65,7 @@ final class HttpExceptionFactory implements StatusCodeInterface
     ): HttpException {
         return new HttpException(
             $message ?? ErrorMessage::MISSING_CONTENT_TYPE,
-            $code ?? self::STATUS_UNSUPPORTED_MEDIA_TYPE,
+            $code ?? StatusCodeInterface::STATUS_UNSUPPORTED_MEDIA_TYPE,
             $previous,
         );
     }
@@ -77,7 +77,7 @@ final class HttpExceptionFactory implements StatusCodeInterface
     ): HttpException {
         return new HttpException(
             $message ?? ErrorMessage::UNSUPPORTED_MEDIA_TYPE,
-            $code ?? self::STATUS_UNSUPPORTED_MEDIA_TYPE,
+            $code ?? StatusCodeInterface::STATUS_UNSUPPORTED_MEDIA_TYPE,
             $previous,
         );
     }
@@ -89,7 +89,7 @@ final class HttpExceptionFactory implements StatusCodeInterface
     ): HttpException {
         return new HttpException(
             $message ?? ErrorMessage::INVALID_VARIABLE,
-            $code ?? self::STATUS_BAD_REQUEST,
+            $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
             $previous,
         );
     }
@@ -101,7 +101,7 @@ final class HttpExceptionFactory implements StatusCodeInterface
     ): HttpException {
         return new HttpException(
             $message ?? ErrorMessage::INVALID_QUERY,
-            $code ?? self::STATUS_BAD_REQUEST,
+            $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
             $previous,
         );
     }
@@ -113,7 +113,7 @@ final class HttpExceptionFactory implements StatusCodeInterface
     ): HttpException {
         return new HttpException(
             $message ?? ErrorMessage::MISSING_HEADER,
-            $code ?? self::STATUS_BAD_REQUEST,
+            $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
             $previous,
         );
     }
@@ -125,7 +125,7 @@ final class HttpExceptionFactory implements StatusCodeInterface
     ): HttpException {
         return new HttpException(
             $message ?? ErrorMessage::INVALID_HEADER,
-            $code ?? self::STATUS_BAD_REQUEST,
+            $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
             $previous,
         );
     }
@@ -137,7 +137,7 @@ final class HttpExceptionFactory implements StatusCodeInterface
     ): HttpException {
         return new HttpException(
             $message ?? ErrorMessage::MISSING_COOKIE,
-            $code ?? self::STATUS_BAD_REQUEST,
+            $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
             $previous,
         );
     }
@@ -149,7 +149,7 @@ final class HttpExceptionFactory implements StatusCodeInterface
     ): HttpException {
         return new HttpException(
             $message ?? ErrorMessage::INVALID_COOKIE,
-            $code ?? self::STATUS_BAD_REQUEST,
+            $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
             $previous,
         );
     }
@@ -161,7 +161,7 @@ final class HttpExceptionFactory implements StatusCodeInterface
     ): HttpException {
         return new HttpException(
             $message ?? ErrorMessage::INVALID_BODY,
-            $code ?? self::STATUS_BAD_REQUEST,
+            $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
             $previous,
         );
     }
@@ -173,7 +173,7 @@ final class HttpExceptionFactory implements StatusCodeInterface
     ): HttpException {
         return new HttpException(
             $message ?? ErrorMessage::EMPTY_JSON_PAYLOAD,
-            $code ?? self::STATUS_BAD_REQUEST,
+            $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
             $previous,
         );
     }
@@ -185,7 +185,7 @@ final class HttpExceptionFactory implements StatusCodeInterface
     ): HttpException {
         return new HttpException(
             $message ?? ErrorMessage::INVALID_JSON_PAYLOAD,
-            $code ?? self::STATUS_BAD_REQUEST,
+            $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
             $previous,
         );
     }
@@ -197,7 +197,7 @@ final class HttpExceptionFactory implements StatusCodeInterface
     ): HttpException {
         return new HttpException(
             $message ?? ErrorMessage::INVALID_JSON_PAYLOAD_FORMAT,
-            $code ?? self::STATUS_BAD_REQUEST,
+            $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
             $previous,
         );
     }

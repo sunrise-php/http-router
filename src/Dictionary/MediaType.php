@@ -11,13 +11,20 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Exception;
+namespace Sunrise\Http\Router\Dictionary;
 
-use Throwable;
+use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 
 /**
- * @since 2.0.0
+ * @since 3.0.0
  */
-interface ExceptionInterface extends Throwable
+enum MediaType: string implements MediaTypeInterface
 {
+    case Json = 'application/json';
+    case Xml = 'application/xml';
+
+    public function getIdentifier(): string
+    {
+        return $this->value;
+    }
 }

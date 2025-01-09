@@ -23,29 +23,9 @@ use Sunrise\Http\Router\RouteInterface;
 final class RoutePostRunEvent
 {
     public function __construct(
-        private readonly RouteInterface $route,
-        private readonly ServerRequestInterface $request,
-        private ResponseInterface $response,
+        public readonly RouteInterface $route,
+        public readonly ServerRequestInterface $request,
+        public ResponseInterface $response,
     ) {
-    }
-
-    public function getRoute(): RouteInterface
-    {
-        return $this->route;
-    }
-
-    public function getRequest(): ServerRequestInterface
-    {
-        return $this->request;
-    }
-
-    public function getResponse(): ResponseInterface
-    {
-        return $this->response;
-    }
-
-    public function setResponse(ResponseInterface $response): void
-    {
-        $this->response = $response;
     }
 }

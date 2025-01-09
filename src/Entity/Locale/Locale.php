@@ -29,7 +29,7 @@ final class Locale implements LocaleInterface
         return $this->languageCode;
     }
 
-    public function getRegionCode(): string
+    public function getRegionCode(): ?string
     {
         return $this->regionCode;
     }

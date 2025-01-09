@@ -16,12 +16,12 @@ namespace Sunrise\Http\Router\Entity\Locale;
 /**
  * @since 3.0.0
  */
-final class LocaleComparator implements LocaleComparatorInterface
+final class LocaleComparator
 {
     /**
-     * @inheritDoc
+     * @return int<-1, 1>
      */
-    public function compare(LocaleInterface $a, LocaleInterface $b): int
+    public static function compare(LocaleInterface $a, LocaleInterface $b): int
     {
         $aLanguageCode = $a->getLanguageCode();
         if ($aLanguageCode === '*') {

@@ -20,7 +20,7 @@ use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-use function join;
+use function implode;
 
 /**
  * @since 2.9.0
@@ -41,13 +41,17 @@ final class RouterListRoutesCommand extends Command
     {
         $table = new Table($output);
 
-        $table->setHeaders(['NAME', 'PATH', 'VERBS']);
+        $table->setHeaders([
+            'NAME',
+            'PATH',
+            'METHOD(S)',
+        ]);
 
         foreach ($this->router->getRoutes() as $route) {
             $table->addRow([
                 $route->getName(),
                 $route->getPath(),
-                $route->getMethods() === [] ? '*' : join(', ', $route->getMethods()),
+                $route->getMethods() === [] ? '*' : implode(', ', $route->getMethods()),
             ]);
         }
 

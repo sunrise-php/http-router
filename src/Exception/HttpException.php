@@ -13,21 +13,19 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Exception;
 
+use Fig\Http\Message\StatusCodeInterface;
 use RuntimeException;
 use Stringable;
-use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationAdapter;
-use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationAdapter;
 use Sunrise\Http\Router\Validation\ConstraintViolationInterface;
 use Throwable;
 
-use function array_map;
-use function join;
+use function implode;
 use function strtr;
 
 /**
  * @since 3.0.0
  */
-class HttpException extends RuntimeException implements HttpExceptionInterface
+class HttpException extends RuntimeException implements StatusCodeInterface
 {
     /**
      * The exception's non-interpolated message.
@@ -40,12 +38,12 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     private array $messagePlaceholders = [];
 
     /**
-     * @var array<array-key, array{0: string, 1: string}>
+     * @var list<array{0: string, 1: string}>
      */
     private array $headerFields = [];
 
     /**
-     * @var array<array-key, ConstraintViolationInterface>
+     * @var list<ConstraintViolationInterface>
      */
     private array $constraintViolations = [];
 
@@ -57,7 +55,7 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     }
 
     /**
-     * @inheritDoc
+     * Returns the exception's <b>non-interpolated</b> message.
      */
     final public function getMessageTemplate(): string
     {
@@ -65,7 +63,7 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     }
 
     /**
-     * @inheritDoc
+     * @return array<string, mixed>
      */
     final public function getMessagePlaceholders(): array
     {
@@ -73,7 +71,7 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     }
 
     /**
-     * @inheritDoc
+     * @return list<array{0: string, 1: string}>
      */
     final public function getHeaderFields(): array
     {
@@ -81,7 +79,7 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     }
 
     /**
-     * @inheritDoc
+     * @return list<ConstraintViolationInterface>
      */
     final public function getConstraintViolations(): array
     {
@@ -100,7 +98,7 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
     final public function addHeaderField(string $fieldName, string|Stringable ...$fieldValues): static
     {
         // https://datatracker.ietf.org/doc/html/rfc7230#section-7
-        $fieldValue = join(', ', $fieldValues);
+        $fieldValue = implode(', ', $fieldValues);
 
         $this->headerFields[] = [$fieldName, $fieldValue];
 
@@ -114,23 +112,5 @@ class HttpException extends RuntimeException implements HttpExceptionInterface
         }
 
         return $this;
-    }
-
-    final public function addHydratorConstraintViolation(
-        \Sunrise\Hydrator\Exception\InvalidValueException ...$constraintViolations
-    ): static {
-        return $this->addConstraintViolation(...array_map(
-            HydratorConstraintViolationAdapter::create(...),
-            $constraintViolations,
-        ));
-    }
-
-    final public function addValidatorConstraintViolation(
-        \Symfony\Component\Validator\ConstraintViolationInterface ...$constraintViolations
-    ): static {
-        return $this->addConstraintViolation(...array_map(
-            ValidatorConstraintViolationAdapter::create(...),
-            $constraintViolations,
-        ));
     }
 }

@@ -22,23 +22,8 @@ use Sunrise\Http\Router\RouteInterface;
 final class RoutePreRunEvent
 {
     public function __construct(
-        private readonly RouteInterface $route,
-        private ServerRequestInterface $request,
+        public readonly RouteInterface $route,
+        public ServerRequestInterface $request,
     ) {
-    }
-
-    public function getRoute(): RouteInterface
-    {
-        return $this->route;
-    }
-
-    public function getRequest(): ServerRequestInterface
-    {
-        return $this->request;
-    }
-
-    public function setRequest(ServerRequestInterface $request): void
-    {
-        $this->request = $request;
     }
 }

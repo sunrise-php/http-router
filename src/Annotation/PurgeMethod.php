@@ -11,19 +11,19 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Annotation\Method;
+namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
-use Sunrise\Http\Router\Annotation\Method;
+use Fig\Http\Message\RequestMethodInterface;
 
 /**
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final class PutMethod extends Method
+final class PurgeMethod extends Method
 {
     public function __construct()
     {
-        parent::__construct(self::METHOD_PUT);
+        parent::__construct(RequestMethodInterface::METHOD_PURGE);
     }
 }

@@ -38,7 +38,7 @@ final class RouterClearDescriptorsCacheCommand extends Command
     {
         $this->descriptorLoader->clearCache();
 
-        $output->writeln('Ok');
+        $output->writeln('Done');
 
         return self::SUCCESS;
     }

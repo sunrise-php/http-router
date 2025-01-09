@@ -18,22 +18,9 @@ namespace Sunrise\Http\Router\Entity\MediaType;
  */
 final class MediaType implements MediaTypeInterface
 {
-    public const IDENTIFIER_JSON = 'application/json';
-    public const IDENTIFIER_XML = 'application/xml';
-
     public function __construct(
         private readonly string $identifier,
     ) {
-    }
-
-    public static function json(): self
-    {
-        return new self(self::IDENTIFIER_JSON);
-    }
-
-    public static function xml(): self
-    {
-        return new self(self::IDENTIFIER_XML);
     }
 
     public function getIdentifier(): string

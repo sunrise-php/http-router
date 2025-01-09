@@ -11,15 +11,14 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Entity\Locale;
+namespace Sunrise\Http\Router\Annotation;
+
+use Attribute;
 
 /**
  * @since 3.0.0
  */
-interface LocaleComparatorInterface
+#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION)]
+final class EmptyResponse
 {
-    /**
-     * @return int<-1, 1>
-     */
-    public function compare(LocaleInterface $a, LocaleInterface $b): int;
 }

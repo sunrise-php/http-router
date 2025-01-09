@@ -19,12 +19,12 @@ use function strtolower;
 /**
  * @since 3.0.0
  */
-final class MediaTypeComparator implements MediaTypeComparatorInterface
+final class MediaTypeComparator
 {
     /**
-     * @inheritDoc
+     * @return int<-1, 1>
      */
-    public function compare(MediaTypeInterface $a, MediaTypeInterface $b): int
+    public static function compare(MediaTypeInterface $a, MediaTypeInterface $b): int
     {
         $aId = strtolower($a->getIdentifier());
         $aParts = explode('/', $aId, 2);
@@ -37,6 +37,6 @@ final class MediaTypeComparator implements MediaTypeComparatorInterface
         $sameTypes = $aParts[0] === $bParts[0] || $aParts[0] === '*' || $bParts[0] === '*';
         $sameSubtypes = $aParts[1] === $bParts[1] || $aParts[1] === '*' || $bParts[1] === '*';
 
-        return ($sameTypes && $sameSubtypes) ? 0 : $aId <=> $bId;
+        return $sameTypes && $sameSubtypes ? 0 : $aId <=> $bId;
     }
 }
