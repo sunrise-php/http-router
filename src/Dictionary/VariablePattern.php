@@ -18,7 +18,7 @@ namespace Sunrise\Http\Router\Dictionary;
  */
 final class VariablePattern
 {
-    public const ASCII_SLUG = '[0-9A-Za-z]+(?:-[0-9A-Za-z]+)*';
-    public const UNSIGNED_INTEGER = '[0-9]+';
-    public const UUID = '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}';
+    public const SLUG = '[0-9A-Za-z]+(?:-[0-9A-Za-z]+)*';
+    public const UINT = '[0-9]+';
+    public const UUID = '[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}';
 }

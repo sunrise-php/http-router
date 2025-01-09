@@ -20,8 +20,8 @@ use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
  */
 enum MediaType: string implements MediaTypeInterface
 {
-    case Json = 'application/json';
-    case Xml = 'application/xml';
+    case JSON = 'application/json';
+    case XML = 'application/xml';
 
     public function getIdentifier(): string
     {
