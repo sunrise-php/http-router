@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Sunrise\Http\Router\Dictionary\ErrorMessage;
 
 return [
+    // phpcs:disable Generic.Files.LineLength.TooLong
     ErrorMessage::MALFORMED_URI => 'URI запроса невалиден и не может быть принят сервером.',
     ErrorMessage::RESOURCE_NOT_FOUND => 'Запрашиваемый ресурс не найден для данного URI.',
     ErrorMessage::METHOD_NOT_ALLOWED => 'Запрашиваемый метод не разрешен для данного ресурса; Проверьте заголовок ответа "Allow" на разрешенные методы.',
@@ -12,6 +13,8 @@ return [
     ErrorMessage::UNSUPPORTED_MEDIA_TYPE => 'Тип медиа {{ media_type }} не поддерживается; Проверьте заголовок ответа "Accept" на поддерживаемые типы медиа.',
     ErrorMessage::INVALID_VARIABLE => 'Значение переменной {{{ variable_name }}} в URI запроса {{ route_uri }} невалидно.',
     ErrorMessage::INVALID_QUERY => 'Параметры запроса невалидны.',
+    ErrorMessage::MISSING_QUERY_PARAM => 'Параметр запроса {{ query_param_name }} должен быть предоставлен.',
+    ErrorMessage::INVALID_QUERY_PARAM => 'Параметр запроса {{ query_param_name }} невалиден.',
     ErrorMessage::MISSING_HEADER => 'Заголовок запроса {{ header_name }} должен быть предоставлен.',
     ErrorMessage::INVALID_HEADER => 'Заголовок запроса {{ header_name }} невалиден.',
     ErrorMessage::MISSING_COOKIE => 'Отсутствует cookie {{ cookie_name }}.',
@@ -20,4 +23,5 @@ return [
     ErrorMessage::EMPTY_JSON_PAYLOAD => 'JSON payload не может быть пустым.',
     ErrorMessage::INVALID_JSON_PAYLOAD => 'JSON payload невалидно.',
     ErrorMessage::INVALID_JSON_PAYLOAD_FORMAT => 'JSON payload должен быть в формате массива или объекта.',
+    // phpcs:enable Generic.Files.LineLength.TooLong
 ];

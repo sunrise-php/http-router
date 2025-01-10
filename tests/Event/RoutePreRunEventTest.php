@@ -12,27 +12,23 @@ use Sunrise\Http\Router\RouteInterface;
 
 final class RoutePreRunEventTest extends TestCase
 {
-    private RouteInterface&MockObject $routeMock;
-    private ServerRequestInterface&MockObject $serverRequestMock;
+    private RouteInterface&MockObject $mockedRoute;
+    private ServerRequestInterface&MockObject $mockedServerRequest;
 
     protected function setUp(): void
     {
-        $this->routeMock = $this->createMock(RouteInterface::class);
-        $this->serverRequestMock = $this->createMock(ServerRequestInterface::class);
+        $this->mockedRoute = $this->createMock(RouteInterface::class);
+        $this->mockedServerRequest = $this->createMock(ServerRequestInterface::class);
     }
 
     public function testConstructor(): void
     {
-        $event = new RoutePreRunEvent($this->routeMock, $this->serverRequestMock);
-        $this->assertSame($this->routeMock, $event->getRoute());
-        $this->assertSame($this->serverRequestMock, $event->getRequest());
-    }
+        $event = new RoutePreRunEvent(
+            $this->mockedRoute,
+            $this->mockedServerRequest,
+        );
 
-    public function testSetRequest(): void
-    {
-        $event = new RoutePreRunEvent($this->routeMock, $this->serverRequestMock);
-        $newServerRequest = $this->createMock(ServerRequestInterface::class);
-        $event->setRequest($newServerRequest);
-        $this->assertSame($newServerRequest, $event->getRequest());
+        $this->assertSame($this->mockedRoute, $event->route);
+        $this->assertSame($this->mockedServerRequest, $event->request);
     }
 }

@@ -9,43 +9,50 @@ use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Command\RouterListRoutesCommand;
 use Sunrise\Http\Router\RouteInterface;
 use Sunrise\Http\Router\RouterInterface;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
 final class RouterListRoutesCommandTest extends TestCase
 {
-    private RouterInterface&MockObject $routerMock;
+    private RouterInterface&MockObject $mockedRouter;
 
     /** @var array<array-key, RouteInterface&MockObject> */
-    private array $routeMocks = [];
+    private array $mockedRoutes = [];
 
     protected function setUp(): void
     {
-        $this->routerMock = $this->createMock(RouterInterface::class);
-        $this->routeMocks = [];
+        $this->mockedRouter = $this->createMock(RouterInterface::class);
+        $this->mockedRoutes = [];
     }
 
     public function testExecuteWithRoutes(): void
     {
         $this->mockRoute();
 
-        $this->routerMock->expects(self::once())
+        $this->mockedRouter
+            ->expects(self::once())
             ->method('getRoutes')
-            ->willReturn($this->routeMocks);
+            ->willReturn($this->mockedRoutes);
 
-        $command = new RouterListRoutesCommand($this->routerMock);
+        $command = new RouterListRoutesCommand($this->mockedRouter);
         $commandTester = new CommandTester($command);
-        $this->assertSame(0, $commandTester->execute([]));
+        $this->assertSame(Command::SUCCESS, $commandTester->execute([]));
     }
 
     public function testExecuteWithoutRoutes(): void
     {
-        $command = new RouterListRoutesCommand($this->routerMock);
+        $this->mockedRouter
+            ->expects(self::once())
+            ->method('getRoutes')
+            ->willReturn([]);
+
+        $command = new RouterListRoutesCommand($this->mockedRouter);
         $commandTester = new CommandTester($command);
-        $this->assertSame(0, $commandTester->execute([]));
+        $this->assertSame(Command::SUCCESS, $commandTester->execute([]));
     }
 
     private function mockRoute(): RouteInterface&MockObject
     {
-        return $this->routeMocks[] = $this->createMock(RouteInterface::class);
+        return $this->mockedRoutes[] = $this->createMock(RouteInterface::class);
     }
 }

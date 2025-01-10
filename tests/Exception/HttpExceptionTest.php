@@ -218,41 +218,4 @@ final class HttpExceptionTest extends TestCase
 
         return $stringableObjectMock;
     }
-
-    private function createHydratorConstraintViolation(
-        string $message,
-        string $messageTemplate,
-        array $messagePlaceholders,
-        array $propertyPath,
-        string $errorCode,
-        mixed $invalidValue = null,
-    ): \Sunrise\Hydrator\Exception\InvalidValueException {
-        return new \Sunrise\Hydrator\Exception\InvalidValueException(
-            message: $message,
-            errorCode: $errorCode,
-            propertyPath: $propertyPath,
-            messageTemplate: $messageTemplate,
-            messagePlaceholders: $messagePlaceholders,
-            invalidValue: $invalidValue,
-        );
-    }
-
-    private function mockValidatorConstraintViolation(
-        string $message,
-        string $messageTemplate,
-        array $messagePlaceholders,
-        string $propertyPath,
-        string $errorCode,
-        mixed $invalidValue = null,
-    ): \Symfony\Component\Validator\ConstraintViolationInterface&MockObject {
-        $constraintViolationMock = $this->createMock(\Symfony\Component\Validator\ConstraintViolationInterface::class);
-        $constraintViolationMock->method('getMessage')->willReturn($message);
-        $constraintViolationMock->method('getMessageTemplate')->willReturn($messageTemplate);
-        $constraintViolationMock->method('getParameters')->willReturn($messagePlaceholders);
-        $constraintViolationMock->method('getPropertyPath')->willReturn($propertyPath);
-        $constraintViolationMock->method('getCode')->willReturn($errorCode);
-        $constraintViolationMock->method('getInvalidValue')->willReturn($invalidValue);
-
-        return $constraintViolationMock;
-    }
 }

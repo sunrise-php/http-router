@@ -17,7 +17,6 @@ use InvalidArgumentException;
 
 use function addcslashes;
 use function str_replace;
-use function substr;
 
 /**
  * @since 3.0.0
@@ -38,7 +37,7 @@ final class RouteCompiler
         $search = [];
         $replace = [];
         foreach ($variables as $variable) {
-            $search[] = substr($route, $variable['offset'], $variable['length']);
+            $search[] = $variable['statement'];
             $replace[] = '{' . $variable['name'] . '}';
         }
 

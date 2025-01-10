@@ -17,9 +17,11 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Router\Dictionary\HeaderName;
+use Sunrise\Http\Router\Dictionary\PlaceholderCode;
 use Sunrise\Http\Router\Entity\MediaType\StringableMediaType;
+use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
-use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 use Sunrise\Http\Router\ServerRequest;
 
 use function array_map;
@@ -39,7 +41,7 @@ final class PayloadMediaTypeNegotiationMiddleware implements MiddlewareInterface
     /**
      * @inheritDoc
      *
-     * @throws HttpExceptionInterface If the request payload's media type isn't supported by the server.
+     * @throws HttpException If the request payload's media type isn't supported by the server.
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
@@ -52,13 +54,19 @@ final class PayloadMediaTypeNegotiationMiddleware implements MiddlewareInterface
         $clientProducedMediaType = $serverRequest->getClientProducedMediaType();
         if ($clientProducedMediaType === null) {
             throw HttpExceptionFactory::missingContentType($this->errorMessage, $this->errorStatusCode)
-                ->addHeaderField('Accept', ...array_map(StringableMediaType::create(...), $serverConsumedMediaTypes));
+                ->addHeaderField(HeaderName::ACCEPT, ...array_map(
+                    StringableMediaType::create(...),
+                    $serverConsumedMediaTypes,
+                ));
         }
 
         if (!$serverRequest->clientProducesMediaType(...$serverConsumedMediaTypes)) {
             throw HttpExceptionFactory::unsupportedMediaType($this->errorMessage, $this->errorStatusCode)
-                ->addMessagePlaceholder('{{ media_type }}', $clientProducedMediaType->getIdentifier())
-                ->addHeaderField('Accept', ...array_map(StringableMediaType::create(...), $serverConsumedMediaTypes));
+                ->addMessagePlaceholder(PlaceholderCode::MEDIA_TYPE, $clientProducedMediaType->getIdentifier())
+                ->addHeaderField(HeaderName::ACCEPT, ...array_map(
+                    StringableMediaType::create(...),
+                    $serverConsumedMediaTypes,
+                ));
         }
 
         return $handler->handle($request);

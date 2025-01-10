@@ -35,7 +35,7 @@ use function sprintf;
 final class ClassFinder
 {
     /**
-     * @return Generator<int, ReflectionClass<object>>
+     * @return Generator<class-string, ReflectionClass<object>>
      *
      * @throws InvalidArgumentException
      * @throws ReflectionException
@@ -43,34 +43,43 @@ final class ClassFinder
     public static function getDirClasses(string $dirname): Generator
     {
         if (!is_dir($dirname)) {
-            throw new InvalidArgumentException(sprintf('The directory %s does not exist.', $dirname));
+            throw new InvalidArgumentException(sprintf(
+                'The directory "%s" does not exist.',
+                $dirname,
+            ));
         }
 
         /** @var iterable<string, SplFileInfo> $files */
-        $files = new RegexIterator(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dirname)), '/\.php$/');
+        $files = new RegexIterator(
+            new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator($dirname)
+            ),
+            '/\.php$/',
+        );
 
         /** @var array<string, true> $filenames */
         $filenames = [];
         foreach ($files as $file) {
             $filename = $file->getRealPath();
-            $filenames[$filename] = true;
 
             (static function (string $filename): void {
                 /** @psalm-suppress UnresolvableInclude */
                 require_once $filename;
             })($filename);
+
+            $filenames[$filename] = true;
         }
 
         foreach (get_declared_classes() as $className) {
             $classReflection = new ReflectionClass($className);
             if (isset($filenames[$classReflection->getFileName()])) {
-                yield $classReflection;
+                yield $className => $classReflection;
             }
         }
     }
 
     /**
-     * @return Generator<int, ReflectionClass<object>>
+     * @return Generator<class-string, ReflectionClass<object>>
      *
      * @throws InvalidArgumentException
      * @throws ReflectionException
@@ -78,7 +87,10 @@ final class ClassFinder
     public static function getFileClasses(string $filename): Generator
     {
         if (!is_file($filename)) {
-            throw new InvalidArgumentException(sprintf('The file %s does not exist.', $filename));
+            throw new InvalidArgumentException(sprintf(
+                'The file "%s" does not exist.',
+                $filename,
+            ));
         }
 
         /** @var string $filename */
@@ -92,7 +104,7 @@ final class ClassFinder
         foreach (get_declared_classes() as $className) {
             $classReflection = new ReflectionClass($className);
             if ($classReflection->getFileName() === $filename) {
-                yield $classReflection;
+                yield $className => $classReflection;
             }
         }
     }

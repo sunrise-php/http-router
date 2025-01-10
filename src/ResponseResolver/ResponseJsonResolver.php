@@ -22,7 +22,8 @@ use ReflectionAttribute;
 use ReflectionFunction;
 use ReflectionMethod;
 use RuntimeException;
-use Sunrise\Http\Router\Annotation\Response\JsonResponse;
+use Sunrise\Http\Router\Annotation\JsonResponse;
+use Sunrise\Http\Router\Dictionary\HeaderName;
 use Sunrise\Http\Router\ResponseResolverChain;
 use Sunrise\Http\Router\ResponseResolverInterface;
 
@@ -36,8 +37,8 @@ use const JSON_THROW_ON_ERROR;
  */
 final class ResponseJsonResolver implements ResponseResolverInterface
 {
-    public const DEFAULT_ENCODING_FLAGS = 0;
-    public const DEFAULT_ENCODING_DEPTH = 512;
+    private const DEFAULT_ENCODING_FLAGS = 0;
+    private const DEFAULT_ENCODING_DEPTH = 512;
 
     public function __construct(
         private readonly ResponseFactoryInterface $responseFactory,
@@ -80,7 +81,7 @@ final class ResponseJsonResolver implements ResponseResolverInterface
 
         $jsonResponse = $this->responseFactory
             ->createResponse(StatusCodeInterface::STATUS_OK)
-            ->withHeader('Content-Type', 'application/json; charset=UTF-8');
+            ->withHeader(HeaderName::CONTENT_TYPE, 'application/json; charset=UTF-8');
 
         $jsonResponse->getBody()->write($payload);
 

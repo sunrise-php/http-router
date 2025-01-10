@@ -17,7 +17,7 @@ use Generator;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
 use ReflectionParameter;
-use Sunrise\Http\Router\Annotation\RequestCookie;
+use Sunrise\Http\Router\Annotation\RequestQueryParam;
 use Sunrise\Http\Router\Dictionary\PlaceholderCode;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
@@ -38,7 +38,7 @@ use function array_map;
 /**
  * @since 3.0.0
  */
-final class RequestCookieParameterResolver implements ParameterResolverInterface
+final class RequestQueryParamParameterResolver implements ParameterResolverInterface
 {
     public function __construct(
         private readonly HydratorInterface $hydrator,
@@ -61,8 +61,8 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
             return;
         }
 
-        /** @var list<ReflectionAttribute<RequestCookie>> $annotations */
-        $annotations = $parameter->getAttributes(RequestCookie::class);
+        /** @var list<ReflectionAttribute<RequestQueryParam>> $annotations */
+        $annotations = $parameter->getAttributes(RequestQueryParam::class);
         if ($annotations === []) {
             return;
         }
@@ -70,32 +70,32 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
         $request = ServerRequest::create($context);
         $processParams = $annotations[0]->newInstance();
 
-        $cookieName = $processParams->name;
+        $queryParamName = $processParams->name;
         $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
         $errorMessage = $processParams->errorMessage ?? $this->defaultErrorMessage;
 
-        if (!$request->hasCookieParam($cookieName)) {
+        if (!$request->hasQueryParam($queryParamName)) {
             if ($parameter->isDefaultValueAvailable()) {
                 return yield $parameter->getDefaultValue();
             }
 
-            throw HttpExceptionFactory::missingCookie($errorMessage, $errorStatusCode)
-                ->addMessagePlaceholder(PlaceholderCode::COOKIE_NAME, $cookieName);
+            throw HttpExceptionFactory::missingQueryParam($errorMessage, $errorStatusCode)
+                ->addMessagePlaceholder(PlaceholderCode::QUERY_PARAM_NAME, $queryParamName);
         }
 
         try {
             $argument = $this->hydrator->castValue(
-                $request->getCookieParam($cookieName),
+                $request->getQueryParam($queryParamName),
                 Type::fromParameter($parameter),
-                path: [$cookieName],
+                path: [$queryParamName],
             );
         } catch (InvalidValueException $e) {
-            throw HttpExceptionFactory::invalidCookie($errorMessage, $errorStatusCode, previous: $e)
-                ->addMessagePlaceholder(PlaceholderCode::COOKIE_NAME, $cookieName)
+            throw HttpExceptionFactory::invalidQueryParam($errorMessage, $errorStatusCode, previous: $e)
+                ->addMessagePlaceholder(PlaceholderCode::QUERY_PARAM_NAME, $queryParamName)
                 ->addConstraintViolation(new HydratorConstraintViolationAdapter($e));
         } catch (InvalidDataException $e) {
-            throw HttpExceptionFactory::invalidCookie($errorMessage, $errorStatusCode, previous: $e)
-                ->addMessagePlaceholder(PlaceholderCode::COOKIE_NAME, $cookieName)
+            throw HttpExceptionFactory::invalidQueryParam($errorMessage, $errorStatusCode, previous: $e)
+                ->addMessagePlaceholder(PlaceholderCode::QUERY_PARAM_NAME, $queryParamName)
                 ->addConstraintViolation(...array_map(
                     HydratorConstraintViolationAdapter::create(...),
                     $e->getExceptions(),
@@ -107,13 +107,13 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
         if ($this->validator !== null && $validationEnabled) {
             $violations = $this->validator
                 ->startContext()
-                ->atPath($cookieName)
+                ->atPath($queryParamName)
                 ->validate($argument, new ArgumentConstraint($parameter))
                 ->getViolations();
 
             if ($violations->count() > 0) {
-                throw HttpExceptionFactory::invalidCookie($errorMessage, $errorStatusCode)
-                    ->addMessagePlaceholder(PlaceholderCode::COOKIE_NAME, $cookieName)
+                throw HttpExceptionFactory::invalidQueryParam($errorMessage, $errorStatusCode)
+                    ->addMessagePlaceholder(PlaceholderCode::QUERY_PARAM_NAME, $queryParamName)
                     ->addConstraintViolation(...array_map(
                         ValidatorConstraintViolationAdapter::create(...),
                         [...$violations],

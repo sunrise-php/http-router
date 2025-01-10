@@ -18,13 +18,12 @@ use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
+use Sunrise\Http\Router\Dictionary\HeaderName;
 use Sunrise\Http\Router\Entity\Locale\Locale;
 use Sunrise\Http\Router\Entity\Locale\LocaleComparator;
-use Sunrise\Http\Router\Entity\Locale\LocaleComparatorInterface;
 use Sunrise\Http\Router\Entity\Locale\LocaleInterface;
 use Sunrise\Http\Router\Entity\MediaType\MediaType;
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeComparator;
-use Sunrise\Http\Router\Entity\MediaType\MediaTypeComparatorInterface;
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 use Sunrise\Http\Router\Helper\HeaderParser;
 
@@ -38,26 +37,14 @@ use function usort;
  */
 final class ServerRequest implements ServerRequestInterface
 {
-    private readonly LocaleComparatorInterface $localeComparator;
-    private readonly MediaTypeComparatorInterface $mediaTypeComparator;
-
     public function __construct(
         private ServerRequestInterface $request,
-        ?LocaleComparatorInterface $localeComparator = null,
-        ?MediaTypeComparatorInterface $mediaTypeComparator = null,
     ) {
-        $this->localeComparator = $localeComparator ?? new LocaleComparator();
-        $this->mediaTypeComparator = $mediaTypeComparator ?? new MediaTypeComparator();
     }
 
     public static function create(ServerRequestInterface $request): self
     {
         return ($request instanceof self) ? $request : new self($request);
-    }
-
-    public function getOriginalRequest(): ServerRequestInterface
-    {
-        return ($this->request instanceof self) ? $this->request->getOriginalRequest() : $this->request;
     }
 
     /**
@@ -76,9 +63,9 @@ final class ServerRequest implements ServerRequestInterface
         return $route;
     }
 
-    public function getClientProducedMediaType(): ?MediaType
+    public function getClientProducedMediaType(): ?MediaTypeInterface
     {
-        $values = HeaderParser::parseHeader($this->request->getHeaderLine('Content-Type'));
+        $values = HeaderParser::parseHeader($this->request->getHeaderLine(HeaderName::CONTENT_TYPE));
         if ($values === []) {
             return null;
         }
@@ -92,7 +79,7 @@ final class ServerRequest implements ServerRequestInterface
     }
 
     /**
-     * @return Generator<int, Locale>
+     * @return Generator<int, LocaleInterface>
      *
      * @throws LogicException
      */
@@ -105,7 +92,7 @@ final class ServerRequest implements ServerRequestInterface
             );
         }
 
-        $values = HeaderParser::parseHeader($this->request->getHeaderLine('Accept-Language'));
+        $values = HeaderParser::parseHeader($this->request->getHeaderLine(HeaderName::ACCEPT_LANGUAGE));
         if ($values === []) {
             return;
         }
@@ -118,17 +105,22 @@ final class ServerRequest implements ServerRequestInterface
         foreach ($values as [$identifier]) {
             $subtags = \Locale::parseLocale($identifier);
             if (isset($subtags['language'])) {
-                yield new Locale($subtags['language'], $subtags['region'] ?? null);
+                /** @var string $languageCode */
+                $languageCode = $subtags['language'];
+                /** @var string|null $regionCode */
+                $regionCode = $subtags['region'] ?? null;
+
+                yield new Locale($languageCode, $regionCode);
             }
         }
     }
 
     /**
-     * @return Generator<int<0, max>, MediaType>
+     * @return Generator<int<0, max>, MediaTypeInterface>
      */
     public function getClientConsumedMediaTypes(): Generator
     {
-        $values = HeaderParser::parseHeader($this->request->getHeaderLine('Accept'));
+        $values = HeaderParser::parseHeader($this->request->getHeaderLine(HeaderName::ACCEPT));
         if ($values === []) {
             return;
         }
@@ -138,10 +130,9 @@ final class ServerRequest implements ServerRequestInterface
             (float) ($b[1]['q'] ?? '1') <=> (float) ($a[1]['q'] ?? '1')
         ));
 
-        /** @phpstan-var int<0, max> $index */
-        foreach ($values as $index => [$identifier]) {
+        foreach ($values as [$identifier]) {
             if (preg_match('|^([^/]+)/([^/]+)$|', $identifier) === 1) {
-                yield $index => new MediaType($identifier);
+                yield new MediaType($identifier);
             }
         }
     }
@@ -161,7 +152,7 @@ final class ServerRequest implements ServerRequestInterface
 
         foreach ($this->getClientConsumedLocales() as $clientConsumedLanguage) {
             foreach ($serverProducedLocales as $serverProducedLanguage) {
-                if ($this->localeComparator->compare($clientConsumedLanguage, $serverProducedLanguage) === 0) {
+                if (LocaleComparator::compare($clientConsumedLanguage, $serverProducedLanguage) === 0) {
                     return $serverProducedLanguage;
                 }
             }
@@ -185,7 +176,7 @@ final class ServerRequest implements ServerRequestInterface
 
         foreach ($this->getClientConsumedMediaTypes() as $clientConsumedMediaType) {
             foreach ($serverProducedMediaTypes as $serverProducedMediaType) {
-                if ($this->mediaTypeComparator->compare($clientConsumedMediaType, $serverProducedMediaType) === 0) {
+                if (MediaTypeComparator::compare($clientConsumedMediaType, $serverProducedMediaType) === 0) {
                     return $serverProducedMediaType;
                 }
             }
@@ -207,22 +198,12 @@ final class ServerRequest implements ServerRequestInterface
         }
 
         foreach ($serverConsumedMediaTypes as $serverConsumedMediaType) {
-            if ($this->mediaTypeComparator->compare($clientProducedMediaType, $serverConsumedMediaType) === 0) {
+            if (MediaTypeComparator::compare($clientProducedMediaType, $serverConsumedMediaType) === 0) {
                 return true;
             }
         }
 
         return false;
-    }
-
-    public function isJsonPayload(): bool
-    {
-        return $this->clientProducesMediaType(MediaType::json());
-    }
-
-    public function isXmlPayload(): bool
-    {
-        return $this->clientProducesMediaType(MediaType::xml());
     }
 
     /**

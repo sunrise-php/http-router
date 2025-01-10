@@ -18,8 +18,9 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Router\Dictionary\MediaType;
+use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
-use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 use Sunrise\Http\Router\ServerRequest;
 
 use function is_array;
@@ -32,13 +33,11 @@ use const JSON_THROW_ON_ERROR;
  * JSON payload decoding middleware
  *
  * @since 2.15.0
- *
- * @todo Use the Simdjson extension as needed.
  */
 final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
 {
-    public const DEFAULT_DECODING_FLAGS = JSON_BIGINT_AS_STRING;
-    public const DEFAULT_DECODING_DEPTH = 512;
+    private const DEFAULT_DECODING_FLAGS = JSON_BIGINT_AS_STRING;
+    private const DEFAULT_DECODING_DEPTH = 512;
 
     /**
      * @since 3.0.0
@@ -54,12 +53,14 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
     /**
      * @inheritDoc
      *
-     * @throws HttpExceptionInterface If the request's payload couldn't be decoded.
+     * @throws HttpException If the request's payload couldn't be decoded.
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        if (ServerRequest::create($request)->isJsonPayload()) {
-            $request = $request->withParsedBody($this->decodeJson((string) $request->getBody()));
+        if (ServerRequest::create($request)->clientProducesMediaType(MediaType::JSON)) {
+            $request = $request->withParsedBody(
+                $this->decodeJson((string) $request->getBody())
+            );
         }
 
         return $handler->handle($request);
@@ -68,7 +69,7 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
     /**
      * @return array<array-key, mixed>
      *
-     * @throws HttpExceptionInterface If the JSON couldn't be decoded.
+     * @throws HttpException If the JSON couldn't be decoded.
      */
     private function decodeJson(string $json): array
     {

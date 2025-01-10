@@ -13,12 +13,17 @@ use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 final class MediaTypeComparatorTest extends TestCase
 {
     #[DataProvider('compareDataProvider')]
-    public function testCompare(string $aId, string $bId, int $expected): void
-    {
-        $a = $this->mockMediaType(identifier: $aId);
-        $b = $this->mockMediaType(identifier: $bId);
+    public function testCompare(
+        string $aIdentifier,
+        string $bIdentifier,
+        int $expectedResult,
+    ): void {
+        $a = $this->mockMediaType($aIdentifier);
+        $b = $this->mockMediaType($bIdentifier);
 
-        $this->assertSame($expected, (new MediaTypeComparator())->compare($a, $b));
+        $actualResult = MediaTypeComparator::compare($a, $b);
+
+        $this->assertSame($expectedResult, $actualResult);
     }
 
     public static function compareDataProvider(): iterable
@@ -27,6 +32,18 @@ final class MediaTypeComparatorTest extends TestCase
             'application/json',
             'application/json',
             0,
+        ];
+
+        yield [
+            'application/json',
+            'application/xml',
+            -1,
+        ];
+
+        yield [
+            'application/xml',
+            'application/json',
+            1,
         ];
 
         yield [
@@ -105,18 +122,6 @@ final class MediaTypeComparatorTest extends TestCase
             '*/jpeg',
             '*/png',
             -1,
-        ];
-
-        yield [
-            'application/json',
-            'application/xml',
-            -1,
-        ];
-
-        yield [
-            'application/xml',
-            'application/json',
-            1,
         ];
     }
 

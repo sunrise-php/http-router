@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Tests\Entity\MediaType;
 
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\Entity\MediaType\ClientMediaType;
+use Sunrise\Http\Router\Entity\MediaType\MediaType;
 
-final class ClientMediaTypeTest extends TestCase
+final class MediaTypeTest extends TestCase
 {
     public function testConstructor(): void
     {
-        $clientMediaType = new ClientMediaType('application/json', ['q' => '1.0']);
-        $this->assertSame('application/json', $clientMediaType->getIdentifier());
-        $this->assertSame(['q' => '1.0'], $clientMediaType->getParameters());
+        $mediaType = new MediaType('application/json');
+        $this->assertSame('application/json', $mediaType->getIdentifier());
     }
 }

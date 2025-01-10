@@ -34,7 +34,7 @@ final class ClassResolver implements ClassResolverInterface
 
     public function __construct(
         private readonly ParameterResolverChainInterface $parameterResolverChain,
-        private readonly ?ContainerInterface $container = null,
+        private readonly ?ContainerInterface $container,
     ) {
     }
 
@@ -53,14 +53,14 @@ final class ClassResolver implements ClassResolverInterface
      */
     public function resolveClass(string $className): object
     {
+        if ($this->container?->has($className) === true) {
+            /** @var T */
+            return $this->container->get($className);
+        }
+
         if (isset($this->resolvedClasses[$className])) {
             /** @var T */
             return $this->resolvedClasses[$className];
-        }
-
-        if ($this->container?->has($className)) {
-            /** @var T */
-            return $this->container->get($className);
         }
 
         if (!class_exists($className)) {

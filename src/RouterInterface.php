@@ -17,7 +17,7 @@ use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Exception\HttpExceptionInterface;
+use Sunrise\Http\Router\Exception\HttpException;
 
 /**
  * @since 3.0.0
@@ -51,7 +51,7 @@ interface RouterInterface extends RequestHandlerInterface
     public function addRoute(RouteInterface ...$routes): void;
 
     /**
-     * @throws HttpExceptionInterface
+     * @throws HttpException
      *
      * @since 1.0.0
      */
@@ -60,7 +60,7 @@ interface RouterInterface extends RequestHandlerInterface
     /**
      * @inheritDoc
      *
-     * @throws HttpExceptionInterface
+     * @throws HttpException
      *
      * @since 1.0.0
      */

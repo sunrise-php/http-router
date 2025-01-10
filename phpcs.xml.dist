@@ -7,7 +7,6 @@
         <exclude-pattern>tests/*</exclude-pattern>
     </rule>
 
-    <file>benchmarks</file>
     <file>src</file>
     <file>tests</file>
 </ruleset>

@@ -115,7 +115,6 @@ final class Route implements RouteInterface
     public function withAddedAttributes(array $attributes): static
     {
         $clone = clone $this;
-        /** @var mixed $value */
         foreach ($attributes as $name => $value) {
             $clone->attributes[$name] = $value;
         }

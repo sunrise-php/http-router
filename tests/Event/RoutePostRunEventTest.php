@@ -13,30 +13,27 @@ use Sunrise\Http\Router\RouteInterface;
 
 final class RoutePostRunEventTest extends TestCase
 {
-    private RouteInterface&MockObject $routeMock;
-    private ServerRequestInterface&MockObject $serverRequestMock;
-    private ResponseInterface&MockObject $responseMock;
+    private RouteInterface&MockObject $mockedRoute;
+    private ServerRequestInterface&MockObject $mockedServerRequest;
+    private ResponseInterface&MockObject $mockedResponse;
 
     protected function setUp(): void
     {
-        $this->routeMock = $this->createMock(RouteInterface::class);
-        $this->serverRequestMock = $this->createMock(ServerRequestInterface::class);
-        $this->responseMock = $this->createMock(ResponseInterface::class);
+        $this->mockedRoute = $this->createMock(RouteInterface::class);
+        $this->mockedServerRequest = $this->createMock(ServerRequestInterface::class);
+        $this->mockedResponse = $this->createMock(ResponseInterface::class);
     }
 
     public function testConstructor(): void
     {
-        $event = new RoutePostRunEvent($this->routeMock, $this->serverRequestMock, $this->responseMock);
-        $this->assertSame($this->routeMock, $event->getRoute());
-        $this->assertSame($this->serverRequestMock, $event->getRequest());
-        $this->assertSame($this->responseMock, $event->getResponse());
-    }
+        $event = new RoutePostRunEvent(
+            $this->mockedRoute,
+            $this->mockedServerRequest,
+            $this->mockedResponse,
+        );
 
-    public function testSetResponse(): void
-    {
-        $event = new RoutePostRunEvent($this->routeMock, $this->serverRequestMock, $this->responseMock);
-        $newResponse = $this->createMock(ResponseInterface::class);
-        $event->setResponse($newResponse);
-        $this->assertSame($newResponse, $event->getResponse());
+        $this->assertSame($this->mockedRoute, $event->route);
+        $this->assertSame($this->mockedServerRequest, $event->request);
+        $this->assertSame($this->mockedResponse, $event->response);
     }
 }

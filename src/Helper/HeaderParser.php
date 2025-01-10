@@ -26,10 +26,12 @@ final class HeaderParser
     private const IN_QUOTED_STRING = 8;
     private const IN_QUOTED_PAIR = 16;
 
+    private const MAX_FIELD_VALUE_LENGTH = 512;
+
     /**
      * @link https://datatracker.ietf.org/doc/html/rfc7230#section-3.2.6
      */
-    private const RFC7230_FIELD_VALUE = [
+    private const RFC7230_FIELD_VALUE_CHARSET = [
         "\x09" => 1, "\x20" => 1, "\x21" => 1, "\x22" => 1, "\x23" => 1, "\x24" => 1, "\x25" => 1, "\x26" => 1,
         "\x27" => 1, "\x28" => 1, "\x29" => 1, "\x2a" => 1, "\x2b" => 1, "\x2c" => 1, "\x2d" => 1, "\x2e" => 1,
         "\x2f" => 1, "\x30" => 1, "\x31" => 1, "\x32" => 1, "\x33" => 1, "\x34" => 1, "\x35" => 1, "\x36" => 1,
@@ -76,8 +78,8 @@ final class HeaderParser
         /** @var array<int<0, max>, array{0?: string, 1?: array<int<0, max>, array{0?: string, 1?: string}>}> $values */
         $values = [];
 
-        for ($offset = 0; isset($header[$offset]) && $offset < 512; $offset++) {
-            if (!isset(self::RFC7230_FIELD_VALUE[$header[$offset]])) {
+        for ($offset = 0; isset($header[$offset]) && $offset < self::MAX_FIELD_VALUE_LENGTH; $offset++) {
+            if (!isset(self::RFC7230_FIELD_VALUE_CHARSET[$header[$offset]])) {
                 continue;
             }
 
@@ -105,17 +107,17 @@ final class HeaderParser
                 continue;
             }
 
-            if ($cursor & self::IN_IDENTIFIER) {
+            if (($cursor & self::IN_IDENTIFIER)) {
                 $values[$value][0] ??= '';
                 $values[$value][0] .= $header[$offset];
                 continue;
             }
-            if ($cursor & self::IN_PARAMETER_NAME) {
+            if (($cursor & self::IN_PARAMETER_NAME)) {
                 $values[$value][1][$param][0] ??= '';
                 $values[$value][1][$param][0] .= $header[$offset];
                 continue;
             }
-            if ($cursor & self::IN_PARAMETER_VALUE) {
+            if (($cursor & self::IN_PARAMETER_VALUE)) {
                 $values[$value][1][$param][1] ??= '';
                 $values[$value][1][$param][1] .= $header[$offset];
                 $cursor &= ~self::IN_QUOTED_PAIR;

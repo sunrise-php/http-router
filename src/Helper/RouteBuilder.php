@@ -22,7 +22,6 @@ use function is_int;
 use function is_string;
 use function sprintf;
 use function str_replace;
-use function substr;
 
 /**
  * @since 3.0.0
@@ -41,14 +40,9 @@ final class RouteBuilder
         $search = [];
         $replace = [];
         foreach ($variables as $variable) {
-            $statement = substr($route, $variable['offset'], $variable['length']);
-
             if (isset($values[$variable['name']])) {
-                /** @var mixed $value */
-                $value = $values[$variable['name']];
-
                 try {
-                    $value = self::stringifyValue($value);
+                    $value = self::stringifyValue($values[$variable['name']]);
                 } catch (InvalidArgumentException $e) {
                     throw new InvalidArgumentException(sprintf(
                         'The route %s could not be built due to an invalid value for the variable {%s}: %s.',
@@ -58,13 +52,13 @@ final class RouteBuilder
                     ));
                 }
 
-                $search[] = $statement;
+                $search[] = $variable['statement'];
                 $replace[] = $value;
                 continue;
             }
 
-            if (isset($variable['optional'])) {
-                $search[] = '(' . $variable['optional']['left'] . $statement . $variable['optional']['right'] . ')';
+            if (isset($variable['optional_part'])) {
+                $search[] = $variable['optional_part'];
                 $replace[] = '';
                 continue;
             }

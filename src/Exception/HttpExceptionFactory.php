@@ -106,6 +106,30 @@ final class HttpExceptionFactory
         );
     }
 
+    public static function missingQueryParam(
+        ?string $message = null,
+        ?int $code = null,
+        ?Throwable $previous = null,
+    ): HttpException {
+        return new HttpException(
+            $message ?? ErrorMessage::MISSING_QUERY_PARAM,
+            $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            $previous,
+        );
+    }
+
+    public static function invalidQueryParam(
+        ?string $message = null,
+        ?int $code = null,
+        ?Throwable $previous = null,
+    ): HttpException {
+        return new HttpException(
+            $message ?? ErrorMessage::INVALID_QUERY_PARAM,
+            $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
+            $previous,
+        );
+    }
+
     public static function missingHeader(
         ?string $message = null,
         ?int $code = null,

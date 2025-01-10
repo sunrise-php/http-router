@@ -19,7 +19,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionFunction;
 use ReflectionMethod;
-use Sunrise\Http\Router\Annotation\Response\EmptyResponse;
+use Sunrise\Http\Router\Annotation\EmptyResponse;
 use Sunrise\Http\Router\ResponseResolverInterface;
 
 /**
@@ -27,7 +27,7 @@ use Sunrise\Http\Router\ResponseResolverInterface;
  */
 final class ResponseEmptyResolver implements ResponseResolverInterface
 {
-    public const DEFAULT_STATUS_CODE = StatusCodeInterface::STATUS_NO_CONTENT;
+    private const DEFAULT_STATUS_CODE = StatusCodeInterface::STATUS_NO_CONTENT;
 
     public function __construct(
         private readonly ResponseFactoryInterface $responseFactory,

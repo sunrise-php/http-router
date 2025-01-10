@@ -19,10 +19,12 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Router\Dictionary\HeaderName;
+use Sunrise\Http\Router\Dictionary\PlaceholderCode;
 use Sunrise\Http\Router\Event\RoutePostRunEvent;
 use Sunrise\Http\Router\Event\RoutePreRunEvent;
+use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
-use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 use Sunrise\Http\Router\Helper\RouteBuilder;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Helper\RouteMatcher;
@@ -131,7 +133,7 @@ final class Router implements RouterInterface
     /**
      * @inheritDoc
      *
-     * @throws HttpExceptionInterface
+     * @throws HttpException
      * @throws InvalidArgumentException
      * @throws LogicException
      */
@@ -168,18 +170,18 @@ final class Router implements RouterInterface
 
         if ($allowedMethods !== []) {
             throw HttpExceptionFactory::methodNotAllowed()
-                ->addMessagePlaceholder('{{ request_method }}', $requestMethod)
-                ->addHeaderField('Allow', ...array_keys($allowedMethods));
+                ->addMessagePlaceholder(PlaceholderCode::REQUEST_METHOD, $requestMethod)
+                ->addHeaderField(HeaderName::ALLOW, ...array_keys($allowedMethods));
         }
 
         throw HttpExceptionFactory::resourceNotFound()
-            ->addMessagePlaceholder('{{ request_uri }}', $requestPath);
+            ->addMessagePlaceholder(PlaceholderCode::REQUEST_URI, $requestPath);
     }
 
     /**
      * @inheritDoc
      *
-     * @throws HttpExceptionInterface
+     * @throws HttpException
      * @throws InvalidArgumentException
      * @throws LogicException
      */
@@ -199,7 +201,6 @@ final class Router implements RouterInterface
             $route = $this->getRoute($route);
         }
 
-        /** @var mixed $value */
         foreach ($route->getAttributes() as $name => $value) {
             $request = $request->withAttribute($name, $value);
         }
@@ -209,7 +210,7 @@ final class Router implements RouterInterface
         if ($this->eventDispatcher !== null) {
             $event = new RoutePreRunEvent($route, $request);
             $this->eventDispatcher->dispatch($event);
-            $request = $event->getRequest();
+            $request = $event->request;
         }
 
         $response = $this->getRouteRequestHandler($route)->handle($request);
@@ -217,7 +218,7 @@ final class Router implements RouterInterface
         if ($this->eventDispatcher !== null) {
             $event = new RoutePostRunEvent($route, $request, $response);
             $this->eventDispatcher->dispatch($event);
-            $response = $event->getResponse();
+            $response = $event->response;
         }
 
         return $response;
@@ -283,9 +284,10 @@ final class Router implements RouterInterface
         $middlewares = array_merge($this->routeMiddlewares, $route->getMiddlewares());
         if ($middlewares !== []) {
             $this->routeRequestHandlers[$name] = new QueueableRequestHandler($this->routeRequestHandlers[$name]);
-            /** @var mixed $middleware */
             foreach ($middlewares as $middleware) {
-                $this->routeRequestHandlers[$name]->enqueue($this->referenceResolver->resolveMiddleware($middleware));
+                $this->routeRequestHandlers[$name]->enqueue(
+                    $this->referenceResolver->resolveMiddleware($middleware)
+                );
             }
         }
 
@@ -294,8 +296,6 @@ final class Router implements RouterInterface
 
     /**
      * @throws InvalidArgumentException
-     *
-     * @since 3.0.0
      */
     private function getRequestHandler(): RequestHandlerInterface
     {
@@ -310,9 +310,10 @@ final class Router implements RouterInterface
 
         if ($this->middlewares !== []) {
             $this->requestHandler = new QueueableRequestHandler($this->requestHandler);
-            /** @var mixed $middleware */
             foreach ($this->middlewares as $middleware) {
-                $this->requestHandler->enqueue($this->referenceResolver->resolveMiddleware($middleware));
+                $this->requestHandler->enqueue(
+                    $this->referenceResolver->resolveMiddleware($middleware)
+                );
             }
         }
 
@@ -322,7 +323,7 @@ final class Router implements RouterInterface
     /**
      * @throws InvalidArgumentException
      *
-     * @since 3.0.0 The method was removed from the contract.
+     * @since 3.0.0 This method has become private.
      */
     private function load(): void
     {

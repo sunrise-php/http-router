@@ -27,7 +27,7 @@ function emit(ResponseInterface $response): void
         'HTTP/%s %d %s',
         $response->getProtocolVersion(),
         $response->getStatusCode(),
-        $response->getReasonPhrase()
+        $response->getReasonPhrase(),
     ));
 
     foreach ($response->getHeaders() as $name => $values) {

@@ -11,20 +11,15 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Annotation;
-
-use Attribute;
+namespace Sunrise\Http\Router\Dictionary;
 
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_PARAMETER)]
-final class RequestQuery
+final class HeaderName
 {
-    public function __construct(
-        public readonly ?int $errorStatusCode = null,
-        public readonly ?string $errorMessage = null,
-        public readonly ?bool $validationEnabled = null,
-    ) {
-    }
+    public const ACCEPT = 'Accept';
+    public const ACCEPT_LANGUAGE = 'Accept-Language';
+    public const ALLOW = 'Allow';
+    public const CONTENT_TYPE = 'Content-Type';
 }

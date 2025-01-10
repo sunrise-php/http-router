@@ -65,9 +65,8 @@ final class ParameterResolverChain implements ParameterResolverChainInterface
     public function resolveParameters(ReflectionParameter ...$parameters): Generator
     {
         $this->isSorted or $this->sortResolvers();
-
         foreach ($parameters as $parameter) {
-            yield from $this->resolveParameter($parameter, $this->context);
+            yield from $this->resolveParameter($parameter);
         }
     }
 
@@ -77,10 +76,10 @@ final class ParameterResolverChain implements ParameterResolverChainInterface
      * @throws InvalidArgumentException
      * @throws LogicException
      */
-    private function resolveParameter(ReflectionParameter $parameter, mixed $context): Generator
+    private function resolveParameter(ReflectionParameter $parameter): Generator
     {
         foreach ($this->resolvers as $resolver) {
-            $arguments = $resolver->resolveParameter($parameter, $context);
+            $arguments = $resolver->resolveParameter($parameter, $this->context);
             if ($arguments->valid()) {
                 return yield from $arguments;
             }

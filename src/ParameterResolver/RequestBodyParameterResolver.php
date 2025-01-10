@@ -20,15 +20,18 @@ use ReflectionAttribute;
 use ReflectionNamedType;
 use ReflectionParameter;
 use Sunrise\Http\Router\Annotation\RequestBody;
+use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
-use Sunrise\Http\Router\Exception\HttpExceptionInterface;
 use Sunrise\Http\Router\ParameterResolverChain;
 use Sunrise\Http\Router\ParameterResolverInterface;
+use Sunrise\Http\Router\Validation\ConstraintViolation\HydratorConstraintViolationAdapter;
+use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationAdapter;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\HydratorInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+use function array_map;
 use function sprintf;
 
 /**
@@ -41,13 +44,14 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
         private readonly ?ValidatorInterface $validator = null,
         private readonly ?int $defaultErrorStatusCode = null,
         private readonly ?string $defaultErrorMessage = null,
+        private readonly bool $defaultValidationEnabled = true,
     ) {
     }
 
     /**
      * @inheritDoc
      *
-     * @throws HttpExceptionInterface
+     * @throws HttpException
      * @throws InvalidArgumentException
      * @throws InvalidObjectException
      */
@@ -82,13 +86,22 @@ final class RequestBodyParameterResolver implements ParameterResolverInterface
             $argument = $this->hydrator->hydrate($className, (array) $context->getParsedBody());
         } catch (InvalidDataException $e) {
             throw HttpExceptionFactory::invalidBody($errorMessage, $errorStatusCode, previous: $e)
-                ->addHydratorConstraintViolation(...$e->getExceptions());
+                ->addConstraintViolation(...array_map(
+                    HydratorConstraintViolationAdapter::create(...),
+                    $e->getExceptions(),
+                ));
         }
 
-        if ($processParams->validation && $this->validator !== null) {
-            if (($violations = $this->validator->validate($argument))->count() > 0) {
+        $validationEnabled = $processParams->validationEnabled ?? $this->defaultValidationEnabled;
+
+        if ($this->validator !== null && $validationEnabled) {
+            $violations = $this->validator->validate($argument);
+            if ($violations->count() > 0) {
                 throw HttpExceptionFactory::invalidBody($errorMessage, $errorStatusCode)
-                    ->addValidatorConstraintViolation(...$violations);
+                    ->addConstraintViolation(...array_map(
+                        ValidatorConstraintViolationAdapter::create(...),
+                        [...$violations],
+                    ));
             }
         }
 

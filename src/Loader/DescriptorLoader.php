@@ -45,9 +45,9 @@ use Sunrise\Http\Router\Route;
 
 use function array_map;
 use function class_exists;
+use function implode;
 use function is_dir;
 use function is_file;
-use function join;
 use function sprintf;
 use function strtoupper;
 use function usort;
@@ -293,7 +293,6 @@ final class DescriptorLoader implements DescriptorLoaderInterface
         $annotations = $classOrMethod->getAttributes(Middleware::class);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
-            /** @var mixed $value */
             foreach ($annotation->values as $value) {
                 $descriptor->middlewares[] = $value;
             }
@@ -303,7 +302,6 @@ final class DescriptorLoader implements DescriptorLoaderInterface
         $annotations = $classOrMethod->getAttributes(Constraint::class);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
-            /** @var mixed $value */
             foreach ($annotation->values as $value) {
                 $descriptor->constraints[] = $value;
             }
@@ -369,8 +367,8 @@ final class DescriptorLoader implements DescriptorLoaderInterface
      */
     private static function completeDescriptor(Descriptor $descriptor): void
     {
-        $descriptor->name = join($descriptor->namePrefixes) . $descriptor->name;
-        $descriptor->path = join($descriptor->pathPrefixes) . $descriptor->path;
+        $descriptor->name = implode($descriptor->namePrefixes) . $descriptor->name;
+        $descriptor->path = implode($descriptor->pathPrefixes) . $descriptor->path;
 
         $descriptor->methods = array_map(strtoupper(...), $descriptor->methods);
 

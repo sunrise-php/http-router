@@ -5,10 +5,6 @@ declare(strict_types=1);
 use Psr\Container\ContainerInterface;
 use Sunrise\Http\Router\ClassResolver;
 use Sunrise\Http\Router\ClassResolverInterface;
-use Sunrise\Http\Router\Entity\Locale\LocaleComparator;
-use Sunrise\Http\Router\Entity\Locale\LocaleComparatorInterface;
-use Sunrise\Http\Router\Entity\MediaType\MediaTypeComparator;
-use Sunrise\Http\Router\Entity\MediaType\MediaTypeComparatorInterface;
 use Sunrise\Http\Router\MiddlewareResolver;
 use Sunrise\Http\Router\MiddlewareResolverInterface;
 use Sunrise\Http\Router\ParameterResolverChain;
@@ -77,7 +73,4 @@ return [
             referenceResolver: get(ReferenceResolverInterface::class),
             eventDispatcher: get('router.event_dispatcher'),
         ),
-
-    MediaTypeComparatorInterface::class => create(MediaTypeComparator::class),
-    LocaleComparatorInterface::class => create(LocaleComparator::class),
 ];

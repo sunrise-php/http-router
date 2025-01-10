@@ -8,23 +8,26 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Command\RouterClearDescriptorsCacheCommand;
 use Sunrise\Http\Router\Loader\DescriptorLoaderInterface;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
-final class RouterClearCacheCommandTest extends TestCase
+final class RouterClearDescriptorsCacheCommandTest extends TestCase
 {
-    private DescriptorLoaderInterface&MockObject $descriptorLoader;
+    private DescriptorLoaderInterface&MockObject $mockedDescriptorLoader;
 
     protected function setUp(): void
     {
-        $this->descriptorLoader = $this->createMock(DescriptorLoaderInterface::class);
+        $this->mockedDescriptorLoader = $this->createMock(DescriptorLoaderInterface::class);
     }
 
     public function testExecute(): void
     {
-        $this->descriptorLoader->expects(self::once())->method('clearCache');
+        $this->mockedDescriptorLoader
+            ->expects(self::once())
+            ->method('clearCache');
 
-        $command = new RouterClearDescriptorsCacheCommand($this->descriptorLoader);
+        $command = new RouterClearDescriptorsCacheCommand($this->mockedDescriptorLoader);
         $commandTester = new CommandTester($command);
-        $this->assertSame(0, $commandTester->execute([]));
+        $this->assertSame(Command::SUCCESS, $commandTester->execute([]));
     }
 }

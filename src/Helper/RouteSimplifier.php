@@ -16,7 +16,6 @@ namespace Sunrise\Http\Router\Helper;
 use InvalidArgumentException;
 
 use function str_replace;
-use function substr;
 
 /**
  * @since 3.0.0
@@ -33,7 +32,7 @@ final class RouteSimplifier
         $search = [];
         $replace = [];
         foreach ($variables as $variable) {
-            $search[] = substr($route, $variable['offset'], $variable['length']);
+            $search[] = $variable['statement'];
             $replace[] = '{' . $variable['name'] . '}';
         }
 

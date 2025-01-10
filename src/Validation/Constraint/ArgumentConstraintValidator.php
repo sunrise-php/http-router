@@ -41,7 +41,6 @@ final class ArgumentConstraintValidator extends ConstraintValidator
         $constraintAnnotations = $constraint->getParameter()->getAttributes(ConstraintAnnotation::class);
         foreach ($constraintAnnotations as $constraintAnnotation) {
             $parameterConstraints = $constraintAnnotation->newInstance()->values;
-            /** @var mixed $parameterConstraint */
             foreach ($parameterConstraints as $parameterConstraint) {
                 if ($parameterConstraint instanceof Constraint) {
                     $constraints[] = $parameterConstraint;
