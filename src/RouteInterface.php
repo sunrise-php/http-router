@@ -40,7 +40,7 @@ interface RouteInterface
     public function getPatterns(): array;
 
     /**
-     * @return string[]
+     * @return array<array-key, string>
      */
     public function getMethods(): array;
 
@@ -77,21 +77,21 @@ interface RouteInterface
     public function getMiddlewares(): array;
 
     /**
-     * @return MediaTypeInterface[]
+     * @return array<array-key, MediaTypeInterface>
      *
      * @since 3.0.0
      */
     public function getConsumedMediaTypes(): array;
 
     /**
-     * @return MediaTypeInterface[]
+     * @return array<array-key, MediaTypeInterface>
      *
      * @since 3.0.0
      */
     public function getProducedMediaTypes(): array;
 
     /**
-     * @return string[]
+     * @return array<array-key, string>
      *
      * @since 2.4.0
      */

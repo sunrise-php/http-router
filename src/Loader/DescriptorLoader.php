@@ -26,7 +26,6 @@ use Sunrise\Http\Router\Annotation\Consumes;
 use Sunrise\Http\Router\Annotation\DefaultAttribute;
 use Sunrise\Http\Router\Annotation\Deprecated;
 use Sunrise\Http\Router\Annotation\Description;
-use Sunrise\Http\Router\Annotation\JsonResponse;
 use Sunrise\Http\Router\Annotation\Method;
 use Sunrise\Http\Router\Annotation\Middleware;
 use Sunrise\Http\Router\Annotation\NamePrefix;
@@ -37,9 +36,9 @@ use Sunrise\Http\Router\Annotation\Pattern;
 use Sunrise\Http\Router\Annotation\Priority;
 use Sunrise\Http\Router\Annotation\Produces;
 use Sunrise\Http\Router\Annotation\Route as Descriptor;
+use Sunrise\Http\Router\Annotation\SerializableResponse;
 use Sunrise\Http\Router\Annotation\Summary;
 use Sunrise\Http\Router\Annotation\Tag;
-use Sunrise\Http\Router\Dictionary\MediaType;
 use Sunrise\Http\Router\Helper\ClassFinder;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Route;
@@ -318,10 +317,13 @@ final class DescriptorLoader implements DescriptorLoaderInterface
             }
         }
 
-        /** @var list<ReflectionAttribute<JsonResponse>> $annotations */
-        $annotations = $classOrMethod->getAttributes(JsonResponse::class);
+        /** @var list<ReflectionAttribute<SerializableResponse>> $annotations */
+        $annotations = $classOrMethod->getAttributes(SerializableResponse::class, ReflectionAttribute::IS_INSTANCEOF);
         if (isset($annotations[0])) {
-            $descriptor->produces[] = MediaType::JSON;
+            $annotation = $annotations[0]->newInstance();
+            foreach ($annotation->getMediaTypes() as $mediaType) {
+                $descriptor->produces[] = $mediaType;
+            }
         }
 
         /** @var list<ReflectionAttribute<Tag>> $annotations */

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
+use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 
 /**
  * @since 3.0.0
@@ -21,4 +22,8 @@ use Attribute;
 #[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION)]
 abstract class SerializableResponse
 {
+    /**
+     * @return array<array-key, MediaTypeInterface>
+     */
+    abstract public function getMediaTypes(): array;
 }

@@ -133,7 +133,7 @@ final class RouterGenerateOpenApiDocumentCommand extends Command
         self::enrichOperationWithPathParameters($route, $operation);
         self::enrichOperationWithCookieAndHeaderParameters($controller, $operation);
         self::enrichOperationWithRequestBody($route, $controller, $operation);
-        self::enrichOperationWithResponses($route, $controller, $operation);
+        self::enrichOperationWithSerializableResponse($route, $controller, $operation);
 
         $routePath = RouteSimplifier::simplifyRoute($route->getPath());
         foreach ($route->getMethods() as $routeMethod) {
@@ -225,7 +225,7 @@ final class RouterGenerateOpenApiDocumentCommand extends Command
         }
     }
 
-    private static function enrichOperationWithResponses(
+    private static function enrichOperationWithSerializableResponse(
         RouteInterface $route,
         ReflectionMethod $controller,
         array &$operation,

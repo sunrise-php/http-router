@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
+use Sunrise\Http\Router\Dictionary\MediaType;
 
 /**
  * @since 3.0.0
@@ -25,5 +26,13 @@ final class JsonResponse extends SerializableResponse
         public readonly ?int $encodingFlags = null,
         public readonly ?int $encodingDepth = null,
     ) {
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getMediaTypes(): array
+    {
+        return [MediaType::JSON];
     }
 }
