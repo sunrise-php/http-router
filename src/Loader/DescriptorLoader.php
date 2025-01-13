@@ -22,11 +22,11 @@ use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
-use Sunrise\Http\Router\Annotation\Constraint;
 use Sunrise\Http\Router\Annotation\Consumes;
 use Sunrise\Http\Router\Annotation\DefaultAttribute;
 use Sunrise\Http\Router\Annotation\Deprecated;
 use Sunrise\Http\Router\Annotation\Description;
+use Sunrise\Http\Router\Annotation\JsonResponse;
 use Sunrise\Http\Router\Annotation\Method;
 use Sunrise\Http\Router\Annotation\Middleware;
 use Sunrise\Http\Router\Annotation\NamePrefix;
@@ -39,6 +39,7 @@ use Sunrise\Http\Router\Annotation\Produces;
 use Sunrise\Http\Router\Annotation\Route as Descriptor;
 use Sunrise\Http\Router\Annotation\Summary;
 use Sunrise\Http\Router\Annotation\Tag;
+use Sunrise\Http\Router\Dictionary\MediaType;
 use Sunrise\Http\Router\Helper\ClassFinder;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Route;
@@ -80,21 +81,22 @@ final class DescriptorLoader implements DescriptorLoaderInterface
     {
         foreach ($this->getDescriptors() as $descriptor) {
             yield new Route(
-                $descriptor->name,
-                $descriptor->path,
-                $descriptor->holder,
-                $descriptor->patterns,
-                $descriptor->methods,
-                $descriptor->attributes,
-                $descriptor->middlewares,
-                $descriptor->constraints,
-                $descriptor->consumes,
-                $descriptor->produces,
-                $descriptor->tags,
-                $descriptor->summary,
-                $descriptor->description,
-                $descriptor->isDeprecated,
-                $descriptor->pattern,
+                name: $descriptor->name,
+                path: $descriptor->path,
+                requestHandler: $descriptor->holder,
+                patterns: $descriptor->patterns,
+                methods: $descriptor->methods,
+                attributes: $descriptor->attributes,
+                middlewares: $descriptor->middlewares,
+                consumes: $descriptor->consumes,
+                produces: $descriptor->produces,
+                tags: $descriptor->tags,
+                summary: $descriptor->summary,
+                description: $descriptor->description,
+                isDeprecated: $descriptor->isDeprecated,
+                isApiOperation: $descriptor->isApiOperation,
+                apiOperationFields: $descriptor->apiOperationFields,
+                pattern: $descriptor->pattern,
             );
         }
     }
@@ -189,7 +191,7 @@ final class DescriptorLoader implements DescriptorLoaderInterface
 
         if ($class->isSubclassOf(RequestHandlerInterface::class)) {
             /** @var list<ReflectionAttribute<Descriptor>> $annotations */
-            $annotations = $class->getAttributes(Descriptor::class);
+            $annotations = $class->getAttributes(Descriptor::class, ReflectionAttribute::IS_INSTANCEOF);
             if (isset($annotations[0])) {
                 $descriptor = $annotations[0]->newInstance();
                 $descriptor->holder = $class->getName();
@@ -206,7 +208,7 @@ final class DescriptorLoader implements DescriptorLoaderInterface
             }
 
             /** @var list<ReflectionAttribute<Descriptor>> $annotations */
-            $annotations = $method->getAttributes(Descriptor::class);
+            $annotations = $method->getAttributes(Descriptor::class, ReflectionAttribute::IS_INSTANCEOF);
             if (isset($annotations[0])) {
                 $descriptor = $annotations[0]->newInstance();
                 $descriptor->holder = [$class->getName(), $method->getName()];
@@ -246,7 +248,7 @@ final class DescriptorLoader implements DescriptorLoaderInterface
         }
 
         /** @var list<ReflectionAttribute<Path>> $annotations */
-        $annotations = $classOrMethod->getAttributes(Path::class, ReflectionAttribute::IS_INSTANCEOF);
+        $annotations = $classOrMethod->getAttributes(Path::class);
         if (isset($annotations[0])) {
             $annotation = $annotations[0]->newInstance();
             $descriptor->path = $annotation->value;
@@ -298,15 +300,6 @@ final class DescriptorLoader implements DescriptorLoaderInterface
             }
         }
 
-        /** @var list<ReflectionAttribute<Constraint>> $annotations */
-        $annotations = $classOrMethod->getAttributes(Constraint::class);
-        foreach ($annotations as $annotation) {
-            $annotation = $annotation->newInstance();
-            foreach ($annotation->values as $value) {
-                $descriptor->constraints[] = $value;
-            }
-        }
-
         /** @var list<ReflectionAttribute<Consumes>> $annotations */
         $annotations = $classOrMethod->getAttributes(Consumes::class, ReflectionAttribute::IS_INSTANCEOF);
         foreach ($annotations as $annotation) {
@@ -323,6 +316,12 @@ final class DescriptorLoader implements DescriptorLoaderInterface
             foreach ($annotation->values as $value) {
                 $descriptor->produces[] = $value;
             }
+        }
+
+        /** @var list<ReflectionAttribute<JsonResponse>> $annotations */
+        $annotations = $classOrMethod->getAttributes(JsonResponse::class);
+        if (isset($annotations[0])) {
+            $descriptor->produces[] = MediaType::JSON;
         }
 
         /** @var list<ReflectionAttribute<Tag>> $annotations */

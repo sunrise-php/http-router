@@ -58,9 +58,7 @@ final class JsonPayloadDecodingMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         if (ServerRequest::create($request)->clientProducesMediaType(MediaType::JSON)) {
-            $request = $request->withParsedBody(
-                $this->decodeJson((string) $request->getBody())
-            );
+            $request = $request->withParsedBody($this->decodeJson((string) $request->getBody()));
         }
 
         return $handler->handle($request);

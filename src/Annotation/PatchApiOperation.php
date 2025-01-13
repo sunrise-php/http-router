@@ -18,14 +18,11 @@ use Attribute;
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_PARAMETER)]
-final class RequestQueryParam
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
+final class PatchApiOperation extends ApiOperation
 {
-    public function __construct(
-        public readonly string $name,
-        public readonly ?int $errorStatusCode = null,
-        public readonly ?string $errorMessage = null,
-        public readonly ?bool $validationEnabled = null,
-    ) {
+    public function __construct(string $name, string $path = '', array $fields = [])
+    {
+        parent::__construct($name, $path, self::METHOD_PATCH, $fields);
     }
 }

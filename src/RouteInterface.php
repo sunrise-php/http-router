@@ -40,7 +40,7 @@ interface RouteInterface
     public function getPatterns(): array;
 
     /**
-     * @return array<array-key, string>
+     * @return string[]
      */
     public function getMethods(): array;
 
@@ -57,12 +57,12 @@ interface RouteInterface
     /**
      * @since 3.0.0
      */
-    public function getAttribute(string $name, mixed $default = null): mixed;
+    public function hasAttribute(string $name): bool;
 
     /**
      * @since 3.0.0
      */
-    public function hasAttribute(string $name): bool;
+    public function getAttribute(string $name, mixed $default = null): mixed;
 
     /**
      * @param array<string, mixed> $attributes
@@ -72,35 +72,26 @@ interface RouteInterface
     public function withAddedAttributes(array $attributes): static;
 
     /**
-     * @return array<array-key, mixed>
-     *
      * @since 2.0.0
      */
     public function getMiddlewares(): array;
 
     /**
-     * @return array<array-key, mixed>
-     *
-     * @since 3.0.0
-     */
-    public function getConstraints(): array;
-
-    /**
-     * @return array<array-key, MediaTypeInterface>
+     * @return MediaTypeInterface[]
      *
      * @since 3.0.0
      */
     public function getConsumedMediaTypes(): array;
 
     /**
-     * @return array<array-key, MediaTypeInterface>
+     * @return MediaTypeInterface[]
      *
      * @since 3.0.0
      */
     public function getProducedMediaTypes(): array;
 
     /**
-     * @return array<array-key, string>
+     * @return string[]
      *
      * @since 2.4.0
      */
@@ -120,6 +111,20 @@ interface RouteInterface
      * @since 3.0.0
      */
     public function isDeprecated(): bool;
+
+    /**
+     * @since 3.0.0
+     */
+    public function isApiOperation(): bool;
+
+    /**
+     * @since 3.0.0
+     *
+     * @return array<array-key, mixed>|object|null
+     *
+     * @link https://github.com/OAI/OpenAPI-Specification/blob/bba1da7bfd9cb9a4f47ed6b91e824bb1cef12fdc/versions/3.1.1.md#fixed-fields-8
+     */
+    public function getApiOperationFields(): array|object|null;
 
     /**
      * @return non-empty-string|null

@@ -15,7 +15,6 @@ namespace Sunrise\Http\Router;
 
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 
-use function array_key_exists;
 use function in_array;
 
 /**
@@ -35,8 +34,6 @@ final class Route implements RouteInterface
         private array $attributes = [],
         /** @var array<array-key, mixed> */
         private readonly array $middlewares = [],
-        /** @var array<array-key, mixed> */
-        private readonly array $constraints = [],
         /** @var array<array-key, MediaTypeInterface> */
         private readonly array $consumes = [],
         /** @var array<array-key, MediaTypeInterface> */
@@ -46,6 +43,9 @@ final class Route implements RouteInterface
         private readonly string $summary = '',
         private readonly string $description = '',
         private readonly bool $isDeprecated = false,
+        private readonly bool $isApiOperation = false,
+        /** @var array<array-key, mixed>|object|null */
+        private readonly array|object|null $apiOperationFields = null,
         /** @var non-empty-string|null */
         private readonly ?string $pattern = null,
     ) {
@@ -84,11 +84,7 @@ final class Route implements RouteInterface
 
     public function allowsMethod(string $method): bool
     {
-        if ($this->methods === []) {
-            return true;
-        }
-
-        return in_array($method, $this->methods, true);
+        return $this->methods === [] || in_array($method, $this->methods, true);
     }
 
     /**
@@ -99,14 +95,14 @@ final class Route implements RouteInterface
         return $this->attributes;
     }
 
+    public function hasAttribute(string $name): bool
+    {
+        return isset($this->attributes[$name]);
+    }
+
     public function getAttribute(string $name, mixed $default = null): mixed
     {
         return $this->attributes[$name] ?? $default;
-    }
-
-    public function hasAttribute(string $name): bool
-    {
-        return array_key_exists($name, $this->attributes);
     }
 
     /**
@@ -128,14 +124,6 @@ final class Route implements RouteInterface
     public function getMiddlewares(): array
     {
         return $this->middlewares;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getConstraints(): array
-    {
-        return $this->constraints;
     }
 
     /**
@@ -175,6 +163,22 @@ final class Route implements RouteInterface
     public function isDeprecated(): bool
     {
         return $this->isDeprecated;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isApiOperation(): bool
+    {
+        return $this->isApiOperation;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getApiOperationFields(): array|object|null
+    {
+        return $this->apiOperationFields;
     }
 
     /**

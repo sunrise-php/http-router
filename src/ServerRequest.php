@@ -116,7 +116,7 @@ final class ServerRequest implements ServerRequestInterface
     }
 
     /**
-     * @return Generator<int<0, max>, MediaTypeInterface>
+     * @return Generator<int, MediaTypeInterface>
      */
     public function getClientConsumedMediaTypes(): Generator
     {

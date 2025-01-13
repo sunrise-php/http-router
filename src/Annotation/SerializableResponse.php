@@ -19,11 +19,6 @@ use Attribute;
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION)]
-final class JsonResponse extends SerializableResponse
+abstract class SerializableResponse
 {
-    public function __construct(
-        public readonly ?int $encodingFlags = null,
-        public readonly ?int $encodingDepth = null,
-    ) {
-    }
 }

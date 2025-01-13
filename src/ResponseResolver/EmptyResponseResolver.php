@@ -25,7 +25,7 @@ use Sunrise\Http\Router\ResponseResolverInterface;
 /**
  * @since 3.0.0
  */
-final class ResponseEmptyResolver implements ResponseResolverInterface
+final class EmptyResponseResolver implements ResponseResolverInterface
 {
     private const DEFAULT_STATUS_CODE = StatusCodeInterface::STATUS_NO_CONTENT;
 

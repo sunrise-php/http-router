@@ -11,6 +11,8 @@ use Sunrise\Http\Router\ParameterResolverChain;
 use Sunrise\Http\Router\ParameterResolverChainInterface;
 use Sunrise\Http\Router\ReferenceResolver;
 use Sunrise\Http\Router\ReferenceResolverInterface;
+use Sunrise\Http\Router\RequestHandlerReflector;
+use Sunrise\Http\Router\RequestHandlerReflectorInterface;
 use Sunrise\Http\Router\RequestHandlerResolver;
 use Sunrise\Http\Router\RequestHandlerResolverInterface;
 use Sunrise\Http\Router\ResponseResolverChain;
@@ -64,6 +66,8 @@ return [
             get(MiddlewareResolverInterface::class),
             get(RequestHandlerResolverInterface::class),
         ),
+
+    RequestHandlerReflectorInterface::class => create(RequestHandlerReflector::class),
 
     RouterInterface::class => create(Router::class)
         ->constructor(

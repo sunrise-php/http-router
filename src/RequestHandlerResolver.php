@@ -60,6 +60,10 @@ final class RequestHandlerResolver implements RequestHandlerResolverInterface
             return $this->resolveCallback($reference, new ReflectionFunction($reference));
         }
 
+        if (is_string($reference) && is_subclass_of($reference, RequestHandlerInterface::class)) {
+            return $this->classResolver->resolveClass($reference);
+        }
+
         // https://github.com/php/php-src/blob/3ed526441400060aa4e618b91b3352371fcd02a8/Zend/zend_API.c#L3884-L3932
         if (is_array($reference) && is_callable($reference, true)) {
             /** @var array{0: class-string|object, 1: string} $reference */
@@ -71,10 +75,6 @@ final class RequestHandlerResolver implements RequestHandlerResolverInterface
             if (is_callable($reference)) {
                 return $this->resolveCallback($reference, new ReflectionMethod($reference[0], $reference[1]));
             }
-        }
-
-        if (is_string($reference) && is_subclass_of($reference, RequestHandlerInterface::class)) {
-            return $this->classResolver->resolveClass($reference);
         }
 
         throw new InvalidArgumentException(sprintf(

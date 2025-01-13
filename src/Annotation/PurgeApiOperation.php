@@ -18,12 +18,11 @@ use Attribute;
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_FUNCTION)]
-final class JsonResponse extends SerializableResponse
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
+final class PurgeApiOperation extends ApiOperation
 {
-    public function __construct(
-        public readonly ?int $encodingFlags = null,
-        public readonly ?int $encodingDepth = null,
-    ) {
+    public function __construct(string $name, string $path = '', array $fields = [])
+    {
+        parent::__construct($name, $path, self::METHOD_PURGE, $fields);
     }
 }

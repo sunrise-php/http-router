@@ -13,8 +13,6 @@ return [
     ErrorMessage::UNSUPPORTED_MEDIA_TYPE => 'Тип медиа {{ media_type }} не поддерживается; Проверьте заголовок ответа "Accept" на поддерживаемые типы медиа.',
     ErrorMessage::INVALID_VARIABLE => 'Значение переменной {{{ variable_name }}} в URI запроса {{ route_uri }} невалидно.',
     ErrorMessage::INVALID_QUERY => 'Параметры запроса невалидны.',
-    ErrorMessage::MISSING_QUERY_PARAM => 'Параметр запроса {{ query_param_name }} должен быть предоставлен.',
-    ErrorMessage::INVALID_QUERY_PARAM => 'Параметр запроса {{ query_param_name }} невалиден.',
     ErrorMessage::MISSING_HEADER => 'Заголовок запроса {{ header_name }} должен быть предоставлен.',
     ErrorMessage::INVALID_HEADER => 'Заголовок запроса {{ header_name }} невалиден.',
     ErrorMessage::MISSING_COOKIE => 'Отсутствует cookie {{ cookie_name }}.',

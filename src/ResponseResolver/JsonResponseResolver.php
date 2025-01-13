@@ -35,7 +35,7 @@ use const JSON_THROW_ON_ERROR;
 /**
  * @since 3.0.0
  */
-final class ResponseJsonResolver implements ResponseResolverInterface
+final class JsonResponseResolver implements ResponseResolverInterface
 {
     private const DEFAULT_ENCODING_FLAGS = 0;
     private const DEFAULT_ENCODING_DEPTH = 512;
@@ -65,9 +65,14 @@ final class ResponseJsonResolver implements ResponseResolverInterface
 
         $processParams = $annotations[0]->newInstance();
 
-        $encodingFlags = $processParams->encodingFlags ?? $this->defaultEncodingFlags ?? self::DEFAULT_ENCODING_FLAGS;
+        $encodingFlags = $processParams->encodingFlags
+            ?? $this->defaultEncodingFlags
+            ?? self::DEFAULT_ENCODING_FLAGS;
+
         /** @psalm-var int<1, 2147483647> $encodingDepth */
-        $encodingDepth = $processParams->encodingDepth ?? $this->defaultEncodingDepth ?? self::DEFAULT_ENCODING_DEPTH;
+        $encodingDepth = $processParams->encodingDepth
+            ?? $this->defaultEncodingDepth
+            ?? self::DEFAULT_ENCODING_DEPTH;
 
         try {
             $payload = json_encode($response, $encodingFlags | JSON_THROW_ON_ERROR, $encodingDepth);

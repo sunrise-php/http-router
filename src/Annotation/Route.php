@@ -14,13 +14,14 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
+use Fig\Http\Message\RequestMethodInterface;
 use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 
 /**
  * @since 2.0.0
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
-final class Route
+class Route implements RequestMethodInterface
 {
     public mixed $holder = null;
 
@@ -44,8 +45,6 @@ final class Route
         public array $attributes = [],
         /** @var array<array-key, mixed> */
         public array $middlewares = [],
-        /** @var array<array-key, mixed> */
-        public array $constraints = [],
         /** @var array<array-key, MediaTypeInterface> */
         public array $consumes = [],
         /** @var array<array-key, MediaTypeInterface> */
@@ -55,6 +54,9 @@ final class Route
         public string $summary = '',
         public string $description = '',
         public bool $isDeprecated = false,
+        public bool $isApiOperation = false,
+        /** @var array<array-key, mixed>|object|null */
+        public array|object|null $apiOperationFields = null,
         public int $priority = 0,
     ) {
     }

@@ -13,8 +13,6 @@ return [
     ErrorMessage::UNSUPPORTED_MEDIA_TYPE => 'Tip medija {{ media_type }} nije podržan; Proverite zaglavlje odgovora "Accept" za podržane tipove medija.',
     ErrorMessage::INVALID_VARIABLE => 'Vrednost promenljive {{{ variable_name }}} u URI zahtevu {{ route_uri }} nije validna.',
     ErrorMessage::INVALID_QUERY => 'Parametri upita zahteva nisu validni.',
-    ErrorMessage::MISSING_QUERY_PARAM => 'Parametr zahteva {{ query_param_name }} mora biti navedeno.',
-    ErrorMessage::INVALID_QUERY_PARAM => 'Parametr zahteva {{ query_param_name }} nije validno.',
     ErrorMessage::MISSING_HEADER => 'Zaglavlje zahteva {{ header_name }} mora biti navedeno.',
     ErrorMessage::INVALID_HEADER => 'Zaglavlje zahteva {{ header_name }} nije validno.',
     ErrorMessage::MISSING_COOKIE => 'Kolačić {{ cookie_name }} nedostaje.',
