@@ -237,7 +237,7 @@ final class RouterGenerateOpenApiDocumentCommand extends Command
         $schema = self::getTypeSchema($controller->getReturnType());
 
         $responseStatusCode = 200;
-        $responseStatusPhrase = 'Ok';
+        $responseStatusPhrase = 'Operation completed successfully.';
 
         /** @var list<ReflectionAttribute<ResponseStatus>> $annotations */
         $annotations = $controller->getAttributes(ResponseStatus::class);
