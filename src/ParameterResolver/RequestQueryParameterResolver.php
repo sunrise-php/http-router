@@ -44,6 +44,7 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
         private readonly ?ValidatorInterface $validator = null,
         private readonly ?int $defaultErrorStatusCode = null,
         private readonly ?string $defaultErrorMessage = null,
+        private readonly array $hydratorContext = [],
         private readonly bool $defaultValidationEnabled = true,
     ) {
     }
@@ -81,9 +82,11 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
 
         $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
         $errorMessage = $processParams->errorMessage ?? $this->defaultErrorMessage;
+        $hydratorContext = $processParams->hydratorContext + $this->hydratorContext;
+        $validationEnabled = $processParams->validationEnabled ?? $this->defaultValidationEnabled;
 
         try {
-            $argument = $this->hydrator->hydrate($className, $context->getQueryParams());
+            $argument = $this->hydrator->hydrate($className, $context->getQueryParams(), context: $hydratorContext);
         } catch (InvalidDataException $e) {
             throw HttpExceptionFactory::invalidQuery($errorMessage, $errorStatusCode, previous: $e)
                 ->addConstraintViolation(...array_map(
@@ -91,8 +94,6 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
                     $e->getExceptions(),
                 ));
         }
-
-        $validationEnabled = $processParams->validationEnabled ?? $this->defaultValidationEnabled;
 
         if ($this->validator !== null && $validationEnabled) {
             $violations = $this->validator->validate($argument);

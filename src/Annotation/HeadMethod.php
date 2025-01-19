@@ -19,7 +19,7 @@ use Fig\Http\Message\RequestMethodInterface;
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
 final class HeadMethod extends Method
 {
     public function __construct()

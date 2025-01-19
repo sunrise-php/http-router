@@ -13,8 +13,6 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
-use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
-
 use function in_array;
 
 /**
@@ -45,7 +43,7 @@ final class Route implements RouteInterface
         private readonly bool $isDeprecated = false,
         private readonly bool $isApiOperation = false,
         /** @var array<array-key, mixed>|object|null */
-        private readonly array|object|null $apiOperationFields = null,
+        private readonly array|object|null $apiOperationDocFields = null,
         /** @var non-empty-string|null */
         private readonly ?string $pattern = null,
     ) {
@@ -137,9 +135,37 @@ final class Route implements RouteInterface
     /**
      * @inheritDoc
      */
+    public function consumesMediaType(MediaTypeInterface ...$mediaTypes): bool
+    {
+        foreach ($mediaTypes as $mediaType) {
+            if (in_array($mediaType, $this->consumes, true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getProducedMediaTypes(): array
     {
         return $this->produces;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function producesMediaType(MediaTypeInterface ...$mediaTypes): bool
+    {
+        foreach ($mediaTypes as $mediaType) {
+            if (in_array($mediaType, $this->produces, true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -176,9 +202,9 @@ final class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function getApiOperationFields(): array|object|null
+    public function getApiOperationDocFields(): array|object|null
     {
-        return $this->apiOperationFields;
+        return $this->apiOperationDocFields;
     }
 
     /**

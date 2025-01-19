@@ -45,6 +45,7 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
         private readonly ?ValidatorInterface $validator = null,
         private readonly ?int $defaultErrorStatusCode = null,
         private readonly ?string $defaultErrorMessage = null,
+        private readonly array $hydratorContext = [],
         private readonly bool $defaultValidationEnabled = true,
     ) {
     }
@@ -73,6 +74,8 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
         $cookieName = $processParams->name;
         $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
         $errorMessage = $processParams->errorMessage ?? $this->defaultErrorMessage;
+        $hydratorContext = $processParams->hydratorContext + $this->hydratorContext;
+        $validationEnabled = $processParams->validationEnabled ?? $this->defaultValidationEnabled;
 
         if (!$request->hasCookieParam($cookieName)) {
             if ($parameter->isDefaultValueAvailable()) {
@@ -88,6 +91,7 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
                 $request->getCookieParam($cookieName),
                 Type::fromParameter($parameter),
                 path: [$cookieName],
+                context: $hydratorContext,
             );
         } catch (InvalidValueException $e) {
             throw HttpExceptionFactory::invalidCookie($errorMessage, $errorStatusCode, previous: $e)
@@ -101,8 +105,6 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
                     $e->getExceptions(),
                 ));
         }
-
-        $validationEnabled = $processParams->validationEnabled ?? $this->defaultValidationEnabled;
 
         if ($this->validator !== null && $validationEnabled) {
             $violations = $this->validator

@@ -36,10 +36,10 @@ use Sunrise\Http\Router\Annotation\Pattern;
 use Sunrise\Http\Router\Annotation\Priority;
 use Sunrise\Http\Router\Annotation\Produces;
 use Sunrise\Http\Router\Annotation\Route as Descriptor;
-use Sunrise\Http\Router\Annotation\SerializableResponse;
 use Sunrise\Http\Router\Annotation\Summary;
 use Sunrise\Http\Router\Annotation\Tag;
 use Sunrise\Http\Router\Helper\ClassFinder;
+use Sunrise\Http\Router\Helper\ReflectorHelper;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Route;
 
@@ -94,7 +94,7 @@ final class DescriptorLoader implements DescriptorLoaderInterface
                 description: $descriptor->description,
                 isDeprecated: $descriptor->isDeprecated,
                 isApiOperation: $descriptor->isApiOperation,
-                apiOperationFields: $descriptor->apiOperationFields,
+                apiOperationDocFields: $descriptor->apiOperationDocFields,
                 pattern: $descriptor->pattern,
             );
         }
@@ -194,8 +194,7 @@ final class DescriptorLoader implements DescriptorLoaderInterface
             if (isset($annotations[0])) {
                 $descriptor = $annotations[0]->newInstance();
                 $descriptor->holder = $class->getName();
-                self::enrichDescriptorFromParentClasses($descriptor, $class);
-                self::enrichDescriptorFromClassOrMethod($descriptor, $class);
+                self::enrichDescriptorFromClassOrMethodAncestry($descriptor, $class);
                 self::completeDescriptor($descriptor);
                 yield $descriptor;
             }
@@ -211,9 +210,7 @@ final class DescriptorLoader implements DescriptorLoaderInterface
             if (isset($annotations[0])) {
                 $descriptor = $annotations[0]->newInstance();
                 $descriptor->holder = [$class->getName(), $method->getName()];
-                self::enrichDescriptorFromParentClasses($descriptor, $class);
-                self::enrichDescriptorFromClassOrMethod($descriptor, $class);
-                self::enrichDescriptorFromClassOrMethod($descriptor, $method);
+                self::enrichDescriptorFromClassOrMethodAncestry($descriptor, $method);
                 self::completeDescriptor($descriptor);
                 yield $descriptor;
             }
@@ -221,12 +218,16 @@ final class DescriptorLoader implements DescriptorLoaderInterface
     }
 
     /**
-     * @param ReflectionClass<object> $class
+     * @param ReflectionClass<object>|ReflectionMethod $classOrMethod
+     *
+     * @throws InvalidArgumentException
      */
-    private static function enrichDescriptorFromParentClasses(Descriptor $descriptor, ReflectionClass $class): void
-    {
-        foreach (ClassFinder::getParentClasses($class) as $parent) {
-            self::enrichDescriptorFromClassOrMethod($descriptor, $parent);
+    private static function enrichDescriptorFromClassOrMethodAncestry(
+        Descriptor $descriptor,
+        ReflectionClass|ReflectionMethod $classOrMethod,
+    ): void {
+        foreach (ReflectorHelper::getClassOrMethodAncestry($classOrMethod) as $classOrMethodAncestor) {
+            self::enrichDescriptorFromClassOrMethod($descriptor, $classOrMethodAncestor);
         }
     }
 
@@ -314,15 +315,6 @@ final class DescriptorLoader implements DescriptorLoaderInterface
             $annotation = $annotation->newInstance();
             foreach ($annotation->values as $value) {
                 $descriptor->produces[] = $value;
-            }
-        }
-
-        /** @var list<ReflectionAttribute<SerializableResponse>> $annotations */
-        $annotations = $classOrMethod->getAttributes(SerializableResponse::class, ReflectionAttribute::IS_INSTANCEOF);
-        if (isset($annotations[0])) {
-            $annotation = $annotations[0]->newInstance();
-            foreach ($annotation->getMediaTypes() as $mediaType) {
-                $descriptor->produces[] = $mediaType;
             }
         }
 

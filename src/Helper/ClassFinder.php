@@ -21,7 +21,6 @@ use ReflectionClass;
 use ReflectionException;
 use RegexIterator;
 use SplFileInfo;
-use SplStack;
 
 use function get_declared_classes;
 use function is_dir;
@@ -107,21 +106,5 @@ final class ClassFinder
                 yield $className => $classReflection;
             }
         }
-    }
-
-    /**
-     * @param ReflectionClass<object> $class
-     *
-     * @return SplStack<ReflectionClass<object>>
-     */
-    public static function getParentClasses(ReflectionClass $class): SplStack
-    {
-        /** @var SplStack<ReflectionClass<object>> $parents */
-        $parents = new SplStack();
-        while ($class = $class->getParentClass()) {
-            $parents->push($class);
-        }
-
-        return $parents;
     }
 }

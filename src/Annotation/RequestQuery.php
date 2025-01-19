@@ -24,6 +24,7 @@ final class RequestQuery
     public function __construct(
         public readonly ?int $errorStatusCode = null,
         public readonly ?string $errorMessage = null,
+        public readonly array $hydratorContext = [],
         public readonly ?bool $validationEnabled = null,
     ) {
     }

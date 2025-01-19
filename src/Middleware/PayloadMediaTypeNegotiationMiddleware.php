@@ -19,10 +19,10 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Dictionary\HeaderName;
 use Sunrise\Http\Router\Dictionary\PlaceholderCode;
-use Sunrise\Http\Router\Entity\MediaType\StringableMediaType;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\ServerRequest;
+use Sunrise\Http\Router\StringableMediaType;
 
 use function array_map;
 use function array_values;
@@ -46,6 +46,7 @@ final class PayloadMediaTypeNegotiationMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $serverRequest = ServerRequest::create($request);
+
         $serverConsumedMediaTypes = array_values($serverRequest->getRoute()->getConsumedMediaTypes());
         if ($serverConsumedMediaTypes === []) {
             return $handler->handle($request);

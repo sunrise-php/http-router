@@ -17,7 +17,6 @@ use Fig\Http\Message\StatusCodeInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\EmptyResponse;
 use Sunrise\Http\Router\ResponseResolverInterface;
@@ -40,16 +39,16 @@ final class EmptyResponseResolver implements ResponseResolverInterface
      */
     public function resolveResponse(
         mixed $response,
-        ReflectionMethod|ReflectionFunction $responder,
+        ReflectionMethod $responder,
         ServerRequestInterface $request,
     ): ?ResponseInterface {
         if ($responder->getAttributes(EmptyResponse::class) === []) {
             return null;
         }
 
-        $statusCode = $this->defaultStatusCode ?? self::DEFAULT_STATUS_CODE;
-
-        return $this->responseFactory->createResponse($statusCode);
+        return $this->responseFactory->createResponse(
+            $this->defaultStatusCode ?? self::DEFAULT_STATUS_CODE
+        );
     }
 
     public function getWeight(): int

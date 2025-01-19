@@ -28,14 +28,14 @@ class ApiOperation extends Route
         string $name,
         string $path = '',
         string|array $method = [],
-        array $fields = [],
+        array $docFields = [],
     ) {
         parent::__construct(
             name: $name,
             path: $path,
             methods: (array) $method,
             isApiOperation: true,
-            apiOperationFields: $fields,
+            apiOperationDocFields: $docFields,
         );
     }
 }

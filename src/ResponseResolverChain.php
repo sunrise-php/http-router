@@ -18,7 +18,6 @@ use LogicException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionAttribute;
-use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\ResponseHeader;
 use Sunrise\Http\Router\Annotation\ResponseStatus;
@@ -47,7 +46,7 @@ final class ResponseResolverChain implements ResponseResolverChainInterface
      */
     public function resolveResponse(
         mixed $response,
-        ReflectionMethod|ReflectionFunction $responder,
+        ReflectionMethod $responder,
         ServerRequestInterface $request,
     ): ResponseInterface {
         if ($response instanceof ResponseInterface) {
@@ -70,7 +69,7 @@ final class ResponseResolverChain implements ResponseResolverChainInterface
 
     private static function completeResponse(
         ResponseInterface $response,
-        ReflectionMethod|ReflectionFunction $responder,
+        ReflectionMethod $responder,
     ): ResponseInterface {
         /** @var list<ReflectionAttribute<ResponseStatus>> $annotations */
         $annotations = $responder->getAttributes(ResponseStatus::class);
@@ -91,20 +90,14 @@ final class ResponseResolverChain implements ResponseResolverChainInterface
 
     private function sortResolvers(): void
     {
-        $this->isSorted = usort($this->resolvers, self::resolversSorter(...));
+        $this->isSorted = usort($this->resolvers, static fn(
+            ResponseResolverInterface $a,
+            ResponseResolverInterface $b,
+        ): int => $b->getWeight() <=> $a->getWeight());
     }
 
-    private static function resolversSorter(ResponseResolverInterface $a, ResponseResolverInterface $b): int
+    public static function stringifyResponder(ReflectionMethod $responder): string
     {
-        return $b->getWeight() <=> $a->getWeight();
-    }
-
-    public static function stringifyResponder(ReflectionMethod|ReflectionFunction $responder): string
-    {
-        if ($responder instanceof ReflectionMethod) {
-            return sprintf('%s::%s()', $responder->getDeclaringClass()->getName(), $responder->getName());
-        }
-
-        return sprintf('%s()', $responder->getName());
+        return sprintf('%s::%s()', $responder->getDeclaringClass()->getName(), $responder->getName());
     }
 }

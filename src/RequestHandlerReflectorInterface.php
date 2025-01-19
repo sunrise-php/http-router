@@ -15,7 +15,6 @@ namespace Sunrise\Http\Router;
 
 use InvalidArgumentException;
 use ReflectionClass;
-use ReflectionFunction;
 use ReflectionMethod;
 
 /**
@@ -24,9 +23,9 @@ use ReflectionMethod;
 interface RequestHandlerReflectorInterface
 {
     /**
-     * @return ReflectionClass<object>|ReflectionMethod|ReflectionFunction
+     * @return ReflectionClass<object>|ReflectionMethod
      *
      * @throws InvalidArgumentException
      */
-    public function reflectRequestHandler(mixed $reference): ReflectionClass|ReflectionMethod|ReflectionFunction;
+    public function reflectRequestHandler(mixed $reference): ReflectionClass|ReflectionMethod;
 }

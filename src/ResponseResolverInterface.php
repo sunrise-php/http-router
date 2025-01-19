@@ -16,7 +16,6 @@ namespace Sunrise\Http\Router;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use ReflectionFunction;
 use ReflectionMethod;
 
 /**
@@ -29,7 +28,7 @@ interface ResponseResolverInterface
      */
     public function resolveResponse(
         mixed $response,
-        ReflectionMethod|ReflectionFunction $responder,
+        ReflectionMethod $responder,
         ServerRequestInterface $request,
     ): ?ResponseInterface;
 

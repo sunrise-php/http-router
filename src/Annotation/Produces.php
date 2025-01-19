@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
-use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
+use Sunrise\Http\Router\MediaTypeInterface;
 
 /**
  * @since 3.0.0

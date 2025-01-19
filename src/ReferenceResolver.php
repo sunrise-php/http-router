@@ -18,7 +18,9 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 use function get_debug_type;
+use function is_array;
 use function is_callable;
+use function is_string;
 
 /**
  * @since 2.10.0
@@ -78,9 +80,13 @@ final class ReferenceResolver implements ReferenceResolverInterface
 
     public static function stringifyReference(mixed $reference): string
     {
+        if (is_string($reference)) {
+            return $reference;
+        }
+
         // https://github.com/php/php-src/blob/3ed526441400060aa4e618b91b3352371fcd02a8/Zend/zend_API.c#L3884-L3932
-        if (is_callable($reference, true, $result)) {
-            return $result;
+        if (is_array($reference) && is_callable($reference, true, $referenceName)) {
+            return $referenceName;
         }
 
         return get_debug_type($reference);

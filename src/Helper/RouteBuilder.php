@@ -45,7 +45,7 @@ final class RouteBuilder
                     $value = self::stringifyValue($values[$variable['name']]);
                 } catch (InvalidArgumentException $e) {
                     throw new InvalidArgumentException(sprintf(
-                        'The route %s could not be built due to an invalid value for the variable {%s}: %s.',
+                        'The route %s could not be built due to an invalid value for the variable {%s}: %s',
                         $route,
                         $variable['name'],
                         $e->getMessage(),

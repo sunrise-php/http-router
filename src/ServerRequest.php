@@ -19,13 +19,9 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
 use Sunrise\Http\Router\Dictionary\HeaderName;
-use Sunrise\Http\Router\Entity\Locale\Locale;
-use Sunrise\Http\Router\Entity\Locale\LocaleComparator;
-use Sunrise\Http\Router\Entity\Locale\LocaleInterface;
-use Sunrise\Http\Router\Entity\MediaType\MediaType;
-use Sunrise\Http\Router\Entity\MediaType\MediaTypeComparator;
-use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
 use Sunrise\Http\Router\Helper\HeaderParser;
+use Sunrise\Http\Router\Helper\LocaleComparator;
+use Sunrise\Http\Router\Helper\MediaTypeComparator;
 
 use function extension_loaded;
 use function preg_match;
@@ -45,6 +41,13 @@ final class ServerRequest implements ServerRequestInterface
     public static function create(ServerRequestInterface $request): self
     {
         return ($request instanceof self) ? $request : new self($request);
+    }
+
+    public function hasRoute(): bool
+    {
+        $route = $this->request->getAttribute(RouteInterface::class);
+
+        return $route instanceof RouteInterface;
     }
 
     /**
@@ -152,7 +155,7 @@ final class ServerRequest implements ServerRequestInterface
 
         foreach ($this->getClientConsumedLocales() as $clientConsumedLanguage) {
             foreach ($serverProducedLocales as $serverProducedLanguage) {
-                if (LocaleComparator::compare($clientConsumedLanguage, $serverProducedLanguage) === 0) {
+                if (LocaleComparator::compareLocales($clientConsumedLanguage, $serverProducedLanguage) === 0) {
                     return $serverProducedLanguage;
                 }
             }
@@ -176,7 +179,7 @@ final class ServerRequest implements ServerRequestInterface
 
         foreach ($this->getClientConsumedMediaTypes() as $clientConsumedMediaType) {
             foreach ($serverProducedMediaTypes as $serverProducedMediaType) {
-                if (MediaTypeComparator::compare($clientConsumedMediaType, $serverProducedMediaType) === 0) {
+                if (MediaTypeComparator::compareMediaTypes($clientConsumedMediaType, $serverProducedMediaType) === 0) {
                     return $serverProducedMediaType;
                 }
             }
@@ -198,7 +201,7 @@ final class ServerRequest implements ServerRequestInterface
         }
 
         foreach ($serverConsumedMediaTypes as $serverConsumedMediaType) {
-            if (MediaTypeComparator::compare($clientProducedMediaType, $serverConsumedMediaType) === 0) {
+            if (MediaTypeComparator::compareMediaTypes($clientProducedMediaType, $serverConsumedMediaType) === 0) {
                 return true;
             }
         }

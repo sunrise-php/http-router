@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Tests\Entity\Locale;
 
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\Entity\Locale\Locale;
+use Sunrise\Http\Router\Locale;
 
 final class LocaleTest extends TestCase
 {

@@ -17,7 +17,6 @@ use InvalidArgumentException;
 use LogicException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use ReflectionFunction;
 use ReflectionMethod;
 
 /**
@@ -31,7 +30,7 @@ interface ResponseResolverChainInterface
      */
     public function resolveResponse(
         mixed $response,
-        ReflectionMethod|ReflectionFunction $responder,
+        ReflectionMethod $responder,
         ServerRequestInterface $request,
     ): ResponseInterface;
 }

@@ -7,8 +7,8 @@ namespace Sunrise\Http\Router\Tests\Entity\MediaType;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\Entity\MediaType\MediaTypeComparator;
-use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
+use Sunrise\Http\Router\Helper\MediaTypeComparator;
+use Sunrise\Http\Router\MediaTypeInterface;
 
 final class MediaTypeComparatorTest extends TestCase
 {
@@ -21,7 +21,7 @@ final class MediaTypeComparatorTest extends TestCase
         $a = $this->mockMediaType($aIdentifier);
         $b = $this->mockMediaType($bIdentifier);
 
-        $actualResult = MediaTypeComparator::compare($a, $b);
+        $actualResult = MediaTypeComparator::compareMediaTypes($a, $b);
 
         $this->assertSame($expectedResult, $actualResult);
     }

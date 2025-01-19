@@ -15,6 +15,7 @@ namespace Sunrise\Http\Router;
 
 use InvalidArgumentException;
 use LogicException;
+use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -57,6 +58,9 @@ final class Router implements RouterInterface
     private bool $isLoaded = false;
 
     /**
+     * @param array<array-key, ParameterResolverInterface> $parameterResolvers
+     * @param array<array-key, ResponseResolverInterface> $responseResolvers
+     *
      * @since 3.0.0
      */
     public function __construct(
@@ -68,8 +72,15 @@ final class Router implements RouterInterface
         private readonly array $routeMiddlewares = [],
         ?ReferenceResolverInterface $referenceResolver = null,
         private readonly ?EventDispatcherInterface $eventDispatcher = null,
+        array $parameterResolvers = [],
+        array $responseResolvers = [],
+        ?ContainerInterface $container = null,
     ) {
-        $this->referenceResolver = $referenceResolver ?? ReferenceResolver::build();
+        $this->referenceResolver = $referenceResolver ?? ReferenceResolver::build(
+            parameterResolvers: $parameterResolvers,
+            responseResolvers: $responseResolvers,
+            container: $container,
+        );
     }
 
     /**

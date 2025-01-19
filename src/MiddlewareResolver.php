@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
-use Closure;
 use InvalidArgumentException;
 use LogicException;
 use Psr\Http\Message\ResponseInterface;
@@ -21,10 +20,9 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use ReflectionException;
-use ReflectionFunction;
 use ReflectionMethod;
 use Sunrise\Http\Router\Middleware\CallableMiddleware;
-use Sunrise\Http\Router\ParameterResolver\DirectObjectInjectionParameterResolver;
+use Sunrise\Http\Router\ParameterResolver\DirectInjectionParameterResolver;
 
 use function is_array;
 use function is_callable;
@@ -57,10 +55,6 @@ final class MiddlewareResolver implements MiddlewareResolverInterface
             return $reference;
         }
 
-        if ($reference instanceof Closure) {
-            return $this->resolveCallback($reference, new ReflectionFunction($reference));
-        }
-
         if (is_string($reference) && is_subclass_of($reference, MiddlewareInterface::class)) {
             return $this->classResolver->resolveClass($reference);
         }
@@ -88,21 +82,19 @@ final class MiddlewareResolver implements MiddlewareResolverInterface
      * @throws InvalidArgumentException
      * @throws LogicException
      */
-    private function resolveCallback(
-        callable $callback,
-        ReflectionMethod|ReflectionFunction $reflection,
-    ): MiddlewareInterface {
+    private function resolveCallback(callable $callback, ReflectionMethod $reflection): MiddlewareInterface
+    {
         return new CallableMiddleware(
             fn(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface => (
                 $this->responseResolverChain->resolveResponse(
                     $callback(
                         ...$this->parameterResolverChain
-                        ->withContext($request)
-                        ->withResolver(
-                            new DirectObjectInjectionParameterResolver($request),
-                            new DirectObjectInjectionParameterResolver($handler),
-                        )
-                        ->resolveParameters(...$reflection->getParameters())
+                            ->withContext($request)
+                            ->withResolver(
+                                new DirectInjectionParameterResolver($request),
+                                new DirectInjectionParameterResolver($handler),
+                            )
+                            ->resolveParameters(...$reflection->getParameters())
                     ),
                     $reflection,
                     $request,

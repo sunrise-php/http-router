@@ -25,6 +25,7 @@ final class RequestCookie
         public readonly string $name,
         public readonly ?int $errorStatusCode = null,
         public readonly ?string $errorMessage = null,
+        public readonly array $hydratorContext = [],
         public readonly ?bool $validationEnabled = null,
     ) {
     }

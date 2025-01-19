@@ -26,13 +26,10 @@ final class ErrorMessage
     public const UNSUPPORTED_MEDIA_TYPE = 'The media type {{ media_type }} is not supported; Check the Accept response header for supported media types.';
     public const INVALID_VARIABLE = 'The value of the variable {{{ variable_name }}} in the request URI {{ route_uri }} is invalid.';
     public const INVALID_QUERY = 'The request query parameters are invalid.';
-    public const MISSING_HEADER = 'The request header {{ header_name }} must be provided.';
+    public const MISSING_HEADER = 'The request header {{ header_name }} is missing.';
     public const INVALID_HEADER = 'The request header {{ header_name }} is invalid.';
     public const MISSING_COOKIE = 'The cookie {{ cookie_name }} is missing.';
     public const INVALID_COOKIE = 'The cookie {{ cookie_name }} is invalid.';
     public const INVALID_BODY = 'The request body is invalid.';
-    public const EMPTY_JSON_PAYLOAD = 'The JSON payload cannot be empty.';
-    public const INVALID_JSON_PAYLOAD = 'The JSON payload is invalid.';
-    public const INVALID_JSON_PAYLOAD_FORMAT = 'The JSON payload must be in the format of an array or an object.';
     // phpcs:enable Generic.Files.LineLength.TooLong
 }

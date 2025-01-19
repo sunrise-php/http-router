@@ -48,7 +48,7 @@ interface RouterInterface extends RequestHandlerInterface
      *
      * @throws InvalidArgumentException
      */
-    public function addRoute(RouteInterface ...$routes): void;
+    public function addRoute(RouteInterface ...$routes);
 
     /**
      * @throws HttpException

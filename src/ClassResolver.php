@@ -34,7 +34,7 @@ final class ClassResolver implements ClassResolverInterface
 
     public function __construct(
         private readonly ParameterResolverChainInterface $parameterResolverChain,
-        private readonly ?ContainerInterface $container,
+        private readonly ?ContainerInterface $container = null,
     ) {
     }
 

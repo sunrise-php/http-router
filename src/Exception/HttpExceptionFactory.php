@@ -106,30 +106,6 @@ final class HttpExceptionFactory
         );
     }
 
-    public static function missingQueryParam(
-        ?string $message = null,
-        ?int $code = null,
-        ?Throwable $previous = null,
-    ): HttpException {
-        return new HttpException(
-            $message ?? ErrorMessage::MISSING_QUERY_PARAM,
-            $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
-            $previous,
-        );
-    }
-
-    public static function invalidQueryParam(
-        ?string $message = null,
-        ?int $code = null,
-        ?Throwable $previous = null,
-    ): HttpException {
-        return new HttpException(
-            $message ?? ErrorMessage::INVALID_QUERY_PARAM,
-            $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
-            $previous,
-        );
-    }
-
     public static function missingHeader(
         ?string $message = null,
         ?int $code = null,
@@ -185,42 +161,6 @@ final class HttpExceptionFactory
     ): HttpException {
         return new HttpException(
             $message ?? ErrorMessage::INVALID_BODY,
-            $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
-            $previous,
-        );
-    }
-
-    public static function emptyJsonPayload(
-        ?string $message = null,
-        ?int $code = null,
-        ?Throwable $previous = null,
-    ): HttpException {
-        return new HttpException(
-            $message ?? ErrorMessage::EMPTY_JSON_PAYLOAD,
-            $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
-            $previous,
-        );
-    }
-
-    public static function invalidJsonPayload(
-        ?string $message = null,
-        ?int $code = null,
-        ?Throwable $previous = null,
-    ): HttpException {
-        return new HttpException(
-            $message ?? ErrorMessage::INVALID_JSON_PAYLOAD,
-            $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
-            $previous,
-        );
-    }
-
-    public static function invalidJsonPayloadFormat(
-        ?string $message = null,
-        ?int $code = null,
-        ?Throwable $previous = null,
-    ): HttpException {
-        return new HttpException(
-            $message ?? ErrorMessage::INVALID_JSON_PAYLOAD_FORMAT,
             $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
             $previous,
         );

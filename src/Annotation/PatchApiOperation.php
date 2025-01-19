@@ -21,8 +21,8 @@ use Attribute;
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
 final class PatchApiOperation extends ApiOperation
 {
-    public function __construct(string $name, string $path = '', array $fields = [])
+    public function __construct(string $name, string $path = '', array $docFields = [])
     {
-        parent::__construct($name, $path, self::METHOD_PATCH, $fields);
+        parent::__construct($name, $path, self::METHOD_PATCH, $docFields);
     }
 }

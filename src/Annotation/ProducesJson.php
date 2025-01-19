@@ -19,7 +19,7 @@ use Sunrise\Http\Router\Dictionary\MediaType;
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
 final class ProducesJson extends Produces
 {
     public function __construct()

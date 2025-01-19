@@ -15,7 +15,7 @@ namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
 use Fig\Http\Message\RequestMethodInterface;
-use Sunrise\Http\Router\Entity\MediaType\MediaTypeInterface;
+use Sunrise\Http\Router\MediaTypeInterface;
 
 /**
  * @since 2.0.0
@@ -56,7 +56,7 @@ class Route implements RequestMethodInterface
         public bool $isDeprecated = false,
         public bool $isApiOperation = false,
         /** @var array<array-key, mixed>|object|null */
-        public array|object|null $apiOperationFields = null,
+        public array|object|null $apiOperationDocFields = null,
         public int $priority = 0,
     ) {
     }

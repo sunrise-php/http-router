@@ -49,6 +49,7 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
         private readonly ?ValidatorInterface $validator = null,
         private readonly ?int $defaultErrorStatusCode = null,
         private readonly ?string $defaultErrorMessage = null,
+        private readonly array $hydratorContext = [],
         private readonly bool $defaultValidationEnabled = true,
     ) {
     }
@@ -78,6 +79,8 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
         $variableName = $processParams->name ?? $parameter->getName();
         $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
         $errorMessage = $processParams->errorMessage ?? $this->defaultErrorMessage;
+        $hydratorContext = $processParams->hydratorContext + $this->hydratorContext;
+        $validationEnabled = $processParams->validationEnabled ?? $this->defaultValidationEnabled;
 
         if (!$route->hasAttribute($variableName)) {
             if ($parameter->isDefaultValueAvailable()) {
@@ -99,6 +102,7 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
                 $route->getAttribute($variableName),
                 Type::fromParameter($parameter),
                 path: [$variableName],
+                context: $hydratorContext,
             );
         } catch (InvalidValueException $e) {
             throw HttpExceptionFactory::invalidVariable($errorMessage, $errorStatusCode, previous: $e)
@@ -114,8 +118,6 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
                     $e->getExceptions(),
                 ));
         }
-
-        $validationEnabled = $processParams->validationEnabled ?? $this->defaultValidationEnabled;
 
         if ($this->validator !== null && $validationEnabled) {
             $violations = $this->validator

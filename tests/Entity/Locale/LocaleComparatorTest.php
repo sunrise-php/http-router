@@ -7,8 +7,8 @@ namespace Sunrise\Http\Router\Tests\Entity\Locale;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\Entity\Locale\LocaleComparator;
-use Sunrise\Http\Router\Entity\Locale\LocaleInterface;
+use Sunrise\Http\Router\Helper\LocaleComparator;
+use Sunrise\Http\Router\LocaleInterface;
 
 final class LocaleComparatorTest extends TestCase
 {
@@ -23,7 +23,7 @@ final class LocaleComparatorTest extends TestCase
         $a = $this->mockLocale($aLanguageCode, $aRegionCode);
         $b = $this->mockLocale($bLanguageCode, $bRegionCode);
 
-        $actualResult = LocaleComparator::compare($a, $b);
+        $actualResult = LocaleComparator::compareLocales($a, $b);
 
         $this->assertSame($expectedResult, $actualResult);
     }

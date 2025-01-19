@@ -13,12 +13,10 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
-use Closure;
 use InvalidArgumentException;
 use Psr\Http\Server\RequestHandlerInterface;
 use ReflectionClass;
 use ReflectionException;
-use ReflectionFunction;
 use ReflectionMethod;
 
 use function is_array;
@@ -38,14 +36,10 @@ final class RequestHandlerReflector implements RequestHandlerReflectorInterface
      * @throws InvalidArgumentException
      * @throws ReflectionException
      */
-    public function reflectRequestHandler(mixed $reference): ReflectionClass|ReflectionMethod|ReflectionFunction
+    public function reflectRequestHandler(mixed $reference): ReflectionClass|ReflectionMethod
     {
         if ($reference instanceof RequestHandlerInterface) {
             return new ReflectionClass($reference);
-        }
-
-        if ($reference instanceof Closure) {
-            return new ReflectionFunction($reference);
         }
 
         if (is_string($reference) && is_subclass_of($reference, RequestHandlerInterface::class)) {
@@ -54,7 +48,10 @@ final class RequestHandlerReflector implements RequestHandlerReflectorInterface
 
         // https://github.com/php/php-src/blob/3ed526441400060aa4e618b91b3352371fcd02a8/Zend/zend_API.c#L3884-L3932
         if (is_array($reference) && is_callable($reference, true, $method)) {
-            return new ReflectionMethod($method);
+            try {
+                return new ReflectionMethod($method);
+            } catch (ReflectionException) {
+            }
         }
 
         throw new InvalidArgumentException(sprintf(
