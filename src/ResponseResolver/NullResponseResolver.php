@@ -18,15 +18,14 @@ use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use ReflectionMethod;
-use Sunrise\Http\Router\Annotation\EmptyResponse;
 use Sunrise\Http\Router\ResponseResolverInterface;
 
 /**
  * @since 3.0.0
  */
-final class EmptyResponseResolver implements ResponseResolverInterface
+final class NullResponseResolver implements ResponseResolverInterface
 {
-    private const DEFAULT_STATUS_CODE = StatusCodeInterface::STATUS_NO_CONTENT;
+    public const DEFAULT_STATUS_CODE = StatusCodeInterface::STATUS_NO_CONTENT;
 
     public function __construct(
         private readonly ResponseFactoryInterface $responseFactory,
@@ -42,7 +41,7 @@ final class EmptyResponseResolver implements ResponseResolverInterface
         ReflectionMethod $responder,
         ServerRequestInterface $request,
     ): ?ResponseInterface {
-        if ($responder->getAttributes(EmptyResponse::class) === []) {
+        if ($response !== null) {
             return null;
         }
 

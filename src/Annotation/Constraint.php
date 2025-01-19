@@ -18,7 +18,6 @@ use Attribute;
 /**
  * @since 3.0.0
  */
-// phpcs:ignore Generic.Files.LineLength.TooLong
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::IS_REPEATABLE)]
 final class Constraint
 {

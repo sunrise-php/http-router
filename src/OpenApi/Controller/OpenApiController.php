@@ -46,7 +46,7 @@ final class OpenApiController implements RequestHandlerInterface
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $body = $this->streamFactory->createStreamFromFile(
-            $this->openApiConfiguration->documentFilename,
+            $this->openApiConfiguration->getDocumentFilename(),
         );
 
         return $this->responseFactory->createResponse()

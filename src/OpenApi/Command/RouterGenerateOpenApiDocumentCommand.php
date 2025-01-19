@@ -13,19 +13,15 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\OpenApi\Command;
 
-use ArrayAccess;
+use Fig\Http\Message\StatusCodeInterface;
+use JsonException;
 use ReflectionAttribute;
-use ReflectionClass;
-use ReflectionException;
 use ReflectionMethod;
-use ReflectionParameter;
-use ReflectionProperty;
+use Sunrise\Http\Router\Annotation\EncodableResponse;
 use Sunrise\Http\Router\Annotation\RequestBody;
 use Sunrise\Http\Router\Annotation\RequestCookie;
 use Sunrise\Http\Router\Annotation\RequestHeader;
 use Sunrise\Http\Router\Annotation\ResponseStatus;
-use Sunrise\Http\Router\Annotation\EncodableResponse;
-use Sunrise\Http\Router\Event\OpenApiTypeSchemaResolveEvent;
 use Sunrise\Http\Router\Helper\RouteBuilder;
 use Sunrise\Http\Router\Helper\RouteParser;
 use Sunrise\Http\Router\Helper\RouteSimplifier;
@@ -36,23 +32,19 @@ use Sunrise\Http\Router\OpenApi\TypeFactory;
 use Sunrise\Http\Router\RequestHandlerReflectorInterface;
 use Sunrise\Http\Router\RouteInterface;
 use Sunrise\Http\Router\RouterInterface;
-use Sunrise\Hydrator\Annotation\Alias;
-use Sunrise\Hydrator\Annotation\DefaultValue;
-use Sunrise\Hydrator\Annotation\Ignore;
-use Sunrise\Hydrator\Annotation\Subtype;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+
 use function array_merge;
-use function class_exists;
-use function end;
 use function file_put_contents;
-use function is_subclass_of;
+use function in_array;
 use function json_encode;
 use function strtolower;
-use function strtr;
+
 use const JSON_PRETTY_PRINT;
+use const JSON_THROW_ON_ERROR;
 use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
 
@@ -73,6 +65,8 @@ final class RouterGenerateOpenApiDocumentCommand extends Command
 
     /**
      * @inheritDoc
+     *
+     * @throws JsonException
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -83,19 +77,19 @@ final class RouterGenerateOpenApiDocumentCommand extends Command
                 continue;
             }
 
-            $controller = $this->requestHandlerReflector->reflectRequestHandler($route->getRequestHandler());
+            $requestHandler = $this->requestHandlerReflector->reflectRequestHandler($route->getRequestHandler());
 
-            self::enrichDocumentWithPaths($route, $controller, $document);
+            self::enrichDocumentWithPaths($route, $requestHandler, $document);
         }
 
         foreach ($this->phpTypeSchemaResolverChain->getNamedPhpTypeSchemas() as $phpTypeSchemaName => $phpTypeSchema) {
             $document['components']['schemas'][$phpTypeSchemaName] = $phpTypeSchema;
         }
 
-        /** @var string $json */
-        $json = json_encode($document, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-
-        file_put_contents($this->openApiConfiguration->documentFilename, $json);
+        file_put_contents(
+            $this->openApiConfiguration->getDocumentFilename(),
+            json_encode($document, JSON_THROW_ON_ERROR),
+        );
 
         $output->writeln('Done.');
 
@@ -119,8 +113,10 @@ final class RouterGenerateOpenApiDocumentCommand extends Command
 
         self::enrichOperationWithPathParameters($route, $operation);
         self::enrichOperationWithCookieAndHeaderParameters($controller, $operation);
+
         self::enrichOperationWithRequestBody($route, $controller, $operation);
-        self::enrichOperationWithSerializableResponse($route, $controller, $operation);
+        self::enrichOperationWithEmptyResponses($route, $controller, $operation);
+        self::enrichOperationWithEncodableResponses($route, $controller, $operation);
 
         $routePath = RouteSimplifier::simplifyRoute($route->getPath());
         foreach ($route->getMethods() as $routeMethod) {
@@ -215,33 +211,58 @@ final class RouterGenerateOpenApiDocumentCommand extends Command
         }
     }
 
-    private function enrichOperationWithSerializableResponse(
+    private function enrichOperationWithEmptyResponses(
         RouteInterface $route,
-        ReflectionMethod $controller,
+        ReflectionMethod $responder,
         array &$operation,
     ): void {
-        if ($controller->getAttributes(EncodableResponse::class) === []) {
+        if (
+            ! in_array($responder->getReturnType()?->getName(), [
+                Type::PHP_TYPE_NAME_VOID,
+                Type::PHP_TYPE_NAME_NULL,
+            ], true)
+        ) {
             return;
         }
 
-        $schema = $this->phpTypeSchemaResolverChain->resolvePhpTypeSchema(
-            TypeFactory::fromPhpTypeReflection($controller->getReturnType()),
-            $controller,
-        );
-
-        $responseStatusCode = 200;
-        $responseStatusPhrase = 'Operation completed successfully.';
+        $responseCode = $this->openApiConfiguration->defaultNullResponseStatusCode;
 
         /** @var ReflectionAttribute $annotations */
-        $annotations = $controller->getAttributes(ResponseStatus::class);
+        $annotations = $responder->getAttributes(ResponseStatus::class);
         if (isset($annotations[0])) {
             $responseStatus = $annotations[0]->newInstance();
-            $responseStatusCode = $responseStatus->code;
+            $responseCode = $responseStatus->code;
         }
 
+        // phpcs:ignore Generic.Files.LineLength.TooLong
+        $operation['responses'][$responseCode]['description'] = $this->openApiConfiguration->completedOperationDescription;
+    }
+
+    private function enrichOperationWithEncodableResponses(
+        RouteInterface $route,
+        ReflectionMethod $responder,
+        array &$operation,
+    ): void {
+        if ($responder->getAttributes(EncodableResponse::class) === []) {
+            return;
+        }
+
+        $responseCode = StatusCodeInterface::STATUS_OK;
+        $responseType = TypeFactory::fromPhpTypeReflection($responder->getReturnType());
+        $responseSchema = $this->phpTypeSchemaResolverChain->resolvePhpTypeSchema($responseType, $responder);
+
+        /** @var ReflectionAttribute $annotations */
+        $annotations = $responder->getAttributes(ResponseStatus::class);
+        if (isset($annotations[0])) {
+            $responseStatus = $annotations[0]->newInstance();
+            $responseCode = $responseStatus->code;
+        }
+
+        // phpcs:ignore Generic.Files.LineLength.TooLong
+        $operation['responses'][$responseCode]['description'] = $this->openApiConfiguration->completedOperationDescription;
+
         foreach ($route->getProducedMediaTypes() as $mediaType) {
-            $operation['responses'][$responseStatusCode]['content'][$mediaType->getIdentifier()]['schema'] = $schema;
-            $operation['responses'][$responseStatusCode]['description'] = $responseStatusPhrase;
+            $operation['responses'][$responseCode]['content'][$mediaType->getIdentifier()]['schema'] = $responseSchema;
         }
     }
 }
