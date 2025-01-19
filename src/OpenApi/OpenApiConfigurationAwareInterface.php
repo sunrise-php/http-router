@@ -16,12 +16,7 @@ namespace Sunrise\Http\Router\OpenApi;
 /**
  * @since 3.0.0
  */
-final class OpenApiConfiguration
+interface OpenApiConfigurationAwareInterface
 {
-    public function __construct(
-        public readonly array $blankDocument,
-        public readonly string $documentFilename,
-        public readonly string $timestampFormat,
-    ) {
-    }
+    public function setOpenApiConfiguration(OpenApiConfiguration $openApiConfiguration): void;
 }

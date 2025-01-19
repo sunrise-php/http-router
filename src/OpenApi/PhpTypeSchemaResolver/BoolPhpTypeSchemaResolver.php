@@ -19,9 +19,6 @@ use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverInterface;
 use Sunrise\Http\Router\OpenApi\Type;
 
 /**
- * @link https://github.com/sunrise-php/hydrator/blob/5b8e8bf51c5795b741fbae28258eadc8be16d7c2/README.md#boolean
- * @link https://swagger.io/docs/specification/v3_0/data-models/data-types/#boolean
- *
  * @since 3.0.0
  */
 final class BoolPhpTypeSchemaResolver implements PhpTypeSchemaResolverInterface
@@ -38,15 +35,9 @@ final class BoolPhpTypeSchemaResolver implements PhpTypeSchemaResolverInterface
     {
         $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();
 
-        $phpTypeSchema = [
+        return [
             'type' => Type::OAS_TYPE_NAME_BOOLEAN,
         ];
-
-        if ($phpType->allowsNull) {
-            $phpTypeSchema['nullable'] = true;
-        }
-
-        return $phpTypeSchema;
     }
 
     public function getWeight(): int

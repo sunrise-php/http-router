@@ -18,37 +18,45 @@ use ReflectionAttribute;
 use ReflectionParameter;
 use ReflectionProperty;
 use Reflector;
-use Sunrise\Http\Router\OpenApi\NamedPhpTypeSchemaInterface;
+use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
 use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
-use Sunrise\Http\Router\OpenApi\Type;
+use Sunrise\Http\Router\OpenApi\OpenApiConfigurationAwareInterface;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverInterface;
+use Sunrise\Http\Router\OpenApi\Type;
 use Sunrise\Hydrator\Annotation\Format;
 
 use function date;
 use function is_a;
 
 /**
- * @link https://github.com/sunrise-php/hydrator/blob/5b8e8bf51c5795b741fbae28258eadc8be16d7c2/README.md#timestamp
- * @link https://swagger.io/docs/specification/v3_0/data-models/data-types/#strings
- *
  * @since 3.0.0
  */
-final class TimestampNamedPhpTypeSchemaResolver implements PhpTypeSchemaResolverInterface, NamedPhpTypeSchemaInterface
+final class TimestampPhpTypeSchemaResolver implements
+    PhpTypeSchemaResolverInterface,
+    OpenApiConfigurationAwareInterface
 {
-    public function __construct(
-        private readonly OpenApiConfiguration $openApiConfiguration,
-    ) {
+    private readonly OpenApiConfiguration $openApiConfiguration;
+
+    public function setOpenApiConfiguration(OpenApiConfiguration $openApiConfiguration): void
+    {
+        $this->openApiConfiguration = $openApiConfiguration;
     }
 
-    public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): ?array
+    public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
     {
-        if (!is_a($phpType->name, DateTimeImmutable::class, true)) {
-            return null;
-        }
+        return is_a($phpType->name, DateTimeImmutable::class, true);
+    }
+
+    public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array
+    {
+        $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();
 
         $timestampFormat = $this->openApiConfiguration->timestampFormat;
 
-        if ($phpTypeHolder instanceof ReflectionParameter || $phpTypeHolder instanceof ReflectionProperty) {
+        if (
+            $phpTypeHolder instanceof ReflectionParameter ||
+            $phpTypeHolder instanceof ReflectionProperty
+        ) {
             /** @var list<ReflectionAttribute<Format>> $annotations */
             $annotations = $phpTypeHolder->getAttributes(Format::class);
             if (isset($annotations[0])) {
@@ -57,26 +65,15 @@ final class TimestampNamedPhpTypeSchemaResolver implements PhpTypeSchemaResolver
             }
         }
 
-        $schema = [
+        return [
             'type' => Type::OAS_TYPE_NAME_STRING,
             'format' => 'date-time',
             'example' => date($timestampFormat, 0),
         ];
-
-        if ($phpType->allowsNull) {
-            $schema['nullable'] = true;
-        }
-
-        return $schema;
     }
 
     public function getWeight(): int
     {
         return 0;
-    }
-
-    public function getPhpTypeSchemaName(Type $type): string
-    {
-        return '@timestamp';
     }
 }

@@ -13,42 +13,42 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver;
 
+use DateTimeZone;
 use Reflector;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
+use Sunrise\Http\Router\OpenApi\PhpTypeSchemaNameResolverInterface;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverInterface;
 use Sunrise\Http\Router\OpenApi\Type;
-use Symfony\Component\Uid\AbstractUid;
-use Symfony\Component\Uid\Uuid;
-
-use function is_subclass_of;
 
 /**
  * @since 3.0.0
  */
-final class SymfonyUidPhpTypeSchemaResolver implements PhpTypeSchemaResolverInterface
+final class TimezonePhpTypeSchemaResolver implements
+    PhpTypeSchemaResolverInterface,
+    PhpTypeSchemaNameResolverInterface
 {
     public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
     {
-        return is_subclass_of($phpType->name, AbstractUid::class);
+        return $phpType->name === DateTimeZone::class;
     }
 
     public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array
     {
         $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();
 
-        $phpTypeSchema = [
+        return [
             'type' => Type::OAS_TYPE_NAME_STRING,
+            'enum' => DateTimeZone::listIdentifiers(),
         ];
-
-        if (is_subclass_of($phpType->name, Uuid::class)) {
-            $phpTypeSchema['format'] = 'uuid';
-        }
-
-        return $phpTypeSchema;
     }
 
     public function getWeight(): int
     {
         return 0;
+    }
+
+    public function resolvePhpTypeSchemaName(Type $phpType, Reflector $phpTypeHolder): string
+    {
+        return 'Timezone';
     }
 }

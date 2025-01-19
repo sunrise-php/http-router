@@ -14,6 +14,18 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\OpenApi;
 
 use Reflector;
+use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\ArrayAccessPhpTypeSchemaResolver;
+use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\ArrayPhpTypeSchemaResolver;
+use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\BackedEnumPhpTypeSchemaResolver;
+use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\BoolPhpTypeSchemaResolver;
+use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\FloatPhpTypeSchemaResolver;
+use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\IntPhpTypeSchemaResolver;
+use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\ObjectPhpTypeSchemaResolver;
+use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\RamseyUuidPhpTypeSchemaResolver;
+use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\StringPhpTypeSchemaResolver;
+use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\SymfonyUidPhpTypeSchemaResolver;
+use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaResolver;
+use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\TimezonePhpTypeSchemaResolver;
 
 use function sprintf;
 use function usort;
@@ -23,6 +35,8 @@ use function usort;
  */
 final class PhpTypeSchemaResolverChain implements PhpTypeSchemaResolverChainInterface
 {
+    private readonly OpenApiConfiguration $openApiConfiguration;
+
     /**
      * @var array<array-key, PhpTypeSchemaResolverInterface>
      */
@@ -38,8 +52,12 @@ final class PhpTypeSchemaResolverChain implements PhpTypeSchemaResolverChainInte
     /**
      * @param array<array-key, PhpTypeSchemaResolverInterface> $phpTypeSchemaResolvers
      */
-    public function __construct(array $phpTypeSchemaResolvers)
-    {
+    public function __construct(
+        OpenApiConfiguration $openApiConfiguration,
+        array $phpTypeSchemaResolvers = [],
+    ) {
+        $this->openApiConfiguration = $openApiConfiguration;
+        $this->setPhpTypeResolvers(self::getDefaultPhpTypeSchemaResolvers());
         $this->setPhpTypeResolvers($phpTypeSchemaResolvers);
     }
 
@@ -58,17 +76,17 @@ final class PhpTypeSchemaResolverChain implements PhpTypeSchemaResolverChainInte
         }
 
         if (isset($phpTypeSchemaName, $this->namedPhpTypeSchemas[$phpTypeSchemaName])) {
-            return self::createPhpTypeSchemaRef($phpTypeSchemaName);
+            return self::completePhpTypeSchema($phpType, self::createPhpTypeSchemaRef($phpTypeSchemaName));
         }
 
         $phpTypeSchema = $phpTypeSchemaResolver->resolvePhpTypeSchema($phpType, $phpTypeHolder);
 
         if (isset($phpTypeSchemaName)) {
             $this->namedPhpTypeSchemas[$phpTypeSchemaName] = $phpTypeSchema;
-            return self::createPhpTypeSchemaRef($phpTypeSchemaName);
+            return self::completePhpTypeSchema($phpType, self::createPhpTypeSchemaRef($phpTypeSchemaName));
         }
 
-        return $phpTypeSchema;
+        return self::completePhpTypeSchema($phpType, $phpTypeSchema);
     }
 
     /**
@@ -87,6 +105,9 @@ final class PhpTypeSchemaResolverChain implements PhpTypeSchemaResolverChainInte
         foreach ($phpTypeSchemaResolvers as $phpTypeSchemaResolver) {
             $this->phpTypeSchemaResolvers[] = $phpTypeSchemaResolver;
 
+            if ($phpTypeSchemaResolver instanceof OpenApiConfigurationAwareInterface) {
+                $phpTypeSchemaResolver->setOpenApiConfiguration($this->openApiConfiguration);
+            }
             if ($phpTypeSchemaResolver instanceof PhpTypeSchemaResolverChainAwareInterface) {
                 $phpTypeSchemaResolver->setPhpTypeSchemaResolverChain($this);
             }
@@ -115,5 +136,40 @@ final class PhpTypeSchemaResolverChain implements PhpTypeSchemaResolverChainInte
     private static function createPhpTypeSchemaRef(string $phpTypeSchemaName): array
     {
         return ['$ref' => sprintf('#/components/schemas/%s', $phpTypeSchemaName)];
+    }
+
+    private static function completePhpTypeSchema(Type $phpType, array $phpTypeSchema): array
+    {
+        if ($phpType->allowsNull) {
+            $phpTypeSchema['nullable'] = true;
+
+            // https://swagger.io/docs/specification/v3_0/data-models/enums/#nullable-enums
+            if (isset($phpTypeSchema['enum'])) {
+                $phpTypeSchema['enum'][] = null;
+            }
+        }
+
+        return $phpTypeSchema;
+    }
+
+    /**
+     * @return array<array-key, PhpTypeSchemaResolverInterface>
+     */
+    private static function getDefaultPhpTypeSchemaResolvers(): array
+    {
+        return [
+            new ArrayAccessPhpTypeSchemaResolver(),
+            new ArrayPhpTypeSchemaResolver(),
+            new BackedEnumPhpTypeSchemaResolver(),
+            new BoolPhpTypeSchemaResolver(),
+            new FloatPhpTypeSchemaResolver(),
+            new IntPhpTypeSchemaResolver(),
+            new ObjectPhpTypeSchemaResolver(),
+            new RamseyUuidPhpTypeSchemaResolver(),
+            new StringPhpTypeSchemaResolver(),
+            new SymfonyUidPhpTypeSchemaResolver(),
+            new TimestampPhpTypeSchemaResolver(),
+            new TimezonePhpTypeSchemaResolver(),
+        ];
     }
 }

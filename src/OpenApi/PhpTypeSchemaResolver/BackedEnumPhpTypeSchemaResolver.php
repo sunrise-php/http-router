@@ -18,18 +18,19 @@ use ReflectionEnum;
 use ReflectionException;
 use Reflector;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
+use Sunrise\Http\Router\OpenApi\PhpTypeSchemaNameResolverInterface;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverInterface;
 use Sunrise\Http\Router\OpenApi\Type;
 
 use function is_subclass_of;
+use function strtr;
 
 /**
- * @link https://github.com/sunrise-php/hydrator/blob/5b8e8bf51c5795b741fbae28258eadc8be16d7c2/README.md#php-81-built-in-enumerations
- * @link https://swagger.io/docs/specification/v3_0/data-models/enums/
- *
  * @since 3.0.0
  */
-final class BackedEnumPhpTypeSchemaResolver implements PhpTypeSchemaResolverInterface
+final class BackedEnumPhpTypeSchemaResolver implements
+    PhpTypeSchemaResolverInterface,
+    PhpTypeSchemaNameResolverInterface
 {
     public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
     {
@@ -60,17 +61,16 @@ final class BackedEnumPhpTypeSchemaResolver implements PhpTypeSchemaResolverInte
             $phpTypeSchema['enum'][] = $case->value;
         }
 
-        // https://swagger.io/docs/specification/v3_0/data-models/enums/#nullable-enums
-        if ($phpType->allowsNull) {
-            $phpTypeSchema['enum'][] = null;
-            $phpTypeSchema['nullable'] = true;
-        }
-
         return $phpTypeSchema;
     }
 
     public function getWeight(): int
     {
         return 0;
+    }
+
+    public function resolvePhpTypeSchemaName(Type $phpType, Reflector $phpTypeHolder): string
+    {
+        return strtr($phpType->name, '\\', '.');
     }
 }

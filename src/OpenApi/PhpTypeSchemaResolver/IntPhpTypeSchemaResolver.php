@@ -21,9 +21,6 @@ use Sunrise\Http\Router\OpenApi\Type;
 use const PHP_INT_SIZE;
 
 /**
- * @link https://github.com/sunrise-php/hydrator/blob/5b8e8bf51c5795b741fbae28258eadc8be16d7c2/README.md#integer
- * @link https://swagger.io/docs/specification/v3_0/data-models/data-types/#numbers
- *
  * @since 3.0.0
  */
 final class IntPhpTypeSchemaResolver implements PhpTypeSchemaResolverInterface
@@ -40,16 +37,10 @@ final class IntPhpTypeSchemaResolver implements PhpTypeSchemaResolverInterface
     {
         $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();
 
-        $phpTypeSchema = [
+        return [
             'type' => Type::OAS_TYPE_NAME_INTEGER,
             'format' => PHP_INT_SIZE === 4 ? 'int32' : 'int64',
         ];
-
-        if ($phpType->allowsNull) {
-            $phpTypeSchema['nullable'] = true;
-        }
-
-        return $phpTypeSchema;
     }
 
     public function getWeight(): int

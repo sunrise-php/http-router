@@ -20,9 +20,6 @@ use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverInterface;
 use Sunrise\Http\Router\OpenApi\Type;
 
 /**
- * @link https://github.com/sunrise-php/hydrator/blob/5b8e8bf51c5795b741fbae28258eadc8be16d7c2/README.md#using-the-ramseyuuid-package
- * @link https://swagger.io/docs/specification/v3_0/data-models/data-types/#strings
- *
  * @since 3.0.0
  */
 final class RamseyUuidPhpTypeSchemaResolver implements PhpTypeSchemaResolverInterface

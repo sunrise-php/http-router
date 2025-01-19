@@ -32,6 +32,7 @@ use Sunrise\Http\Router\Helper\RouteSimplifier;
 use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverChainInterface;
 use Sunrise\Http\Router\OpenApi\Type;
+use Sunrise\Http\Router\OpenApi\TypeFactory;
 use Sunrise\Http\Router\RequestHandlerReflectorInterface;
 use Sunrise\Http\Router\RouteInterface;
 use Sunrise\Http\Router\RouterInterface;
@@ -46,6 +47,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use function array_merge;
 use function class_exists;
 use function end;
+use function file_put_contents;
 use function is_subclass_of;
 use function json_encode;
 use function strtolower;
@@ -61,10 +63,10 @@ use const JSON_UNESCAPED_UNICODE;
 final class RouterGenerateOpenApiDocumentCommand extends Command
 {
     public function __construct(
-        private readonly OpenApiConfiguration $openApiConfiguration,
         private readonly RouterInterface $router,
-        private readonly RequestHandlerReflectorInterface $requestHandlerReflector,
+        private readonly OpenApiConfiguration $openApiConfiguration,
         private readonly PhpTypeSchemaResolverChainInterface $phpTypeSchemaResolverChain,
+        private readonly RequestHandlerReflectorInterface $requestHandlerReflector,
     ) {
         parent::__construct();
     }
@@ -93,12 +95,14 @@ final class RouterGenerateOpenApiDocumentCommand extends Command
         /** @var string $json */
         $json = json_encode($document, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
-        $output->writeln($json);
+        file_put_contents($this->openApiConfiguration->documentFilename, $json);
+
+        $output->writeln('Done.');
 
         return self::SUCCESS;
     }
 
-    private static function enrichDocumentWithPaths(
+    private function enrichDocumentWithPaths(
         RouteInterface $route,
         ReflectionMethod $controller,
         array &$document,
@@ -108,7 +112,10 @@ final class RouterGenerateOpenApiDocumentCommand extends Command
         $operation['tags'] = $route->getTags();
         $operation['summary'] = $route->getSummary();
         $operation['description'] = $route->getDescription();
-        $operation['deprecated'] = $route->isDeprecated();
+
+        if ($route->isDeprecated()) {
+            $operation['deprecated'] = true;
+        }
 
         self::enrichOperationWithPathParameters($route, $operation);
         self::enrichOperationWithCookieAndHeaderParameters($controller, $operation);
@@ -174,7 +181,7 @@ final class RouterGenerateOpenApiDocumentCommand extends Command
                 };
 
                 $operationParameter['name'] = $annotation->name;
-                $operationParameter['schema'] = self::getStringSchema();
+                $operationParameter['schema']['type'] = 'string';
 
                 if (!$endpointParameter->isDefaultValueAvailable()) {
                     $operationParameter['required'] = true;
@@ -195,7 +202,10 @@ final class RouterGenerateOpenApiDocumentCommand extends Command
                 continue;
             }
 
-            $schema = $this->phpTypeSchemaResolverChain->resolvePhpTypeSchema($parameter->getType(), $parameter);
+            $schema = $this->phpTypeSchemaResolverChain->resolvePhpTypeSchema(
+                TypeFactory::fromPhpTypeReflection($parameter->getType()),
+                $parameter,
+            );
 
             foreach ($route->getConsumedMediaTypes() as $mediaType) {
                 $operation['requestBody']['content'][$mediaType->getIdentifier()]['schema'] = $schema;
@@ -210,11 +220,14 @@ final class RouterGenerateOpenApiDocumentCommand extends Command
         ReflectionMethod $controller,
         array &$operation,
     ): void {
-        if ($controller->getAttributes(EncodableResponse::class, ReflectionAttribute::IS_INSTANCEOF) === []) {
+        if ($controller->getAttributes(EncodableResponse::class) === []) {
             return;
         }
 
-        $schema = $this->phpTypeSchemaResolverChain->resolvePhpTypeSchema($controller->getReturnType(), $controller);
+        $schema = $this->phpTypeSchemaResolverChain->resolvePhpTypeSchema(
+            TypeFactory::fromPhpTypeReflection($controller->getReturnType()),
+            $controller,
+        );
 
         $responseStatusCode = 200;
         $responseStatusPhrase = 'Operation completed successfully.';
@@ -230,12 +243,5 @@ final class RouterGenerateOpenApiDocumentCommand extends Command
             $operation['responses'][$responseStatusCode]['content'][$mediaType->getIdentifier()]['schema'] = $schema;
             $operation['responses'][$responseStatusCode]['description'] = $responseStatusPhrase;
         }
-    }
-
-    private static function getSchemaRef(string $schemaName): array
-    {
-        return [
-            '$ref' => '#/components/schemas/' . $schemaName,
-        ];
     }
 }

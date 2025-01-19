@@ -17,6 +17,7 @@ use ReflectionAttribute;
 use ReflectionParameter;
 use ReflectionProperty;
 use Reflector;
+use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverChainAwareInterface;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverChainInterface;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverInterface;
@@ -24,10 +25,6 @@ use Sunrise\Http\Router\OpenApi\Type;
 use Sunrise\Hydrator\Annotation\Subtype;
 
 /**
- * @link https://github.com/sunrise-php/hydrator/blob/5b8e8bf51c5795b741fbae28258eadc8be16d7c2/README.md#array
- * @link https://swagger.io/docs/specification/v3_0/data-models/data-types/#arrays
- * @link https://swagger.io/docs/specification/v3_0/data-models/data-types/#objects
- *
  * @since 3.0.0
  */
 final class ArrayPhpTypeSchemaResolver implements
@@ -41,13 +38,16 @@ final class ArrayPhpTypeSchemaResolver implements
         $this->phpTypeSchemaResolverChain = $phpTypeSchemaResolverChain;
     }
 
-    public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): ?array
+    public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
     {
-        if ($phpType->name !== Type::PHP_TYPE_NAME_ARRAY) {
-            return null;
-        }
+        return $phpType->name == Type::PHP_TYPE_NAME_ARRAY;
+    }
 
-        $schema = [
+    public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array
+    {
+        $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();
+
+        $phpTypeSchema = [
             'oneOf' => [
                 [
                     'type' => Type::OAS_TYPE_NAME_ARRAY,
@@ -58,23 +58,30 @@ final class ArrayPhpTypeSchemaResolver implements
             ],
         ];
 
-        if ($phpTypeHolder instanceof ReflectionParameter || $phpTypeHolder instanceof ReflectionProperty) {
+        if (
+            $phpTypeHolder instanceof ReflectionParameter ||
+            $phpTypeHolder instanceof ReflectionProperty
+        ) {
             /** @var list<ReflectionAttribute<Subtype>> $annotations */
             $annotations = $phpTypeHolder->getAttributes(Subtype::class);
             if (isset($annotations[0])) {
                 $annotation = $annotations[0]->newInstance();
-                $elementType = new Type($annotation->name, $annotation->allowsNull);
-                $elementSchema = $this->phpTypeSchemaResolverChain->resolvePhpTypeSchema($elementType, $phpTypeHolder);
-                $schema['oneOf'][0]['items'] = $elementSchema;
-                $schema['oneOf'][1]['additionalProperties'] = $elementSchema;
+
+                $arrayElementPhpType = new Type($annotation->name, $annotation->allowsNull);
+                $arrayElementPhpTypeSchema = $this->phpTypeSchemaResolverChain
+                    ->resolvePhpTypeSchema($arrayElementPhpType, $phpTypeHolder);
+
+                $phpTypeSchema['oneOf'][0]['items'] = $arrayElementPhpTypeSchema;
+                $phpTypeSchema['oneOf'][1]['additionalProperties'] = $arrayElementPhpTypeSchema;
+
                 if ($annotation->limit !== null) {
-                    $schema['oneOf'][0]['maxItems'] = $annotation->limit;
-                    $schema['oneOf'][1]['maxProperties'] = $annotation->limit;
+                    $phpTypeSchema['oneOf'][0]['maxItems'] = $annotation->limit;
+                    $phpTypeSchema['oneOf'][1]['maxProperties'] = $annotation->limit;
                 }
             }
         }
 
-        return $schema;
+        return $phpTypeSchema;
     }
 
     public function getWeight(): int

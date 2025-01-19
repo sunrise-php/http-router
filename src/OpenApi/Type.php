@@ -18,6 +18,7 @@ namespace Sunrise\Http\Router\OpenApi;
  */
 final class Type
 {
+    public const PHP_TYPE_NAME_MIXED = 'mixed';
     public const PHP_TYPE_NAME_BOOL = 'bool';
     public const PHP_TYPE_NAME_INT = 'int';
     public const PHP_TYPE_NAME_FLOAT = 'float';

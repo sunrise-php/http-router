@@ -13,20 +13,14 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver;
 
-use ReflectionAttribute;
 use ReflectionParameter;
-use ReflectionProperty;
 use Reflector;
 use SensitiveParameter;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverInterface;
 use Sunrise\Http\Router\OpenApi\Type;
-use Symfony\Component\Validator\Constraints;
 
 /**
- * @link https://github.com/sunrise-php/hydrator/blob/5b8e8bf51c5795b741fbae28258eadc8be16d7c2/README.md#string
- * @link https://swagger.io/docs/specification/v3_0/data-models/data-types/#strings
- *
  * @since 3.0.0
  */
 final class StringPhpTypeSchemaResolver implements PhpTypeSchemaResolverInterface
@@ -48,16 +42,6 @@ final class StringPhpTypeSchemaResolver implements PhpTypeSchemaResolverInterfac
             if ($phpTypeHolder->getAttributes(SensitiveParameter::class) !== []) {
                 $phpTypeSchema['format'] = 'password';
             }
-        } elseif ($phpTypeHolder instanceof ReflectionProperty) {
-            if ($phpTypeHolder->getAttributes(Constraints\Email::class, ReflectionAttribute::IS_INSTANCEOF) !== []) {
-                $phpTypeSchema['format'] = 'email';
-            } elseif ($phpTypeHolder->getAttributes(Constraints\Uuid::class, ReflectionAttribute::IS_INSTANCEOF) !== []) {
-                $phpTypeSchema['format'] = 'uuid';
-            }
-        }
-
-        if ($phpType->allowsNull) {
-            $phpTypeSchema['nullable'] = true;
         }
 
         return $phpTypeSchema;
