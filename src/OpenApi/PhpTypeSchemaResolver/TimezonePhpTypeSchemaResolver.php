@@ -49,6 +49,6 @@ final class TimezonePhpTypeSchemaResolver implements
 
     public function resolvePhpTypeSchemaName(Type $phpType, Reflector $phpTypeHolder): string
     {
-        return 'Timezone';
+        return '@timezone';
     }
 }

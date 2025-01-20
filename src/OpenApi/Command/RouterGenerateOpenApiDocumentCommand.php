@@ -49,7 +49,7 @@ use const JSON_THROW_ON_ERROR;
 /**
  * @since 3.0.0
  */
-#[AsCommand('router:generate-open-api-document', 'Generates OpenAPI Document.')]
+#[AsCommand('router:generate-open-api-document', 'Generates the OpenAPI document.')]
 final class RouterGenerateOpenApiDocumentCommand extends Command
 {
     public function __construct(
@@ -190,6 +190,11 @@ final class RouterGenerateOpenApiDocumentCommand extends Command
         ReflectionMethod $requestHandler,
         array &$operation,
     ): void {
+        $serverConsumedMediaTypes = $route->getConsumedMediaTypes();
+        if ($serverConsumedMediaTypes === []) {
+            return;
+        }
+
         $requestBodySchema = [];
 
         foreach ($requestHandler->getParameters() as $parameter) {
@@ -206,14 +211,11 @@ final class RouterGenerateOpenApiDocumentCommand extends Command
             }
         }
 
-        $serverConsumedMediaTypes = $route->getConsumedMediaTypes();
-        if ($serverConsumedMediaTypes !== []) {
-            foreach ($serverConsumedMediaTypes as $mediaType) {
-                $operation['requestBody']['content'][$mediaType->getIdentifier()]['schema'] = $requestBodySchema;
-            }
-
-            $operation['requestBody']['required'] = true;
+        foreach ($serverConsumedMediaTypes as $mediaType) {
+            $operation['requestBody']['content'][$mediaType->getIdentifier()]['schema'] = $requestBodySchema;
         }
+
+        $operation['requestBody']['required'] = true;
     }
 
     private function enrichOperationWithResponses(

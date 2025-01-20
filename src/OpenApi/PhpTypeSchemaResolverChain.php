@@ -114,14 +114,6 @@ final class PhpTypeSchemaResolverChain implements PhpTypeSchemaResolverChainInte
         }
     }
 
-    private function sortPhpTypeResolvers(): void
-    {
-        $this->isPhpTypeResolversSorted = usort($this->phpTypeSchemaResolvers, static fn(
-            PhpTypeSchemaResolverInterface $a,
-            PhpTypeSchemaResolverInterface $b
-        ): int => $b->getWeight() <=> $a->getWeight());
-    }
-
     private function findPhpTypeResolver(Type $phpType, Reflector $phpTypeHolder): ?PhpTypeSchemaResolverInterface
     {
         foreach ($this->phpTypeSchemaResolvers as $phpTypeSchemaResolver) {
@@ -131,6 +123,14 @@ final class PhpTypeSchemaResolverChain implements PhpTypeSchemaResolverChainInte
         }
 
         return null;
+    }
+
+    private function sortPhpTypeResolvers(): void
+    {
+        $this->isPhpTypeResolversSorted = usort($this->phpTypeSchemaResolvers, static fn(
+            PhpTypeSchemaResolverInterface $a,
+            PhpTypeSchemaResolverInterface $b
+        ): int => $b->getWeight() <=> $a->getWeight());
     }
 
     private static function createPhpTypeSchemaRef(string $phpTypeSchemaName): array

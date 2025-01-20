@@ -34,7 +34,7 @@ final class OpenApiConfiguration
         public readonly array $blankDocument,
         public readonly int $defaultNullResponseStatusCode = self::DEFAULT_NULL_RESPONSE_STATUS_CODE,
         public readonly string $defaultTimestampFormat = self::DEFAULT_TIMESTAMP_FORMAT,
-        public readonly string $defaultCompletedOperationStatusCode = self::DEFAULT_COMPLETED_OPERATION_STATUS_CODE,
+        public readonly int $defaultCompletedOperationStatusCode = self::DEFAULT_COMPLETED_OPERATION_STATUS_CODE,
         public readonly string $defaultCompletedOperationDescription = self::DEFAULT_COMPLETED_OPERATION_DESCRIPTION,
         public readonly string $swaggerUiTemplateFilename = self::SWAGGER_UI_TEMPLATE_FILENAME,
         private readonly ?string $documentFilename = null,
