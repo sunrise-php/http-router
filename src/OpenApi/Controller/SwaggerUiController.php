@@ -21,6 +21,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Annotation\GetRoute;
 use Sunrise\Http\Router\Dictionary\HeaderName;
 use Sunrise\Http\Router\Helper\TemplateRenderer;
+use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
 
 /**
  * @since 3.0.0
@@ -32,9 +33,9 @@ final class SwaggerUiController implements RequestHandlerInterface
     public const ROUTE_PATH = '/swagger.html';
 
     private const CONTENT_TYPE = 'text/html; charset=UTF-8';
-    private const TEMPLATE_FILENAME = __DIR__ . '/../../../resources/templates/swagger-ui.phtml';
 
     public function __construct(
+        private readonly OpenApiConfiguration $openApiConfiguration,
         private readonly ResponseFactoryInterface $responseFactory,
         private readonly StreamFactoryInterface $streamFactory,
     ) {
@@ -47,9 +48,9 @@ final class SwaggerUiController implements RequestHandlerInterface
     {
         $body = $this->streamFactory->createStream(
             TemplateRenderer::renderTemplate(
-                filename: self::TEMPLATE_FILENAME,
+                filename: $this->openApiConfiguration->swaggerUiTemplateFilename,
                 variables: [
-                    'openapiDocumentUri' => OpenApiController::ROUTE_PATH,
+                    'openapiDoc' => OpenApiController::ROUTE_PATH,
                 ],
             ),
         );

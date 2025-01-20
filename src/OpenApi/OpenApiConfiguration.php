@@ -28,6 +28,7 @@ final class OpenApiConfiguration
     public const DEFAULT_TIMESTAMP_FORMAT = TimestampTypeConverter::DEFAULT_FORMAT;
     public const DEFAULT_COMPLETED_OPERATION_STATUS_CODE = StatusCodeInterface::STATUS_OK;
     public const DEFAULT_COMPLETED_OPERATION_DESCRIPTION = 'Operation completed successfully.';
+    public const SWAGGER_UI_TEMPLATE_FILENAME = __DIR__ . '/../../resources/templates/swagger-ui.phtml';
 
     public function __construct(
         public readonly array $blankDocument,
@@ -35,6 +36,7 @@ final class OpenApiConfiguration
         public readonly string $defaultTimestampFormat = self::DEFAULT_TIMESTAMP_FORMAT,
         public readonly string $defaultCompletedOperationStatusCode = self::DEFAULT_COMPLETED_OPERATION_STATUS_CODE,
         public readonly string $defaultCompletedOperationDescription = self::DEFAULT_COMPLETED_OPERATION_DESCRIPTION,
+        public readonly string $swaggerUiTemplateFilename = self::SWAGGER_UI_TEMPLATE_FILENAME,
         private readonly ?string $documentFilename = null,
     ) {
     }
