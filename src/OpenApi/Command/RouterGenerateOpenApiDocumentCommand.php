@@ -13,18 +13,20 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\OpenApi\Command;
 
-use Fig\Http\Message\StatusCodeInterface;
 use JsonException;
+use Psr\Http\Message\StreamInterface;
 use ReflectionAttribute;
 use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\EncodableResponse;
 use Sunrise\Http\Router\Annotation\RequestBody;
 use Sunrise\Http\Router\Annotation\RequestCookie;
 use Sunrise\Http\Router\Annotation\RequestHeader;
+use Sunrise\Http\Router\Annotation\ResponseHeader;
 use Sunrise\Http\Router\Annotation\ResponseStatus;
 use Sunrise\Http\Router\Helper\RouteBuilder;
 use Sunrise\Http\Router\Helper\RouteParser;
 use Sunrise\Http\Router\Helper\RouteSimplifier;
+use Sunrise\Http\Router\OpenApi\Annotation\ResponseSchema;
 use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverChainInterface;
 use Sunrise\Http\Router\OpenApi\Type;
@@ -39,14 +41,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 use function array_merge;
 use function file_put_contents;
-use function in_array;
 use function json_encode;
 use function strtolower;
 
-use const JSON_PRETTY_PRINT;
 use const JSON_THROW_ON_ERROR;
-use const JSON_UNESCAPED_SLASHES;
-use const JSON_UNESCAPED_UNICODE;
 
 /**
  * @since 3.0.0
@@ -115,8 +113,7 @@ final class RouterGenerateOpenApiDocumentCommand extends Command
         self::enrichOperationWithCookieAndHeaderParameters($controller, $operation);
 
         self::enrichOperationWithRequestBody($route, $controller, $operation);
-        self::enrichOperationWithEmptyResponses($route, $controller, $operation);
-        self::enrichOperationWithEncodableResponses($route, $controller, $operation);
+        self::enrichOperationWithResponses($route, $controller, $operation);
 
         $routePath = RouteSimplifier::simplifyRoute($route->getPath());
         foreach ($route->getMethods() as $routeMethod) {
@@ -190,79 +187,79 @@ final class RouterGenerateOpenApiDocumentCommand extends Command
 
     private function enrichOperationWithRequestBody(
         RouteInterface $route,
-        ReflectionMethod $controller,
+        ReflectionMethod $requestHandler,
         array &$operation,
     ): void {
-        foreach ($controller->getParameters() as $parameter) {
-            if ($parameter->getAttributes(RequestBody::class) === []) {
-                continue;
+        $requestBodySchema = [];
+
+        foreach ($requestHandler->getParameters() as $parameter) {
+            if ($parameter->getAttributes(RequestBody::class) !== []) {
+                $requestBodyType = TypeFactory::fromPhpTypeReflection($parameter->getType());
+                // phpcs:disable Generic.Files.LineLength.TooLong
+                $requestBodySchema = $this->phpTypeSchemaResolverChain->resolvePhpTypeSchema($requestBodyType, $parameter);
+                break;
+            }
+            if ($parameter->getType()?->getName() === StreamInterface::class) {
+                $requestBodySchema['type'] = Type::OAS_TYPE_NAME_STRING;
+                $requestBodySchema['format'] = 'binary';
+                break;
+            }
+        }
+
+        $serverConsumedMediaTypes = $route->getConsumedMediaTypes();
+        if ($serverConsumedMediaTypes !== []) {
+            foreach ($serverConsumedMediaTypes as $mediaType) {
+                $operation['requestBody']['content'][$mediaType->getIdentifier()]['schema'] = $requestBodySchema;
             }
 
-            $schema = $this->phpTypeSchemaResolverChain->resolvePhpTypeSchema(
-                TypeFactory::fromPhpTypeReflection($parameter->getType()),
-                $parameter,
-            );
-
-            foreach ($route->getConsumedMediaTypes() as $mediaType) {
-                $operation['requestBody']['content'][$mediaType->getIdentifier()]['schema'] = $schema;
-            }
-
-            return;
+            $operation['requestBody']['required'] = true;
         }
     }
 
-    private function enrichOperationWithEmptyResponses(
+    private function enrichOperationWithResponses(
         RouteInterface $route,
-        ReflectionMethod $responder,
+        ReflectionMethod $requestHandler,
         array &$operation,
     ): void {
-        if (
-            ! in_array($responder->getReturnType()?->getName(), [
-                Type::PHP_TYPE_NAME_VOID,
-                Type::PHP_TYPE_NAME_NULL,
-            ], true)
-        ) {
-            return;
+        $responseStatusCode = $this->openApiConfiguration->defaultCompletedOperationStatusCode;
+        $responseDescription = $this->openApiConfiguration->defaultCompletedOperationDescription;
+        $responseSchema = [];
+
+        if ($requestHandler->getReturnType()?->getName() === Type::PHP_TYPE_NAME_VOID) {
+            $responseStatusCode = $this->openApiConfiguration->defaultNullResponseStatusCode;
+        } elseif ($requestHandler->getAttributes(EncodableResponse::class) !== []) {
+            $responseType = TypeFactory::fromPhpTypeReflection($requestHandler->getReturnType());
+            $responseSchema = $this->phpTypeSchemaResolverChain->resolvePhpTypeSchema($responseType, $requestHandler);
         }
 
-        $responseCode = $this->openApiConfiguration->defaultNullResponseStatusCode;
-
-        /** @var ReflectionAttribute $annotations */
-        $annotations = $responder->getAttributes(ResponseStatus::class);
+        /** @var list<ReflectionAttribute<ResponseStatus>> $annotations */
+        $annotations = $requestHandler->getAttributes(ResponseStatus::class);
         if (isset($annotations[0])) {
-            $responseStatus = $annotations[0]->newInstance();
-            $responseCode = $responseStatus->code;
+            $annotation = $annotations[0]->newInstance();
+            $responseStatusCode = $annotation->code;
         }
 
-        // phpcs:ignore Generic.Files.LineLength.TooLong
-        $operation['responses'][$responseCode]['description'] = $this->openApiConfiguration->completedOperationDescription;
-    }
-
-    private function enrichOperationWithEncodableResponses(
-        RouteInterface $route,
-        ReflectionMethod $responder,
-        array &$operation,
-    ): void {
-        if ($responder->getAttributes(EncodableResponse::class) === []) {
-            return;
-        }
-
-        $responseCode = StatusCodeInterface::STATUS_OK;
-        $responseType = TypeFactory::fromPhpTypeReflection($responder->getReturnType());
-        $responseSchema = $this->phpTypeSchemaResolverChain->resolvePhpTypeSchema($responseType, $responder);
-
-        /** @var ReflectionAttribute $annotations */
-        $annotations = $responder->getAttributes(ResponseStatus::class);
+        /** @var list<ReflectionAttribute<ResponseSchema>> $annotations */
+        $annotations = $requestHandler->getAttributes(ResponseSchema::class);
         if (isset($annotations[0])) {
-            $responseStatus = $annotations[0]->newInstance();
-            $responseCode = $responseStatus->code;
+            $annotation = $annotations[0]->newInstance();
+            $responseSchema = $annotation->value;
         }
 
-        // phpcs:ignore Generic.Files.LineLength.TooLong
-        $operation['responses'][$responseCode]['description'] = $this->openApiConfiguration->completedOperationDescription;
+        $operation['responses'][$responseStatusCode]['description'] = $responseDescription;
+
+        /** @var ReflectionAttribute<ResponseHeader> $annotation */
+        foreach ($requestHandler->getAttributes(ResponseHeader::class) as $annotation) {
+            $annotation = $annotation->newInstance();
+
+            $operation['responses'][$responseStatusCode]['headers'][$annotation->name]['schema'] = [
+                'type' => 'string',
+            ];
+        }
 
         foreach ($route->getProducedMediaTypes() as $mediaType) {
-            $operation['responses'][$responseCode]['content'][$mediaType->getIdentifier()]['schema'] = $responseSchema;
+            // phpcs:disable Generic.Files.LineLength.TooLong
+            $operation['responses'][$responseStatusCode]['content'][$mediaType->getIdentifier()]['schema'] = $responseSchema;
         }
     }
 }

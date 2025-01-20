@@ -389,16 +389,6 @@ final class ServerRequest implements ServerRequestInterface
         return $this->request->getQueryParams();
     }
 
-    public function hasQueryParam(string $name): bool
-    {
-        return isset($this->request->getQueryParams()[$name]);
-    }
-
-    public function getQueryParam(string $name, mixed $default = null): mixed
-    {
-        return $this->request->getQueryParams()[$name] ?? $default;
-    }
-
     /**
      * {@inheritDoc}
      *

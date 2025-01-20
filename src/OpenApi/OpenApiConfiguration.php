@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\OpenApi;
 
+use Fig\Http\Message\StatusCodeInterface;
 use Sunrise\Http\Router\ResponseResolver\NullResponseResolver;
 use Sunrise\Hydrator\TypeConverter\TimestampTypeConverter;
 
@@ -25,13 +26,15 @@ final class OpenApiConfiguration
 {
     public const DEFAULT_NULL_RESPONSE_STATUS_CODE = NullResponseResolver::DEFAULT_STATUS_CODE;
     public const DEFAULT_TIMESTAMP_FORMAT = TimestampTypeConverter::DEFAULT_FORMAT;
+    public const DEFAULT_COMPLETED_OPERATION_STATUS_CODE = StatusCodeInterface::STATUS_OK;
     public const DEFAULT_COMPLETED_OPERATION_DESCRIPTION = 'Operation completed successfully.';
 
     public function __construct(
         public readonly array $blankDocument,
         public readonly int $defaultNullResponseStatusCode = self::DEFAULT_NULL_RESPONSE_STATUS_CODE,
         public readonly string $defaultTimestampFormat = self::DEFAULT_TIMESTAMP_FORMAT,
-        public readonly string $completedOperationDescription = self::DEFAULT_COMPLETED_OPERATION_DESCRIPTION,
+        public readonly string $defaultCompletedOperationStatusCode = self::DEFAULT_COMPLETED_OPERATION_STATUS_CODE,
+        public readonly string $defaultCompletedOperationDescription = self::DEFAULT_COMPLETED_OPERATION_DESCRIPTION,
         private readonly ?string $documentFilename = null,
     ) {
     }
