@@ -81,13 +81,12 @@ final class EncodableResponseResolver implements ResponseResolverInterface
             ), previous: $e);
         }
 
-        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type
-        // https://developer.mozilla.org/en-US/docs/Glossary/Character_encoding
-        $contentType = sprintf('%s; charset=UTF-8', $codecMediaType->getIdentifier());
+        $responseContentType = $codecMediaType->getIdentifier();
+        $responseContentType .= '; charset=UTF-8'; // It should be a text data type...
 
         $resolvedResponse = $this->responseFactory
             ->createResponse(StatusCodeInterface::STATUS_OK)
-            ->withHeader(HeaderName::CONTENT_TYPE, $contentType);
+            ->withHeader(HeaderName::CONTENT_TYPE, $responseContentType);
 
         $resolvedResponse->getBody()->write($encodedResponse);
 

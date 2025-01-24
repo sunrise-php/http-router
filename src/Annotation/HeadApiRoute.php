@@ -11,18 +11,18 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\OpenApi\Annotation;
+namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
 
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_METHOD)]
-final class ResponseSchema
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
+final class HeadApiRoute extends ApiRoute
 {
-    public function __construct(
-        public readonly array $value,
-    ) {
+    public function __construct(string $name, string $path = '', array $docFields = [])
+    {
+        parent::__construct($name, $path, self::METHOD_HEAD, $docFields);
     }
 }

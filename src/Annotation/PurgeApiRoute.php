@@ -19,10 +19,10 @@ use Attribute;
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
-final class PutApiOperation extends ApiOperation
+final class PurgeApiRoute extends ApiRoute
 {
     public function __construct(string $name, string $path = '', array $docFields = [])
     {
-        parent::__construct($name, $path, self::METHOD_PUT, $docFields);
+        parent::__construct($name, $path, self::METHOD_PURGE, $docFields);
     }
 }

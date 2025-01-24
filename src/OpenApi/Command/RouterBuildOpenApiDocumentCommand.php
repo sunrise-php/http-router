@@ -13,25 +13,18 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\OpenApi\Command;
 
-use JsonException;
-use Psr\Http\Message\StreamInterface;
 use ReflectionAttribute;
 use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\EncodableResponse;
-use Sunrise\Http\Router\Annotation\RequestBody;
 use Sunrise\Http\Router\Annotation\RequestCookie;
 use Sunrise\Http\Router\Annotation\RequestHeader;
 use Sunrise\Http\Router\Annotation\ResponseHeader;
 use Sunrise\Http\Router\Annotation\ResponseStatus;
 use Sunrise\Http\Router\Helper\RouteBuilder;
 use Sunrise\Http\Router\Helper\RouteParser;
-use Sunrise\Http\Router\Helper\RouteSimplifier;
-use Sunrise\Http\Router\OpenApi\Annotation\ResponseSchema;
-use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
-use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverChainInterface;
+use Sunrise\Http\Router\OpenApi\OpenApiDocumentManagerInterface;
 use Sunrise\Http\Router\OpenApi\Type;
 use Sunrise\Http\Router\OpenApi\TypeFactory;
-use Sunrise\Http\Router\RequestHandlerReflectorInterface;
 use Sunrise\Http\Router\RouteInterface;
 use Sunrise\Http\Router\RouterInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -39,87 +32,33 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-use function array_merge;
-use function file_put_contents;
-use function json_encode;
-use function strtolower;
-
-use const JSON_THROW_ON_ERROR;
-
 /**
  * @since 3.0.0
  */
-#[AsCommand('router:generate-open-api-document', 'Generates the OpenAPI document.')]
-final class RouterGenerateOpenApiDocumentCommand extends Command
+#[AsCommand('router:build-oas-doc', 'Builds the OpenAPI document.')]
+final class RouterBuildOpenApiDocumentCommand extends Command
 {
     public function __construct(
         private readonly RouterInterface $router,
-        private readonly OpenApiConfiguration $openApiConfiguration,
-        private readonly PhpTypeSchemaResolverChainInterface $phpTypeSchemaResolverChain,
-        private readonly RequestHandlerReflectorInterface $requestHandlerReflector,
+        private readonly OpenApiDocumentManagerInterface $openApiDocumentManager,
     ) {
         parent::__construct();
     }
 
     /**
      * @inheritDoc
-     *
-     * @throws JsonException
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $document = $this->openApiConfiguration->blankDocument;
-
-        foreach ($this->router->getRoutes() as $route) {
-            if (!$route->isApiOperation()) {
-                continue;
-            }
-
-            $requestHandler = $this->requestHandlerReflector->reflectRequestHandler($route->getRequestHandler());
-
-            self::enrichDocumentWithPaths($route, $requestHandler, $document);
-        }
-
-        foreach ($this->phpTypeSchemaResolverChain->getNamedPhpTypeSchemas() as $phpTypeSchemaName => $phpTypeSchema) {
-            $document['components']['schemas'][$phpTypeSchemaName] = $phpTypeSchema;
-        }
-
-        file_put_contents(
-            $this->openApiConfiguration->getDocumentFilename(),
-            json_encode($document, JSON_THROW_ON_ERROR),
+        $this->openApiDocumentManager->saveDocument(
+            $this->openApiDocumentManager->buildDocument(
+                $this->router->getRoutes()
+            )
         );
 
         $output->writeln('Done.');
 
         return self::SUCCESS;
-    }
-
-    private function enrichDocumentWithPaths(
-        RouteInterface $route,
-        ReflectionMethod $controller,
-        array &$document,
-    ): void {
-        $operation = (array) $route->getApiOperationDocFields();
-        $operation['operationId'] = $route->getName();
-        $operation['tags'] = $route->getTags();
-        $operation['summary'] = $route->getSummary();
-        $operation['description'] = $route->getDescription();
-
-        if ($route->isDeprecated()) {
-            $operation['deprecated'] = true;
-        }
-
-        self::enrichOperationWithPathParameters($route, $operation);
-        self::enrichOperationWithCookieAndHeaderParameters($controller, $operation);
-
-        self::enrichOperationWithRequestBody($route, $controller, $operation);
-        self::enrichOperationWithResponses($route, $controller, $operation);
-
-        $routePath = RouteSimplifier::simplifyRoute($route->getPath());
-        foreach ($route->getMethods() as $routeMethod) {
-            $routeMethod = strtolower($routeMethod);
-            $document['paths'][$routePath][$routeMethod] = $operation;
-        }
     }
 
     private static function enrichOperationWithPathParameters(RouteInterface $route, array &$operation): void
@@ -185,50 +124,17 @@ final class RouterGenerateOpenApiDocumentCommand extends Command
         }
     }
 
-    private function enrichOperationWithRequestBody(
-        RouteInterface $route,
-        ReflectionMethod $requestHandler,
-        array &$operation,
-    ): void {
-        $serverConsumedMediaTypes = $route->getConsumedMediaTypes();
-        if ($serverConsumedMediaTypes === []) {
-            return;
-        }
-
-        $requestBodySchema = [];
-
-        foreach ($requestHandler->getParameters() as $parameter) {
-            if ($parameter->getAttributes(RequestBody::class) !== []) {
-                $requestBodyType = TypeFactory::fromPhpTypeReflection($parameter->getType());
-                // phpcs:disable Generic.Files.LineLength.TooLong
-                $requestBodySchema = $this->phpTypeSchemaResolverChain->resolvePhpTypeSchema($requestBodyType, $parameter);
-                break;
-            }
-            if ($parameter->getType()?->getName() === StreamInterface::class) {
-                $requestBodySchema['type'] = Type::OAS_TYPE_NAME_STRING;
-                $requestBodySchema['format'] = 'binary';
-                break;
-            }
-        }
-
-        foreach ($serverConsumedMediaTypes as $mediaType) {
-            $operation['requestBody']['content'][$mediaType->getIdentifier()]['schema'] = $requestBodySchema;
-        }
-
-        $operation['requestBody']['required'] = true;
-    }
-
     private function enrichOperationWithResponses(
         RouteInterface $route,
         ReflectionMethod $requestHandler,
         array &$operation,
     ): void {
-        $responseStatusCode = $this->openApiConfiguration->defaultCompletedOperationStatusCode;
-        $responseDescription = $this->openApiConfiguration->defaultCompletedOperationDescription;
+        $responseStatusCode = $this->openApiConfiguration->defaultSuccessfulResponseStatusCode;
+        $responseDescription = $this->openApiConfiguration->defaultSuccessfulResponseDescription;
         $responseSchema = [];
 
         if ($requestHandler->getReturnType()?->getName() === Type::PHP_TYPE_NAME_VOID) {
-            $responseStatusCode = $this->openApiConfiguration->defaultNullResponseStatusCode;
+            $responseStatusCode = $this->openApiConfiguration->defaultEmptyResponseStatusCode;
         } elseif ($requestHandler->getAttributes(EncodableResponse::class) !== []) {
             $responseType = TypeFactory::fromPhpTypeReflection($requestHandler->getReturnType());
             $responseSchema = $this->phpTypeSchemaResolverChain->resolvePhpTypeSchema($responseType, $requestHandler);

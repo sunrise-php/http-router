@@ -76,25 +76,29 @@ final class PhpTypeSchemaResolverChain implements PhpTypeSchemaResolverChainInte
         }
 
         if (isset($phpTypeSchemaName, $this->namedPhpTypeSchemas[$phpTypeSchemaName])) {
-            return self::completePhpTypeSchema($phpType, self::createPhpTypeSchemaRef($phpTypeSchemaName));
+            $phpTypeSchemaRef = self::createPhpTypeSchemaRef($phpTypeSchemaName);
+            return self::completePhpTypeSchema($phpType, $phpTypeSchemaRef);
         }
 
         $phpTypeSchema = $phpTypeSchemaResolver->resolvePhpTypeSchema($phpType, $phpTypeHolder);
 
         if (isset($phpTypeSchemaName)) {
             $this->namedPhpTypeSchemas[$phpTypeSchemaName] = $phpTypeSchema;
-            return self::completePhpTypeSchema($phpType, self::createPhpTypeSchemaRef($phpTypeSchemaName));
+            $phpTypeSchemaRef = self::createPhpTypeSchemaRef($phpTypeSchemaName);
+            return self::completePhpTypeSchema($phpType, $phpTypeSchemaRef);
         }
 
         return self::completePhpTypeSchema($phpType, $phpTypeSchema);
     }
 
     /**
-     * @inheritDoc
+     * @see self::createPhpTypeSchemaRef()
      */
-    public function getNamedPhpTypeSchemas(): array
+    public function propagateNamedPhpTypeSchemas(array &$document): void
     {
-        return $this->namedPhpTypeSchemas;
+        foreach ($this->namedPhpTypeSchemas as $phpTypeSchemaName => $phpTypeSchema) {
+            $document['definitions'][$phpTypeSchemaName] = $phpTypeSchema;
+        }
     }
 
     /**
@@ -135,7 +139,7 @@ final class PhpTypeSchemaResolverChain implements PhpTypeSchemaResolverChainInte
 
     private static function createPhpTypeSchemaRef(string $phpTypeSchemaName): array
     {
-        return ['$ref' => sprintf('#/components/schemas/%s', $phpTypeSchemaName)];
+        return ['$ref' => sprintf('#/definitions/%s', $phpTypeSchemaName)];
     }
 
     private static function completePhpTypeSchema(Type $phpType, array $phpTypeSchema): array

@@ -21,6 +21,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Annotation\GetRoute;
 use Sunrise\Http\Router\Dictionary\HeaderName;
 use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
+use Sunrise\Http\Router\OpenApi\OpenApiDocumentManagerInterface;
 
 /**
  * @since 3.0.0
@@ -29,12 +30,11 @@ use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
 final class OpenApiController implements RequestHandlerInterface
 {
     public const ROUTE_NAME = '@openapi';
-    public const ROUTE_PATH = '/openapi.json';
-
-    private const CONTENT_TYPE = 'application/json; charset=UTF-8';
+    public const ROUTE_PATH = '/openapi';
 
     public function __construct(
         private readonly OpenApiConfiguration $openApiConfiguration,
+        private readonly OpenApiDocumentManagerInterface $openApiDocumentManager,
         private readonly ResponseFactoryInterface $responseFactory,
         private readonly StreamFactoryInterface $streamFactory,
     ) {
@@ -45,12 +45,15 @@ final class OpenApiController implements RequestHandlerInterface
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $body = $this->streamFactory->createStreamFromFile(
-            $this->openApiConfiguration->getDocumentFilename(),
+        $responseBody = $this->streamFactory->createStreamFromResource(
+            $this->openApiDocumentManager->openDocument(),
         );
 
+        $responseContentType = $this->openApiConfiguration->documentMediaType->getIdentifier();
+        $responseContentType .= '; charset=UTF-8'; // It should be a text data type...
+
         return $this->responseFactory->createResponse()
-            ->withHeader(HeaderName::CONTENT_TYPE, self::CONTENT_TYPE)
-            ->withBody($body);
+            ->withHeader(HeaderName::CONTENT_TYPE, $responseContentType)
+            ->withBody($responseBody);
     }
 }

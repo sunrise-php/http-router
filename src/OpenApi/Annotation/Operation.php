@@ -11,18 +11,18 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Http\Router\Annotation;
+namespace Sunrise\Http\Router\OpenApi\Annotation;
 
 use Attribute;
 
 /**
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
-final class HeadApiOperation extends ApiOperation
+#[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
+class Operation
 {
-    public function __construct(string $name, string $path = '', array $docFields = [])
-    {
-        parent::__construct($name, $path, self::METHOD_HEAD, $docFields);
+    public function __construct(
+        public readonly array $value,
+    ) {
     }
 }

@@ -16,6 +16,7 @@ namespace Sunrise\Http\Router\Helper;
 use Throwable;
 
 use function extract;
+use function ob_end_clean;
 use function ob_get_clean;
 use function ob_start;
 
@@ -29,15 +30,15 @@ final class TemplateRenderer
      */
     public static function renderTemplate(string $filename, array $variables): string
     {
-        ob_start();
-
         extract($variables);
+        ob_start();
 
         try {
             include $filename;
-        } catch (Throwable) {
+            return ob_get_clean();
+        } catch (Throwable $e) {
+            ob_end_clean();
+            throw $e;
         }
-
-        return ob_get_clean();
     }
 }

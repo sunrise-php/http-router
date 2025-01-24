@@ -93,8 +93,8 @@ final class DescriptorLoader implements DescriptorLoaderInterface
                 summary: $descriptor->summary,
                 description: $descriptor->description,
                 isDeprecated: $descriptor->isDeprecated,
-                isApiOperation: $descriptor->isApiOperation,
-                apiOperationDocFields: $descriptor->apiOperationDocFields,
+                isApiRoute: $descriptor->isApiRoute,
+                docFields: $descriptor->docFields,
                 pattern: $descriptor->pattern,
             );
         }

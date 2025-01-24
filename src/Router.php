@@ -126,19 +126,13 @@ final class Router implements RouterInterface
     /**
      * @inheritDoc
      *
+     * @throws HttpException
      * @throws InvalidArgumentException
+     * @throws LogicException
      */
-    public function addRoute(RouteInterface ...$routes): void
+    public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        foreach ($routes as $route) {
-            $name = $route->getName();
-
-            if (isset($this->routes[$name])) {
-                throw new InvalidArgumentException(sprintf('The route %s already exists.', $name));
-            }
-
-            $this->routes[$name] = $route;
-        }
+        return $this->getRequestHandler()->handle($request);
     }
 
     /**
@@ -187,18 +181,6 @@ final class Router implements RouterInterface
 
         throw HttpExceptionFactory::resourceNotFound()
             ->addMessagePlaceholder(PlaceholderCode::REQUEST_URI, $requestPath);
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @throws HttpException
-     * @throws InvalidArgumentException
-     * @throws LogicException
-     */
-    public function handle(ServerRequestInterface $request): ResponseInterface
-    {
-        return $this->getRequestHandler()->handle($request);
     }
 
     /**
@@ -343,5 +325,23 @@ final class Router implements RouterInterface
         }
 
         $this->isLoaded = true;
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     *
+     * @since 3.0.0 This method has become private.
+     */
+    private function addRoute(RouteInterface ...$routes): void
+    {
+        foreach ($routes as $route) {
+            $name = $route->getName();
+
+            if (isset($this->routes[$name])) {
+                throw new InvalidArgumentException(sprintf('The route %s already exists.', $name));
+            }
+
+            $this->routes[$name] = $route;
+        }
     }
 }

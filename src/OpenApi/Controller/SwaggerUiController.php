@@ -22,6 +22,7 @@ use Sunrise\Http\Router\Annotation\GetRoute;
 use Sunrise\Http\Router\Dictionary\HeaderName;
 use Sunrise\Http\Router\Helper\TemplateRenderer;
 use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
+use Throwable;
 
 /**
  * @since 3.0.0
@@ -30,9 +31,9 @@ use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
 final class SwaggerUiController implements RequestHandlerInterface
 {
     public const ROUTE_NAME = '@swagger-ui';
-    public const ROUTE_PATH = '/swagger.html';
+    public const ROUTE_PATH = '/swagger-ui.html';
 
-    private const CONTENT_TYPE = 'text/html; charset=UTF-8';
+    public const OPENAPI_URI_TEMPLATE_VAR_NAME = 'openapiUri';
 
     public function __construct(
         private readonly OpenApiConfiguration $openApiConfiguration,
@@ -43,20 +44,24 @@ final class SwaggerUiController implements RequestHandlerInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws Throwable
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $body = $this->streamFactory->createStream(
+        $responseBody = $this->streamFactory->createStream(
             TemplateRenderer::renderTemplate(
                 filename: $this->openApiConfiguration->swaggerUiTemplateFilename,
                 variables: [
-                    'openapiDoc' => OpenApiController::ROUTE_PATH,
+                    self::OPENAPI_URI_TEMPLATE_VAR_NAME => OpenApiController::ROUTE_PATH,
                 ],
             ),
         );
 
+        $responseContentType = 'text/html; charset=UTF-8';
+
         return $this->responseFactory->createResponse()
-            ->withHeader(HeaderName::CONTENT_TYPE, self::CONTENT_TYPE)
-            ->withBody($body);
+            ->withHeader(HeaderName::CONTENT_TYPE, $responseContentType)
+            ->withBody($responseBody);
     }
 }

@@ -19,7 +19,7 @@ use Attribute;
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
-class ApiOperation extends Route
+class ApiRoute extends Route
 {
     /**
      * @param string|array<array-key, string> $method
@@ -34,8 +34,8 @@ class ApiOperation extends Route
             name: $name,
             path: $path,
             methods: (array) $method,
-            isApiOperation: true,
-            apiOperationDocFields: $docFields,
+            isApiRoute: true,
+            docFields: $docFields,
         );
     }
 }

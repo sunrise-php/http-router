@@ -19,7 +19,7 @@ use Attribute;
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
-final class PostApiOperation extends ApiOperation
+final class PostApiRoute extends ApiRoute
 {
     public function __construct(string $name, string $path = '', array $docFields = [])
     {

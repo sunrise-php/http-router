@@ -44,13 +44,6 @@ interface RouterInterface extends RequestHandlerInterface
     public function hasRoute(string $name): bool;
 
     /**
-     * @since 1.0.0
-     *
-     * @throws InvalidArgumentException
-     */
-    public function addRoute(RouteInterface ...$routes);
-
-    /**
      * @throws HttpException
      *
      * @since 1.0.0

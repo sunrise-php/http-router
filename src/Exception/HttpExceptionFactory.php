@@ -65,7 +65,7 @@ final class HttpExceptionFactory
     ): HttpException {
         return new HttpException(
             $message ?? ErrorMessage::MISSING_CONTENT_TYPE,
-            $code ?? StatusCodeInterface::STATUS_UNSUPPORTED_MEDIA_TYPE,
+            $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
             $previous,
         );
     }

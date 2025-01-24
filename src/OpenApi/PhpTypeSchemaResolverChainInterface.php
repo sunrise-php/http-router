@@ -22,8 +22,5 @@ interface PhpTypeSchemaResolverChainInterface
 {
     public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array;
 
-    /**
-     * @return array<string, array<array-key, mixed>>
-     */
-    public function getNamedPhpTypeSchemas(): array;
+    public function propagateNamedPhpTypeSchemas(array &$document): void;
 }

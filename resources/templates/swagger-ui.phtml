@@ -1,3 +1,8 @@
+<?php
+
+use Sunrise\Http\Router\OpenApi\Controller\SwaggerUiController;
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,7 +17,7 @@
 <script>
     window.onload = function() {
         window.ui = SwaggerUIBundle({
-            url: '<?= $openapiDoc ?>',
+            url: '<?= ${SwaggerUiController::OPENAPI_URI_TEMPLATE_VAR_NAME} ?>',
             dom_id: '#swagger-ui',
             presets: [
                 SwaggerUIBundle.presets.apis,
