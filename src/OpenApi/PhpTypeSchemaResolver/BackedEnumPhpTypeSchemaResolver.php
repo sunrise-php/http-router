@@ -50,6 +50,7 @@ final class BackedEnumPhpTypeSchemaResolver implements
         $phpTypeName = $phpType->name;
 
         $phpTypeSchema = [
+            // @phpstan-ignore-next-line
             'type' => match ((string) (new ReflectionEnum($phpTypeName))->getBackingType()) {
                 Type::PHP_TYPE_NAME_INT => Type::OAS_TYPE_NAME_INTEGER,
                 Type::PHP_TYPE_NAME_STRING => Type::OAS_TYPE_NAME_STRING,

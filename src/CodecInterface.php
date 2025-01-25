@@ -26,11 +26,15 @@ interface CodecInterface
     public function getSupportedMediaTypes(): array;
 
     /**
+     * @param array<array-key, mixed> $context
+     *
      * @throws CodecException
      */
     public function encode(mixed $data, array $context): string;
 
     /**
+     * @param array<array-key, mixed> $context
+     *
      * @throws CodecException
      */
     public function decode(string $data, array $context): mixed;

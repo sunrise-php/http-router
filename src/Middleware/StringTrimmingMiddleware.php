@@ -65,7 +65,10 @@ final class StringTrimmingMiddleware implements MiddlewareInterface
     }
 
     /**
+     * @param array<array-key, mixed> $array
      * @param Closure(string): string $trimmer
+     *
+     * @return array<array-key, mixed>
      */
     private static function trimArray(array $array, Closure $trimmer): array
     {

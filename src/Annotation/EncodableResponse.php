@@ -22,6 +22,9 @@ use Sunrise\Http\Router\MediaTypeInterface;
 #[Attribute(Attribute::TARGET_METHOD)]
 final class EncodableResponse
 {
+    /**
+     * @param array<array-key, mixed> $codecContext
+     */
     public function __construct(
         public readonly ?MediaTypeInterface $defaultMediaType = null,
         public readonly array $codecContext = [],

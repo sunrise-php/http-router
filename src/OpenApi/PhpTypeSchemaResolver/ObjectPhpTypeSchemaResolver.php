@@ -53,6 +53,8 @@ final class ObjectPhpTypeSchemaResolver implements
     }
 
     /**
+     * @inheritDoc
+     *
      * @throws ReflectionException
      */
     public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array

@@ -28,6 +28,9 @@ use Sunrise\Http\Router\ServerRequest;
  */
 final class PayloadDecodingMiddleware implements MiddlewareInterface
 {
+    /**
+     * @param array<array-key, mixed> $codecContext
+     */
     public function __construct(
         private readonly CodecManagerInterface $codecManager,
         private readonly array $codecContext = [],
@@ -59,6 +62,7 @@ final class PayloadDecodingMiddleware implements MiddlewareInterface
         }
 
         try {
+            /** @var array<array-key, mixed>|object|null $parsedBody */
             $parsedBody = $this->codecManager->decode(
                 $clientProducedMediaType,
                 (string) $request->getBody(),

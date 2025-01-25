@@ -61,6 +61,9 @@ final class PhpTypeSchemaResolverChain implements PhpTypeSchemaResolverChainInte
         $this->setPhpTypeResolvers($phpTypeSchemaResolvers);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array
     {
         $this->isPhpTypeResolversSorted or $this->sortPhpTypeResolvers();
@@ -92,6 +95,8 @@ final class PhpTypeSchemaResolverChain implements PhpTypeSchemaResolverChainInte
     }
 
     /**
+     * @inheritDoc
+     *
      * @see self::createPhpTypeSchemaRef()
      */
     public function propagateNamedPhpTypeSchemas(array &$document): void
@@ -137,11 +142,19 @@ final class PhpTypeSchemaResolverChain implements PhpTypeSchemaResolverChainInte
         ): int => $b->getWeight() <=> $a->getWeight());
     }
 
+    /**
+     * @return array<array-key, mixed>
+     */
     private static function createPhpTypeSchemaRef(string $phpTypeSchemaName): array
     {
         return ['$ref' => sprintf('#/definitions/%s', $phpTypeSchemaName)];
     }
 
+    /**
+     * @param array<array-key, mixed> $phpTypeSchema
+     *
+     * @return array<array-key, mixed>
+     */
     private static function completePhpTypeSchema(Type $phpType, array $phpTypeSchema): array
     {
         if ($phpType->allowsNull) {

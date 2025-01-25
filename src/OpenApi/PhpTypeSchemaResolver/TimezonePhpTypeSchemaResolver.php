@@ -32,6 +32,9 @@ final class TimezonePhpTypeSchemaResolver implements
         return $phpType->name === DateTimeZone::class;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array
     {
         $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();

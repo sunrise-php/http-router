@@ -45,6 +45,7 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
         private readonly ?ValidatorInterface $validator = null,
         private readonly ?int $defaultErrorStatusCode = null,
         private readonly ?string $defaultErrorMessage = null,
+        /** @var array<string, mixed> */
         private readonly array $hydratorContext = [],
         private readonly bool $defaultValidationEnabled = true,
     ) {

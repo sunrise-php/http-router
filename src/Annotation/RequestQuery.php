@@ -21,6 +21,9 @@ use Attribute;
 #[Attribute(Attribute::TARGET_PARAMETER)]
 final class RequestQuery
 {
+    /**
+     * @param array<string, mixed> $hydratorContext
+     */
     public function __construct(
         public readonly ?int $errorStatusCode = null,
         public readonly ?string $errorMessage = null,

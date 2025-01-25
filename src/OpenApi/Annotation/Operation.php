@@ -21,6 +21,9 @@ use Attribute;
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 class Operation
 {
+    /**
+     * @param array<array-key, mixed> $value
+     */
     public function __construct(
         public readonly array $value,
     ) {

@@ -26,6 +26,7 @@ final class CodecManager implements CodecManagerInterface
     public function __construct(
         /** @var array<array-key, CodecInterface> */
         private readonly array $codecs,
+        /** @var array<array-key, mixed> */
         private readonly array $context = [],
     ) {
     }

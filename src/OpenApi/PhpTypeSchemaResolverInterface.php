@@ -24,6 +24,8 @@ interface PhpTypeSchemaResolverInterface
     public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool;
 
     /**
+     * @return array<array-key, mixed>
+     *
      * @throws UnsupportedPhpTypeException Must be thrown if the type isn't supported.
      */
     public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array;

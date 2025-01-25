@@ -30,6 +30,9 @@ final class StringPhpTypeSchemaResolver implements PhpTypeSchemaResolverInterfac
         return $phpType->name === Type::PHP_TYPE_NAME_STRING;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array
     {
         $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();

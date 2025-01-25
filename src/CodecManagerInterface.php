@@ -23,11 +23,15 @@ interface CodecManagerInterface
     public function supportsMediaType(MediaTypeInterface ...$mediaTypes): bool;
 
     /**
+     * @param array<array-key, mixed> $context
+     *
      * @throws CodecException
      */
     public function encode(MediaTypeInterface $mediaType, mixed $data, array $context): string;
 
     /**
+     * @param array<array-key, mixed> $context
+     *
      * @throws CodecException
      */
     public function decode(MediaTypeInterface $mediaType, string $data, array $context): mixed;

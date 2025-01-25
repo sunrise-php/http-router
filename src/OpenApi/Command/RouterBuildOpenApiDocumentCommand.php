@@ -32,6 +32,8 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+use function array_filter;
+
 /**
  * @since 3.0.0
  */
@@ -39,8 +41,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class RouterBuildOpenApiDocumentCommand extends Command
 {
     public function __construct(
-        private readonly RouterInterface $router,
         private readonly OpenApiDocumentManagerInterface $openApiDocumentManager,
+        private readonly RouterInterface $router,
     ) {
         parent::__construct();
     }
@@ -52,7 +54,12 @@ final class RouterBuildOpenApiDocumentCommand extends Command
     {
         $this->openApiDocumentManager->saveDocument(
             $this->openApiDocumentManager->buildDocument(
-                $this->router->getRoutes()
+                array_filter(
+                    $this->router->getRoutes(),
+                    static function (RouteInterface $route): bool {
+                        return $route->isApiRoute();
+                    },
+                )
             )
         );
 

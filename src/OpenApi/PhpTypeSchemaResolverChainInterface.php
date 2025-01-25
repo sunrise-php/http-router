@@ -20,7 +20,13 @@ use Reflector;
  */
 interface PhpTypeSchemaResolverChainInterface
 {
+    /**
+     * @return array<array-key, mixed>
+     */
     public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array;
 
+    /**
+     * @param array<array-key, mixed> $document
+     */
     public function propagateNamedPhpTypeSchemas(array &$document): void;
 }

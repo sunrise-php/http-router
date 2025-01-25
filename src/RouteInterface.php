@@ -70,6 +70,8 @@ interface RouteInterface
     public function withAddedAttributes(array $attributes): static;
 
     /**
+     * @return array<array-key, mixed>
+     *
      * @since 2.0.0
      */
     public function getMiddlewares(): array;

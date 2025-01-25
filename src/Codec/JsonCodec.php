@@ -42,6 +42,9 @@ final class JsonCodec implements CodecInterface
 
     public const DEFAULT_MAX_DEPTH = 512;
 
+    /**
+     * @param array<array-key, mixed> $context
+     */
     public function __construct(
         private readonly array $context = [],
     ) {
@@ -64,7 +67,7 @@ final class JsonCodec implements CodecInterface
 
         /** @var int $encodingFlags */
         $encodingFlags = $context[self::CONTEXT_KEY_ENCODING_FLAGS] ?? self::DEFAULT_ENCODING_FLAGS;
-        /** @var int $encodingMaxDepth */
+        /** @var int<1, 2147483647> $encodingMaxDepth */
         $encodingMaxDepth = $context[self::CONTEXT_KEY_ENCODING_MAX_DEPTH] ?? self::DEFAULT_ENCODING_MAX_DEPTH;
 
         try {
@@ -83,7 +86,7 @@ final class JsonCodec implements CodecInterface
 
         /** @var int $decodingFlags */
         $decodingFlags = $context[self::CONTEXT_KEY_DECODING_FLAGS] ?? self::DEFAULT_DECODING_FLAGS;
-        /** @var int $decodingMaxDepth */
+        /** @var int<1, 2147483647> $decodingMaxDepth */
         $decodingMaxDepth = $context[self::CONTEXT_KEY_DECODING_MAX_DEPTH] ?? self::DEFAULT_DECODING_MAX_DEPTH;
 
         try {

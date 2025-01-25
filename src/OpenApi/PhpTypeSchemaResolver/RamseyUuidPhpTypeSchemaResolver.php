@@ -29,6 +29,9 @@ final class RamseyUuidPhpTypeSchemaResolver implements PhpTypeSchemaResolverInte
         return $phpType->name === UuidInterface::class;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array
     {
         $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();

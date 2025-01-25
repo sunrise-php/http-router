@@ -16,6 +16,7 @@ namespace Sunrise\Http\Router\ParameterResolver;
 use Generator;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
+use ReflectionNamedType;
 use ReflectionParameter;
 use Sunrise\Http\Router\ParameterResolverInterface;
 
@@ -33,7 +34,12 @@ final class RequestStreamParameterResolver implements ParameterResolverInterface
             return;
         }
 
-        if ($parameter->getType()?->getName() !== StreamInterface::class) {
+        $type = $parameter->getType();
+        if (! $type instanceof ReflectionNamedType) {
+            return;
+        }
+
+        if ($type->getName() !== StreamInterface::class) {
             return;
         }
 

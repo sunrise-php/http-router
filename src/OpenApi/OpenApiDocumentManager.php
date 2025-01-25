@@ -43,6 +43,8 @@ use function sys_get_temp_dir;
 use const DIRECTORY_SEPARATOR;
 
 /**
+ * @link https://spec.openapis.org/oas/v3.1.0
+ *
  * @since 3.0.0
  */
 final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
@@ -107,7 +109,7 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
         }
 
         try {
-            $result = @fopen($this->getDocumentFilename(), 'rb');
+            $result = @fopen($this->getDocumentFilename(), $this->openApiConfiguration->documentReadMode);
         } catch (Throwable) {
             $result = false;
         }
@@ -136,22 +138,13 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
 
     private function describeRoute(RouteInterface $route, array &$document): void
     {
-        if (!$route->isApiRoute()) {
-            return;
-        }
-
-        $reflectedRequestHandler = $this->requestHandlerReflector
-            ->reflectRequestHandler($route->getRequestHandler());
-
+        /** @var array{tags?: string[], summary?: string|string[], description?: string|string[]} $operation */
         $operation = [];
 
-        $requestHandlerAncestry = ReflectorHelper::getClassOrMethodAncestry($reflectedRequestHandler);
-        foreach ($requestHandlerAncestry as $requestHandlerAncestor) {
-            /** @var list<ReflectionAttribute<Operation>> $annotations */
-            $annotations = $requestHandlerAncestor->getAttributes(Operation::class, ReflectionAttribute::IS_INSTANCEOF);
-            foreach ($annotations as $annotation) {
-                $operation = array_merge_recursive($operation, $annotation->newInstance()->value);
-            }
+        $requestHandler = $this->requestHandlerReflector->reflectRequestHandler($route->getRequestHandler());
+
+        foreach (ReflectorHelper::getAncestralAnnotations($requestHandler, Operation::class) as $annotation) {
+            $operation = array_merge_recursive($operation, $annotation->value);
         }
 
         $operation = array_merge_recursive($operation, (array) $route->getDocFields());
@@ -162,29 +155,21 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
         $operation['tags'] = array_merge($operation['tags'], $route->getTags());
 
         $operation['summary'] = (array) ($operation['summary'] ?? []);
-
-        if ($route->getSummary() !== '') {
-            $operation['summary'][] = $route->getSummary();
-        }
-
-        $operation['summary'] = implode($this->openApiConfiguration->operationSummarySeparator, $operation['summary']);
+        $operation['summary'][] = $route->getSummary();
+        $summarySeparator = $this->openApiConfiguration->operationSummarySeparator;
+        $operation['summary'] = implode($summarySeparator, $operation['summary']);
 
         $operation['description'] = (array) ($operation['description'] ?? []);
+        $operation['description'][] = $route->getDescription();
+        $descriptionSeparator = $this->openApiConfiguration->operationDescriptionSeparator;
+        $operation['description'] = implode($descriptionSeparator, $operation['description']);
 
-        if ($route->getDescription() !== '') {
-            $operation['description'][] = $route->getDescription();
-        }
+        $operation['deprecated'] = $route->isDeprecated();
 
-        $operation['description'] = implode($this->openApiConfiguration->operationDescriptionSeparator,  $operation['description']);
-
-        if ($route->isDeprecated()) {
-            $operation['deprecated'] = true;
-        }
-
-        if ($reflectedRequestHandler instanceof ReflectionMethod) {
-            $this->describeRequestBody($route, $reflectedRequestHandler, $operation);
-            $this->describeSuccessfulResponses($route, $reflectedRequestHandler, $operation);
-            $this->describeUnsuccessfulResponses($route, $reflectedRequestHandler, $operation);
+        if ($requestHandler instanceof ReflectionMethod) {
+            $this->describeRequestBody($route, $requestHandler, $operation);
+            $this->describeSuccessfulResponses($route, $requestHandler, $operation);
+            $this->describeUnsuccessfulResponses($route, $requestHandler, $operation);
         }
 
         $path = RouteSimplifier::simplifyRoute($route->getPath());
@@ -194,6 +179,36 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
             $document['paths'][$path][$method] = $operation;
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     private function describeRequestBody(
         RouteInterface $route,
@@ -235,7 +250,7 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
         $responseStatusCode = $this->openApiConfiguration->defaultSuccessfulResponseStatusCode;
         $responseSchema = [];
 
-        if ($reflectedRequestHandler->getReturnType()?->getName() === Type::PHP_TYPE_NAME_VOID) {
+        if ((string) $reflectedRequestHandler->getReturnType() === Type::PHP_TYPE_NAME_VOID) {
             $responseStatusCode = $this->openApiConfiguration->defaultEmptyResponseStatusCode;
         } elseif ($reflectedRequestHandler->getAttributes(EncodableResponse::class) !== []) {
             $responseType = TypeFactory::fromPhpTypeReflection($reflectedRequestHandler->getReturnType());

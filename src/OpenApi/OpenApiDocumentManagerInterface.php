@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\OpenApi;
 
 use RuntimeException;
-use Sunrise\Http\Router\RouterInterface;
+use Sunrise\Http\Router\RouteInterface;
 
 /**
  * @since 3.0.0
@@ -22,7 +22,7 @@ use Sunrise\Http\Router\RouterInterface;
 interface OpenApiDocumentManagerInterface
 {
     /**
-     * @param array<array-key, RouterInterface> $routes
+     * @param array<array-key, RouteInterface> $routes
      *
      * @return array<array-key, mixed>
      */

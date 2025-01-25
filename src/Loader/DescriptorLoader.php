@@ -218,16 +218,16 @@ final class DescriptorLoader implements DescriptorLoaderInterface
     }
 
     /**
-     * @param ReflectionClass<object>|ReflectionMethod $classOrMethod
+     * @param ReflectionClass<object>|ReflectionMethod $proband
      *
      * @throws InvalidArgumentException
      */
     private static function enrichDescriptorFromClassOrMethodAncestry(
         Descriptor $descriptor,
-        ReflectionClass|ReflectionMethod $classOrMethod,
+        ReflectionClass|ReflectionMethod $proband,
     ): void {
-        foreach (ReflectorHelper::getClassOrMethodAncestry($classOrMethod) as $classOrMethodAncestor) {
-            self::enrichDescriptorFromClassOrMethod($descriptor, $classOrMethodAncestor);
+        foreach (ReflectorHelper::getAncestry($proband) as $member) {
+            self::enrichDescriptorFromClassOrMethod($descriptor, $member);
         }
     }
 

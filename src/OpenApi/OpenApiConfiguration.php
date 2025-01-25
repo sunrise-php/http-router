@@ -25,6 +25,7 @@ use Sunrise\Hydrator\TypeConverter\TimestampTypeConverter;
 final class OpenApiConfiguration
 {
     public const DEFAULT_DOCUMENT_MEDIA_TYPE = MediaType::JSON;
+    public const DEFAULT_DOCUMENT_READ_MODE = 'rb';
     public const DEFAULT_TEMPORARY_DOCUMENT_BASENAME = 'openapi';
     public const DEFAULT_TIMESTAMP_FORMAT = TimestampTypeConverter::DEFAULT_FORMAT;
     public const DEFAULT_EMPTY_RESPONSE_STATUS_CODE = EmptyResponseResolver::DEFAULT_STATUS_CODE;
@@ -36,16 +37,19 @@ final class OpenApiConfiguration
     public const DEFAULT_OPERATION_DESCRIPTION_SEPARATOR = '<br>';
 
     public function __construct(
+        /** @var array<array-key, mixed> */
         public readonly array $initialDocument,
         public readonly MediaTypeInterface $documentMediaType = self::DEFAULT_DOCUMENT_MEDIA_TYPE,
+        /** @var array<array-key, mixed> */
         public readonly array $documentEncodingContext = [],
         public readonly ?string $documentFilename = null,
+        public readonly string $documentReadMode = self::DEFAULT_DOCUMENT_READ_MODE,
         public readonly string $temporaryDocumentBasename = self::DEFAULT_TEMPORARY_DOCUMENT_BASENAME,
         public readonly string $defaultTimestampFormat = self::DEFAULT_TIMESTAMP_FORMAT,
         public readonly int $defaultEmptyResponseStatusCode = self::DEFAULT_EMPTY_RESPONSE_STATUS_CODE,
         public readonly int $defaultSuccessfulResponseStatusCode = self::DEFAULT_SUCCESSFUL_RESPONSE_STATUS_CODE,
         public readonly string $successfulResponseDescription = self::DEFAULT_SUCCESSFUL_RESPONSE_DESCRIPTION,
-        /** @var class-string<object> $unsuccessfulResponseViewName */
+        /** @var class-string|null */
         public readonly ?string $unsuccessfulResponseViewName = null,
         public readonly string $unsuccessfulResponseDescription = self::DEFAULT_UNSUCCESSFUL_RESPONSE_DESCRIPTION,
         public readonly string $swaggerUiTemplateFilename = self::DEFAULT_SWAGGER_UI_TEMPLATE_FILENAME,

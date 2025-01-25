@@ -47,6 +47,9 @@ final class TimestampPhpTypeSchemaResolver implements
         return is_a($phpType->name, DateTimeImmutable::class, true);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array
     {
         $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();

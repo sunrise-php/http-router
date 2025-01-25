@@ -32,6 +32,9 @@ final class SymfonyUidPhpTypeSchemaResolver implements PhpTypeSchemaResolverInte
         return is_subclass_of($phpType->name, AbstractUid::class);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array
     {
         $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();

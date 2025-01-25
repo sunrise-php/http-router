@@ -40,6 +40,7 @@ final class EncodableResponseResolver implements ResponseResolverInterface
         private readonly ResponseFactoryInterface $responseFactory,
         private readonly CodecManagerInterface $codecManager,
         private readonly MediaTypeInterface $defaultMediaType,
+        /** @var array<array-key, mixed> */
         private readonly array $codecContext = [],
     ) {
     }

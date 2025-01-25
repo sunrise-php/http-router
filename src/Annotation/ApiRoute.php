@@ -23,6 +23,7 @@ class ApiRoute extends Route
 {
     /**
      * @param string|array<array-key, string> $method
+     * @param array<array-key, mixed> $docFields
      */
     public function __construct(
         string $name,

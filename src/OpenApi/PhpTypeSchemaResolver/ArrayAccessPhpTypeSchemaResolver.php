@@ -50,13 +50,15 @@ final class ArrayAccessPhpTypeSchemaResolver implements
     }
 
     /**
+     * @inheritDoc
+     *
      * @throws ReflectionException
      */
     public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array
     {
         $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();
 
-        /** @var class-string<ArrayAccess> $phpTypeName */
+        /** @var class-string<ArrayAccess<array-key, mixed>> $phpTypeName */
         $phpTypeName = $phpType->name;
 
         $arrayPhpType = new Type(Type::PHP_TYPE_NAME_ARRAY, $phpType->allowsNull);
