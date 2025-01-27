@@ -28,8 +28,8 @@ final class ErrorMessage
     public const INVALID_QUERY = 'The request parameters are invalid.';
     public const MISSING_HEADER = 'The request header "{{ header_name }}" is missing.';
     public const INVALID_HEADER = 'The request header "{{ header_name }}" is invalid.';
-    public const MISSING_COOKIE = 'The cookie {{ cookie_name }} is missing.';
-    public const INVALID_COOKIE = 'The cookie {{ cookie_name }} is invalid.';
+    public const MISSING_COOKIE = 'The cookie "{{ cookie_name }}" is missing.';
+    public const INVALID_COOKIE = 'The cookie "{{ cookie_name }}" is invalid.';
     public const INVALID_BODY = 'The request body is invalid.';
     // phpcs:enable Generic.Files.LineLength.TooLong
 }

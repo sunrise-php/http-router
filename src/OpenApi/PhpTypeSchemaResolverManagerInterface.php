@@ -18,7 +18,7 @@ use Reflector;
 /**
  * @since 3.0.0
  */
-interface PhpTypeSchemaResolverChainInterface
+interface PhpTypeSchemaResolverManagerInterface
 {
     /**
      * @return array<array-key, mixed>
@@ -27,6 +27,7 @@ interface PhpTypeSchemaResolverChainInterface
 
     /**
      * @param array<array-key, mixed> $document
+     * @param-out array<array-key, mixed> $document
      */
-    public function propagateNamedPhpTypeSchemas(array &$document): void;
+    public function enrichDocumentWithNamedPhpTypeSchemas(array &$document): void;
 }

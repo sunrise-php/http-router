@@ -23,6 +23,8 @@ use function str_replace;
  */
 final class RouteCompiler
 {
+    public const DEFAULT_PATTERN = '[^/]+';
+
     /**
      * @param array<string, string> $patterns
      *
@@ -48,7 +50,7 @@ final class RouteCompiler
         $search = [];
         $replace = [];
         foreach ($variables as $variable) {
-            $pattern = $patterns[$variable['name']] ?? $variable['pattern'] ?? '[^/]+';
+            $pattern = $patterns[$variable['name']] ?? $variable['pattern'] ?? self::DEFAULT_PATTERN;
 
             $search[] = '{' . $variable['name'] . '}';
             $replace[] = '(?<' . $variable['name'] . '>' . $pattern . ')';

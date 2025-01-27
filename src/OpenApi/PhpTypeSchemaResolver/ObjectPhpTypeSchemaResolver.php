@@ -20,9 +20,9 @@ use ReflectionProperty;
 use Reflector;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaNameResolverInterface;
-use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverChainAwareInterface;
-use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverChainInterface;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverInterface;
+use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverManagerAwareInterface;
+use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverManagerInterface;
 use Sunrise\Http\Router\OpenApi\Type;
 use Sunrise\Http\Router\OpenApi\TypeFactory;
 use Sunrise\Hydrator\Annotation\Alias;
@@ -38,13 +38,14 @@ use function strtr;
 final class ObjectPhpTypeSchemaResolver implements
     PhpTypeSchemaResolverInterface,
     PhpTypeSchemaNameResolverInterface,
-    PhpTypeSchemaResolverChainAwareInterface
+    PhpTypeSchemaResolverManagerAwareInterface
 {
-    private readonly PhpTypeSchemaResolverChainInterface $phpTypeSchemaResolverChain;
+    private readonly PhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager;
 
-    public function setPhpTypeSchemaResolverChain(PhpTypeSchemaResolverChainInterface $phpTypeSchemaResolverChain): void
-    {
-        $this->phpTypeSchemaResolverChain = $phpTypeSchemaResolverChain;
+    public function setPhpTypeSchemaResolverManager(
+        PhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager,
+    ): void {
+        $this->phpTypeSchemaResolverManager = $phpTypeSchemaResolverManager;
     }
 
     public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
@@ -61,7 +62,7 @@ final class ObjectPhpTypeSchemaResolver implements
     {
         $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();
 
-        /** @var class-string<object> $phpTypeName */
+        /** @var class-string $phpTypeName */
         $phpTypeName = $phpType->name;
 
         $phpTypeSchema = [
@@ -78,7 +79,7 @@ final class ObjectPhpTypeSchemaResolver implements
 
             $propertyName = self::getPropertyName($property);
             $propertyType = TypeFactory::fromPhpTypeReflection($property->getType());
-            $propertyTypeSchema = $this->phpTypeSchemaResolverChain->resolvePhpTypeSchema($propertyType, $property);
+            $propertyTypeSchema = $this->phpTypeSchemaResolverManager->resolvePhpTypeSchema($propertyType, $property);
 
             $phpTypeSchema['properties'][$propertyName] = $propertyTypeSchema;
 

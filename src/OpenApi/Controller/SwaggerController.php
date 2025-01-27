@@ -19,24 +19,29 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Annotation\GetRoute;
+use Sunrise\Http\Router\Annotation\Priority;
 use Sunrise\Http\Router\Dictionary\HeaderName;
 use Sunrise\Http\Router\Helper\TemplateRenderer;
-use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
+use Sunrise\Http\Router\OpenApi\SwaggerConfiguration;
 use Throwable;
 
 /**
  * @since 3.0.0
  */
 #[GetRoute(self::ROUTE_NAME, self::ROUTE_PATH)]
-final class SwaggerUiController implements RequestHandlerInterface
+#[Priority(-1)]
+final class SwaggerController implements RequestHandlerInterface
 {
-    public const ROUTE_NAME = '@swagger-ui';
-    public const ROUTE_PATH = '/swagger-ui.html';
+    public const ROUTE_NAME = '@swagger';
+    public const ROUTE_PATH = '/swagger.html';
 
-    public const OPENAPI_URI_TEMPLATE_VAR_NAME = 'openapiUri';
+    public const OA_URI_VAR_NAME = 'oa_uri';
+    public const CSS_URLS_VAR_NAME = 'css_urls';
+    public const JS_URLS_VAR_NAME = 'js_urls';
+    public const AUTO_RENDER_VAR_NAME = 'auto_render';
 
     public function __construct(
-        private readonly OpenApiConfiguration $openApiConfiguration,
+        private readonly SwaggerConfiguration $swaggerConfiguration,
         private readonly ResponseFactoryInterface $responseFactory,
         private readonly StreamFactoryInterface $streamFactory,
     ) {
@@ -51,9 +56,12 @@ final class SwaggerUiController implements RequestHandlerInterface
     {
         $responseBody = $this->streamFactory->createStream(
             TemplateRenderer::renderTemplate(
-                filename: $this->openApiConfiguration->swaggerUiTemplateFilename,
+                filename: $this->swaggerConfiguration->templateFilename,
                 variables: [
-                    self::OPENAPI_URI_TEMPLATE_VAR_NAME => OpenApiController::ROUTE_PATH,
+                    self::OA_URI_VAR_NAME => OpenApiController::ROUTE_PATH,
+                    self::CSS_URLS_VAR_NAME => $this->swaggerConfiguration->cssUrls,
+                    self::JS_URLS_VAR_NAME => $this->swaggerConfiguration->jsUrls,
+                    self::AUTO_RENDER_VAR_NAME => $this->swaggerConfiguration->autoRender,
                 ],
             ),
         );

@@ -18,9 +18,9 @@ use ReflectionParameter;
 use ReflectionProperty;
 use Reflector;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
-use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverChainAwareInterface;
-use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverChainInterface;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverInterface;
+use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverManagerAwareInterface;
+use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverManagerInterface;
 use Sunrise\Http\Router\OpenApi\Type;
 use Sunrise\Hydrator\Annotation\Subtype;
 
@@ -29,13 +29,14 @@ use Sunrise\Hydrator\Annotation\Subtype;
  */
 final class ArrayPhpTypeSchemaResolver implements
     PhpTypeSchemaResolverInterface,
-    PhpTypeSchemaResolverChainAwareInterface
+    PhpTypeSchemaResolverManagerAwareInterface
 {
-    private readonly PhpTypeSchemaResolverChainInterface $phpTypeSchemaResolverChain;
+    private readonly PhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager;
 
-    public function setPhpTypeSchemaResolverChain(PhpTypeSchemaResolverChainInterface $phpTypeSchemaResolverChain): void
-    {
-        $this->phpTypeSchemaResolverChain = $phpTypeSchemaResolverChain;
+    public function setPhpTypeSchemaResolverManager(
+        PhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager,
+    ): void {
+        $this->phpTypeSchemaResolverManager = $phpTypeSchemaResolverManager;
     }
 
     public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
@@ -71,7 +72,7 @@ final class ArrayPhpTypeSchemaResolver implements
                 $annotation = $annotations[0]->newInstance();
 
                 $arrayElementPhpType = new Type($annotation->name, $annotation->allowsNull);
-                $arrayElementPhpTypeSchema = $this->phpTypeSchemaResolverChain
+                $arrayElementPhpTypeSchema = $this->phpTypeSchemaResolverManager
                     ->resolvePhpTypeSchema($arrayElementPhpType, $phpTypeHolder);
 
                 $phpTypeSchema['oneOf'][0]['items'] = $arrayElementPhpTypeSchema;

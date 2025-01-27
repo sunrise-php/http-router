@@ -19,6 +19,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Annotation\GetRoute;
+use Sunrise\Http\Router\Annotation\Priority;
 use Sunrise\Http\Router\Dictionary\HeaderName;
 use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
 use Sunrise\Http\Router\OpenApi\OpenApiDocumentManagerInterface;
@@ -27,6 +28,7 @@ use Sunrise\Http\Router\OpenApi\OpenApiDocumentManagerInterface;
  * @since 3.0.0
  */
 #[GetRoute(self::ROUTE_NAME, self::ROUTE_PATH)]
+#[Priority(-1)]
 final class OpenApiController implements RequestHandlerInterface
 {
     public const ROUTE_NAME = '@openapi';

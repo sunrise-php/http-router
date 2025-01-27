@@ -23,20 +23,9 @@ class ApiRoute extends Route
 {
     /**
      * @param string|array<array-key, string> $method
-     * @param array<array-key, mixed> $docFields
      */
-    public function __construct(
-        string $name,
-        string $path = '',
-        string|array $method = [],
-        array $docFields = [],
-    ) {
-        parent::__construct(
-            name: $name,
-            path: $path,
-            methods: (array) $method,
-            isApiRoute: true,
-            docFields: $docFields,
-        );
+    public function __construct(string $name, string $path = '', string|array $method = [])
+    {
+        parent::__construct(name: $name, path: $path, methods: (array) $method, isApiRoute: true);
     }
 }

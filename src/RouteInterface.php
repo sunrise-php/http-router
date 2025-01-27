@@ -132,15 +132,6 @@ interface RouteInterface
     public function isApiRoute(): bool;
 
     /**
-     * @since 3.0.0
-     *
-     * @return array<array-key, mixed>|object|null
-     *
-     * @link https://github.com/OAI/OpenAPI-Specification/blob/bba1da7bfd9cb9a4f47ed6b91e824bb1cef12fdc/versions/3.1.1.md#fixed-fields-8
-     */
-    public function getDocFields(): array|object|null;
-
-    /**
      * @return non-empty-string|null
      *
      * @since 3.0.0

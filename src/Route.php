@@ -42,8 +42,6 @@ final class Route implements RouteInterface
         private readonly string $description = '',
         private readonly bool $isDeprecated = false,
         private readonly bool $isApiRoute = false,
-        /** @var array<array-key, mixed>|object|null */
-        private readonly array|object|null $docFields = null,
         /** @var non-empty-string|null */
         private readonly ?string $pattern = null,
     ) {
@@ -197,14 +195,6 @@ final class Route implements RouteInterface
     public function isApiRoute(): bool
     {
         return $this->isApiRoute;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getDocFields(): array|object|null
-    {
-        return $this->docFields;
     }
 
     /**

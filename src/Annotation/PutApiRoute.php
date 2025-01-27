@@ -21,11 +21,8 @@ use Attribute;
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
 final class PutApiRoute extends ApiRoute
 {
-    /**
-     * @param array<array-key, mixed> $docFields
-     */
-    public function __construct(string $name, string $path = '', array $docFields = [])
+    public function __construct(string $name, string $path = '')
     {
-        parent::__construct($name, $path, self::METHOD_PUT, $docFields);
+        parent::__construct($name, $path, self::METHOD_PUT);
     }
 }

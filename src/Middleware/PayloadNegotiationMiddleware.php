@@ -30,7 +30,7 @@ use function array_values;
 /**
  * @since 3.0.0
  */
-final class PayloadMediaTypeNegotiationMiddleware implements MiddlewareInterface
+final class PayloadNegotiationMiddleware implements MiddlewareInterface
 {
     public function __construct(
         private readonly ?int $errorStatusCode = null,

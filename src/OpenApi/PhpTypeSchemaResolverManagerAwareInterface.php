@@ -16,9 +16,9 @@ namespace Sunrise\Http\Router\OpenApi;
 /**
  * @since 3.0.0
  */
-interface PhpTypeSchemaResolverChainAwareInterface
+interface PhpTypeSchemaResolverManagerAwareInterface
 {
-    public function setPhpTypeSchemaResolverChain(
-        PhpTypeSchemaResolverChainInterface $phpTypeSchemaResolverChain,
+    public function setPhpTypeSchemaResolverManager(
+        PhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager,
     ): void;
 }

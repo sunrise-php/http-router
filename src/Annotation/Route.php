@@ -55,8 +55,6 @@ class Route implements RequestMethodInterface
         public string $description = '',
         public bool $isDeprecated = false,
         public bool $isApiRoute = false,
-        /** @var array<array-key, mixed>|object|null */
-        public array|object|null $docFields = null,
         public int $priority = 0,
     ) {
     }
