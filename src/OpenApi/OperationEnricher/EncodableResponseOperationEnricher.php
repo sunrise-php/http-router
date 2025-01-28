@@ -17,12 +17,14 @@ use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\EncodableResponse;
+use Sunrise\Http\Router\Annotation\ResponseHeader;
 use Sunrise\Http\Router\Annotation\ResponseStatus;
 use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
 use Sunrise\Http\Router\OpenApi\OpenApiConfigurationAwareInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiOperationEnricherInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerAwareInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerInterface;
+use Sunrise\Http\Router\OpenApi\Type;
 use Sunrise\Http\Router\OpenApi\TypeFactory;
 use Sunrise\Http\Router\RouteInterface;
 
@@ -71,6 +73,19 @@ final class EncodableResponseOperationEnricher implements
         if (isset($annotations[0])) {
             $responseStatus = $annotations[0]->newInstance();
             $responseStatusCode = $responseStatus->code;
+        }
+
+        /** @var list<ReflectionAttribute<ResponseHeader>> $annotations */
+        $annotations = $requestHandler->getAttributes(ResponseHeader::class);
+        foreach ($annotations as $annotation) {
+            $responseHeader = $annotation->newInstance();
+
+            $operation['responses'][$responseStatusCode]['headers'][$responseHeader->name] = [
+                'schema' => [
+                    'type' => Type::OAS_TYPE_NAME_STRING,
+                    'const' => $responseHeader->value,
+                ],
+            ];
         }
 
         $operation['responses'][$responseStatusCode]['description'] = $this->openApiConfiguration

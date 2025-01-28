@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\OpenApi;
 
+use Sunrise\Http\Router\OpenApi\Controller\OpenApiController;
+
 /**
  * @since 3.0.0
  */
@@ -31,6 +33,8 @@ final class SwaggerConfiguration
 
     public const DEFAULT_AUTO_RENDER = true;
 
+    public const DEFAULT_OPENAPI_URI = OpenApiController::ROUTE_PATH;
+
     public function __construct(
         public readonly string $templateFilename = self::DEFAULT_TEMPLATE_FILENAME,
         /** @var string[] */
@@ -38,6 +42,7 @@ final class SwaggerConfiguration
         /** @var string[] */
         public readonly array $jsUrls = self::DEFAULT_JS_URLS,
         public readonly bool $autoRender = self::DEFAULT_AUTO_RENDER,
+        public readonly string $openapiUri = self::DEFAULT_OPENAPI_URI,
     ) {
     }
 }

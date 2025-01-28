@@ -55,7 +55,7 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
         $document = $this->openApiConfiguration->initialDocument;
 
         foreach ($routes as $route) {
-            $this->enrichDocumentWithOperations($route, $document);
+            $this->describeRoute($route, $document);
         }
 
         $this->openApiPhpTypeSchemaResolverManager->enrichDocumentWithDefinitions($document);
@@ -119,18 +119,20 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
      * @param array<array-key, mixed> $document
      * @param-out array<array-key, mixed> $document
      */
-    private function enrichDocumentWithOperations(RouteInterface $route, array &$document): void
+    private function describeRoute(RouteInterface $route, array &$document): void
     {
+        $operation = $this->openApiConfiguration->initialOperation;
+
         $requestHandler = $this->requestHandlerReflector->reflectRequestHandler($route->getRequestHandler());
 
-        /** @var array<array-key, mixed> $operation */
-        $operation = [];
         foreach (ReflectorHelper::getAncestry($requestHandler) as $member) {
             /** @var list<ReflectionAttribute<Operation>> $annotations */
             $annotations = $member->getAttributes(Operation::class);
             foreach ($annotations as $annotation) {
-                $annotation = $annotation->newInstance();
-                $operation = array_replace_recursive($operation, $annotation->value);
+                $operation = array_replace_recursive(
+                    $operation,
+                    $annotation->newInstance()->value,
+                );
             }
         }
 

@@ -30,6 +30,7 @@ use Sunrise\Http\Router\Helper\RouteBuilder;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Helper\RouteMatcher;
 use Sunrise\Http\Router\Loader\LoaderInterface;
+use Sunrise\Http\Router\ParameterResolver\DirectInjectionParameterResolver;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
 use UnexpectedValueException;
@@ -76,6 +77,8 @@ final class Router implements RouterInterface
         array $responseResolvers = [],
         ?ContainerInterface $container = null,
     ) {
+        $parameterResolvers[] = new DirectInjectionParameterResolver($this);
+
         $this->referenceResolver = $referenceResolver ?? ReferenceResolver::build(
             parameterResolvers: $parameterResolvers,
             responseResolvers: $responseResolvers,

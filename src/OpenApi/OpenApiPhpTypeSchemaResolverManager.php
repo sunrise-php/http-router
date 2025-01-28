@@ -100,7 +100,7 @@ final class OpenApiPhpTypeSchemaResolverManager implements OpenApiPhpTypeSchemaR
     public function enrichDocumentWithDefinitions(array &$document): void
     {
         foreach ($this->namedPhpTypeSchemas as $phpTypeSchemaName => $phpTypeSchema) {
-            $document['definitions'][$phpTypeSchemaName] = $phpTypeSchema;
+            $document['components']['schemas'][$phpTypeSchemaName] = $phpTypeSchema;
         }
     }
 
@@ -147,7 +147,7 @@ final class OpenApiPhpTypeSchemaResolverManager implements OpenApiPhpTypeSchemaR
      */
     private static function createPhpTypeSchemaReference(string $phpTypeSchemaName): array
     {
-        return ['$ref' => sprintf('#/definitions/%s', $phpTypeSchemaName)];
+        return ['$ref' => sprintf('#/components/schemas/%s', $phpTypeSchemaName)];
     }
 
     /**
@@ -162,6 +162,8 @@ final class OpenApiPhpTypeSchemaResolverManager implements OpenApiPhpTypeSchemaR
 
             // https://swagger.io/docs/specification/v3_0/data-models/enums/#nullable-enums
             if (isset($phpTypeSchema['enum'])) {
+                /** @var array{enum: array<array-key, mixed>} $phpTypeSchema */
+
                 $phpTypeSchema['enum'][] = null;
             }
         }

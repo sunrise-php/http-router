@@ -28,6 +28,7 @@ use Sunrise\Http\Router\OpenApi\TypeFactory;
 use Sunrise\Hydrator\Annotation\Alias;
 use Sunrise\Hydrator\Annotation\DefaultValue;
 use Sunrise\Hydrator\Annotation\Ignore;
+use Sunrise\Hydrator\TypeConverter\ObjectTypeConverter;
 
 use function class_exists;
 use function strtr;
@@ -48,9 +49,22 @@ final class ObjectPhpTypeSchemaResolver implements
         $this->openApiPhpTypeSchemaResolverManager = $openApiPhpTypeSchemaResolverManager;
     }
 
+    /**
+     * @see ObjectTypeConverter
+     */
     public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
     {
-        return class_exists($phpType->name);
+        $className = $phpType->name;
+        if (!class_exists($className)) {
+            return false;
+        }
+
+        $class = new ReflectionClass($className);
+        if ($class->isInternal() || !$class->isInstantiable()) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

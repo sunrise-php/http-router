@@ -35,10 +35,10 @@ final class SwaggerController implements RequestHandlerInterface
     public const ROUTE_NAME = '@swagger';
     public const ROUTE_PATH = '/swagger.html';
 
-    public const OA_URI_VAR_NAME = 'oa_uri';
     public const CSS_URLS_VAR_NAME = 'css_urls';
     public const JS_URLS_VAR_NAME = 'js_urls';
     public const AUTO_RENDER_VAR_NAME = 'auto_render';
+    public const OPENAPI_URI_VAR_NAME = 'openapi_uri';
 
     public function __construct(
         private readonly SwaggerConfiguration $swaggerConfiguration,
@@ -58,10 +58,10 @@ final class SwaggerController implements RequestHandlerInterface
             TemplateRenderer::renderTemplate(
                 filename: $this->swaggerConfiguration->templateFilename,
                 variables: [
-                    self::OA_URI_VAR_NAME => OpenApiController::ROUTE_PATH,
                     self::CSS_URLS_VAR_NAME => $this->swaggerConfiguration->cssUrls,
                     self::JS_URLS_VAR_NAME => $this->swaggerConfiguration->jsUrls,
                     self::AUTO_RENDER_VAR_NAME => $this->swaggerConfiguration->autoRender,
+                    self::OPENAPI_URI_VAR_NAME => $this->swaggerConfiguration->openapiUri,
                 ],
             ),
         );

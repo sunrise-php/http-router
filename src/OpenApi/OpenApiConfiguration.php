@@ -40,6 +40,8 @@ final class OpenApiConfiguration
     public function __construct(
         /** @var array<array-key, mixed> */
         public readonly array $initialDocument,
+        /** @var array<array-key, mixed> */
+        public readonly array $initialOperation = [],
         public readonly MediaTypeInterface $documentMediaType = self::DEFAULT_DOCUMENT_MEDIA_TYPE,
         /** @var array<array-key, mixed> */
         public readonly array $documentEncodingContext = [],

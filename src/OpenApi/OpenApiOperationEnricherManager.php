@@ -60,7 +60,6 @@ final class OpenApiOperationEnricherManager implements OpenApiOperationEnricherM
         array &$operation,
     ): void {
         $this->isOperationEnrichersSorted or $this->sortOperationEnrichers();
-
         foreach ($this->operationEnrichers as $operationEnricher) {
             $operationEnricher->enrichOperation($route, $requestHandler, $operation);
         }
@@ -97,13 +96,13 @@ final class OpenApiOperationEnricherManager implements OpenApiOperationEnricherM
     private static function getDefaultOperationEnrichers(): array
     {
         return [
-            new RouteVariablesOperationEnricher(),
-            new RequestCookieOperationEnricher(),
-            new RequestHeaderOperationEnricher(),
-            new RequestBodyOperationEnricher(),
-            new RequestStreamOperationEnricher(),
             new EmptyResponseOperationEnricher(),
             new EncodableResponseOperationEnricher(),
+            new RequestBodyOperationEnricher(),
+            new RequestCookieOperationEnricher(),
+            new RequestHeaderOperationEnricher(),
+            new RequestStreamOperationEnricher(),
+            new RouteVariablesOperationEnricher(),
             new UnsuccessfulResponseOperationEnricher(),
         ];
     }
