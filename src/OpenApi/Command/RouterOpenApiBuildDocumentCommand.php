@@ -26,8 +26,8 @@ use function array_filter;
 /**
  * @since 3.0.0
  */
-#[AsCommand('router:build-openapi-document', 'Builds the OpenAPI document.')]
-final class RouterBuildOpenApiDocumentCommand extends Command
+#[AsCommand('router:openapi:build-document', 'Builds the OpenAPI document.')]
+final class RouterOpenApiBuildDocumentCommand extends Command
 {
     public function __construct(
         private readonly OpenApiDocumentManagerInterface $openApiDocumentManager,
@@ -48,7 +48,7 @@ final class RouterBuildOpenApiDocumentCommand extends Command
                     static function (RouteInterface $route): bool {
                         return $route->isApiRoute();
                     },
-                ),
+                )
             )
         );
 

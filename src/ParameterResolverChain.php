@@ -86,7 +86,7 @@ final class ParameterResolverChain implements ParameterResolverChainInterface
         }
 
         throw new LogicException(sprintf(
-            'The parameter %s is not supported and cannot be resolved.',
+            'The parameter "%s" is not supported and cannot be resolved.',
             self::stringifyParameter($parameter),
         ));
     }

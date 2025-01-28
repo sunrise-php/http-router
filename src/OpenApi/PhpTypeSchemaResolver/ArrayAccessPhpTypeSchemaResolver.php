@@ -20,9 +20,9 @@ use ReflectionParameter;
 use ReflectionProperty;
 use Reflector;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
-use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverInterface;
-use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverManagerAwareInterface;
-use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverManagerInterface;
+use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverInterface;
+use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerAwareInterface;
+use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerInterface;
 use Sunrise\Http\Router\OpenApi\Type;
 use Sunrise\Http\Router\OpenApi\TypeFactory;
 use Sunrise\Hydrator\Annotation\Subtype;
@@ -34,15 +34,15 @@ use function is_subclass_of;
  * @since 3.0.0
  */
 final class ArrayAccessPhpTypeSchemaResolver implements
-    PhpTypeSchemaResolverInterface,
-    PhpTypeSchemaResolverManagerAwareInterface
+    OpenApiPhpTypeSchemaResolverInterface,
+    OpenApiPhpTypeSchemaResolverManagerAwareInterface
 {
-    private readonly PhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager;
+    private readonly OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager;
 
-    public function setPhpTypeSchemaResolverManager(
-        PhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager,
+    public function setOpenApiPhpTypeSchemaResolverManager(
+        OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager,
     ): void {
-        $this->phpTypeSchemaResolverManager = $phpTypeSchemaResolverManager;
+        $this->openApiPhpTypeSchemaResolverManager = $openApiPhpTypeSchemaResolverManager;
     }
 
     public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
@@ -64,7 +64,8 @@ final class ArrayAccessPhpTypeSchemaResolver implements
 
         $arrayPhpType = new Type(Type::PHP_TYPE_NAME_ARRAY, $phpType->allowsNull);
         /** @var array{oneOf: array{0: array{type: 'array'}, 1: array{type: 'object'}}} $phpTypeSchema */
-        $phpTypeSchema = $this->phpTypeSchemaResolverManager->resolvePhpTypeSchema($arrayPhpType, $phpTypeHolder);
+        $phpTypeSchema = $this->openApiPhpTypeSchemaResolverManager
+            ->resolvePhpTypeSchema($arrayPhpType, $phpTypeHolder);
 
         if (
             $phpTypeHolder instanceof ReflectionParameter ||
@@ -72,7 +73,7 @@ final class ArrayAccessPhpTypeSchemaResolver implements
         ) {
             if ($phpTypeHolder->getAttributes(Subtype::class) === []) {
                 $collectionElementPhpType = self::getCollectionElementPhpType($phpTypeName);
-                $collectionElementPhpTypeSchema = $this->phpTypeSchemaResolverManager
+                $collectionElementPhpTypeSchema = $this->openApiPhpTypeSchemaResolverManager
                     ->resolvePhpTypeSchema($collectionElementPhpType, $phpTypeHolder);
 
                 $phpTypeSchema['oneOf'][0]['items'] = $collectionElementPhpTypeSchema;

@@ -21,7 +21,7 @@ use Reflector;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
 use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
 use Sunrise\Http\Router\OpenApi\OpenApiConfigurationAwareInterface;
-use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverInterface;
+use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverInterface;
 use Sunrise\Http\Router\OpenApi\Type;
 use Sunrise\Hydrator\Annotation\Format;
 
@@ -32,7 +32,7 @@ use function is_a;
  * @since 3.0.0
  */
 final class TimestampPhpTypeSchemaResolver implements
-    PhpTypeSchemaResolverInterface,
+    OpenApiPhpTypeSchemaResolverInterface,
     OpenApiConfigurationAwareInterface
 {
     private readonly OpenApiConfiguration $openApiConfiguration;

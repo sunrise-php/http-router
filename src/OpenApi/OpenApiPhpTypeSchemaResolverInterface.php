@@ -19,7 +19,7 @@ use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
 /**
  * @since 3.0.0
  */
-interface PhpTypeSchemaResolverInterface
+interface OpenApiPhpTypeSchemaResolverInterface
 {
     public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool;
 

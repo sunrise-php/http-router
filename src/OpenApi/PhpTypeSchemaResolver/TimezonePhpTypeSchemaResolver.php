@@ -16,16 +16,16 @@ namespace Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver;
 use DateTimeZone;
 use Reflector;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
-use Sunrise\Http\Router\OpenApi\PhpTypeSchemaNameResolverInterface;
-use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverInterface;
+use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaNameResolverInterface;
+use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverInterface;
 use Sunrise\Http\Router\OpenApi\Type;
 
 /**
  * @since 3.0.0
  */
 final class TimezonePhpTypeSchemaResolver implements
-    PhpTypeSchemaResolverInterface,
-    PhpTypeSchemaNameResolverInterface
+    OpenApiPhpTypeSchemaResolverInterface,
+    OpenApiPhpTypeSchemaNameResolverInterface
 {
     public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
     {

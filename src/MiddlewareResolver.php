@@ -73,7 +73,7 @@ final class MiddlewareResolver implements MiddlewareResolverInterface
         }
 
         throw new InvalidArgumentException(sprintf(
-            'The middleware reference %s could not be resolved.',
+            'The middleware reference "%s" could not be resolved.',
             ReferenceResolver::stringifyReference($reference),
         ));
     }

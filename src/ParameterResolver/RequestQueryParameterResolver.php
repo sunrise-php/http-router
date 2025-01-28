@@ -72,7 +72,7 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
         $type = $parameter->getType();
         if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
             throw new InvalidArgumentException(sprintf(
-                'To use the #[RequestQuery] annotation, the parameter %s must be typed with an object.',
+                'To use the #[RequestQuery] annotation, the parameter "%s" must be typed with an object.',
                 ParameterResolverChain::stringifyParameter($parameter),
             ));
         }

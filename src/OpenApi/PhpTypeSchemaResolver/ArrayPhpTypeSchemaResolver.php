@@ -18,9 +18,9 @@ use ReflectionParameter;
 use ReflectionProperty;
 use Reflector;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
-use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverInterface;
-use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverManagerAwareInterface;
-use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverManagerInterface;
+use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverInterface;
+use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerAwareInterface;
+use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerInterface;
 use Sunrise\Http\Router\OpenApi\Type;
 use Sunrise\Hydrator\Annotation\Subtype;
 
@@ -28,15 +28,15 @@ use Sunrise\Hydrator\Annotation\Subtype;
  * @since 3.0.0
  */
 final class ArrayPhpTypeSchemaResolver implements
-    PhpTypeSchemaResolverInterface,
-    PhpTypeSchemaResolverManagerAwareInterface
+    OpenApiPhpTypeSchemaResolverInterface,
+    OpenApiPhpTypeSchemaResolverManagerAwareInterface
 {
-    private readonly PhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager;
+    private readonly OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager;
 
-    public function setPhpTypeSchemaResolverManager(
-        PhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager,
+    public function setOpenApiPhpTypeSchemaResolverManager(
+        OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager,
     ): void {
-        $this->phpTypeSchemaResolverManager = $phpTypeSchemaResolverManager;
+        $this->openApiPhpTypeSchemaResolverManager = $openApiPhpTypeSchemaResolverManager;
     }
 
     public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
@@ -72,7 +72,7 @@ final class ArrayPhpTypeSchemaResolver implements
                 $annotation = $annotations[0]->newInstance();
 
                 $arrayElementPhpType = new Type($annotation->name, $annotation->allowsNull);
-                $arrayElementPhpTypeSchema = $this->phpTypeSchemaResolverManager
+                $arrayElementPhpTypeSchema = $this->openApiPhpTypeSchemaResolverManager
                     ->resolvePhpTypeSchema($arrayElementPhpType, $phpTypeHolder);
 
                 $phpTypeSchema['oneOf'][0]['items'] = $arrayElementPhpTypeSchema;

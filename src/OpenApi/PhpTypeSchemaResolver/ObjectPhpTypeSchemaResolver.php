@@ -19,10 +19,10 @@ use ReflectionException;
 use ReflectionProperty;
 use Reflector;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
-use Sunrise\Http\Router\OpenApi\PhpTypeSchemaNameResolverInterface;
-use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverInterface;
-use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverManagerAwareInterface;
-use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverManagerInterface;
+use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaNameResolverInterface;
+use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverInterface;
+use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerAwareInterface;
+use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerInterface;
 use Sunrise\Http\Router\OpenApi\Type;
 use Sunrise\Http\Router\OpenApi\TypeFactory;
 use Sunrise\Hydrator\Annotation\Alias;
@@ -36,16 +36,16 @@ use function strtr;
  * @since 3.0.0
  */
 final class ObjectPhpTypeSchemaResolver implements
-    PhpTypeSchemaResolverInterface,
-    PhpTypeSchemaNameResolverInterface,
-    PhpTypeSchemaResolverManagerAwareInterface
+    OpenApiPhpTypeSchemaResolverInterface,
+    OpenApiPhpTypeSchemaNameResolverInterface,
+    OpenApiPhpTypeSchemaResolverManagerAwareInterface
 {
-    private readonly PhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager;
+    private readonly OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager;
 
-    public function setPhpTypeSchemaResolverManager(
-        PhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager,
+    public function setOpenApiPhpTypeSchemaResolverManager(
+        OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager,
     ): void {
-        $this->phpTypeSchemaResolverManager = $phpTypeSchemaResolverManager;
+        $this->openApiPhpTypeSchemaResolverManager = $openApiPhpTypeSchemaResolverManager;
     }
 
     public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
@@ -79,7 +79,8 @@ final class ObjectPhpTypeSchemaResolver implements
 
             $propertyName = self::getPropertyName($property);
             $propertyType = TypeFactory::fromPhpTypeReflection($property->getType());
-            $propertyTypeSchema = $this->phpTypeSchemaResolverManager->resolvePhpTypeSchema($propertyType, $property);
+            $propertyTypeSchema = $this->openApiPhpTypeSchemaResolverManager
+                ->resolvePhpTypeSchema($propertyType, $property);
 
             $phpTypeSchema['properties'][$propertyName] = $propertyTypeSchema;
 

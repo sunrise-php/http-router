@@ -76,7 +76,7 @@ final class EncodableResponseResolver implements ResponseResolverInterface
             $encodedResponse = $this->codecManager->encode($codecMediaType, $response, $codecContext);
         } catch (CodecException $e) {
             throw new RuntimeException(sprintf(
-                'The responder %s returned a response that could not be encoded due to: %s',
+                'The responder "%s" returned a response that could not be encoded due to: %s',
                 ResponseResolverChain::stringifyResponder($responder),
                 $e->getMessage(),
             ), previous: $e);

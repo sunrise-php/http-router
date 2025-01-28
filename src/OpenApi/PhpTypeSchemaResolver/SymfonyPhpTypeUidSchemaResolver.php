@@ -15,7 +15,7 @@ namespace Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver;
 
 use Reflector;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
-use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverInterface;
+use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverInterface;
 use Sunrise\Http\Router\OpenApi\Type;
 use Symfony\Component\Uid\AbstractUid;
 use Symfony\Component\Uid\Uuid;
@@ -25,7 +25,7 @@ use function is_subclass_of;
 /**
  * @since 3.0.0
  */
-final class SymfonyUidPhpTypeSchemaResolver implements PhpTypeSchemaResolverInterface
+final class SymfonyPhpTypeUidSchemaResolver implements OpenApiPhpTypeSchemaResolverInterface
 {
     public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
     {

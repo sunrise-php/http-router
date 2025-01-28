@@ -18,7 +18,7 @@ use Reflector;
 /**
  * @since 3.0.0
  */
-interface PhpTypeSchemaNameResolverInterface
+interface OpenApiPhpTypeSchemaNameResolverInterface
 {
     public function resolvePhpTypeSchemaName(Type $phpType, Reflector $phpTypeHolder): string;
 }

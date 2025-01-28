@@ -50,14 +50,14 @@ final class RouteMatcher
         } catch (Throwable) {
             if (preg_last_error() === PREG_BAD_UTF8_ERROR) {
                 throw new UnexpectedValueException(sprintf(
-                    'The route %s could not be matched due to an invalid subject: %s.',
+                    'The route "%s" could not be matched due to an invalid subject: %s.',
                     $route,
                     preg_last_error_msg(),
                 ));
             }
 
             throw new InvalidArgumentException(sprintf(
-                'The route %s could not be matched due to: %s. ' .
+                'The route "%s" could not be matched due to: %s. ' .
                 'This problem is most likely related to one of the route patterns.',
                 $route,
                 preg_last_error_msg(),

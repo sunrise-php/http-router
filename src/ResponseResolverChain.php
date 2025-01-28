@@ -62,7 +62,7 @@ final class ResponseResolverChain implements ResponseResolverChainInterface
         }
 
         throw new LogicException(sprintf(
-            'The responder %s returned an unsupported response that cannot be resolved.',
+            'The responder "%s" returned an unsupported response that cannot be resolved.',
             self::stringifyResponder($responder),
         ));
     }

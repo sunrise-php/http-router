@@ -167,8 +167,8 @@ final class DescriptorLoader implements DescriptorLoaderInterface
         }
 
         throw new InvalidArgumentException(sprintf(
-            'The loader %s only accepts directory, file or class names; ' .
-            'however, the resource %s is not one of them.',
+            'The loader "%s" only accepts directory, file or class names; ' .
+            'however, the resource "%s" is not one of them.',
             self::class,
             $resource,
         ));

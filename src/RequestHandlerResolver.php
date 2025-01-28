@@ -72,7 +72,7 @@ final class RequestHandlerResolver implements RequestHandlerResolverInterface
         }
 
         throw new InvalidArgumentException(sprintf(
-            'The request handler reference %s could not be resolved.',
+            'The request handler reference "%s" could not be resolved.',
             ReferenceResolver::stringifyReference($reference),
         ));
     }

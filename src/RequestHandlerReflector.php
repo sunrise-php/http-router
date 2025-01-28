@@ -55,7 +55,7 @@ final class RequestHandlerReflector implements RequestHandlerReflectorInterface
         }
 
         throw new InvalidArgumentException(sprintf(
-            'The request handler reference %s could not be reflected.',
+            'The request handler reference "%s" could not be reflected.',
             ReferenceResolver::stringifyReference($reference),
         ));
     }

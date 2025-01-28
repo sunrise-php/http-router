@@ -23,7 +23,6 @@ use Sunrise\Http\Router\RequestHandlerReflectorInterface;
 use Sunrise\Http\Router\RouteInterface;
 use Throwable;
 
-use function array_map;
 use function array_replace_recursive;
 use function dirname;
 use function file_put_contents;
@@ -41,8 +40,8 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
 {
     public function __construct(
         private readonly OpenApiConfiguration $openApiConfiguration,
-        private readonly OpenApiOperationEnricherChainInterface $operationEnricherChain,
-        private readonly PhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager,
+        private readonly OpenApiOperationEnricherManagerInterface $openApiOperationEnricherManager,
+        private readonly OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager,
         private readonly RequestHandlerReflectorInterface $requestHandlerReflector,
         private readonly CodecManagerInterface $codecManager,
     ) {
@@ -59,7 +58,7 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
             $this->enrichDocumentWithOperations($route, $document);
         }
 
-        $this->phpTypeSchemaResolverManager->enrichDocumentWithNamedPhpTypeSchemas($document);
+        $this->openApiPhpTypeSchemaResolverManager->enrichDocumentWithDefinitions($document);
 
         return $document;
     }
@@ -126,11 +125,12 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
 
         /** @var array<array-key, mixed> $operation */
         $operation = [];
-
         foreach (ReflectorHelper::getAncestry($requestHandler) as $member) {
-            /** @var ReflectionAttribute<Operation> $annotation */
-            foreach ($member->getAttributes(Operation::class) as $annotation) {
-                $operation = array_replace_recursive($operation, $annotation->newInstance()->value);
+            /** @var list<ReflectionAttribute<Operation>> $annotations */
+            $annotations = $member->getAttributes(Operation::class);
+            foreach ($annotations as $annotation) {
+                $annotation = $annotation->newInstance();
+                $operation = array_replace_recursive($operation, $annotation->value);
             }
         }
 
@@ -140,13 +140,11 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
         $operation['description'] = $route->getDescription();
         $operation['deprecated'] = $route->isDeprecated();
 
-        $this->operationEnricherChain->enrichOperation($route, $requestHandler, $operation);
+        $this->openApiOperationEnricherManager->enrichOperation($route, $requestHandler, $operation);
 
         $path = RouteSimplifier::simplifyRoute($route->getPath());
-        $methods = array_map(strtolower(...), $route->getMethods());
-
-        foreach ($methods as $method) {
-            $document['paths'][$path][$method] = $operation;
+        foreach ($route->getMethods() as $method) {
+            $document['paths'][$path][strtolower($method)] = $operation;
         }
     }
 }

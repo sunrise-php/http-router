@@ -105,7 +105,7 @@ final class Router implements RouterInterface
         $routes = $this->getRoutes();
 
         if (!isset($routes[$name])) {
-            throw new InvalidArgumentException(sprintf('The route %s does not exist.', $name));
+            throw new InvalidArgumentException(sprintf('The route "%s" does not exist.', $name));
         }
 
         return $routes[$name];
@@ -232,7 +232,7 @@ final class Router implements RouterInterface
 
         if ($strictly && !RouteMatcher::matchRoute($route->getName(), $this->compileRoute($route), $result)) {
             throw new InvalidArgumentException(sprintf(
-                'The route %s could not be built because one of the values does not match its pattern.',
+                'The route "%s" could not be built because one of the values does not match its pattern.',
                 $route->getName(),
             ));
         }
@@ -338,7 +338,7 @@ final class Router implements RouterInterface
             $name = $route->getName();
 
             if (isset($this->routes[$name])) {
-                throw new InvalidArgumentException(sprintf('The route %s already exists.', $name));
+                throw new InvalidArgumentException(sprintf('The route "%s" already exists.', $name));
             }
 
             $this->routes[$name] = $route;

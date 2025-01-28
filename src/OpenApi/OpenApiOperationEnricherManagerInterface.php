@@ -13,21 +13,22 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\OpenApi;
 
-use Reflector;
+use ReflectionClass;
+use ReflectionMethod;
+use Sunrise\Http\Router\RouteInterface;
 
 /**
  * @since 3.0.0
  */
-interface PhpTypeSchemaResolverManagerInterface
+interface OpenApiOperationEnricherManagerInterface
 {
     /**
-     * @return array<array-key, mixed>
+     * @param array<array-key, mixed> $operation
+     * @param-out array<array-key, mixed> $operation
      */
-    public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array;
-
-    /**
-     * @param array<array-key, mixed> $document
-     * @param-out array<array-key, mixed> $document
-     */
-    public function enrichDocumentWithNamedPhpTypeSchemas(array &$document): void;
+    public function enrichOperation(
+        RouteInterface $route,
+        ReflectionClass|ReflectionMethod $requestHandler,
+        array &$operation,
+    ): void;
 }

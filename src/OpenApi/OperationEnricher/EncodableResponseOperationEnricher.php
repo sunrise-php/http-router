@@ -21,8 +21,8 @@ use Sunrise\Http\Router\Annotation\ResponseStatus;
 use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
 use Sunrise\Http\Router\OpenApi\OpenApiConfigurationAwareInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiOperationEnricherInterface;
-use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverManagerAwareInterface;
-use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverManagerInterface;
+use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerAwareInterface;
+use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerInterface;
 use Sunrise\Http\Router\OpenApi\TypeFactory;
 use Sunrise\Http\Router\RouteInterface;
 
@@ -32,20 +32,20 @@ use Sunrise\Http\Router\RouteInterface;
 final class EncodableResponseOperationEnricher implements
     OpenApiOperationEnricherInterface,
     OpenApiConfigurationAwareInterface,
-    PhpTypeSchemaResolverManagerAwareInterface
+    OpenApiPhpTypeSchemaResolverManagerAwareInterface
 {
     private readonly OpenApiConfiguration $openApiConfiguration;
-    private readonly PhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager;
+    private readonly OpenApiPhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager;
 
     public function setOpenApiConfiguration(OpenApiConfiguration $openApiConfiguration): void
     {
         $this->openApiConfiguration = $openApiConfiguration;
     }
 
-    public function setPhpTypeSchemaResolverManager(
-        PhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager,
+    public function setOpenApiPhpTypeSchemaResolverManager(
+        OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager,
     ): void {
-        $this->phpTypeSchemaResolverManager = $phpTypeSchemaResolverManager;
+        $this->phpTypeSchemaResolverManager = $openApiPhpTypeSchemaResolverManager;
     }
 
     /**

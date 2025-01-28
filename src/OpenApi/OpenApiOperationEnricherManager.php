@@ -16,11 +16,11 @@ namespace Sunrise\Http\Router\OpenApi;
 use ReflectionClass;
 use ReflectionMethod;
 use Sunrise\Http\Router\OpenApi\OperationEnricher\EmptyResponseOperationEnricher;
+use Sunrise\Http\Router\OpenApi\OperationEnricher\EncodableResponseOperationEnricher;
 use Sunrise\Http\Router\OpenApi\OperationEnricher\RequestBodyOperationEnricher;
 use Sunrise\Http\Router\OpenApi\OperationEnricher\RequestCookieOperationEnricher;
 use Sunrise\Http\Router\OpenApi\OperationEnricher\RequestHeaderOperationEnricher;
 use Sunrise\Http\Router\OpenApi\OperationEnricher\RequestStreamOperationEnricher;
-use Sunrise\Http\Router\OpenApi\OperationEnricher\EncodableResponseOperationEnricher;
 use Sunrise\Http\Router\OpenApi\OperationEnricher\RouteVariablesOperationEnricher;
 use Sunrise\Http\Router\OpenApi\OperationEnricher\UnsuccessfulResponseOperationEnricher;
 use Sunrise\Http\Router\RouteInterface;
@@ -30,7 +30,7 @@ use function usort;
 /**
  * @since 3.0.0
  */
-final class OpenApiOperationEnricherChain implements OpenApiOperationEnricherChainInterface
+final class OpenApiOperationEnricherManager implements OpenApiOperationEnricherManagerInterface
 {
     /**
      * @var array<array-key, OpenApiOperationEnricherInterface>
@@ -44,7 +44,7 @@ final class OpenApiOperationEnricherChain implements OpenApiOperationEnricherCha
      */
     public function __construct(
         private readonly OpenApiConfiguration $openApiConfiguration,
-        private readonly PhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager,
+        private readonly OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager,
         array $operationEnrichers = [],
     ) {
         $this->setOperationEnrichers(self::getDefaultOperationEnrichers());
@@ -77,8 +77,8 @@ final class OpenApiOperationEnricherChain implements OpenApiOperationEnricherCha
             if ($operationEnricher instanceof OpenApiConfigurationAwareInterface) {
                 $operationEnricher->setOpenApiConfiguration($this->openApiConfiguration);
             }
-            if ($operationEnricher instanceof PhpTypeSchemaResolverManagerAwareInterface) {
-                $operationEnricher->setPhpTypeSchemaResolverManager($this->phpTypeSchemaResolverManager);
+            if ($operationEnricher instanceof OpenApiPhpTypeSchemaResolverManagerAwareInterface) {
+                $operationEnricher->setOpenApiPhpTypeSchemaResolverManager($this->openApiPhpTypeSchemaResolverManager);
             }
         }
     }

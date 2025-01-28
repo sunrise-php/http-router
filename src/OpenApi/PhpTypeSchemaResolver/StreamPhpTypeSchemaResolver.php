@@ -16,13 +16,13 @@ namespace Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver;
 use Psr\Http\Message\StreamInterface;
 use Reflector;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
-use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolverInterface;
+use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverInterface;
 use Sunrise\Http\Router\OpenApi\Type;
 
 /**
  * @since 3.0.0
  */
-final class StreamPhpTypeSchemaResolver implements PhpTypeSchemaResolverInterface
+final class StreamPhpTypeSchemaResolver implements OpenApiPhpTypeSchemaResolverInterface
 {
     public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
     {

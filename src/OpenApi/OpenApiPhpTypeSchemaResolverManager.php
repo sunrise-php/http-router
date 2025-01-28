@@ -22,8 +22,9 @@ use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\FloatPhpTypeSchemaResolver
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\IntPhpTypeSchemaResolver;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\ObjectPhpTypeSchemaResolver;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\RamseyUuidPhpTypeSchemaResolver;
+use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\StreamPhpTypeSchemaResolver;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\StringPhpTypeSchemaResolver;
-use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\SymfonyUidPhpTypeSchemaResolver;
+use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\SymfonyPhpTypeUidSchemaResolver;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaResolver;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\TimezonePhpTypeSchemaResolver;
 
@@ -33,10 +34,10 @@ use function usort;
 /**
  * @since 3.0.0
  */
-final class PhpTypeSchemaResolverManager implements PhpTypeSchemaResolverManagerInterface
+final class OpenApiPhpTypeSchemaResolverManager implements OpenApiPhpTypeSchemaResolverManagerInterface
 {
     /**
-     * @var array<array-key, PhpTypeSchemaResolverInterface>
+     * @var array<array-key, OpenApiPhpTypeSchemaResolverInterface>
      */
     private array $phpTypeSchemaResolvers = [];
 
@@ -48,7 +49,7 @@ final class PhpTypeSchemaResolverManager implements PhpTypeSchemaResolverManager
     private bool $isPhpTypeSchemaResolversSorted = false;
 
     /**
-     * @param array<array-key, PhpTypeSchemaResolverInterface> $phpTypeSchemaResolvers
+     * @param array<array-key, OpenApiPhpTypeSchemaResolverInterface> $phpTypeSchemaResolvers
      */
     public function __construct(
         private readonly OpenApiConfiguration $openApiConfiguration,
@@ -71,21 +72,21 @@ final class PhpTypeSchemaResolverManager implements PhpTypeSchemaResolverManager
         }
 
         $phpTypeSchemaName = null;
-        if ($phpTypeSchemaResolver instanceof PhpTypeSchemaNameResolverInterface) {
+        if ($phpTypeSchemaResolver instanceof OpenApiPhpTypeSchemaNameResolverInterface) {
             $phpTypeSchemaName = $phpTypeSchemaResolver->resolvePhpTypeSchemaName($phpType, $phpTypeHolder);
         }
 
         if (isset($phpTypeSchemaName, $this->namedPhpTypeSchemas[$phpTypeSchemaName])) {
-            $phpTypeSchemaRef = self::createPhpTypeSchemaRef($phpTypeSchemaName);
-            return self::completePhpTypeSchema($phpType, $phpTypeSchemaRef);
+            $phpTypeSchemaReference = self::createPhpTypeSchemaReference($phpTypeSchemaName);
+            return self::completePhpTypeSchema($phpType, $phpTypeSchemaReference);
         }
 
         $phpTypeSchema = $phpTypeSchemaResolver->resolvePhpTypeSchema($phpType, $phpTypeHolder);
 
         if (isset($phpTypeSchemaName)) {
             $this->namedPhpTypeSchemas[$phpTypeSchemaName] = $phpTypeSchema;
-            $phpTypeSchemaRef = self::createPhpTypeSchemaRef($phpTypeSchemaName);
-            return self::completePhpTypeSchema($phpType, $phpTypeSchemaRef);
+            $phpTypeSchemaReference = self::createPhpTypeSchemaReference($phpTypeSchemaName);
+            return self::completePhpTypeSchema($phpType, $phpTypeSchemaReference);
         }
 
         return self::completePhpTypeSchema($phpType, $phpTypeSchema);
@@ -94,9 +95,9 @@ final class PhpTypeSchemaResolverManager implements PhpTypeSchemaResolverManager
     /**
      * @inheritDoc
      *
-     * @see self::createPhpTypeSchemaRef()
+     * @see self::createPhpTypeSchemaReference()
      */
-    public function enrichDocumentWithNamedPhpTypeSchemas(array &$document): void
+    public function enrichDocumentWithDefinitions(array &$document): void
     {
         foreach ($this->namedPhpTypeSchemas as $phpTypeSchemaName => $phpTypeSchema) {
             $document['definitions'][$phpTypeSchemaName] = $phpTypeSchema;
@@ -104,7 +105,7 @@ final class PhpTypeSchemaResolverManager implements PhpTypeSchemaResolverManager
     }
 
     /**
-     * @param array<array-key, PhpTypeSchemaResolverInterface> $phpTypeSchemaResolvers
+     * @param array<array-key, OpenApiPhpTypeSchemaResolverInterface> $phpTypeSchemaResolvers
      */
     private function setPhpTypeSchemaResolvers(array $phpTypeSchemaResolvers): void
     {
@@ -114,14 +115,16 @@ final class PhpTypeSchemaResolverManager implements PhpTypeSchemaResolverManager
             if ($phpTypeSchemaResolver instanceof OpenApiConfigurationAwareInterface) {
                 $phpTypeSchemaResolver->setOpenApiConfiguration($this->openApiConfiguration);
             }
-            if ($phpTypeSchemaResolver instanceof PhpTypeSchemaResolverManagerAwareInterface) {
-                $phpTypeSchemaResolver->setPhpTypeSchemaResolverManager($this);
+            if ($phpTypeSchemaResolver instanceof OpenApiPhpTypeSchemaResolverManagerAwareInterface) {
+                $phpTypeSchemaResolver->setOpenApiPhpTypeSchemaResolverManager($this);
             }
         }
     }
 
-    private function findPhpTypeSchemaResolver(Type $phpType, Reflector $phpTypeHolder): ?PhpTypeSchemaResolverInterface
-    {
+    private function findPhpTypeSchemaResolver(
+        Type $phpType,
+        Reflector $phpTypeHolder,
+    ): ?OpenApiPhpTypeSchemaResolverInterface {
         foreach ($this->phpTypeSchemaResolvers as $phpTypeSchemaResolver) {
             if ($phpTypeSchemaResolver->supportsPhpType($phpType, $phpTypeHolder)) {
                 return $phpTypeSchemaResolver;
@@ -134,15 +137,15 @@ final class PhpTypeSchemaResolverManager implements PhpTypeSchemaResolverManager
     private function sortPhpTypeSchemaResolvers(): void
     {
         $this->isPhpTypeSchemaResolversSorted = usort($this->phpTypeSchemaResolvers, static fn(
-            PhpTypeSchemaResolverInterface $a,
-            PhpTypeSchemaResolverInterface $b
+            OpenApiPhpTypeSchemaResolverInterface $a,
+            OpenApiPhpTypeSchemaResolverInterface $b
         ): int => $b->getWeight() <=> $a->getWeight());
     }
 
     /**
      * @return array<array-key, mixed>
      */
-    private static function createPhpTypeSchemaRef(string $phpTypeSchemaName): array
+    private static function createPhpTypeSchemaReference(string $phpTypeSchemaName): array
     {
         return ['$ref' => sprintf('#/definitions/%s', $phpTypeSchemaName)];
     }
@@ -167,7 +170,7 @@ final class PhpTypeSchemaResolverManager implements PhpTypeSchemaResolverManager
     }
 
     /**
-     * @return array<array-key, PhpTypeSchemaResolverInterface>
+     * @return array<array-key, OpenApiPhpTypeSchemaResolverInterface>
      */
     private static function getDefaultPhpTypeSchemaResolvers(): array
     {
@@ -180,8 +183,9 @@ final class PhpTypeSchemaResolverManager implements PhpTypeSchemaResolverManager
             new IntPhpTypeSchemaResolver(),
             new ObjectPhpTypeSchemaResolver(),
             new RamseyUuidPhpTypeSchemaResolver(),
+            new StreamPhpTypeSchemaResolver(),
             new StringPhpTypeSchemaResolver(),
-            new SymfonyUidPhpTypeSchemaResolver(),
+            new SymfonyPhpTypeUidSchemaResolver(),
             new TimestampPhpTypeSchemaResolver(),
             new TimezonePhpTypeSchemaResolver(),
         ];

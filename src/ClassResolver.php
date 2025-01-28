@@ -64,14 +64,14 @@ final class ClassResolver implements ClassResolverInterface
         }
 
         if (!class_exists($className)) {
-            throw new InvalidArgumentException(sprintf('The class %s does not exist.', $className));
+            throw new InvalidArgumentException(sprintf('The class "%s" does not exist.', $className));
         }
 
         /** @var ReflectionClass<T> $classReflection */
         $classReflection = new ReflectionClass($className);
 
         if (!$classReflection->isInstantiable()) {
-            throw new InvalidArgumentException(sprintf('The class %s is not instantiable.', $className));
+            throw new InvalidArgumentException(sprintf('The class "%s" is not instantiable.', $className));
         }
 
         $this->resolvedClasses[$className] = $classReflection->newInstance(
