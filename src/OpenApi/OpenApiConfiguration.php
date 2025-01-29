@@ -48,7 +48,7 @@ final class OpenApiConfiguration
         public readonly ?string $documentFilename = null,
         public readonly string $documentReadMode = self::DEFAULT_DOCUMENT_READ_MODE,
         public readonly string $temporaryDocumentBasename = self::DEFAULT_TEMPORARY_DOCUMENT_BASENAME,
-        public readonly string $timestampFormat = self::DEFAULT_TIMESTAMP_FORMAT,
+        public readonly string $defaultTimestampFormat = self::DEFAULT_TIMESTAMP_FORMAT,
         public readonly int $emptyResponseStatusCode = self::DEFAULT_EMPTY_RESPONSE_STATUS_CODE,
         public readonly int $successfulResponseStatusCode = self::DEFAULT_SUCCESSFUL_RESPONSE_STATUS_CODE,
         public readonly string $successfulResponseDescription = self::DEFAULT_SUCCESSFUL_RESPONSE_DESCRIPTION,

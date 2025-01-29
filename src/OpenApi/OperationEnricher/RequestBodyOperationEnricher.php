@@ -29,12 +29,12 @@ final class RequestBodyOperationEnricher implements
     OpenApiOperationEnricherInterface,
     OpenApiPhpTypeSchemaResolverManagerAwareInterface
 {
-    private readonly OpenApiPhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager;
+    private readonly OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager;
 
     public function setOpenApiPhpTypeSchemaResolverManager(
         OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager,
     ): void {
-        $this->phpTypeSchemaResolverManager = $openApiPhpTypeSchemaResolverManager;
+        $this->openApiPhpTypeSchemaResolverManager = $openApiPhpTypeSchemaResolverManager;
     }
 
     /**
@@ -53,7 +53,7 @@ final class RequestBodyOperationEnricher implements
         foreach ($requestHandler->getParameters() as $requestHandlerParameter) {
             if ($requestHandlerParameter->getAttributes(RequestBody::class) !== []) {
                 $requestBodyType = TypeFactory::fromPhpTypeReflection($requestHandlerParameter->getType());
-                $requestBodySchema = $this->phpTypeSchemaResolverManager
+                $requestBodySchema = $this->openApiPhpTypeSchemaResolverManager
                     ->resolvePhpTypeSchema($requestBodyType, $requestHandlerParameter);
                 break;
             }
@@ -63,9 +63,14 @@ final class RequestBodyOperationEnricher implements
             return;
         }
 
-        $operation['requestBody']['required'] = true;
+        $operation['requestBody'] = [
+            'required' => true,
+        ];
+
         foreach ($route->getConsumedMediaTypes() as $consumedMediaType) {
-            $operation['requestBody']['content'][$consumedMediaType->getIdentifier()]['schema'] = $requestBodySchema;
+            $operation['requestBody']['content'][$consumedMediaType->getIdentifier()] = [
+                'schema' => $requestBodySchema,
+            ];
         }
     }
 

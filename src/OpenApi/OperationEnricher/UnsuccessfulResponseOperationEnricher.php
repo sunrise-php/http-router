@@ -32,7 +32,7 @@ final class UnsuccessfulResponseOperationEnricher implements
     OpenApiPhpTypeSchemaResolverManagerAwareInterface
 {
     private readonly OpenApiConfiguration $openApiConfiguration;
-    private readonly OpenApiPhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager;
+    private readonly OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager;
 
     public function setOpenApiConfiguration(OpenApiConfiguration $openApiConfiguration): void
     {
@@ -42,7 +42,7 @@ final class UnsuccessfulResponseOperationEnricher implements
     public function setOpenApiPhpTypeSchemaResolverManager(
         OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager,
     ): void {
-        $this->phpTypeSchemaResolverManager = $openApiPhpTypeSchemaResolverManager;
+        $this->openApiPhpTypeSchemaResolverManager = $openApiPhpTypeSchemaResolverManager;
     }
 
     /**
@@ -50,7 +50,7 @@ final class UnsuccessfulResponseOperationEnricher implements
      */
     public function enrichOperation(
         RouteInterface $route,
-        ReflectionMethod|ReflectionClass $requestHandler,
+        ReflectionClass|ReflectionMethod $requestHandler,
         array &$operation,
     ): void {
         if (! $requestHandler instanceof ReflectionMethod) {
@@ -61,14 +61,18 @@ final class UnsuccessfulResponseOperationEnricher implements
             return;
         }
 
-        $operation['responses']['default']['description'] = $this->openApiConfiguration
-            ->unsuccessfulResponseDescription;
+        $operation['responses']['default'] = [
+            'description' => $this->openApiConfiguration->unsuccessfulResponseDescription,
+        ];
 
-        $responseType = new Type($this->openApiConfiguration->unsuccessfulResponseViewName, allowsNull: false);
-        $responseSchema = $this->phpTypeSchemaResolverManager->resolvePhpTypeSchema($responseType, $requestHandler);
+        $responseBodyType = new Type($this->openApiConfiguration->unsuccessfulResponseViewName, allowsNull: false);
+        $responseBodySchema = $this->openApiPhpTypeSchemaResolverManager
+            ->resolvePhpTypeSchema($responseBodyType, $requestHandler);
 
-        foreach ($route->getProducedMediaTypes() as $mediaType) {
-            $operation['responses']['default']['content'][$mediaType->getIdentifier()]['schema'] = $responseSchema;
+        foreach ($route->getProducedMediaTypes() as $producedMediaType) {
+            $operation['responses']['default']['content'][$producedMediaType->getIdentifier()] = [
+                'schema' => $responseBodySchema,
+            ];
         }
     }
 

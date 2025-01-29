@@ -13,31 +13,27 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\OpenApi\OperationEnricher;
 
-use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\EncodableResponse;
-use Sunrise\Http\Router\Annotation\ResponseHeader;
-use Sunrise\Http\Router\Annotation\ResponseStatus;
 use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
 use Sunrise\Http\Router\OpenApi\OpenApiConfigurationAwareInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiOperationEnricherInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerAwareInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerInterface;
-use Sunrise\Http\Router\OpenApi\Type;
 use Sunrise\Http\Router\OpenApi\TypeFactory;
 use Sunrise\Http\Router\RouteInterface;
 
 /**
  * @since 3.0.0
  */
-final class EncodableResponseOperationEnricher implements
+final class EncodableResponseOperationEnricher extends AbstractResponseOperationEnricher implements
     OpenApiOperationEnricherInterface,
     OpenApiConfigurationAwareInterface,
     OpenApiPhpTypeSchemaResolverManagerAwareInterface
 {
     private readonly OpenApiConfiguration $openApiConfiguration;
-    private readonly OpenApiPhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager;
+    private readonly OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager;
 
     public function setOpenApiConfiguration(OpenApiConfiguration $openApiConfiguration): void
     {
@@ -47,7 +43,7 @@ final class EncodableResponseOperationEnricher implements
     public function setOpenApiPhpTypeSchemaResolverManager(
         OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager,
     ): void {
-        $this->phpTypeSchemaResolverManager = $openApiPhpTypeSchemaResolverManager;
+        $this->openApiPhpTypeSchemaResolverManager = $openApiPhpTypeSchemaResolverManager;
     }
 
     /**
@@ -55,7 +51,7 @@ final class EncodableResponseOperationEnricher implements
      */
     public function enrichOperation(
         RouteInterface $route,
-        ReflectionMethod|ReflectionClass $requestHandler,
+        ReflectionClass|ReflectionMethod $requestHandler,
         array &$operation,
     ): void {
         if (! $requestHandler instanceof ReflectionMethod) {
@@ -66,42 +62,28 @@ final class EncodableResponseOperationEnricher implements
             return;
         }
 
-        $responseStatusCode = $this->openApiConfiguration->successfulResponseStatusCode;
+        $responseStatusCode = $this->getResponseStatusCode($requestHandler)
+            ?? $this->openApiConfiguration->successfulResponseStatusCode;
 
-        /** @var list<ReflectionAttribute<ResponseStatus>> $annotations */
-        $annotations = $requestHandler->getAttributes(ResponseStatus::class);
-        if (isset($annotations[0])) {
-            $responseStatus = $annotations[0]->newInstance();
-            $responseStatusCode = $responseStatus->code;
-        }
+        $operation['responses'][$responseStatusCode] = [
+            'description' => $this->openApiConfiguration->successfulResponseDescription,
+        ];
 
-        /** @var list<ReflectionAttribute<ResponseHeader>> $annotations */
-        $annotations = $requestHandler->getAttributes(ResponseHeader::class);
-        foreach ($annotations as $annotation) {
-            $responseHeader = $annotation->newInstance();
+        $this->enrichResponseWithHeaders($requestHandler, $operation['responses'][$responseStatusCode]);
 
-            $operation['responses'][$responseStatusCode]['headers'][$responseHeader->name] = [
-                'schema' => [
-                    'type' => Type::OAS_TYPE_NAME_STRING,
-                    'const' => $responseHeader->value,
-                ],
+        $responseBodyType = TypeFactory::fromPhpTypeReflection($requestHandler->getReturnType());
+        $responseBodySchema = $this->openApiPhpTypeSchemaResolverManager
+            ->resolvePhpTypeSchema($responseBodyType, $requestHandler);
+
+        foreach ($route->getProducedMediaTypes() as $producedMediaType) {
+            $operation['responses'][$responseStatusCode]['content'][$producedMediaType->getIdentifier()] = [
+                'schema' => $responseBodySchema,
             ];
-        }
-
-        $operation['responses'][$responseStatusCode]['description'] = $this->openApiConfiguration
-            ->successfulResponseDescription;
-
-        $responseType = TypeFactory::fromPhpTypeReflection($requestHandler->getReturnType());
-        $responseSchema = $this->phpTypeSchemaResolverManager->resolvePhpTypeSchema($responseType, $requestHandler);
-
-        foreach ($route->getProducedMediaTypes() as $mediaType) {
-            // phpcs:disable Generic.Files.LineLength.TooLong
-            $operation['responses'][$responseStatusCode]['content'][$mediaType->getIdentifier()]['schema'] = $responseSchema;
         }
     }
 
     public function getWeight(): int
     {
-        return 0;
+        return 10;
     }
 }

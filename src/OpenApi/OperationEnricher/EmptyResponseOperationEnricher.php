@@ -13,11 +13,8 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\OpenApi\OperationEnricher;
 
-use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
-use Sunrise\Http\Router\Annotation\ResponseHeader;
-use Sunrise\Http\Router\Annotation\ResponseStatus;
 use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
 use Sunrise\Http\Router\OpenApi\OpenApiConfigurationAwareInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiOperationEnricherInterface;
@@ -28,7 +25,7 @@ use Sunrise\Http\Router\RouteInterface;
 /**
  * @since 3.0.0
  */
-final class EmptyResponseOperationEnricher implements
+final class EmptyResponseOperationEnricher extends AbstractResponseOperationEnricher implements
     OpenApiOperationEnricherInterface,
     OpenApiConfigurationAwareInterface
 {
@@ -44,46 +41,30 @@ final class EmptyResponseOperationEnricher implements
      */
     public function enrichOperation(
         RouteInterface $route,
-        ReflectionMethod|ReflectionClass $requestHandler,
+        ReflectionClass|ReflectionMethod $requestHandler,
         array &$operation,
     ): void {
         if (! $requestHandler instanceof ReflectionMethod) {
             return;
         }
 
-        $responseType = TypeFactory::fromPhpTypeReflection($requestHandler->getReturnType());
-        if ($responseType->name !== Type::PHP_TYPE_NAME_VOID) {
+        $responseBodyType = TypeFactory::fromPhpTypeReflection($requestHandler->getReturnType());
+        if (!$responseBodyType->is(Type::PHP_TYPE_NAME_VOID)) {
             return;
         }
 
-        $responseStatusCode = $this->openApiConfiguration->emptyResponseStatusCode;
+        $responseStatusCode = $this->getResponseStatusCode($requestHandler)
+            ?? $this->openApiConfiguration->emptyResponseStatusCode;
 
-        /** @var list<ReflectionAttribute<ResponseStatus>> $annotations */
-        $annotations = $requestHandler->getAttributes(ResponseStatus::class);
-        if (isset($annotations[0])) {
-            $responseStatus = $annotations[0]->newInstance();
-            $responseStatusCode = $responseStatus->code;
-        }
+        $operation['responses'][$responseStatusCode] = [
+            'description' => $this->openApiConfiguration->successfulResponseDescription,
+        ];
 
-        /** @var list<ReflectionAttribute<ResponseHeader>> $annotations */
-        $annotations = $requestHandler->getAttributes(ResponseHeader::class);
-        foreach ($annotations as $annotation) {
-            $responseHeader = $annotation->newInstance();
-
-            $operation['responses'][$responseStatusCode]['headers'][$responseHeader->name] = [
-                'schema' => [
-                    'type' => Type::OAS_TYPE_NAME_STRING,
-                    'const' => $responseHeader->value,
-                ],
-            ];
-        }
-
-        $operation['responses'][$responseStatusCode]['description'] = $this->openApiConfiguration
-            ->successfulResponseDescription;
+        $this->enrichResponseWithHeaders($requestHandler, $operation['responses'][$responseStatusCode]);
     }
 
     public function getWeight(): int
     {
-        return 0;
+        return 10;
     }
 }

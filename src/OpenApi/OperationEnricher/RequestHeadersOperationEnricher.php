@@ -26,16 +26,16 @@ use Sunrise\Http\Router\RouteInterface;
 /**
  * @since 3.0.0
  */
-final class RequestHeaderOperationEnricher implements
+final class RequestHeadersOperationEnricher implements
     OpenApiOperationEnricherInterface,
     OpenApiPhpTypeSchemaResolverManagerAwareInterface
 {
-    private readonly OpenApiPhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager;
+    private readonly OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager;
 
     public function setOpenApiPhpTypeSchemaResolverManager(
         OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager,
     ): void {
-        $this->phpTypeSchemaResolverManager = $openApiPhpTypeSchemaResolverManager;
+        $this->openApiPhpTypeSchemaResolverManager = $openApiPhpTypeSchemaResolverManager;
     }
 
     /**
@@ -43,7 +43,7 @@ final class RequestHeaderOperationEnricher implements
      */
     public function enrichOperation(
         RouteInterface $route,
-        ReflectionMethod|ReflectionClass $requestHandler,
+        ReflectionClass|ReflectionMethod $requestHandler,
         array &$operation,
     ): void {
         if (! $requestHandler instanceof ReflectionMethod) {
@@ -53,30 +53,24 @@ final class RequestHeaderOperationEnricher implements
         foreach ($requestHandler->getParameters() as $requestHandlerParameter) {
             /** @var list<ReflectionAttribute<RequestHeader>> $annotations */
             $annotations = $requestHandlerParameter->getAttributes(RequestHeader::class);
-            if (!isset($annotations[0])) {
-                continue;
+            if (isset($annotations[0])) {
+                $requestHeader = $annotations[0]->newInstance();
+                $requestHeaderType = TypeFactory::fromPhpTypeReflection($requestHandlerParameter->getType());
+                $requestHeaderSchema = $this->openApiPhpTypeSchemaResolverManager
+                    ->resolvePhpTypeSchema($requestHeaderType, $requestHandlerParameter);
+
+                $operation['parameters'][] = [
+                    'in' => 'header',
+                    'name' => $requestHeader->name,
+                    'schema' => $requestHeaderSchema,
+                    'required' => !$requestHandlerParameter->isDefaultValueAvailable(),
+                ];
             }
-
-            $annotation = $annotations[0]->newInstance();
-
-            $parameterType = TypeFactory::fromPhpTypeReflection($requestHandlerParameter->getType());
-            $parameterSchema = $this->phpTypeSchemaResolverManager
-                ->resolvePhpTypeSchema($parameterType, $requestHandlerParameter);
-
-            $parameter['in'] = 'header';
-            $parameter['name'] = $annotation->name;
-            $parameter['schema'] = $parameterSchema;
-
-            if (!$requestHandlerParameter->isDefaultValueAvailable()) {
-                $parameter['required'] = true;
-            }
-
-            $operation['parameters'][] = $parameter;
         }
     }
 
     public function getWeight(): int
     {
-        return 1;
+        return 10;
     }
 }

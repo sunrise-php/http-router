@@ -18,10 +18,11 @@ use ReflectionMethod;
 use Sunrise\Http\Router\OpenApi\OperationEnricher\EmptyResponseOperationEnricher;
 use Sunrise\Http\Router\OpenApi\OperationEnricher\EncodableResponseOperationEnricher;
 use Sunrise\Http\Router\OpenApi\OperationEnricher\RequestBodyOperationEnricher;
-use Sunrise\Http\Router\OpenApi\OperationEnricher\RequestCookieOperationEnricher;
-use Sunrise\Http\Router\OpenApi\OperationEnricher\RequestHeaderOperationEnricher;
+use Sunrise\Http\Router\OpenApi\OperationEnricher\RequestCookiesOperationEnricher;
+use Sunrise\Http\Router\OpenApi\OperationEnricher\RequestHeadersOperationEnricher;
+use Sunrise\Http\Router\OpenApi\OperationEnricher\RequestQueryOperationEnricher;
 use Sunrise\Http\Router\OpenApi\OperationEnricher\RequestStreamOperationEnricher;
-use Sunrise\Http\Router\OpenApi\OperationEnricher\RouteVariablesOperationEnricher;
+use Sunrise\Http\Router\OpenApi\OperationEnricher\RequestVariablesOperationEnricher;
 use Sunrise\Http\Router\OpenApi\OperationEnricher\UnsuccessfulResponseOperationEnricher;
 use Sunrise\Http\Router\RouteInterface;
 
@@ -99,10 +100,11 @@ final class OpenApiOperationEnricherManager implements OpenApiOperationEnricherM
             new EmptyResponseOperationEnricher(),
             new EncodableResponseOperationEnricher(),
             new RequestBodyOperationEnricher(),
-            new RequestCookieOperationEnricher(),
-            new RequestHeaderOperationEnricher(),
+            new RequestCookiesOperationEnricher(),
+            new RequestHeadersOperationEnricher(),
+            new RequestQueryOperationEnricher(),
             new RequestStreamOperationEnricher(),
-            new RouteVariablesOperationEnricher(),
+            new RequestVariablesOperationEnricher(),
             new UnsuccessfulResponseOperationEnricher(),
         ];
     }

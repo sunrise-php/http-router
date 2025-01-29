@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\OpenApi\OperationEnricher;
 
-use Psr\Http\Message\StreamInterface;
 use ReflectionClass;
 use ReflectionMethod;
+use Sunrise\Http\Router\Annotation\RequestQuery;
 use Sunrise\Http\Router\OpenApi\OpenApiOperationEnricherInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerAwareInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerInterface;
@@ -25,7 +25,7 @@ use Sunrise\Http\Router\RouteInterface;
 /**
  * @since 3.0.0
  */
-final class RequestStreamOperationEnricher implements
+final class RequestQueryOperationEnricher implements
     OpenApiOperationEnricherInterface,
     OpenApiPhpTypeSchemaResolverManagerAwareInterface
 {
@@ -49,33 +49,30 @@ final class RequestStreamOperationEnricher implements
             return;
         }
 
-        $requestBodySchema = null;
+        $requestQuerySchema = null;
         foreach ($requestHandler->getParameters() as $requestHandlerParameter) {
-            $requestBodyType = TypeFactory::fromPhpTypeReflection($requestHandlerParameter->getType());
-            if ($requestBodyType->is(StreamInterface::class)) {
-                $requestBodySchema = $this->openApiPhpTypeSchemaResolverManager
-                    ->resolvePhpTypeSchema($requestBodyType, $requestHandlerParameter);
+            if ($requestHandlerParameter->getAttributes(RequestQuery::class) !== []) {
+                $requestQueryType = TypeFactory::fromPhpTypeReflection($requestHandlerParameter->getType());
+                $requestQuerySchema = $this->openApiPhpTypeSchemaResolverManager
+                    ->resolvePhpTypeSchema($requestQueryType, $requestHandlerParameter);
                 break;
             }
         }
 
-        if ($requestBodySchema === null) {
+        if ($requestQuerySchema === null) {
             return;
         }
 
-        $operation['requestBody'] = [
+        $operation['parameters'][] = [
+            'in' => 'query',
+            'name' => 'Query',
+            'schema' => $requestQuerySchema,
             'required' => true,
         ];
-
-        foreach ($route->getConsumedMediaTypes() as $consumedMediaType) {
-            $operation['requestBody']['content'][$consumedMediaType->getIdentifier()] = [
-                'schema' => $requestBodySchema,
-            ];
-        }
     }
 
     public function getWeight(): int
     {
-        return 0;
+        return 30;
     }
 }

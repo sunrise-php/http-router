@@ -39,4 +39,9 @@ final class Type
         public readonly bool $allowsNull,
     ) {
     }
+
+    public function is(string $typeName): bool
+    {
+        return $this->name === $typeName;
+    }
 }
