@@ -77,13 +77,12 @@ final class Router implements RouterInterface
         array $responseResolvers = [],
         ?ContainerInterface $container = null,
     ) {
-        $parameterResolvers[] = new DirectInjectionParameterResolver($this);
+        if ($referenceResolver === null) {
+            $parameterResolvers[] = new DirectInjectionParameterResolver($this);
+            $referenceResolver = ReferenceResolver::build($parameterResolvers, $responseResolvers, $container);
+        }
 
-        $this->referenceResolver = $referenceResolver ?? ReferenceResolver::build(
-            parameterResolvers: $parameterResolvers,
-            responseResolvers: $responseResolvers,
-            container: $container,
-        );
+        $this->referenceResolver = $referenceResolver;
     }
 
     /**
