@@ -14,8 +14,10 @@
     </projectFiles>
 
     <issueHandlers>
-        <MixedAssignment errorLevel="suppress" />
         <MissingConstructor errorLevel="suppress" />
+        <InaccessibleProperty errorLevel="suppress" />
+        <MixedAssignment errorLevel="suppress" />
+        <MixedArrayAssignment errorLevel="suppress" />
         <UnnecessaryVarAnnotation errorLevel="suppress" />
     </issueHandlers>
 </psalm>

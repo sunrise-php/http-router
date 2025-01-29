@@ -36,7 +36,7 @@ final class OpenApiOperationEnricherManager implements OpenApiOperationEnricherM
     /**
      * @var array<array-key, OpenApiOperationEnricherInterface>
      */
-    private array $operationEnrichers;
+    private array $operationEnrichers = [];
 
     private bool $isOperationEnrichersSorted = false;
 

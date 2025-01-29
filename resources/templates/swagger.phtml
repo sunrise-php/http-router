@@ -21,7 +21,7 @@ use Sunrise\Http\Router\OpenApi\Controller\SwaggerController;
     <script>
         window.onload = function() {
             window.ui = SwaggerUIBundle({
-                url: '<?= ${SwaggerController::OA_URI_VAR_NAME} ?>',
+                url: '<?= ${SwaggerController::OPENAPI_URI_VAR_NAME} ?>',
                 dom_id: '#app',
                 presets: [
                     SwaggerUIBundle.presets.apis,

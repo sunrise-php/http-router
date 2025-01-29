@@ -23,6 +23,7 @@ use Sunrise\Http\Router\RouteInterface;
 interface OpenApiOperationEnricherManagerInterface
 {
     /**
+     * @param ReflectionClass<object>|ReflectionMethod $requestHandler
      * @param array<array-key, mixed> $operation
      * @param-out array<array-key, mixed> $operation
      */

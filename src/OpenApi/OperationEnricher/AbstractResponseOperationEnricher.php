@@ -25,9 +25,16 @@ use Sunrise\Http\Router\OpenApi\Type;
  */
 abstract class AbstractResponseOperationEnricher
 {
+    /**
+     * @param ReflectionClass<object>|ReflectionMethod $requestHandler
+     */
     final protected function getResponseStatusCode(
         ReflectionClass|ReflectionMethod $requestHandler,
     ): ?int {
+        if (! $requestHandler instanceof ReflectionMethod) {
+            return null;
+        }
+
         /** @var list<ReflectionAttribute<ResponseStatus>> $annotations */
         $annotations = $requestHandler->getAttributes(ResponseStatus::class);
         if ($annotations === []) {
@@ -40,6 +47,7 @@ abstract class AbstractResponseOperationEnricher
     }
 
     /**
+     * @param ReflectionClass<object>|ReflectionMethod $requestHandler
      * @param array<array-key, mixed> $response
      * @param-out array<array-key, mixed> $response
      */
@@ -47,6 +55,10 @@ abstract class AbstractResponseOperationEnricher
         ReflectionClass|ReflectionMethod $requestHandler,
         array &$response,
     ): void {
+        if (! $requestHandler instanceof ReflectionMethod) {
+            return;
+        }
+
         /** @var list<ReflectionAttribute<ResponseHeader>> $annotations */
         $annotations = $requestHandler->getAttributes(ResponseHeader::class);
         foreach ($annotations as $annotation) {

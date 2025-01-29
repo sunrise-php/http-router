@@ -77,6 +77,8 @@ final class RequestVariablesOperationEnricher implements
     }
 
     /**
+     * @param ReflectionClass<object>|ReflectionMethod $requestHandler
+     *
      * @return array<array-key, mixed>
      */
     private function getRequestVariableSchema(
