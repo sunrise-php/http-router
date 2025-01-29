@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\OpenApi\OperationEnricher;
 
+use Fig\Http\Message\StatusCodeInterface;
 use ReflectionClass;
 use ReflectionMethod;
 use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
@@ -54,7 +55,7 @@ final class EmptyResponseOperationEnricher extends AbstractResponseOperationEnri
         }
 
         $responseStatusCode = $this->getResponseStatusCode($requestHandler)
-            ?? $this->openApiConfiguration->emptyResponseStatusCode;
+            ?? StatusCodeInterface::STATUS_NO_CONTENT;
 
         $operation['responses'][$responseStatusCode] = [
             'description' => $this->openApiConfiguration->successfulResponseDescription,

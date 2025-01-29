@@ -24,6 +24,7 @@ use Sunrise\Http\Router\RouteInterface;
 use Throwable;
 
 use function array_replace_recursive;
+use function array_walk_recursive;
 use function dirname;
 use function file_put_contents;
 use function fopen;
@@ -100,7 +101,7 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
         }
 
         try {
-            $result = @fopen($filename, $this->openApiConfiguration->documentReadMode);
+            $result = @fopen($filename, 'rb');
         } catch (Throwable) {
             $result = false;
         }
@@ -120,7 +121,6 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
     {
         $operation = $this->openApiConfiguration->initialOperation;
         $requestHandler = $this->requestHandlerReflector->reflectRequestHandler($route->getRequestHandler());
-        $this->openApiOperationEnricherManager->enrichOperation($route, $requestHandler, $operation);
 
         foreach (ReflectorHelper::getAncestry($requestHandler) as $member) {
             /** @var ReflectionAttribute<Operation> $annotation */
@@ -128,6 +128,15 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
                 $operation = array_replace_recursive($operation, $annotation->newInstance()->value);
             }
         }
+
+        array_walk_recursive($operation, function (&$value) use ($requestHandler): void {
+            if ($value instanceof Type) {
+                $value = $this->openApiPhpTypeSchemaResolverManager
+                    ->resolvePhpTypeSchema($value, $requestHandler);
+            }
+        });
+
+        $this->openApiOperationEnricherManager->enrichOperation($route, $requestHandler, $operation);
 
         $operation['operationId'] = $route->getName();
         $operation['tags'] = $route->getTags();

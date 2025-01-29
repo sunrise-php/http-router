@@ -34,7 +34,6 @@ final class TemplateRenderer
         ob_start();
 
         try {
-            /** @psalm-suppress UnresolvableInclude */
             include $filename;
             /** @var string */
             return ob_get_clean();

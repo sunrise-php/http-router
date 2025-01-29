@@ -92,6 +92,8 @@ final class MiddlewareResolver implements MiddlewareResolverInterface
                             ->withContext($request)
                             ->withResolver(
                                 new DirectInjectionParameterResolver($request),
+                                new DirectInjectionParameterResolver($request->getUri()),
+                                new DirectInjectionParameterResolver($request->getBody()),
                                 new DirectInjectionParameterResolver($handler),
                             )
                             ->resolveParameters(...$reflection->getParameters())

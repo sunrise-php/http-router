@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\OpenApi\OperationEnricher;
 
+use Psr\Http\Message\StreamInterface;
 use ReflectionClass;
 use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\RequestBody;
@@ -51,8 +52,11 @@ final class RequestBodyOperationEnricher implements
 
         $requestBodySchema = null;
         foreach ($requestHandler->getParameters() as $requestHandlerParameter) {
-            if ($requestHandlerParameter->getAttributes(RequestBody::class) !== []) {
-                $requestBodyType = TypeFactory::fromPhpTypeReflection($requestHandlerParameter->getType());
+            $requestBodyType = TypeFactory::fromPhpTypeReflection($requestHandlerParameter->getType());
+            if (
+                $requestHandlerParameter->getAttributes(RequestBody::class) !== [] ||
+                $requestBodyType->is(StreamInterface::class)
+            ) {
                 $requestBodySchema = $this->openApiPhpTypeSchemaResolverManager
                     ->resolvePhpTypeSchema($requestBodyType, $requestHandlerParameter);
                 break;

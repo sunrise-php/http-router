@@ -21,9 +21,7 @@ use Sunrise\Http\Router\OpenApi\OperationEnricher\RequestBodyOperationEnricher;
 use Sunrise\Http\Router\OpenApi\OperationEnricher\RequestCookiesOperationEnricher;
 use Sunrise\Http\Router\OpenApi\OperationEnricher\RequestHeadersOperationEnricher;
 use Sunrise\Http\Router\OpenApi\OperationEnricher\RequestQueryOperationEnricher;
-use Sunrise\Http\Router\OpenApi\OperationEnricher\RequestStreamOperationEnricher;
 use Sunrise\Http\Router\OpenApi\OperationEnricher\RequestVariablesOperationEnricher;
-use Sunrise\Http\Router\OpenApi\OperationEnricher\UnsuccessfulResponseOperationEnricher;
 use Sunrise\Http\Router\RouteInterface;
 
 use function usort;
@@ -103,9 +101,7 @@ final class OpenApiOperationEnricherManager implements OpenApiOperationEnricherM
             new RequestCookiesOperationEnricher(),
             new RequestHeadersOperationEnricher(),
             new RequestQueryOperationEnricher(),
-            new RequestStreamOperationEnricher(),
             new RequestVariablesOperationEnricher(),
-            new UnsuccessfulResponseOperationEnricher(),
         ];
     }
 }

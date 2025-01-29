@@ -25,11 +25,8 @@ use Sunrise\Http\Router\ResponseResolverInterface;
  */
 final class EmptyResponseResolver implements ResponseResolverInterface
 {
-    public const DEFAULT_STATUS_CODE = StatusCodeInterface::STATUS_NO_CONTENT;
-
     public function __construct(
         private readonly ResponseFactoryInterface $responseFactory,
-        private readonly ?int $defaultStatusCode = null,
     ) {
     }
 
@@ -45,9 +42,7 @@ final class EmptyResponseResolver implements ResponseResolverInterface
             return null;
         }
 
-        $statusCode = $this->defaultStatusCode ?? self::DEFAULT_STATUS_CODE;
-
-        return $this->responseFactory->createResponse($statusCode);
+        return $this->responseFactory->createResponse(StatusCodeInterface::STATUS_NO_CONTENT);
     }
 
     public function getWeight(): int

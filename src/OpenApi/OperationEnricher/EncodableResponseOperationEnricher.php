@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\OpenApi\OperationEnricher;
 
+use Fig\Http\Message\StatusCodeInterface;
 use ReflectionClass;
 use ReflectionMethod;
 use Sunrise\Http\Router\Annotation\EncodableResponse;
@@ -63,7 +64,7 @@ final class EncodableResponseOperationEnricher extends AbstractResponseOperation
         }
 
         $responseStatusCode = $this->getResponseStatusCode($requestHandler)
-            ?? $this->openApiConfiguration->successfulResponseStatusCode;
+            ?? StatusCodeInterface::STATUS_OK;
 
         $operation['responses'][$responseStatusCode] = [
             'description' => $this->openApiConfiguration->successfulResponseDescription,

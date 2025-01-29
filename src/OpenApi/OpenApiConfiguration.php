@@ -13,10 +13,8 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\OpenApi;
 
-use Fig\Http\Message\StatusCodeInterface;
 use Sunrise\Http\Router\Dictionary\MediaType;
 use Sunrise\Http\Router\MediaTypeInterface;
-use Sunrise\Http\Router\ResponseResolver\EmptyResponseResolver;
 use Sunrise\Hydrator\TypeConverter\TimestampTypeConverter;
 
 use function sys_get_temp_dir;
@@ -29,13 +27,8 @@ use const DIRECTORY_SEPARATOR;
 final class OpenApiConfiguration
 {
     public const DEFAULT_DOCUMENT_MEDIA_TYPE = MediaType::JSON;
-    public const DEFAULT_DOCUMENT_READ_MODE = 'rb';
-    public const DEFAULT_TEMPORARY_DOCUMENT_BASENAME = 'openapi';
     public const DEFAULT_TIMESTAMP_FORMAT = TimestampTypeConverter::DEFAULT_FORMAT;
-    public const DEFAULT_EMPTY_RESPONSE_STATUS_CODE = EmptyResponseResolver::DEFAULT_STATUS_CODE;
-    public const DEFAULT_SUCCESSFUL_RESPONSE_STATUS_CODE = StatusCodeInterface::STATUS_OK;
     public const DEFAULT_SUCCESSFUL_RESPONSE_DESCRIPTION = 'The operation was successful.';
-    public const DEFAULT_UNSUCCESSFUL_RESPONSE_DESCRIPTION = 'The operation was unsuccessful.';
 
     public function __construct(
         /** @var array<array-key, mixed> */
@@ -46,15 +39,8 @@ final class OpenApiConfiguration
         /** @var array<array-key, mixed> */
         public readonly array $documentEncodingContext = [],
         public readonly ?string $documentFilename = null,
-        public readonly string $documentReadMode = self::DEFAULT_DOCUMENT_READ_MODE,
-        public readonly string $temporaryDocumentBasename = self::DEFAULT_TEMPORARY_DOCUMENT_BASENAME,
         public readonly string $defaultTimestampFormat = self::DEFAULT_TIMESTAMP_FORMAT,
-        public readonly int $emptyResponseStatusCode = self::DEFAULT_EMPTY_RESPONSE_STATUS_CODE,
-        public readonly int $successfulResponseStatusCode = self::DEFAULT_SUCCESSFUL_RESPONSE_STATUS_CODE,
         public readonly string $successfulResponseDescription = self::DEFAULT_SUCCESSFUL_RESPONSE_DESCRIPTION,
-        /** @var class-string|null */
-        public readonly ?string $unsuccessfulResponseViewName = null,
-        public readonly string $unsuccessfulResponseDescription = self::DEFAULT_UNSUCCESSFUL_RESPONSE_DESCRIPTION,
     ) {
     }
 
@@ -65,6 +51,6 @@ final class OpenApiConfiguration
 
     public function getTemporaryDocumentFilename(): string
     {
-        return sys_get_temp_dir() . DIRECTORY_SEPARATOR . $this->temporaryDocumentBasename;
+        return sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'openapi';
     }
 }

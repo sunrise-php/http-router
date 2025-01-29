@@ -89,7 +89,11 @@ final class RequestHandlerResolver implements RequestHandlerResolverInterface
                     $callback(
                         ...$this->parameterResolverChain
                             ->withContext($request)
-                            ->withResolver(new DirectInjectionParameterResolver($request))
+                            ->withResolver(
+                                new DirectInjectionParameterResolver($request),
+                                new DirectInjectionParameterResolver($request->getUri()),
+                                new DirectInjectionParameterResolver($request->getBody()),
+                            )
                             ->resolveParameters(...$reflection->getParameters())
                     ),
                     $reflection,

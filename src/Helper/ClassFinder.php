@@ -60,9 +60,7 @@ final class ClassFinder
         $filenames = [];
         foreach ($files as $file) {
             $filename = $file->getRealPath();
-
             (static function (string $filename): void {
-                /** @psalm-suppress UnresolvableInclude */
                 require_once $filename;
             })($filename);
 
@@ -94,9 +92,7 @@ final class ClassFinder
 
         /** @var string $filename */
         $filename = realpath($filename);
-
         (static function (string $filename): void {
-            /** @psalm-suppress UnresolvableInclude */
             require_once $filename;
         })($filename);
 

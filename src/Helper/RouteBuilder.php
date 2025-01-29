@@ -83,7 +83,7 @@ final class RouteBuilder
      *
      * @throws InvalidArgumentException
      */
-    public static function stringifyValue(mixed $value): string
+    private static function stringifyValue(mixed $value): string
     {
         if (is_string($value)) {
             return $value;

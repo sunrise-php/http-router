@@ -17,12 +17,12 @@ return [
             ),
     ],
 
+    'router.codecs.context' => [],
     'router.json_codec.context' => [],
-    'router.global_codec_context' => [],
 
     CodecManagerInterface::class => create(CodecManager::class)
         ->constructor(
             get('router.codecs'),
-            get('router.global_codec_context'),
+            get('router.codecs.context'),
         ),
 ];
