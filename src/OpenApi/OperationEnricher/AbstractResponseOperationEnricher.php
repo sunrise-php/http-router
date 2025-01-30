@@ -28,7 +28,7 @@ abstract class AbstractResponseOperationEnricher
     /**
      * @param ReflectionClass<object>|ReflectionMethod $requestHandler
      */
-    final protected function getResponseStatusCode(
+    final protected static function getResponseStatusCode(
         ReflectionClass|ReflectionMethod $requestHandler,
     ): ?int {
         if (! $requestHandler instanceof ReflectionMethod) {
@@ -51,7 +51,7 @@ abstract class AbstractResponseOperationEnricher
      * @param array<array-key, mixed> $response
      * @param-out array<array-key, mixed> $response
      */
-    final protected function enrichResponseWithHeaders(
+    final protected static function enrichResponseWithHeaders(
         ReflectionClass|ReflectionMethod $requestHandler,
         array &$response,
     ): void {

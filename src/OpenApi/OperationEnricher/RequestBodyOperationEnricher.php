@@ -67,15 +67,15 @@ final class RequestBodyOperationEnricher implements
             return;
         }
 
-        $operation['requestBody'] = [
-            'required' => true,
-        ];
+        $operation['requestBody'] = [];
 
         foreach ($route->getConsumedMediaTypes() as $consumedMediaType) {
             $operation['requestBody']['content'][$consumedMediaType->getIdentifier()] = [
                 'schema' => $requestBodySchema,
             ];
         }
+
+        $operation['requestBody']['required'] = true;
     }
 
     public function getWeight(): int

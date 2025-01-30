@@ -25,7 +25,7 @@ use function is_subclass_of;
 /**
  * @since 3.0.0
  */
-final class SymfonyPhpTypeUidSchemaResolver implements OpenApiPhpTypeSchemaResolverInterface
+final class SymfonyUidPhpTypeSchemaResolver implements OpenApiPhpTypeSchemaResolverInterface
 {
     public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
     {

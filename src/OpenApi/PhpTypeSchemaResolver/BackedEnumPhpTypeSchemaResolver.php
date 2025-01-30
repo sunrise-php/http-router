@@ -20,7 +20,10 @@ use Reflector;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaNameResolverInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverInterface;
+use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerAwareInterface;
+use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerInterface;
 use Sunrise\Http\Router\OpenApi\Type;
+use Sunrise\Http\Router\OpenApi\TypeFactory;
 
 use function is_subclass_of;
 use function strtr;
@@ -30,8 +33,17 @@ use function strtr;
  */
 final class BackedEnumPhpTypeSchemaResolver implements
     OpenApiPhpTypeSchemaResolverInterface,
-    OpenApiPhpTypeSchemaNameResolverInterface
+    OpenApiPhpTypeSchemaNameResolverInterface,
+    OpenApiPhpTypeSchemaResolverManagerAwareInterface
 {
+    private readonly OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager;
+
+    public function setOpenApiPhpTypeSchemaResolverManager(
+        OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager,
+    ): void {
+        $this->openApiPhpTypeSchemaResolverManager = $openApiPhpTypeSchemaResolverManager;
+    }
+
     public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
     {
         return is_subclass_of($phpType->name, BackedEnum::class);
@@ -49,13 +61,8 @@ final class BackedEnumPhpTypeSchemaResolver implements
         /** @var class-string<BackedEnum> $phpTypeName */
         $phpTypeName = $phpType->name;
 
-        $phpTypeSchema = [
-            // @phpstan-ignore-next-line
-            'type' => match ((string) (new ReflectionEnum($phpTypeName))->getBackingType()) {
-                Type::PHP_TYPE_NAME_INT => Type::OAS_TYPE_NAME_INTEGER,
-                Type::PHP_TYPE_NAME_STRING => Type::OAS_TYPE_NAME_STRING,
-            },
-        ];
+        $enumPhpType = TypeFactory::fromPhpTypeReflection((new ReflectionEnum($phpTypeName))->getBackingType());
+        $phpTypeSchema = $this->openApiPhpTypeSchemaResolverManager->resolvePhpTypeSchema($enumPhpType, $phpTypeHolder);
 
         $phpTypeSchema['enum'] = [];
         foreach ($phpTypeName::cases() as $case) {

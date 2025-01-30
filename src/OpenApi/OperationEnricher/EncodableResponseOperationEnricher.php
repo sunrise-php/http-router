@@ -63,11 +63,10 @@ final class EncodableResponseOperationEnricher extends AbstractResponseOperation
             return;
         }
 
-        $responseStatusCode = $this->getResponseStatusCode($requestHandler)
-            ?? StatusCodeInterface::STATUS_OK;
+        $responseStatusCode = $this->getResponseStatusCode($requestHandler) ?? StatusCodeInterface::STATUS_OK;
 
         $operation['responses'][$responseStatusCode] = [
-            'description' => $this->openApiConfiguration->successfulResponseDescription,
+            'description' => $this->openApiConfiguration->responseDescription,
         ];
 
         $this->enrichResponseWithHeaders($requestHandler, $operation['responses'][$responseStatusCode]);

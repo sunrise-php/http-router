@@ -28,7 +28,7 @@ final class OpenApiConfiguration
 {
     public const DEFAULT_DOCUMENT_MEDIA_TYPE = MediaType::JSON;
     public const DEFAULT_TIMESTAMP_FORMAT = TimestampTypeConverter::DEFAULT_FORMAT;
-    public const DEFAULT_SUCCESSFUL_RESPONSE_DESCRIPTION = 'The operation was successful.';
+    public const DEFAULT_RESPONSE_DESCRIPTION = 'The operation was successful.';
 
     public function __construct(
         /** @var array<array-key, mixed> */
@@ -39,8 +39,8 @@ final class OpenApiConfiguration
         /** @var array<array-key, mixed> */
         public readonly array $documentEncodingContext = [],
         public readonly ?string $documentFilename = null,
-        public readonly string $defaultTimestampFormat = self::DEFAULT_TIMESTAMP_FORMAT,
-        public readonly string $successfulResponseDescription = self::DEFAULT_SUCCESSFUL_RESPONSE_DESCRIPTION,
+        public readonly string $timestampFormat = self::DEFAULT_TIMESTAMP_FORMAT,
+        public readonly string $responseDescription = self::DEFAULT_RESPONSE_DESCRIPTION,
     ) {
     }
 

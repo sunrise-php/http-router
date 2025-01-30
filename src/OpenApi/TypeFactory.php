@@ -23,7 +23,7 @@ final class TypeFactory
 {
     public static function mixedPhpType(): Type
     {
-        return new Type(Type::PHP_TYPE_NAME_MIXED, true);
+        return new Type(Type::PHP_TYPE_NAME_MIXED, allowsNull: true);
     }
 
     public static function fromPhpTypeReflection(?ReflectionType $phpTypeReflection): Type

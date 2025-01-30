@@ -54,6 +54,7 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
     public function buildDocument(array $routes): array
     {
         $document = $this->openApiConfiguration->initialDocument;
+
         foreach ($routes as $route) {
             $this->describeRoute($route, $document);
         }
@@ -69,6 +70,7 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
     public function saveDocument(array $document): void
     {
         $filename = $this->openApiConfiguration->getDocumentFilename();
+
         if (!is_writable(dirname($filename))) {
             throw new RuntimeException('The directory for the OpenAPI document is not writable.');
         }
@@ -96,6 +98,7 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
     public function openDocument()
     {
         $filename = $this->openApiConfiguration->getDocumentFilename();
+
         if (!is_readable($filename)) {
             throw new RuntimeException('The OpenAPI document was not saved or is unavailable.');
         }
@@ -120,6 +123,7 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
     private function describeRoute(RouteInterface $route, array &$document): void
     {
         $operation = $this->openApiConfiguration->initialOperation;
+
         $requestHandler = $this->requestHandlerReflector->reflectRequestHandler($route->getRequestHandler());
 
         foreach (ReflectorHelper::getAncestry($requestHandler) as $member) {
@@ -129,10 +133,9 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
             }
         }
 
-        array_walk_recursive($operation, function (&$value) use ($requestHandler): void {
+        array_walk_recursive($operation, function (mixed &$value) use ($requestHandler): void {
             if ($value instanceof Type) {
-                $value = $this->openApiPhpTypeSchemaResolverManager
-                    ->resolvePhpTypeSchema($value, $requestHandler);
+                $value = $this->openApiPhpTypeSchemaResolverManager->resolvePhpTypeSchema($value, $requestHandler);
             }
         });
 

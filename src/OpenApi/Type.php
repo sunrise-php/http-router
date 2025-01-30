@@ -36,7 +36,7 @@ final class Type
 
     public function __construct(
         public readonly string $name,
-        public readonly bool $allowsNull,
+        public readonly bool $allowsNull = false,
     ) {
     }
 

@@ -24,7 +24,7 @@ use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\ObjectPhpTypeSchemaResolve
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\RamseyUuidPhpTypeSchemaResolver;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\StreamPhpTypeSchemaResolver;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\StringPhpTypeSchemaResolver;
-use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\SymfonyPhpTypeUidSchemaResolver;
+use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\SymfonyUidPhpTypeSchemaResolver;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaResolver;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\TimezonePhpTypeSchemaResolver;
 
@@ -160,7 +160,6 @@ final class OpenApiPhpTypeSchemaResolverManager implements OpenApiPhpTypeSchemaR
         if ($phpType->allowsNull) {
             $phpTypeSchema['nullable'] = true;
 
-            // https://swagger.io/docs/specification/v3_0/data-models/enums/#nullable-enums
             if (isset($phpTypeSchema['enum'])) {
                 /** @var array{enum: array<array-key, mixed>} $phpTypeSchema */
 
@@ -187,7 +186,7 @@ final class OpenApiPhpTypeSchemaResolverManager implements OpenApiPhpTypeSchemaR
             new RamseyUuidPhpTypeSchemaResolver(),
             new StreamPhpTypeSchemaResolver(),
             new StringPhpTypeSchemaResolver(),
-            new SymfonyPhpTypeUidSchemaResolver(),
+            new SymfonyUidPhpTypeSchemaResolver(),
             new TimestampPhpTypeSchemaResolver(),
             new TimezonePhpTypeSchemaResolver(),
         ];
