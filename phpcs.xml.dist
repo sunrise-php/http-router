@@ -4,6 +4,7 @@
     <rule ref="Generic.PHP.RequireStrictTypes" />
 
     <rule ref="Generic.Files.LineLength">
+        <exclude-pattern>resources/*</exclude-pattern>
         <exclude-pattern>tests/*</exclude-pattern>
     </rule>
 
