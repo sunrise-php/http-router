@@ -2,23 +2,39 @@
 
 declare(strict_types=1);
 
+use Sunrise\Http\Router\CodecManagerInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
-use Sunrise\Http\Router\RequestHandlerReflector;
+use Sunrise\Http\Router\OpenApi\OpenApiDocumentManager;
+use Sunrise\Http\Router\OpenApi\OpenApiDocumentManagerInterface;
+use Sunrise\Http\Router\OpenApi\OpenApiOperationEnricherManager;
+use Sunrise\Http\Router\OpenApi\OpenApiOperationEnricherManagerInterface;
+use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManager;
+use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerInterface;
+use Sunrise\Http\Router\OpenApi\SwaggerConfiguration;
 use Sunrise\Http\Router\RequestHandlerReflectorInterface;
 
 use function DI\create;
 use function DI\get;
 
 return [
-    'router.openapi.initial_document' => [],
+    'router.openapi.initial_document' => [
+        'openapi' => '3.1.0',
+    ],
     'router.openapi.initial_operation' => [],
-
-    'router.openapi.document_media_type' => OpenApiConfiguration::DEFAULT_DOCUMENT_MEDIA_TYPE,
+    'router.openapi.document_media_type' => get('router.default_media_type'),
     'router.openapi.document_encoding_context' => [],
     'router.openapi.document_filename' => null,
+    'router.openapi.timestamp_format' => OpenApiConfiguration::DEFAULT_TIMESTAMP_FORMAT,
+    'router.openapi.response_description' => OpenApiConfiguration::DEFAULT_RESPONSE_DESCRIPTION,
 
-    'router.openapi.default_timestamp_format' => OpenApiConfiguration::DEFAULT_TIMESTAMP_FORMAT,
-    'router.openapi.response_description' => OpenApiConfiguration::DEFAULT_SUCCESSFUL_RESPONSE_DESCRIPTION,
+    'router.openapi.php_type_schema_resolvers' => [],
+    'router.openapi.operation_enrichers' => [],
+
+    'router.swagger.template_filename' => SwaggerConfiguration::DEFAULT_TEMPLATE_FILENAME,
+    'router.swagger.css_urls' => SwaggerConfiguration::DEFAULT_CSS_URLS,
+    'router.swagger.js_urls' => SwaggerConfiguration::DEFAULT_JS_URLS,
+    'router.swagger.auto_render' => SwaggerConfiguration::DEFAULT_AUTO_RENDER,
+    'router.swagger.openapi_uri' => SwaggerConfiguration::DEFAULT_OPENAPI_URI,
 
     OpenApiConfiguration::class => create()
         ->constructor(
@@ -27,9 +43,38 @@ return [
             documentMediaType: get('router.openapi.document_media_type'),
             documentEncodingContext: get('router.openapi.document_encoding_context'),
             documentFilename: get('router.openapi.document_filename'),
-            defaultTimestampFormat: get('router.openapi.default_timestamp_format'),
-            responseDescription: get('router.openapi.successful_response_description'),
+            timestampFormat: get('router.openapi.timestamp_format'),
+            responseDescription: get('router.openapi.response_description'),
         ),
 
-    RequestHandlerReflectorInterface::class => create(RequestHandlerReflector::class),
+    OpenApiPhpTypeSchemaResolverManagerInterface::class => create(OpenApiPhpTypeSchemaResolverManager::class)
+        ->constructor(
+            openApiConfiguration: get(OpenApiConfiguration::class),
+            phpTypeSchemaResolvers: get('router.openapi.php_type_schema_resolvers'),
+        ),
+
+    OpenApiOperationEnricherManagerInterface::class => create(OpenApiOperationEnricherManager::class)
+        ->constructor(
+            openApiConfiguration: get(OpenApiConfiguration::class),
+            openApiPhpTypeSchemaResolverManager: get(OpenApiPhpTypeSchemaResolverManagerInterface::class),
+            operationEnrichers: get('router.openapi.operation_enrichers'),
+        ),
+
+    OpenApiDocumentManagerInterface::class => create(OpenApiDocumentManager::class)
+        ->constructor(
+            openApiConfiguration: get(OpenApiConfiguration::class),
+            openApiPhpTypeSchemaResolverManager: get(OpenApiPhpTypeSchemaResolverManagerInterface::class),
+            openApiOperationEnricherManager: get(OpenApiOperationEnricherManagerInterface::class),
+            requestHandlerReflector: get(RequestHandlerReflectorInterface::class),
+            codecManager: get(CodecManagerInterface::class),
+        ),
+
+    SwaggerConfiguration::class => create()
+        ->constructor(
+            templateFilename: get('router.swagger.template_filename'),
+            cssUrls: get('router.swagger.css_urls'),
+            jsUrls: get('router.swagger.js_urls'),
+            autoRender: get('router.swagger.auto_render'),
+            openapiUri: get('router.swagger.openapi_uri'),
+        ),
 ];

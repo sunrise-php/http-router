@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\OpenApi;
 
-use Sunrise\Http\Router\Dictionary\MediaType;
 use Sunrise\Http\Router\MediaTypeInterface;
 use Sunrise\Hydrator\TypeConverter\TimestampTypeConverter;
 
@@ -26,7 +25,6 @@ use const DIRECTORY_SEPARATOR;
  */
 final class OpenApiConfiguration
 {
-    public const DEFAULT_DOCUMENT_MEDIA_TYPE = MediaType::JSON;
     public const DEFAULT_TIMESTAMP_FORMAT = TimestampTypeConverter::DEFAULT_FORMAT;
     public const DEFAULT_RESPONSE_DESCRIPTION = 'The operation was successful.';
 
@@ -34,8 +32,8 @@ final class OpenApiConfiguration
         /** @var array<array-key, mixed> */
         public readonly array $initialDocument,
         /** @var array<array-key, mixed> */
-        public readonly array $initialOperation = [],
-        public readonly MediaTypeInterface $documentMediaType = self::DEFAULT_DOCUMENT_MEDIA_TYPE,
+        public readonly array $initialOperation,
+        public readonly MediaTypeInterface $documentMediaType,
         /** @var array<array-key, mixed> */
         public readonly array $documentEncodingContext = [],
         public readonly ?string $documentFilename = null,

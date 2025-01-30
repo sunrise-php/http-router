@@ -30,8 +30,8 @@ use function array_filter;
 final class RouterOpenApiBuildDocumentCommand extends Command
 {
     public function __construct(
-        private readonly OpenApiDocumentManagerInterface $openApiDocumentManager,
         private readonly RouterInterface $router,
+        private readonly OpenApiDocumentManagerInterface $openApiDocumentManager,
     ) {
         parent::__construct();
     }

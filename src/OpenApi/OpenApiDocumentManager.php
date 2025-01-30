@@ -41,8 +41,8 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
 {
     public function __construct(
         private readonly OpenApiConfiguration $openApiConfiguration,
-        private readonly OpenApiOperationEnricherManagerInterface $openApiOperationEnricherManager,
         private readonly OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager,
+        private readonly OpenApiOperationEnricherManagerInterface $openApiOperationEnricherManager,
         private readonly RequestHandlerReflectorInterface $requestHandlerReflector,
         private readonly CodecManagerInterface $codecManager,
     ) {

@@ -13,7 +13,7 @@ use Sunrise\Http\Router\OpenApi\Controller\SwaggerController;
     <?php endforeach ?>
 </head>
 <body>
-<div id="app"></div>
+<div id="swagger"></div>
 <?php foreach (${SwaggerController::JS_URLS_VAR_NAME} as $url): ?>
     <script src="<?= $url ?>"></script>
 <?php endforeach ?>
@@ -22,7 +22,7 @@ use Sunrise\Http\Router\OpenApi\Controller\SwaggerController;
         window.onload = function() {
             window.ui = SwaggerUIBundle({
                 url: '<?= ${SwaggerController::OPENAPI_URI_VAR_NAME} ?>',
-                dom_id: '#app',
+                dom_id: '#swagger',
                 presets: [
                     SwaggerUIBundle.presets.apis,
                 ],
