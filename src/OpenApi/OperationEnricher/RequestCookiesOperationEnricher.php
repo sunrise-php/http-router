@@ -71,6 +71,6 @@ final class RequestCookiesOperationEnricher implements
 
     public function getWeight(): int
     {
-        return 20;
+        return 10;
     }
 }

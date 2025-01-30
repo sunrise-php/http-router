@@ -71,6 +71,6 @@ final class RequestHeadersOperationEnricher implements
 
     public function getWeight(): int
     {
-        return 10;
+        return 20;
     }
 }
