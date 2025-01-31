@@ -64,13 +64,11 @@ abstract class AbstractResponseOperationEnricher
         foreach ($annotations as $annotation) {
             $responseHeader = $annotation->newInstance();
 
-            $responseHeaderSchema = [
-                'type' => Type::OAS_TYPE_NAME_STRING,
-                'example' => $responseHeader->value,
-            ];
-
             $response['headers'][$responseHeader->name] = [
-                'schema' => $responseHeaderSchema,
+                'schema' => [
+                    'type' => Type::OAS_TYPE_NAME_STRING,
+                    'example' => $responseHeader->value,
+                ],
             ];
         }
     }

@@ -54,7 +54,7 @@ final class TimestampPhpTypeSchemaResolver implements
     {
         $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();
 
-        $timestampFormat = $this->openApiConfiguration->timestampFormat;
+        $timestampFormat = $this->openApiConfiguration->defaultTimestampFormat;
 
         if (
             $phpTypeHolder instanceof ReflectionParameter ||

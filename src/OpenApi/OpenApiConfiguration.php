@@ -25,6 +25,8 @@ use const DIRECTORY_SEPARATOR;
  */
 final class OpenApiConfiguration
 {
+    public const VERSION = '3.1.1';
+
     public const DEFAULT_TIMESTAMP_FORMAT = TimestampTypeConverter::DEFAULT_FORMAT;
     public const DEFAULT_RESPONSE_DESCRIPTION = 'The operation was successful.';
 
@@ -37,8 +39,8 @@ final class OpenApiConfiguration
         /** @var array<array-key, mixed> */
         public readonly array $documentEncodingContext = [],
         public readonly ?string $documentFilename = null,
-        public readonly string $timestampFormat = self::DEFAULT_TIMESTAMP_FORMAT,
-        public readonly string $responseDescription = self::DEFAULT_RESPONSE_DESCRIPTION,
+        public readonly string $defaultTimestampFormat = self::DEFAULT_TIMESTAMP_FORMAT,
+        public readonly string $defaultResponseDescription = self::DEFAULT_RESPONSE_DESCRIPTION,
     ) {
     }
 

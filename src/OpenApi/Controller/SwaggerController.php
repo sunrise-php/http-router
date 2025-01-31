@@ -37,7 +37,6 @@ final class SwaggerController implements RequestHandlerInterface
 
     public const CSS_URLS_VAR_NAME = 'css_urls';
     public const JS_URLS_VAR_NAME = 'js_urls';
-    public const AUTO_RENDER_VAR_NAME = 'auto_render';
     public const OPENAPI_URI_VAR_NAME = 'openapi_uri';
 
     public function __construct(
@@ -60,7 +59,6 @@ final class SwaggerController implements RequestHandlerInterface
                 variables: [
                     self::CSS_URLS_VAR_NAME => $this->swaggerConfiguration->cssUrls,
                     self::JS_URLS_VAR_NAME => $this->swaggerConfiguration->jsUrls,
-                    self::AUTO_RENDER_VAR_NAME => $this->swaggerConfiguration->autoRender,
                     self::OPENAPI_URI_VAR_NAME => $this->swaggerConfiguration->openapiUri,
                 ],
             ),

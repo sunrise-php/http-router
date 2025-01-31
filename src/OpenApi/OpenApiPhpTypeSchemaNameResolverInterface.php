@@ -20,5 +20,8 @@ use Reflector;
  */
 interface OpenApiPhpTypeSchemaNameResolverInterface
 {
+    /**
+     * Please note that nullable should be ignored.
+     */
     public function resolvePhpTypeSchemaName(Type $phpType, Reflector $phpTypeHolder): string;
 }

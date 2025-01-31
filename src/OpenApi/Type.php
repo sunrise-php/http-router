@@ -27,6 +27,7 @@ final class Type
     public const PHP_TYPE_NAME_ARRAY = 'array';
     public const PHP_TYPE_NAME_MIXED = 'mixed';
 
+    public const OAS_TYPE_NAME_NULL = 'null';
     public const OAS_TYPE_NAME_BOOLEAN = 'boolean';
     public const OAS_TYPE_NAME_INTEGER = 'integer';
     public const OAS_TYPE_NAME_NUMBER = 'number';

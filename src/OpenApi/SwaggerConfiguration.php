@@ -31,8 +31,6 @@ final class SwaggerConfiguration
         'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.18.2/swagger-ui-standalone-preset.min.js',
     ];
 
-    public const DEFAULT_AUTO_RENDER = true;
-
     public const DEFAULT_OPENAPI_URI = OpenApiController::ROUTE_PATH;
 
     public function __construct(
@@ -41,7 +39,6 @@ final class SwaggerConfiguration
         public readonly array $cssUrls = self::DEFAULT_CSS_URLS,
         /** @var string[] */
         public readonly array $jsUrls = self::DEFAULT_JS_URLS,
-        public readonly bool $autoRender = self::DEFAULT_AUTO_RENDER,
         public readonly string $openapiUri = self::DEFAULT_OPENAPI_URI,
     ) {
     }

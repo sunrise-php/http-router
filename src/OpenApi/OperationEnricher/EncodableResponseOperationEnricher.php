@@ -63,13 +63,13 @@ final class EncodableResponseOperationEnricher extends AbstractResponseOperation
             return;
         }
 
-        $responseStatusCode = $this->getResponseStatusCode($requestHandler) ?? StatusCodeInterface::STATUS_OK;
+        $responseStatusCode = self::getResponseStatusCode($requestHandler) ?? StatusCodeInterface::STATUS_OK;
 
         $operation['responses'][$responseStatusCode] = [
-            'description' => $this->openApiConfiguration->responseDescription,
+            'description' => $this->openApiConfiguration->defaultResponseDescription,
         ];
 
-        $this->enrichResponseWithHeaders($requestHandler, $operation['responses'][$responseStatusCode]);
+        self::enrichResponseWithHeaders($requestHandler, $operation['responses'][$responseStatusCode]);
 
         $responseBodyType = TypeFactory::fromPhpTypeReflection($requestHandler->getReturnType());
         $responseBodySchema = $this->openApiPhpTypeSchemaResolverManager

@@ -147,7 +147,9 @@ final class OpenApiPhpTypeSchemaResolverManager implements OpenApiPhpTypeSchemaR
      */
     private static function createPhpTypeSchemaReference(string $phpTypeSchemaName): array
     {
-        return ['$ref' => sprintf('#/components/schemas/%s', $phpTypeSchemaName)];
+        return [
+            '$ref' => sprintf('#/components/schemas/%s', $phpTypeSchemaName),
+        ];
     }
 
     /**
@@ -158,13 +160,14 @@ final class OpenApiPhpTypeSchemaResolverManager implements OpenApiPhpTypeSchemaR
     private static function completePhpTypeSchema(Type $phpType, array $phpTypeSchema): array
     {
         if ($phpType->allowsNull) {
-            $phpTypeSchema['nullable'] = true;
-
-            if (isset($phpTypeSchema['enum'])) {
-                /** @var array{enum: array<array-key, mixed>} $phpTypeSchema */
-
-                $phpTypeSchema['enum'][] = null;
-            }
+            $phpTypeSchema = [
+                'anyOf' => [
+                    $phpTypeSchema,
+                    [
+                        'type' => Type::OAS_TYPE_NAME_NULL,
+                    ],
+                ],
+            ];
         }
 
         return $phpTypeSchema;

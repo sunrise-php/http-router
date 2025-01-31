@@ -22,6 +22,7 @@ use Sunrise\Http\Router\Helper\RouteParser;
 use Sunrise\Http\Router\OpenApi\OpenApiOperationEnricherInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerAwareInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerInterface;
+use Sunrise\Http\Router\OpenApi\Type;
 use Sunrise\Http\Router\OpenApi\TypeFactory;
 use Sunrise\Http\Router\RouteInterface;
 
@@ -59,6 +60,7 @@ final class RequestVariablesOperationEnricher implements
                 ?? RouteCompiler::DEFAULT_VARIABLE_PATTERN;
 
             $variableSchema = $this->getRequestVariableSchema($requestHandler, $variableName);
+            $variableSchema ??= ['type' => Type::OAS_TYPE_NAME_STRING];
             $variableSchema['pattern'] = '^' . $variablePattern . '$';
 
             $operation['parameters'][] = [
@@ -79,13 +81,12 @@ final class RequestVariablesOperationEnricher implements
     /**
      * @param ReflectionClass<object>|ReflectionMethod $requestHandler
      *
-     * @return array<array-key, mixed>
+     * @return array<array-key, mixed>|null
      */
     private function getRequestVariableSchema(
         ReflectionClass|ReflectionMethod $requestHandler,
         string $variableName,
-    ): array {
-        $requestVariableSchema = [];
+    ): ?array {
         if ($requestHandler instanceof ReflectionMethod) {
             foreach ($requestHandler->getParameters() as $requestHandlerParameter) {
                 /** @var list<ReflectionAttribute<RequestVariable>> $annotations */
@@ -95,14 +96,14 @@ final class RequestVariablesOperationEnricher implements
                     $requestVariableName = $requestVariable->name ?? $requestHandlerParameter->getName();
                     if ($requestVariableName === $variableName) {
                         $requestVariableType = TypeFactory::fromPhpTypeReflection($requestHandlerParameter->getType());
-                        $requestVariableSchema = $this->openApiPhpTypeSchemaResolverManager
+
+                        return $this->openApiPhpTypeSchemaResolverManager
                             ->resolvePhpTypeSchema($requestVariableType, $requestHandlerParameter);
-                        break;
                     }
                 }
             }
         }
 
-        return $requestVariableSchema;
+        return null;
     }
 }

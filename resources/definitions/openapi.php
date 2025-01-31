@@ -18,14 +18,22 @@ use function DI\get;
 
 return [
     'router.openapi.initial_document' => [
-        'openapi' => '3.1.0',
+        'openapi' => OpenApiConfiguration::VERSION,
+        'info' => [
+            'title' => 'API',
+            'version' => '1.0.0',
+        ],
     ],
-    'router.openapi.initial_operation' => [],
+
+    'router.openapi.initial_operation' => [
+    ],
+
     'router.openapi.document_media_type' => get('router.default_media_type'),
     'router.openapi.document_encoding_context' => [],
     'router.openapi.document_filename' => null,
-    'router.openapi.timestamp_format' => OpenApiConfiguration::DEFAULT_TIMESTAMP_FORMAT,
-    'router.openapi.response_description' => OpenApiConfiguration::DEFAULT_RESPONSE_DESCRIPTION,
+
+    'router.openapi.default_timestamp_format' => OpenApiConfiguration::DEFAULT_TIMESTAMP_FORMAT,
+    'router.openapi.default_response_description' => OpenApiConfiguration::DEFAULT_RESPONSE_DESCRIPTION,
 
     'router.openapi.php_type_schema_resolvers' => [],
     'router.openapi.operation_enrichers' => [],
@@ -33,7 +41,6 @@ return [
     'router.swagger.template_filename' => SwaggerConfiguration::DEFAULT_TEMPLATE_FILENAME,
     'router.swagger.css_urls' => SwaggerConfiguration::DEFAULT_CSS_URLS,
     'router.swagger.js_urls' => SwaggerConfiguration::DEFAULT_JS_URLS,
-    'router.swagger.auto_render' => SwaggerConfiguration::DEFAULT_AUTO_RENDER,
     'router.swagger.openapi_uri' => SwaggerConfiguration::DEFAULT_OPENAPI_URI,
 
     OpenApiConfiguration::class => create()
@@ -43,8 +50,8 @@ return [
             documentMediaType: get('router.openapi.document_media_type'),
             documentEncodingContext: get('router.openapi.document_encoding_context'),
             documentFilename: get('router.openapi.document_filename'),
-            timestampFormat: get('router.openapi.timestamp_format'),
-            responseDescription: get('router.openapi.response_description'),
+            defaultTimestampFormat: get('router.openapi.default_timestamp_format'),
+            defaultResponseDescription: get('router.openapi.default_response_description'),
         ),
 
     OpenApiPhpTypeSchemaResolverManagerInterface::class => create(OpenApiPhpTypeSchemaResolverManager::class)
@@ -74,7 +81,6 @@ return [
             templateFilename: get('router.swagger.template_filename'),
             cssUrls: get('router.swagger.css_urls'),
             jsUrls: get('router.swagger.js_urls'),
-            autoRender: get('router.swagger.auto_render'),
             openapiUri: get('router.swagger.openapi_uri'),
         ),
 ];
