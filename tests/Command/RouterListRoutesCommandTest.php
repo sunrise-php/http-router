@@ -34,8 +34,10 @@ final class RouterListRoutesCommandTest extends TestCase
             ->method('getRoutes')
             ->willReturn($this->mockedRoutes);
 
-        $command = new RouterListRoutesCommand($this->mockedRouter);
-        $commandTester = new CommandTester($command);
+        $commandTester = new CommandTester(
+            new RouterListRoutesCommand($this->mockedRouter)
+        );
+
         $this->assertSame(Command::SUCCESS, $commandTester->execute([]));
     }
 
@@ -46,8 +48,10 @@ final class RouterListRoutesCommandTest extends TestCase
             ->method('getRoutes')
             ->willReturn([]);
 
-        $command = new RouterListRoutesCommand($this->mockedRouter);
-        $commandTester = new CommandTester($command);
+        $commandTester = new CommandTester(
+            new RouterListRoutesCommand($this->mockedRouter)
+        );
+
         $this->assertSame(Command::SUCCESS, $commandTester->execute([]));
     }
 

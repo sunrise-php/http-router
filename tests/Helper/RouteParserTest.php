@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Tests\Helper;
 
+use Generator;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Helper\RouteParser;
@@ -11,7 +12,7 @@ use Sunrise\Http\Router\Helper\RouteParser;
 final class RouteParserTest extends TestCase
 {
     /**
-     * @dataProvider validRouteDataProvider
+     * @dataProvider validRouteProvider
      */
     public function testParseValidRoute(string $route, array $expectedVariables): void
     {
@@ -20,7 +21,7 @@ final class RouteParserTest extends TestCase
     }
 
     /**
-     * @dataProvider invalidRouteDataProvider
+     * @dataProvider invalidRouteProvider
      */
     public function testParseInvalidRoute(string $route, string $expectedMessageRegex): void
     {
@@ -29,7 +30,7 @@ final class RouteParserTest extends TestCase
         RouteParser::parseRoute($route);
     }
 
-    private function validRouteDataProvider(): iterable
+    public static function validRouteProvider(): Generator
     {
         yield [
             '',
@@ -44,21 +45,21 @@ final class RouteParserTest extends TestCase
         yield [
             '/posts/{id}',
             [
-                ['name' => 'id', 'offset' => 7, 'length' => 4],
+                ['statement' => '{id}', 'name' => 'id'],
             ],
         ];
 
         yield [
             '/posts/{id<\d+>}',
             [
-                ['name' => 'id', 'pattern' => '\d+', 'offset' => 7, 'length' => 9],
+                ['statement' => '{id<\d+>}', 'name' => 'id', 'pattern' => '\d+'],
             ],
         ];
 
         yield [
             '/posts(/{id})',
             [
-                ['name' => 'id', 'optional' => ['left' => '/', 'right' => ''], 'offset' => 8, 'length' => 4],
+                ['statement' => '{id}', 'name' => 'id', 'optional_part' => '(/{id})'],
             ],
         ];
 
@@ -66,34 +67,34 @@ final class RouteParserTest extends TestCase
             '/posts(/{id<\d+>})',
             [
 
-                ['name' => 'id', 'pattern' => '\d+', 'optional' => ['left' => '/', 'right' => ''], 'offset' => 8, 'length' => 9],
+                ['statement' => '{id<\d+>}', 'name' => 'id', 'pattern' => '\d+', 'optional_part' => '(/{id<\d+>})'],
             ],
         ];
 
         yield [
             '/posts(/{id<\d+>}.json)',
             [
-                ['name' => 'id', 'pattern' => '\d+', 'optional' => ['left' => '/', 'right' => '.json'], 'offset' => 8, 'length' => 9],
+                ['statement' => '{id<\d+>}', 'name' => 'id', 'pattern' => '\d+', 'optional_part' => '(/{id<\d+>}.json)'],
             ],
         ];
 
         yield [
             '/posts/{id<\d+>}(.json)',
             [
-                ['name' => 'id', 'pattern' => '\d+', 'offset' => 7, 'length' => 9],
+                ['statement' => '{id<\d+>}', 'name' => 'id', 'pattern' => '\d+'],
             ],
         ];
 
         yield [
             '(/{lang<[a-z]{2}>})/posts(/{id<\d+>})',
             [
-                ['name' => 'lang', 'pattern' => '[a-z]{2}', 'optional' => ['left' => '/', 'right' => ''], 'offset' => 2, 'length' => 16],
-                ['name' => 'id', 'pattern' => '\d+', 'optional' => ['left' => '/', 'right' => ''], 'offset' => 27, 'length' => 9],
+                ['statement' => '{lang<[a-z]{2}>}', 'name' => 'lang', 'pattern' => '[a-z]{2}', 'optional_part' => '(/{lang<[a-z]{2}>})'],
+                ['statement' => '{id<\d+>}', 'name' => 'id', 'pattern' => '\d+', 'optional_part' => '(/{id<\d+>})'],
             ],
         ];
     }
 
-    private function invalidRouteDataProvider(): iterable
+    private function invalidRouteProvider(): iterable
     {
         yield [
             '((',
@@ -162,7 +163,7 @@ final class RouteParserTest extends TestCase
 
         yield [
             '/{<#/',
-            '/variable patterns cannot contain the character #/'
+            '/variable patterns cannot contain the character "#"/'
         ];
 
         yield [
@@ -172,12 +173,12 @@ final class RouteParserTest extends TestCase
 
         yield [
             '(',
-            '/contains an unclosed optional part or variable/'
+            '/contains an unclosed variable or optional part/'
         ];
 
         yield [
             '{',
-            '/contains an unclosed optional part or variable/'
+            '/contains an unclosed variable or optional part/'
         ];
     }
 }
