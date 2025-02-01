@@ -14,10 +14,12 @@ use Symfony\Component\Console\Tester\CommandTester;
 final class RouterClearDescriptorsCacheCommandTest extends TestCase
 {
     private DescriptorLoaderInterface&MockObject $mockedDescriptorLoader;
+    private CommandTester $commandTester;
 
     protected function setUp(): void
     {
         $this->mockedDescriptorLoader = $this->createMock(DescriptorLoaderInterface::class);
+        $this->commandTester = new CommandTester(new RouterClearDescriptorsCacheCommand($this->mockedDescriptorLoader));
     }
 
     public function testExecute(): void
@@ -26,10 +28,6 @@ final class RouterClearDescriptorsCacheCommandTest extends TestCase
             ->expects(self::once())
             ->method('clearCache');
 
-        $commandTester = new CommandTester(
-            new RouterClearDescriptorsCacheCommand($this->mockedDescriptorLoader)
-        );
-
-        $this->assertSame(Command::SUCCESS, $commandTester->execute([]));
+        $this->assertSame(Command::SUCCESS, $this->commandTester->execute([]));
     }
 }
