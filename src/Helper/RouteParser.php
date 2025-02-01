@@ -42,8 +42,6 @@ final class RouteParser
         "\x74" => 1, "\x75" => 1, "\x76" => 1, "\x77" => 1, "\x78" => 1, "\x79" => 1, "\x7a" => 1,
     ];
 
-    private const REGEX_DELIMITER = '#';
-
     /**
      * Parses the given route and returns its variables
      *
@@ -264,7 +262,7 @@ final class RouteParser
             }
 
             if (($cursor & self::IN_VARIABLE_PATTERN)) {
-                if ($route[$offset] === self::REGEX_DELIMITER) {
+                if ($route[$offset] === RouteCompiler::EXPRESSION_DELIMITER) {
                     throw new InvalidArgumentException(sprintf(
                         'The route "%s" could not be parsed due to a syntax error. ' .
                         'An invalid character was found at position %d. ' .
@@ -272,7 +270,7 @@ final class RouteParser
                         'use an octal or hexadecimal sequence instead.',
                         $route,
                         $offset,
-                        self::REGEX_DELIMITER,
+                        RouteCompiler::EXPRESSION_DELIMITER,
                     ));
                 }
 

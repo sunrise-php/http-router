@@ -13,8 +13,6 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
-use function in_array;
-
 /**
  * @since 1.0.0
  */
@@ -78,11 +76,6 @@ final class Route implements RouteInterface
         return $this->methods;
     }
 
-    public function allowsMethod(string $method): bool
-    {
-        return $this->methods === [] || in_array($method, $this->methods, true);
-    }
-
     /**
      * @inheritDoc
      */
@@ -133,37 +126,9 @@ final class Route implements RouteInterface
     /**
      * @inheritDoc
      */
-    public function consumesMediaType(MediaTypeInterface ...$mediaTypes): bool
-    {
-        foreach ($mediaTypes as $mediaType) {
-            if (in_array($mediaType, $this->consumes, true)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function getProducedMediaTypes(): array
     {
         return $this->produces;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function producesMediaType(MediaTypeInterface ...$mediaTypes): bool
-    {
-        foreach ($mediaTypes as $mediaType) {
-            if (in_array($mediaType, $this->produces, true)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**

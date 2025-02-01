@@ -24,6 +24,7 @@ use function str_replace;
 final class RouteCompiler
 {
     public const DEFAULT_VARIABLE_PATTERN = '[^/]+';
+    public const EXPRESSION_DELIMITER = '#';
 
     /**
      * @param array<string, string> $patterns

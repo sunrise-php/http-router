@@ -15,8 +15,8 @@ namespace Sunrise\Http\Router;
 
 use Sunrise\Http\Router\Exception\CodecException;
 
-use function in_array;
 use function sprintf;
+use function strcasecmp;
 
 /**
  * @since 3.0.0
@@ -34,9 +34,11 @@ final class CodecManager implements CodecManagerInterface
     public function supportsMediaType(MediaTypeInterface ...$mediaTypes): bool
     {
         foreach ($this->codecs as $codec) {
-            foreach ($mediaTypes as $mediaType) {
-                if (in_array($mediaType, $codec->getSupportedMediaTypes(), true)) {
-                    return true;
+            foreach ($codec->getSupportedMediaTypes() as $supportedMediaType) {
+                foreach ($mediaTypes as $mediaType) {
+                    if (strcasecmp($supportedMediaType->getIdentifier(), $mediaType->getIdentifier()) === 0) {
+                        return true;
+                    }
                 }
             }
         }
@@ -66,8 +68,10 @@ final class CodecManager implements CodecManagerInterface
     private function getCodec(MediaTypeInterface $mediaType): CodecInterface
     {
         foreach ($this->codecs as $codec) {
-            if (in_array($mediaType, $codec->getSupportedMediaTypes(), true)) {
-                return $codec;
+            foreach ($codec->getSupportedMediaTypes() as $supportedMediaType) {
+                if (strcasecmp($supportedMediaType->getIdentifier(), $mediaType->getIdentifier()) === 0) {
+                    return $codec;
+                }
             }
         }
 

@@ -38,6 +38,7 @@ use UnexpectedValueException;
 use function array_flip;
 use function array_keys;
 use function array_merge;
+use function in_array;
 use function rawurldecode;
 use function sprintf;
 
@@ -167,8 +168,9 @@ final class Router implements RouterInterface
                 throw HttpExceptionFactory::malformedUri(previous: $e);
             }
 
-            if (!$route->allowsMethod($requestMethod)) {
-                $allowedMethods += array_flip($route->getMethods());
+            $routeMethods = $route->getMethods();
+            if (!in_array($requestMethod, $routeMethods, true)) {
+                $allowedMethods += array_flip($routeMethods);
                 continue;
             }
 

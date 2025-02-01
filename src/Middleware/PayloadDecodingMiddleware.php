@@ -53,7 +53,7 @@ final class PayloadDecodingMiddleware implements MiddlewareInterface
             return $handler->handle($request);
         }
 
-        if ($serverRequest->hasRoute() && !$serverRequest->getRoute()->consumesMediaType($clientProducedMediaType)) {
+        if (!$serverRequest->serverConsumesMediaType($clientProducedMediaType)) {
             return $handler->handle($request);
         }
 

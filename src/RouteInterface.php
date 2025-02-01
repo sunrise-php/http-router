@@ -43,11 +43,6 @@ interface RouteInterface
     public function getMethods(): array;
 
     /**
-     * @since 3.0.0
-     */
-    public function allowsMethod(string $method): bool;
-
-    /**
      * @return array<string, mixed>
      */
     public function getAttributes(): array;
@@ -84,25 +79,11 @@ interface RouteInterface
     public function getConsumedMediaTypes(): array;
 
     /**
-     * Returns true if one of the given media types is consumed by the route.
-     *
-     * @since 3.0.0
-     */
-    public function consumesMediaType(MediaTypeInterface ...$mediaTypes): bool;
-
-    /**
      * @return array<array-key, MediaTypeInterface>
      *
      * @since 3.0.0
      */
     public function getProducedMediaTypes(): array;
-
-    /**
-     * Returns true if one of the given media types is produced by the route.
-     *
-     * @since 3.0.0
-     */
-    public function producesMediaType(MediaTypeInterface ...$mediaTypes): bool;
 
     /**
      * @return array<array-key, string>
