@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Sunrise\Http\Router\Loader\DescriptorLoader;
+use Sunrise\Http\Router\Loader\DescriptorLoaderInterface;
 
 use function DI\add;
 use function DI\create;
@@ -13,10 +14,12 @@ return [
     'router.descriptor_loader.cache' => null,
 
     'router.loaders' => add([
-        create(DescriptorLoader::class)
-            ->constructor(
-                resources: get('router.descriptor_loader.resources'),
-                cache: get('router.descriptor_loader.cache'),
-            ),
+        get(DescriptorLoaderInterface::class),
     ]),
+
+    DescriptorLoaderInterface::class => create(DescriptorLoader::class)
+        ->constructor(
+            resources: get('router.descriptor_loader.resources'),
+            cache: get('router.descriptor_loader.cache'),
+        ),
 ];
