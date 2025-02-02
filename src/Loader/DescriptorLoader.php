@@ -160,8 +160,8 @@ final class DescriptorLoader implements DescriptorLoaderInterface
         }
 
         if (class_exists($resource)) {
-            yield from self::getClassDescriptors(new ReflectionClass($resource));
-
+            $class = new ReflectionClass($resource);
+            yield from self::getClassDescriptors($class);
             return;
         }
 
@@ -187,7 +187,7 @@ final class DescriptorLoader implements DescriptorLoaderInterface
         }
 
         if ($class->isSubclassOf(RequestHandlerInterface::class)) {
-            $descriptor = self::getClassOrMethodDescriptor($class);
+            $descriptor = self::getDescriptorFromClassOrMethod($class);
             if ($descriptor !== null) {
                 yield $descriptor;
             }
@@ -198,7 +198,7 @@ final class DescriptorLoader implements DescriptorLoaderInterface
                 continue;
             }
 
-            $descriptor = self::getClassOrMethodDescriptor($method);
+            $descriptor = self::getDescriptorFromClassOrMethod($method);
             if ($descriptor !== null) {
                 yield $descriptor;
             }
@@ -210,8 +210,9 @@ final class DescriptorLoader implements DescriptorLoaderInterface
      *
      * @throws InvalidArgumentException
      */
-    private static function getClassOrMethodDescriptor(ReflectionClass|ReflectionMethod $classOrMethod): ?Descriptor
-    {
+    private static function getDescriptorFromClassOrMethod(
+        ReflectionClass|ReflectionMethod $classOrMethod,
+    ): ?Descriptor {
         /** @var list<ReflectionAttribute<Descriptor>> $annotations */
         $annotations = $classOrMethod->getAttributes(Descriptor::class, ReflectionAttribute::IS_INSTANCEOF);
         if ($annotations === []) {
@@ -219,24 +220,14 @@ final class DescriptorLoader implements DescriptorLoaderInterface
         }
 
         $descriptor = $annotations[0]->newInstance();
-        self::enrichDescriptorFromHolderAncestry($descriptor, $classOrMethod);
+
+        foreach (ReflectorHelper::getAncestry($classOrMethod) as $member) {
+            self::enrichDescriptorFromClassOrMethod($descriptor, $member);
+        }
+
         self::completeDescriptor($descriptor, $classOrMethod);
 
         return $descriptor;
-    }
-
-    /**
-     * @param ReflectionClass<object>|ReflectionMethod $holder
-     *
-     * @throws InvalidArgumentException
-     */
-    private static function enrichDescriptorFromHolderAncestry(
-        Descriptor $descriptor,
-        ReflectionClass|ReflectionMethod $holder,
-    ): void {
-        foreach (ReflectorHelper::getAncestry($holder) as $member) {
-            self::enrichDescriptorFromClassOrMethod($descriptor, $member);
-        }
     }
 
     /**
@@ -361,19 +352,29 @@ final class DescriptorLoader implements DescriptorLoaderInterface
      *
      * @throws InvalidArgumentException
      */
-    private static function completeDescriptor(Descriptor $descriptor, ReflectionClass|ReflectionMethod $holder): void
-    {
-        $descriptor->holder = $holder instanceof ReflectionClass ?
-            $holder->getName() :
-            [$holder->getDeclaringClass()->getName(), $holder->getName()];
+    private static function completeDescriptor(
+        Descriptor $descriptor,
+        ReflectionClass|ReflectionMethod $holder,
+    ): void {
+        if ($holder instanceof ReflectionClass) {
+            $descriptor->holder = $holder->getName();
+        } else {
+            $descriptor->holder = [$holder->getDeclaringClass()->getName(), $holder->getName()];
+        }
 
         if ($descriptor->name === '') {
-            $descriptor->name = $holder->getName();
+            if ($holder instanceof ReflectionClass) {
+                $descriptor->name = $holder->getShortName();
+            } else {
+                $descriptor->name = $holder->getName();
+            }
         }
 
         $descriptor->name = implode($descriptor->namePrefixes) . $descriptor->name;
         $descriptor->path = implode($descriptor->pathPrefixes) . $descriptor->path;
+
         $descriptor->methods = array_map(strtoupper(...), $descriptor->methods);
+
         $descriptor->pattern = RouteCompiler::compileRoute($descriptor->path, $descriptor->patterns);
     }
 }

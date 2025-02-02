@@ -10,7 +10,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\SimpleCache\CacheInterface;
-use Sunrise\Http\Message\ResponseFactory;
 use Sunrise\Http\Router\Annotation\ApiRoute;
 use Sunrise\Http\Router\Annotation\Consumes;
 use Sunrise\Http\Router\Annotation\DefaultAttribute;
@@ -160,11 +159,11 @@ final class DescriptorLoaderTest extends TestCase
     public function testLoadFromCache(): void
     {
         $cache = $this->createMock(CacheInterface::class);
-        $descriptorLoader = new DescriptorLoader([], $cache);
+        $loader = new DescriptorLoader([], $cache);
         $cacheKey = DescriptorLoader::DESCRIPTORS_CACHE_KEY;
         $descriptor = new Route('test');
         $cache->expects(self::once())->method('get')->with($cacheKey)->willReturn([$descriptor]);
-        $routes = $descriptorLoader->load();
+        $routes = $loader->load();
         $this->assertTrue($routes->valid());
         $route = $routes->current();
         $this->assertInstanceOf(RouteInterface::class, $route);
@@ -174,8 +173,8 @@ final class DescriptorLoaderTest extends TestCase
     public function testUpdateCache(): void
     {
         $cache = new CacheMock();
-        $descriptorLoader = new DescriptorLoader([HomeController::class], $cache);
-        $routes = $descriptorLoader->load();
+        $loader = new DescriptorLoader([HomeController::class], $cache);
+        $routes = $loader->load();
         $this->assertTrue($routes->valid());
         $route = $routes->current();
         $this->assertInstanceOf(RouteInterface::class, $route);
@@ -189,42 +188,65 @@ final class DescriptorLoaderTest extends TestCase
     public function testClearCache(): void
     {
         $cache = $this->createMock(CacheInterface::class);
-        $descriptorLoader = new DescriptorLoader([], $cache);
+        $loader = new DescriptorLoader([], $cache);
         $cacheKey = DescriptorLoader::DESCRIPTORS_CACHE_KEY;
         $cache->expects(self::once())->method('delete')->with($cacheKey);
-        $descriptorLoader->clearCache();
+        $loader->clearCache();
     }
 
-    public function testRoutePriority(): void
+    public function testInvalidResource(): void
+    {
+        $loader = new DescriptorLoader(['']);
+        $this->expectException(InvalidArgumentException::class);
+        $loader->load()->valid();
+    }
+
+    public function testPrivateClassMethod(): void
     {
         $controller = new class
         {
-            #[Route, Priority(1)]
-            public function b(): void
-            {
-            }
-
-            #[Route, Priority(2)]
-            public function a(): void
+            #[Route]
+            private function test(): void
             {
             }
         };
 
-        /** @var list<RouteInterface> $routes */
-        $routes = [...(new DescriptorLoader([$controller::class]))->load()];
-        $this->assertArrayHasKey(0, $routes);
-        $this->assertSame('a', $routes[0]->getName());
-        $this->assertArrayHasKey(1, $routes);
-        $this->assertSame('b', $routes[1]->getName());
+        $this->assertFalse((new DescriptorLoader([$controller::class]))->load()->valid());
+    }
+
+    public function testProtectedClassMethod(): void
+    {
+        $controller = new class
+        {
+            #[Route]
+            protected function test(): void
+            {
+            }
+        };
+
+        $this->assertFalse((new DescriptorLoader([$controller::class]))->load()->valid());
+    }
+
+    public function testStaticClassMethod(): void
+    {
+        $controller = new class
+        {
+            #[Route]
+            public static function test(): void
+            {
+            }
+        };
+
+        $this->assertFalse((new DescriptorLoader([$controller::class]))->load()->valid());
     }
 
     public function testClassRequestHandler(): void
     {
-        $controller = new #[Route] class implements RequestHandlerInterface
+        $controller = new #[Route] class ('89c854d6-0e82-47da-b9c8-001b77e2417a') extends TestCase implements RequestHandlerInterface
         {
             public function handle(ServerRequestInterface $request): ResponseInterface
             {
-                return (new ResponseFactory())->createResponse();
+                return $this->createMock(ResponseInterface::class);
             }
         };
 
@@ -261,6 +283,29 @@ final class DescriptorLoaderTest extends TestCase
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
         $this->assertInstanceOf(RouteInterface::class, $route);
         $this->assertSame(['GET'], $route->getMethods());
+    }
+
+    public function testDescriptorPriority(): void
+    {
+        $controller = new class
+        {
+            #[Route, Priority(1)]
+            public function b(): void
+            {
+            }
+
+            #[Route, Priority(2)]
+            public function a(): void
+            {
+            }
+        };
+
+        /** @var list<RouteInterface> $routes */
+        $routes = [...(new DescriptorLoader([$controller::class]))->load()];
+        $this->assertArrayHasKey(0, $routes);
+        $this->assertSame('a', $routes[0]->getName());
+        $this->assertArrayHasKey(1, $routes);
+        $this->assertSame('b', $routes[1]->getName());
     }
 
     public function testNamePrefixAnnotation(): void
@@ -839,51 +884,5 @@ final class DescriptorLoaderTest extends TestCase
         $this->assertInstanceOf(RouteInterface::class, $route);
         $this->assertSame([Method::METHOD_OPTIONS], $route->getMethods());
         $this->assertTrue($route->isApiRoute());
-    }
-
-    public function testPrivateClassMethod(): void
-    {
-        $controller = new class
-        {
-            #[Route]
-            private function test(): void
-            {
-            }
-        };
-
-        $this->assertFalse((new DescriptorLoader([$controller::class]))->load()->valid());
-    }
-
-    public function testProtectedClassMethod(): void
-    {
-        $controller = new class
-        {
-            #[Route]
-            protected function test(): void
-            {
-            }
-        };
-
-        $this->assertFalse((new DescriptorLoader([$controller::class]))->load()->valid());
-    }
-
-    public function testStaticClassMethod(): void
-    {
-        $controller = new class
-        {
-            #[Route]
-            public static function test(): void
-            {
-            }
-        };
-
-        $this->assertFalse((new DescriptorLoader([$controller::class]))->load()->valid());
-    }
-
-    public function testInvalidResource(): void
-    {
-        $descriptorLoader = new DescriptorLoader(['']);
-        $this->expectException(InvalidArgumentException::class);
-        $descriptorLoader->load()->valid();
     }
 }

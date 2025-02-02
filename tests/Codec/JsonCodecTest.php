@@ -7,7 +7,6 @@ namespace Sunrise\Http\Router\Tests\Codec;
 use Generator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Sunrise\Http\Router\Codec\JsonCodec;
-use Sunrise\Http\Router\Dictionary\MediaType;
 use Sunrise\Http\Router\Exception\CodecException;
 use PHPUnit\Framework\TestCase;
 
@@ -15,14 +14,14 @@ use const JSON_INVALID_UTF8_SUBSTITUTE;
 
 final class JsonCodecTest extends TestCase
 {
-    public function testGetSupportedMediaTypes(): void
+    public function testSupportedMediaTypes(): void
     {
         $supportedMediaTypeIdentifiers = [];
         foreach ((new JsonCodec())->getSupportedMediaTypes() as $supportedMediaType) {
             $supportedMediaTypeIdentifiers[] = $supportedMediaType->getIdentifier();
         }
 
-        $this->assertSame([MediaType::JSON->value], $supportedMediaTypeIdentifiers);
+        $this->assertSame(['application/json'], $supportedMediaTypeIdentifiers);
     }
 
     #[DataProvider('decodeDataProvider')]

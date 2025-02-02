@@ -56,9 +56,8 @@ final class ServerRequest implements ServerRequestInterface
         $route = $this->request->getAttribute(RouteInterface::class);
 
         if (! $route instanceof RouteInterface) {
-            throw new LogicException(
-                'At this level of the application, the request does not contain information about the requested route.'
-            );
+            // phpcs:ignore Generic.Files.LineLength.TooLong
+            throw new LogicException('At this level of the application, the request does not contain information about the requested route.');
         }
 
         return $route;
@@ -125,35 +124,11 @@ final class ServerRequest implements ServerRequestInterface
         return null;
     }
 
-    public function clientProducesMediaType(MediaTypeInterface ...$serverConsumedMediaTypes): bool
-    {
-        // The server is ready to accept any media type.
-        if ($serverConsumedMediaTypes === []) {
-            return true;
-        }
-
-        $clientProducedMediaType = $this->getClientProducedMediaType();
-        if ($clientProducedMediaType === null) {
-            return false;
-        }
-
-        foreach ($serverConsumedMediaTypes as $serverConsumedMediaType) {
-            if (
-                strcasecmp(
-                    $clientProducedMediaType->getIdentifier(),
-                    $serverConsumedMediaType->getIdentifier(),
-                ) === 0
-            ) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     public function serverConsumesMediaType(MediaTypeInterface $clientProducedMediaType): bool
     {
-        foreach ($this->getRoute()->getConsumedMediaTypes() as $serverConsumedMediaType) {
+        $serverConsumedMediaTypes = $this->getRoute()->getConsumedMediaTypes();
+
+        foreach ($serverConsumedMediaTypes as $serverConsumedMediaType) {
             if (
                 strcasecmp(
                     $clientProducedMediaType->getIdentifier(),
@@ -194,6 +169,7 @@ final class ServerRequest implements ServerRequestInterface
         foreach ($values as [$identifier]) {
             /** @var array{language?: string, region?: string}|null $subtags */
             $subtags = \Locale::parseLocale($identifier);
+
             if (isset($subtags['language'])) {
                 yield new Locale($subtags['language'], $subtags['region'] ?? null);
             }
