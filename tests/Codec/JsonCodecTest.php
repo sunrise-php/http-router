@@ -7,6 +7,7 @@ namespace Sunrise\Http\Router\Tests\Codec;
 use Generator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Sunrise\Http\Router\Codec\JsonCodec;
+use Sunrise\Http\Router\Dictionary\MediaType;
 use Sunrise\Http\Router\Exception\CodecException;
 use PHPUnit\Framework\TestCase;
 
@@ -21,7 +22,7 @@ final class JsonCodecTest extends TestCase
             $supportedMediaTypeIdentifiers[] = $supportedMediaType->getIdentifier();
         }
 
-        $this->assertSame(['application/json'], $supportedMediaTypeIdentifiers);
+        $this->assertSame([MediaType::JSON->value], $supportedMediaTypeIdentifiers);
     }
 
     #[DataProvider('decodeDataProvider')]
