@@ -30,12 +30,12 @@ interface CodecInterface
      *
      * @throws CodecException
      */
-    public function encode(mixed $data, array $context): string;
+    public function decode(string $data, array $context = []): mixed;
 
     /**
      * @param array<array-key, mixed> $context
      *
      * @throws CodecException
      */
-    public function decode(string $data, array $context): mixed;
+    public function encode(mixed $data, array $context = []): string;
 }

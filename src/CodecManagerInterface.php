@@ -27,12 +27,12 @@ interface CodecManagerInterface
      *
      * @throws CodecException
      */
-    public function encode(MediaTypeInterface $mediaType, mixed $data, array $context): string;
+    public function decode(MediaTypeInterface $mediaType, string $data, array $context = []): mixed;
 
     /**
      * @param array<array-key, mixed> $context
      *
      * @throws CodecException
      */
-    public function decode(MediaTypeInterface $mediaType, string $data, array $context): mixed;
+    public function encode(MediaTypeInterface $mediaType, mixed $data, array $context = []): string;
 }

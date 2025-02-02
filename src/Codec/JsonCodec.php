@@ -30,17 +30,12 @@ use const JSON_THROW_ON_ERROR;
  */
 final class JsonCodec implements CodecInterface
 {
-    public const CONTEXT_KEY_ENCODING_FLAGS = 'encoding_flags';
-    public const CONTEXT_KEY_ENCODING_MAX_DEPTH = 'encoding_max_depth';
     public const CONTEXT_KEY_DECODING_FLAGS = 'decoding_flags';
     public const CONTEXT_KEY_DECODING_MAX_DEPTH = 'decoding_max_depth';
+    public const CONTEXT_KEY_ENCODING_FLAGS = 'encoding_flags';
+    public const CONTEXT_KEY_ENCODING_MAX_DEPTH = 'encoding_max_depth';
 
-    public const DEFAULT_ENCODING_FLAGS = JSON_BIGINT_AS_STRING;
-    public const DEFAULT_ENCODING_MAX_DEPTH = self::DEFAULT_MAX_DEPTH;
-    public const DEFAULT_DECODING_FLAGS = JSON_OBJECT_AS_ARRAY;
-    public const DEFAULT_DECODING_MAX_DEPTH = self::DEFAULT_MAX_DEPTH;
-
-    public const DEFAULT_MAX_DEPTH = 512;
+    private const DEFAULT_CODING_MAX_DEPTH = 512;
 
     /**
      * @param array<array-key, mixed> $context
@@ -61,17 +56,20 @@ final class JsonCodec implements CodecInterface
     /**
      * @inheritDoc
      */
-    public function encode(mixed $data, array $context): string
+    public function decode(string $data, array $context = []): mixed
     {
         $context += $this->context;
 
-        /** @var int $encodingFlags */
-        $encodingFlags = $context[self::CONTEXT_KEY_ENCODING_FLAGS] ?? self::DEFAULT_ENCODING_FLAGS;
-        /** @var int<1, 2147483647> $encodingMaxDepth */
-        $encodingMaxDepth = $context[self::CONTEXT_KEY_ENCODING_MAX_DEPTH] ?? self::DEFAULT_ENCODING_MAX_DEPTH;
+        /** @var int $decodingFlags */
+        $decodingFlags = $context[self::CONTEXT_KEY_DECODING_FLAGS] ?? 0;
+        /** @var int<1, 2147483647> $decodingMaxDepth */
+        $decodingMaxDepth = $context[self::CONTEXT_KEY_DECODING_MAX_DEPTH] ?? self::DEFAULT_CODING_MAX_DEPTH;
+
+        $decodingFlags |= JSON_BIGINT_AS_STRING;
+        $decodingFlags |= JSON_OBJECT_AS_ARRAY;
 
         try {
-            return json_encode($data, $encodingFlags | JSON_THROW_ON_ERROR, $encodingMaxDepth);
+            return json_decode($data, depth: $decodingMaxDepth, flags: $decodingFlags | JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
             throw new CodecException($e->getMessage(), previous: $e);
         }
@@ -80,17 +78,17 @@ final class JsonCodec implements CodecInterface
     /**
      * @inheritDoc
      */
-    public function decode(string $data, array $context): mixed
+    public function encode(mixed $data, array $context = []): string
     {
         $context += $this->context;
 
-        /** @var int $decodingFlags */
-        $decodingFlags = $context[self::CONTEXT_KEY_DECODING_FLAGS] ?? self::DEFAULT_DECODING_FLAGS;
-        /** @var int<1, 2147483647> $decodingMaxDepth */
-        $decodingMaxDepth = $context[self::CONTEXT_KEY_DECODING_MAX_DEPTH] ?? self::DEFAULT_DECODING_MAX_DEPTH;
+        /** @var int $encodingFlags */
+        $encodingFlags = $context[self::CONTEXT_KEY_ENCODING_FLAGS] ?? 0;
+        /** @var int<1, 2147483647> $encodingMaxDepth */
+        $encodingMaxDepth = $context[self::CONTEXT_KEY_ENCODING_MAX_DEPTH] ?? self::DEFAULT_CODING_MAX_DEPTH;
 
         try {
-            return json_decode($data, null, $decodingMaxDepth, $decodingFlags | JSON_THROW_ON_ERROR);
+            return json_encode($data, flags: $encodingFlags | JSON_THROW_ON_ERROR, depth: $encodingMaxDepth);
         } catch (JsonException $e) {
             throw new CodecException($e->getMessage(), previous: $e);
         }

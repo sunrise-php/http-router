@@ -14,38 +14,27 @@ use Symfony\Component\Console\Tester\CommandTester;
 
 final class RouterListRoutesCommandTest extends TestCase
 {
+    /** @var array<array-key, RouteInterface&MockObject> */
+    private array $mockedRoutes;
     private RouterInterface&MockObject $mockedRouter;
     private CommandTester $commandTester;
 
-    /** @var array<array-key, RouteInterface&MockObject> */
-    private array $mockedRoutes = [];
-
     protected function setUp(): void
     {
-        $this->mockedRouter = $this->createMock(RouterInterface::class);
-        $this->commandTester = new CommandTester(new RouterListRoutesCommand($this->mockedRouter));
         $this->mockedRoutes = [];
+        $this->mockedRouter = $this->createMock(RouterInterface::class);
+        $this->mockedRouter->method('getRoutes')->willReturnCallback(fn(): array => $this->mockedRoutes);
+        $this->commandTester = new CommandTester(new RouterListRoutesCommand($this->mockedRouter));
     }
 
     public function testExecuteWithRoutes(): void
     {
         $this->mockRoute();
-
-        $this->mockedRouter
-            ->expects(self::once())
-            ->method('getRoutes')
-            ->willReturn($this->mockedRoutes);
-
         $this->assertSame(Command::SUCCESS, $this->commandTester->execute([]));
     }
 
     public function testExecuteWithoutRoutes(): void
     {
-        $this->mockedRouter
-            ->expects(self::once())
-            ->method('getRoutes')
-            ->willReturn([]);
-
         $this->assertSame(Command::SUCCESS, $this->commandTester->execute([]));
     }
 

@@ -49,17 +49,17 @@ final class CodecManager implements CodecManagerInterface
     /**
      * @inheritDoc
      */
-    public function encode(MediaTypeInterface $mediaType, mixed $data, array $context): string
+    public function decode(MediaTypeInterface $mediaType, string $data, array $context = []): mixed
     {
-        return $this->getCodec($mediaType)->encode($data, $context + $this->context);
+        return $this->getCodec($mediaType)->decode($data, $context + $this->context);
     }
 
     /**
      * @inheritDoc
      */
-    public function decode(MediaTypeInterface $mediaType, string $data, array $context): mixed
+    public function encode(MediaTypeInterface $mediaType, mixed $data, array $context = []): string
     {
-        return $this->getCodec($mediaType)->decode($data, $context + $this->context);
+        return $this->getCodec($mediaType)->encode($data, $context + $this->context);
     }
 
     /**

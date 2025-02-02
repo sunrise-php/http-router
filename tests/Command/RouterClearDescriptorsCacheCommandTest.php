@@ -24,10 +24,7 @@ final class RouterClearDescriptorsCacheCommandTest extends TestCase
 
     public function testExecute(): void
     {
-        $this->mockedDescriptorLoader
-            ->expects(self::once())
-            ->method('clearCache');
-
+        $this->mockedDescriptorLoader->expects(self::once())->method('clearCache');
         $this->assertSame(Command::SUCCESS, $this->commandTester->execute([]));
     }
 }
