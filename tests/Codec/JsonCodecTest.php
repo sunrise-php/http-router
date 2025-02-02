@@ -7,9 +7,9 @@ namespace Sunrise\Http\Router\Tests\Codec;
 use Generator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Sunrise\Http\Router\Codec\JsonCodec;
+use Sunrise\Http\Router\Exception\CodecException;
 use PHPUnit\Framework\TestCase;
 
-use const JSON_HEX_AMP;
 use const JSON_INVALID_UTF8_SUBSTITUTE;
 
 final class JsonCodecTest extends TestCase
@@ -25,15 +25,31 @@ final class JsonCodecTest extends TestCase
     }
 
     #[DataProvider('decodeDataProvider')]
-    public function testDecode(mixed $decodedData, string $decodingData, array $decodingContext = [], array $codecContext = []): void
+    public function testDecode(mixed $expectedData, string $codingData, array $codingContext = [], array $codecContext = []): void
     {
-        $this->assertSame($decodedData, (new JsonCodec($codecContext))->decode($decodingData, $decodingContext));
+        $this->assertSame($expectedData, (new JsonCodec($codecContext))->decode($codingData, $codingContext));
     }
 
     #[DataProvider('encodeDataProvider')]
-    public function testEncode(string $encodedData, mixed $encodingData, array $encodingContext = [], array $codecContext = []): void
+    public function testEncode(string $expectedData, mixed $codingData, array $codingContext = [], array $codecContext = []): void
     {
-        $this->assertSame($encodedData, (new JsonCodec($codecContext))->encode($encodingData, $encodingContext));
+        $this->assertSame($expectedData, (new JsonCodec($codecContext))->encode($codingData, $codingContext));
+    }
+
+    #[DataProvider('invalidDecodableDataProvider')]
+    public function testDecodeInvalidData(string $expectedMessage, string $codingData, array $codingContext = [], array $codecContext = []): void
+    {
+        $this->expectException(CodecException::class);
+        $this->expectExceptionMessageMatches($expectedMessage);
+        (new JsonCodec($codecContext))->decode($codingData, $codingContext);
+    }
+
+    #[DataProvider('invalidEncodableDataProvider')]
+    public function testEncodeInvalidData(string $expectedMessage, mixed $codingData, array $codingContext = [], array $codecContext = []): void
+    {
+        $this->expectException(CodecException::class);
+        $this->expectExceptionMessageMatches($expectedMessage);
+        (new JsonCodec($codecContext))->encode($codingData, $codingContext);
     }
 
     public static function decodeDataProvider(): Generator
@@ -70,16 +86,63 @@ final class JsonCodecTest extends TestCase
         ];
 
         yield [
-            '{"foo":"bar \u0026 baz"}',
-            ['foo' => 'bar & baz'],
-            [JsonCodec::CONTEXT_KEY_ENCODING_FLAGS => JSON_HEX_AMP],
+            '{"foo":"\ufffd"}',
+            ['foo' => "\xff"],
+            [JsonCodec::CONTEXT_KEY_ENCODING_FLAGS => JSON_INVALID_UTF8_SUBSTITUTE],
         ];
 
         yield [
-            '{"foo":"bar \u0026 baz"}',
-            ['foo' => 'bar & baz'],
+            '{"foo":"\ufffd"}',
+            ['foo' => "\xff"],
             [],
-            [JsonCodec::CONTEXT_KEY_ENCODING_FLAGS => JSON_HEX_AMP],
+            [JsonCodec::CONTEXT_KEY_ENCODING_FLAGS => JSON_INVALID_UTF8_SUBSTITUTE],
+        ];
+    }
+
+    public static function invalidDecodableDataProvider(): Generator
+    {
+        yield [
+            '/Syntax error/',
+            '',
+        ];
+
+        yield [
+            '/Syntax error/',
+            '!',
+        ];
+
+        yield [
+            '/Maximum stack depth exceeded/',
+            '[]',
+            [JsonCodec::CONTEXT_KEY_DECODING_MAX_DEPTH => 1],
+        ];
+
+        yield [
+            '/Maximum stack depth exceeded/',
+            '[]',
+            [],
+            [JsonCodec::CONTEXT_KEY_DECODING_MAX_DEPTH => 1],
+        ];
+    }
+
+    public static function invalidEncodableDataProvider(): Generator
+    {
+        yield [
+            '/Malformed UTF-8 characters/',
+            "\xff",
+        ];
+
+        yield [
+            '/Maximum stack depth exceeded/',
+            [[]],
+            [JsonCodec::CONTEXT_KEY_ENCODING_MAX_DEPTH => 1],
+        ];
+
+        yield [
+            '/Maximum stack depth exceeded/',
+            [[]],
+            [],
+            [JsonCodec::CONTEXT_KEY_ENCODING_MAX_DEPTH => 1],
         ];
     }
 }
