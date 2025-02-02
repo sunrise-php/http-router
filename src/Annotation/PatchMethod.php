@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
-use Fig\Http\Message\RequestMethodInterface;
 
 /**
  * @since 3.0.0
@@ -24,6 +23,6 @@ final class PatchMethod extends Method
 {
     public function __construct()
     {
-        parent::__construct(RequestMethodInterface::METHOD_PATCH);
+        parent::__construct(self::METHOD_PATCH);
     }
 }

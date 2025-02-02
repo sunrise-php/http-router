@@ -29,7 +29,6 @@ use Sunrise\Http\Router\Annotation\Description;
 use Sunrise\Http\Router\Annotation\Method;
 use Sunrise\Http\Router\Annotation\Middleware;
 use Sunrise\Http\Router\Annotation\NamePrefix;
-use Sunrise\Http\Router\Annotation\Path;
 use Sunrise\Http\Router\Annotation\PathPostfix;
 use Sunrise\Http\Router\Annotation\PathPrefix;
 use Sunrise\Http\Router\Annotation\Pattern;
@@ -192,9 +191,8 @@ final class DescriptorLoader implements DescriptorLoaderInterface
             $annotations = $class->getAttributes(Descriptor::class, ReflectionAttribute::IS_INSTANCEOF);
             if (isset($annotations[0])) {
                 $descriptor = $annotations[0]->newInstance();
-                $descriptor->holder = $class->getName();
-                self::enrichDescriptorFromClassOrMethodAncestry($descriptor, $class);
-                self::completeDescriptor($descriptor);
+                self::enrichDescriptorFromHolderAncestry($descriptor, $class);
+                self::completeDescriptor($descriptor, $class);
                 yield $descriptor;
             }
         }
@@ -208,24 +206,23 @@ final class DescriptorLoader implements DescriptorLoaderInterface
             $annotations = $method->getAttributes(Descriptor::class, ReflectionAttribute::IS_INSTANCEOF);
             if (isset($annotations[0])) {
                 $descriptor = $annotations[0]->newInstance();
-                $descriptor->holder = [$class->getName(), $method->getName()];
-                self::enrichDescriptorFromClassOrMethodAncestry($descriptor, $method);
-                self::completeDescriptor($descriptor);
+                self::enrichDescriptorFromHolderAncestry($descriptor, $method);
+                self::completeDescriptor($descriptor, $method);
                 yield $descriptor;
             }
         }
     }
 
     /**
-     * @param ReflectionClass<object>|ReflectionMethod $proband
+     * @param ReflectionClass<object>|ReflectionMethod $holder
      *
      * @throws InvalidArgumentException
      */
-    private static function enrichDescriptorFromClassOrMethodAncestry(
+    private static function enrichDescriptorFromHolderAncestry(
         Descriptor $descriptor,
-        ReflectionClass|ReflectionMethod $proband,
+        ReflectionClass|ReflectionMethod $holder,
     ): void {
-        foreach (ReflectorHelper::getAncestry($proband) as $member) {
+        foreach (ReflectorHelper::getAncestry($holder) as $member) {
             self::enrichDescriptorFromClassOrMethod($descriptor, $member);
         }
     }
@@ -244,13 +241,6 @@ final class DescriptorLoader implements DescriptorLoaderInterface
         if (isset($annotations[0])) {
             $annotation = $annotations[0]->newInstance();
             $descriptor->namePrefixes[] = $annotation->value;
-        }
-
-        /** @var list<ReflectionAttribute<Path>> $annotations */
-        $annotations = $classOrMethod->getAttributes(Path::class);
-        if (isset($annotations[0])) {
-            $annotation = $annotations[0]->newInstance();
-            $descriptor->path = $annotation->value;
         }
 
         /** @var list<ReflectionAttribute<PathPrefix>> $annotations */
@@ -318,7 +308,7 @@ final class DescriptorLoader implements DescriptorLoaderInterface
         }
 
         /** @var list<ReflectionAttribute<Tag>> $annotations */
-        $annotations = $classOrMethod->getAttributes(Tag::class);
+        $annotations = $classOrMethod->getAttributes(Tag::class, ReflectionAttribute::IS_INSTANCEOF);
         foreach ($annotations as $annotation) {
             $annotation = $annotation->newInstance();
             foreach ($annotation->values as $value) {
@@ -355,15 +345,23 @@ final class DescriptorLoader implements DescriptorLoaderInterface
     }
 
     /**
+     * @param ReflectionClass<object>|ReflectionMethod $holder
+     *
      * @throws InvalidArgumentException
      */
-    private static function completeDescriptor(Descriptor $descriptor): void
+    private static function completeDescriptor(Descriptor $descriptor, ReflectionClass|ReflectionMethod $holder): void
     {
+        $descriptor->holder = $holder instanceof ReflectionClass ?
+            $holder->getName() :
+            [$holder->getDeclaringClass()->getName(), $holder->getName()];
+
+        if ($descriptor->name === '') {
+            $descriptor->name = $holder->getName();
+        }
+
         $descriptor->name = implode($descriptor->namePrefixes) . $descriptor->name;
         $descriptor->path = implode($descriptor->pathPrefixes) . $descriptor->path;
-
         $descriptor->methods = array_map(strtoupper(...), $descriptor->methods);
-
         $descriptor->pattern = RouteCompiler::compileRoute($descriptor->path, $descriptor->patterns);
     }
 }

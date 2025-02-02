@@ -63,15 +63,12 @@
     "psalm": "psalm --no-cache",
     "phpstan": "phpstan analyse src --level=9 --memory-limit=-1",
     "phpunit": "XDEBUG_MODE=coverage phpunit --coverage-text --colors=always",
+    "coverage-html": "XDEBUG_MODE=coverage phpunit --coverage-html coverage/",
     "test": [
       "@phpcs",
       "@psalm",
       "@phpstan",
       "@phpunit"
-    ],
-    "build": [
-      "phpdoc -d src/ -t phpdoc/",
-      "XDEBUG_MODE=coverage phpunit --coverage-html coverage/"
     ]
   },
   "config": {
