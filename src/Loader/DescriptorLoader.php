@@ -187,12 +187,8 @@ final class DescriptorLoader implements DescriptorLoaderInterface
         }
 
         if ($class->isSubclassOf(RequestHandlerInterface::class)) {
-            /** @var list<ReflectionAttribute<Descriptor>> $annotations */
-            $annotations = $class->getAttributes(Descriptor::class, ReflectionAttribute::IS_INSTANCEOF);
-            if (isset($annotations[0])) {
-                $descriptor = $annotations[0]->newInstance();
-                self::enrichDescriptorFromHolderAncestry($descriptor, $class);
-                self::completeDescriptor($descriptor, $class);
+            $descriptor = self::getClassOrMethodDescriptor($class);
+            if ($descriptor !== null) {
                 yield $descriptor;
             }
         }
@@ -202,15 +198,31 @@ final class DescriptorLoader implements DescriptorLoaderInterface
                 continue;
             }
 
-            /** @var list<ReflectionAttribute<Descriptor>> $annotations */
-            $annotations = $method->getAttributes(Descriptor::class, ReflectionAttribute::IS_INSTANCEOF);
-            if (isset($annotations[0])) {
-                $descriptor = $annotations[0]->newInstance();
-                self::enrichDescriptorFromHolderAncestry($descriptor, $method);
-                self::completeDescriptor($descriptor, $method);
+            $descriptor = self::getClassOrMethodDescriptor($method);
+            if ($descriptor !== null) {
                 yield $descriptor;
             }
         }
+    }
+
+    /**
+     * @param ReflectionClass<object>|ReflectionMethod $classOrMethod
+     *
+     * @throws InvalidArgumentException
+     */
+    private static function getClassOrMethodDescriptor(ReflectionClass|ReflectionMethod $classOrMethod): ?Descriptor
+    {
+        /** @var list<ReflectionAttribute<Descriptor>> $annotations */
+        $annotations = $classOrMethod->getAttributes(Descriptor::class, ReflectionAttribute::IS_INSTANCEOF);
+        if ($annotations === []) {
+            return null;
+        }
+
+        $descriptor = $annotations[0]->newInstance();
+        self::enrichDescriptorFromHolderAncestry($descriptor, $classOrMethod);
+        self::completeDescriptor($descriptor, $classOrMethod);
+
+        return $descriptor;
     }
 
     /**

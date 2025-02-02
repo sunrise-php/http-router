@@ -22,6 +22,7 @@ use function json_decode;
 use function json_encode;
 
 use const JSON_BIGINT_AS_STRING;
+use const JSON_OBJECT_AS_ARRAY;
 use const JSON_THROW_ON_ERROR;
 
 /**
@@ -61,12 +62,13 @@ final class JsonCodec implements CodecInterface
 
         /** @var int $decodingFlags */
         $decodingFlags = $context[self::CONTEXT_KEY_DECODING_FLAGS] ?? 0;
-        $decodingFlags |= JSON_BIGINT_AS_STRING;
         /** @var int<1, 2147483647> $decodingMaxDepth */
         $decodingMaxDepth = $context[self::CONTEXT_KEY_DECODING_MAX_DEPTH] ?? self::DEFAULT_CODING_MAX_DEPTH;
 
+        $decodingFlags |= JSON_OBJECT_AS_ARRAY | JSON_BIGINT_AS_STRING;
+
         try {
-            return json_decode($data, true, $decodingMaxDepth, $decodingFlags | JSON_THROW_ON_ERROR);
+            return json_decode($data, null, $decodingMaxDepth, $decodingFlags | JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
             throw new CodecException($e->getMessage(), previous: $e);
         }

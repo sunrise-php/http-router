@@ -195,7 +195,7 @@ final class DescriptorLoaderTest extends TestCase
         $descriptorLoader->clearCache();
     }
 
-    public function testSortDescriptors(): void
+    public function testRoutePriority(): void
     {
         $controller = new class
         {
@@ -248,7 +248,7 @@ final class DescriptorLoaderTest extends TestCase
         $this->assertSame([$controller::class, 'test'], $route->getRequestHandler());
     }
 
-    public function testChangeMethodCase(): void
+    public function testLowercaseMethod(): void
     {
         $controller = new class
         {
