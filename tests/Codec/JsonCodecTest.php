@@ -30,13 +30,7 @@ final class JsonCodecTest extends TestCase
         $this->assertSame($expectedData, (new JsonCodec($codecContext))->decode($codingData, $codingContext));
     }
 
-    #[DataProvider('encodeDataProvider')]
-    public function testEncode(string $expectedData, mixed $codingData, array $codingContext = [], array $codecContext = []): void
-    {
-        $this->assertSame($expectedData, (new JsonCodec($codecContext))->encode($codingData, $codingContext));
-    }
-
-    #[DataProvider('invalidDecodableDataProvider')]
+    #[DataProvider('decodeInvalidDataProvider')]
     public function testDecodeInvalidData(string $expectedMessage, string $codingData, array $codingContext = [], array $codecContext = []): void
     {
         $this->expectException(CodecException::class);
@@ -44,7 +38,13 @@ final class JsonCodecTest extends TestCase
         (new JsonCodec($codecContext))->decode($codingData, $codingContext);
     }
 
-    #[DataProvider('invalidEncodableDataProvider')]
+    #[DataProvider('encodeDataProvider')]
+    public function testEncode(string $expectedData, mixed $codingData, array $codingContext = [], array $codecContext = []): void
+    {
+        $this->assertSame($expectedData, (new JsonCodec($codecContext))->encode($codingData, $codingContext));
+    }
+
+    #[DataProvider('encodeInvalidDataProvider')]
     public function testEncodeInvalidData(string $expectedMessage, mixed $codingData, array $codingContext = [], array $codecContext = []): void
     {
         $this->expectException(CodecException::class);
@@ -78,28 +78,7 @@ final class JsonCodecTest extends TestCase
         ];
     }
 
-    public static function encodeDataProvider(): Generator
-    {
-        yield [
-            '{"foo":"bar"}',
-            ['foo' => 'bar'],
-        ];
-
-        yield [
-            '{"foo":"\ufffd"}',
-            ['foo' => "\xff"],
-            [JsonCodec::CONTEXT_KEY_ENCODING_FLAGS => JSON_INVALID_UTF8_SUBSTITUTE],
-        ];
-
-        yield [
-            '{"foo":"\ufffd"}',
-            ['foo' => "\xff"],
-            [],
-            [JsonCodec::CONTEXT_KEY_ENCODING_FLAGS => JSON_INVALID_UTF8_SUBSTITUTE],
-        ];
-    }
-
-    public static function invalidDecodableDataProvider(): Generator
+    public static function decodeInvalidDataProvider(): Generator
     {
         yield [
             '/Syntax error/',
@@ -125,7 +104,28 @@ final class JsonCodecTest extends TestCase
         ];
     }
 
-    public static function invalidEncodableDataProvider(): Generator
+    public static function encodeDataProvider(): Generator
+    {
+        yield [
+            '{"foo":"bar"}',
+            ['foo' => 'bar'],
+        ];
+
+        yield [
+            '{"foo":"\ufffd"}',
+            ['foo' => "\xff"],
+            [JsonCodec::CONTEXT_KEY_ENCODING_FLAGS => JSON_INVALID_UTF8_SUBSTITUTE],
+        ];
+
+        yield [
+            '{"foo":"\ufffd"}',
+            ['foo' => "\xff"],
+            [],
+            [JsonCodec::CONTEXT_KEY_ENCODING_FLAGS => JSON_INVALID_UTF8_SUBSTITUTE],
+        ];
+    }
+
+    public static function encodeInvalidDataProvider(): Generator
     {
         yield [
             '/Malformed UTF-8 characters/',

@@ -285,29 +285,6 @@ final class DescriptorLoaderTest extends TestCase
         $this->assertSame(['GET'], $route->getMethods());
     }
 
-    public function testDescriptorPriority(): void
-    {
-        $controller = new class
-        {
-            #[Route, Priority(1)]
-            public function b(): void
-            {
-            }
-
-            #[Route, Priority(2)]
-            public function a(): void
-            {
-            }
-        };
-
-        /** @var list<RouteInterface> $routes */
-        $routes = [...(new DescriptorLoader([$controller::class]))->load()];
-        $this->assertArrayHasKey(0, $routes);
-        $this->assertSame('a', $routes[0]->getName());
-        $this->assertArrayHasKey(1, $routes);
-        $this->assertSame('b', $routes[1]->getName());
-    }
-
     public function testNamePrefixAnnotation(): void
     {
         $controller = new #[NamePrefix('foo.')] class
@@ -884,5 +861,28 @@ final class DescriptorLoaderTest extends TestCase
         $this->assertInstanceOf(RouteInterface::class, $route);
         $this->assertSame([Method::METHOD_OPTIONS], $route->getMethods());
         $this->assertTrue($route->isApiRoute());
+    }
+
+    public function testPriorityAnnotation(): void
+    {
+        $controller = new class
+        {
+            #[Route, Priority(1)]
+            public function b(): void
+            {
+            }
+
+            #[Route, Priority(2)]
+            public function a(): void
+            {
+            }
+        };
+
+        /** @var list<RouteInterface> $routes */
+        $routes = [...(new DescriptorLoader([$controller::class]))->load()];
+        $this->assertArrayHasKey(0, $routes);
+        $this->assertSame('a', $routes[0]->getName());
+        $this->assertArrayHasKey(1, $routes);
+        $this->assertSame('b', $routes[1]->getName());
     }
 }

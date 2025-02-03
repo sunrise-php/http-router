@@ -94,7 +94,7 @@ final class RouteParserTest extends TestCase
         ];
     }
 
-    private function invalidRouteProvider(): Generator
+    public static function invalidRouteProvider(): Generator
     {
         yield [
             '((',
