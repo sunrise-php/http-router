@@ -68,7 +68,7 @@ final class JsonCodec implements CodecInterface
         $decodingFlags |= JSON_OBJECT_AS_ARRAY | JSON_BIGINT_AS_STRING;
 
         try {
-            return json_decode($data, null, $decodingMaxDepth, $decodingFlags | JSON_THROW_ON_ERROR);
+            return json_decode($data, depth: $decodingMaxDepth, flags: $decodingFlags | JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
             throw new CodecException($e->getMessage(), previous: $e);
         }
@@ -87,7 +87,7 @@ final class JsonCodec implements CodecInterface
         $encodingMaxDepth = $context[self::CONTEXT_KEY_ENCODING_MAX_DEPTH] ?? self::DEFAULT_CODING_MAX_DEPTH;
 
         try {
-            return json_encode($data, $encodingFlags | JSON_THROW_ON_ERROR, $encodingMaxDepth);
+            return json_encode($data, flags: $encodingFlags | JSON_THROW_ON_ERROR, depth: $encodingMaxDepth);
         } catch (JsonException $e) {
             throw new CodecException($e->getMessage(), previous: $e);
         }

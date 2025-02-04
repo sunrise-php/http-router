@@ -187,7 +187,7 @@ final class DescriptorLoader implements DescriptorLoaderInterface
         }
 
         if ($class->isSubclassOf(RequestHandlerInterface::class)) {
-            $descriptor = self::getDescriptorFromClassOrMethod($class);
+            $descriptor = self::getClassOrMethodDescriptor($class);
             if ($descriptor !== null) {
                 yield $descriptor;
             }
@@ -198,7 +198,7 @@ final class DescriptorLoader implements DescriptorLoaderInterface
                 continue;
             }
 
-            $descriptor = self::getDescriptorFromClassOrMethod($method);
+            $descriptor = self::getClassOrMethodDescriptor($method);
             if ($descriptor !== null) {
                 yield $descriptor;
             }
@@ -210,9 +210,8 @@ final class DescriptorLoader implements DescriptorLoaderInterface
      *
      * @throws InvalidArgumentException
      */
-    private static function getDescriptorFromClassOrMethod(
-        ReflectionClass|ReflectionMethod $classOrMethod,
-    ): ?Descriptor {
+    private static function getClassOrMethodDescriptor(ReflectionClass|ReflectionMethod $classOrMethod): ?Descriptor
+    {
         /** @var list<ReflectionAttribute<Descriptor>> $annotations */
         $annotations = $classOrMethod->getAttributes(Descriptor::class, ReflectionAttribute::IS_INSTANCEOF);
         if ($annotations === []) {
@@ -352,23 +351,9 @@ final class DescriptorLoader implements DescriptorLoaderInterface
      *
      * @throws InvalidArgumentException
      */
-    private static function completeDescriptor(
-        Descriptor $descriptor,
-        ReflectionClass|ReflectionMethod $holder,
-    ): void {
-        if ($holder instanceof ReflectionClass) {
-            $descriptor->holder = $holder->getName();
-        } else {
-            $descriptor->holder = [$holder->getDeclaringClass()->getName(), $holder->getName()];
-        }
-
-        if ($descriptor->name === '') {
-            if ($holder instanceof ReflectionClass) {
-                $descriptor->name = $holder->getShortName();
-            } else {
-                $descriptor->name = $holder->getName();
-            }
-        }
+    private static function completeDescriptor(Descriptor $descriptor, ReflectionClass|ReflectionMethod $holder): void
+    {
+        $descriptor->holder = $holder instanceof ReflectionClass ? $holder->name : [$holder->class, $holder->name];
 
         $descriptor->name = implode($descriptor->namePrefixes) . $descriptor->name;
         $descriptor->path = implode($descriptor->pathPrefixes) . $descriptor->path;

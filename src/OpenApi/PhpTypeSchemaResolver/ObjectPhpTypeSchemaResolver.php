@@ -130,7 +130,7 @@ final class ObjectPhpTypeSchemaResolver implements
             return $annotation->value;
         }
 
-        return $property->getName();
+        return $property->name;
     }
 
     private static function isOptionalProperty(ReflectionProperty $property): bool
@@ -144,7 +144,7 @@ final class ObjectPhpTypeSchemaResolver implements
         }
 
         foreach ($property->getDeclaringClass()->getConstructor()?->getParameters() ?? [] as $parameter) {
-            if ($parameter->getName() === $property->getName()) {
+            if ($parameter->name === $property->name) {
                 return $parameter->isDefaultValueAvailable();
             }
         }

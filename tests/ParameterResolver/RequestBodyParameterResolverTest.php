@@ -14,7 +14,7 @@ use Sunrise\Http\Router\Annotation\RequestBody;
 use Sunrise\Http\Router\Dictionary\ErrorMessage;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\ParameterResolver\RequestBodyParameterResolver;
-use Sunrise\Http\Router\Tests\Fixture\App\Dto\PageCreateRequest;
+use Sunrise\Http\Router\Tests\Fixture\App\Dto\Page\PageCreateRequest;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
@@ -37,12 +37,12 @@ final class RequestBodyParameterResolverTest extends TestCase
 
     public function testResolveParameter(): void
     {
-        $requestObject = new PageCreateRequest(name: 'foo');
+        $pageCreateRequest = new PageCreateRequest(name: 'foo');
         $this->mockedServerRequest->expects(self::once())->method('getParsedBody')->willReturn(['name' => 'foo']);
-        $this->mockedHydrator->expects(self::once())->method('hydrate')->with(PageCreateRequest::class, ['name' => 'foo'])->willReturn($requestObject);
+        $this->mockedHydrator->expects(self::once())->method('hydrate')->with(PageCreateRequest::class, ['name' => 'foo'])->willReturn($pageCreateRequest);
         $parameter = new ReflectionParameter(fn(#[RequestBody] PageCreateRequest $p) => null, 'p');
         $arguments = (new RequestBodyParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedServerRequest);
-        $this->assertSame($requestObject, $arguments->current());
+        $this->assertSame($pageCreateRequest, $arguments->current());
     }
 
     public function testNonRequestContext(): void
@@ -95,7 +95,7 @@ final class RequestBodyParameterResolverTest extends TestCase
             $violations = $e->getConstraintViolations();
             $this->assertArrayHasKey(0, $violations);
             $this->assertSame($invalidValueException->getMessage(), $violations[0]->getMessage());
-            $this->assertSame('name', $violations[0]->getPropertyPath());
+            $this->assertSame($invalidValueException->getPropertyPath(), $violations[0]->getPropertyPath());
             $this->assertSame($invalidValueException->getErrorCode(), $violations[0]->getCode());
             $this->assertSame($invalidValueException->getInvalidValue(), $violations[0]->getInvalidValue());
             throw $e;
@@ -104,16 +104,16 @@ final class RequestBodyParameterResolverTest extends TestCase
 
     public function testValidatorError(): void
     {
-        $requestObject = new PageCreateRequest(name: 'foo');
+        $pageCreateRequest = new PageCreateRequest(name: 'foo');
         $this->mockedServerRequest->expects(self::once())->method('getParsedBody')->willReturn(['name' => 'foo']);
-        $this->mockedHydrator->expects(self::once())->method('hydrate')->with(PageCreateRequest::class, ['name' => 'foo'])->willReturn($requestObject);
+        $this->mockedHydrator->expects(self::once())->method('hydrate')->with(PageCreateRequest::class, ['name' => 'foo'])->willReturn($pageCreateRequest);
         $constraintViolation = $this->createMock(ConstraintViolationInterface::class);
         $constraintViolation->method('getMessage')->willReturn('name is invalid');
         $constraintViolation->method('getPropertyPath')->willReturn('name');
         $constraintViolation->method('getCode')->willReturn('eb32bcd3-c254-4a96-b2b2-41dd2d4b3c22');
-        $constraintViolation->method('getInvalidValue')->willReturn($requestObject->name);
+        $constraintViolation->method('getInvalidValue')->willReturn($pageCreateRequest->name);
         $constraintViolationList = new ConstraintViolationList([$constraintViolation]);
-        $this->mockedValidator->expects(self::once())->method('validate')->with($requestObject)->willReturn($constraintViolationList);
+        $this->mockedValidator->expects(self::once())->method('validate')->with($pageCreateRequest)->willReturn($constraintViolationList);
         $parameter = new ReflectionParameter(fn(#[RequestBody] PageCreateRequest $p) => null, 'p');
         $arguments = (new RequestBodyParameterResolver($this->mockedHydrator, $this->mockedValidator))->resolveParameter($parameter, $this->mockedServerRequest);
         $this->expectException(HttpException::class);
@@ -191,18 +191,18 @@ final class RequestBodyParameterResolverTest extends TestCase
 
     public function testHydratorContext(): void
     {
-        $requestObject = new PageCreateRequest(name: 'foo');
+        $pageCreateRequest = new PageCreateRequest(name: 'foo');
         $this->mockedServerRequest->expects(self::once())->method('getParsedBody')->willReturn(['name' => 'foo']);
-        $this->mockedHydrator->expects(self::once())->method('hydrate')->with(PageCreateRequest::class, ['name' => 'foo'], [], ['foo' => 'baz', 'baz' => 'qux', 'bar' => 'baz'])->willReturn($requestObject);
+        $this->mockedHydrator->expects(self::once())->method('hydrate')->with(PageCreateRequest::class, ['name' => 'foo'], [], ['foo' => 'baz', 'baz' => 'qux', 'bar' => 'baz'])->willReturn($pageCreateRequest);
         $parameter = new ReflectionParameter(fn(#[RequestBody(hydratorContext: ['foo' => 'baz', 'baz' => 'qux'])] PageCreateRequest $p) => null, 'p');
         (new RequestBodyParameterResolver($this->mockedHydrator, hydratorContext: ['foo' => 'bar', 'bar' => 'baz']))->resolveParameter($parameter, $this->mockedServerRequest)->rewind();
     }
 
     public function testDisableValidationByDefault(): void
     {
-        $requestObject = new PageCreateRequest(name: 'foo');
+        $pageCreateRequest = new PageCreateRequest(name: 'foo');
         $this->mockedServerRequest->expects(self::once())->method('getParsedBody')->willReturn(['name' => 'foo']);
-        $this->mockedHydrator->expects(self::once())->method('hydrate')->with(PageCreateRequest::class, ['name' => 'foo'])->willReturn($requestObject);
+        $this->mockedHydrator->expects(self::once())->method('hydrate')->with(PageCreateRequest::class, ['name' => 'foo'])->willReturn($pageCreateRequest);
         $this->mockedValidator->expects(self::never())->method('validate');
         $parameter = new ReflectionParameter(fn(#[RequestBody] PageCreateRequest $p) => null, 'p');
         (new RequestBodyParameterResolver($this->mockedHydrator, $this->mockedValidator, defaultValidationEnabled: false))->resolveParameter($parameter, $this->mockedServerRequest)->rewind();
@@ -210,9 +210,9 @@ final class RequestBodyParameterResolverTest extends TestCase
 
     public function testDisableValidationFromAnnotation(): void
     {
-        $requestObject = new PageCreateRequest(name: 'foo');
+        $pageCreateRequest = new PageCreateRequest(name: 'foo');
         $this->mockedServerRequest->expects(self::once())->method('getParsedBody')->willReturn(['name' => 'foo']);
-        $this->mockedHydrator->expects(self::once())->method('hydrate')->with(PageCreateRequest::class, ['name' => 'foo'])->willReturn($requestObject);
+        $this->mockedHydrator->expects(self::once())->method('hydrate')->with(PageCreateRequest::class, ['name' => 'foo'])->willReturn($pageCreateRequest);
         $this->mockedValidator->expects(self::never())->method('validate');
         $parameter = new ReflectionParameter(fn(#[RequestBody(validationEnabled: false)] PageCreateRequest $p) => null, 'p');
         (new RequestBodyParameterResolver($this->mockedHydrator, $this->mockedValidator))->resolveParameter($parameter, $this->mockedServerRequest)->rewind();
@@ -220,10 +220,10 @@ final class RequestBodyParameterResolverTest extends TestCase
 
     public function testEnableValidationFromAnnotation(): void
     {
-        $requestObject = new PageCreateRequest(name: 'foo');
+        $pageCreateRequest = new PageCreateRequest(name: 'foo');
         $this->mockedServerRequest->expects(self::once())->method('getParsedBody')->willReturn(['name' => 'foo']);
-        $this->mockedHydrator->expects(self::once())->method('hydrate')->with(PageCreateRequest::class, ['name' => 'foo'])->willReturn($requestObject);
-        $this->mockedValidator->expects(self::once())->method('validate')->with($requestObject);
+        $this->mockedHydrator->expects(self::once())->method('hydrate')->with(PageCreateRequest::class, ['name' => 'foo'])->willReturn($pageCreateRequest);
+        $this->mockedValidator->expects(self::once())->method('validate')->with($pageCreateRequest);
         $parameter = new ReflectionParameter(fn(#[RequestBody(validationEnabled: true)] PageCreateRequest $p) => null, 'p');
         (new RequestBodyParameterResolver($this->mockedHydrator, $this->mockedValidator, defaultValidationEnabled: false))->resolveParameter($parameter, $this->mockedServerRequest)->rewind();
     }

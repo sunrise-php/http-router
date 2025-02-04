@@ -93,7 +93,7 @@ final class RequestVariablesOperationEnricher implements
                 $annotations = $requestHandlerParameter->getAttributes(RequestVariable::class);
                 if (isset($annotations[0])) {
                     $requestVariable = $annotations[0]->newInstance();
-                    $requestVariableName = $requestVariable->name ?? $requestHandlerParameter->getName();
+                    $requestVariableName = $requestVariable->name ?? $requestHandlerParameter->name;
                     if ($requestVariableName === $variableName) {
                         $requestVariableType = TypeFactory::fromPhpTypeReflection($requestHandlerParameter->getType());
 

@@ -102,22 +102,12 @@ final class ParameterResolverChain implements ParameterResolverChainInterface
     public static function stringifyParameter(ReflectionParameter $parameter): string
     {
         $function = $parameter->getDeclaringFunction();
+        $position = $parameter->getPosition();
 
         if ($function instanceof ReflectionMethod) {
-            return sprintf(
-                '%s::%s($%s[%d])',
-                $function->getDeclaringClass()->getName(),
-                $function->getName(),
-                $parameter->getName(),
-                $parameter->getPosition(),
-            );
+            return sprintf('%s::%s($%s[%d])', $function->class, $function->name, $parameter->name, $position);
         }
 
-        return sprintf(
-            '%s($%s[%d])',
-            $function->getName(),
-            $parameter->getName(),
-            $parameter->getPosition(),
-        );
+        return sprintf('%s($%s[%d])', $function->name, $parameter->name, $position);
     }
 }

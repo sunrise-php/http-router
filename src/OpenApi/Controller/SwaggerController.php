@@ -28,11 +28,10 @@ use Throwable;
 /**
  * @since 3.0.0
  */
-#[GetRoute(self::ROUTE_NAME, self::ROUTE_PATH)]
+#[GetRoute(self::class, self::ROUTE_PATH)]
 #[Priority(-1)]
 final class SwaggerController implements RequestHandlerInterface
 {
-    public const ROUTE_NAME = '@swagger';
     public const ROUTE_PATH = '/swagger.html';
 
     public const CSS_URLS_VAR_NAME = 'css_urls';

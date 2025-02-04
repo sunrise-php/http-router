@@ -20,7 +20,6 @@ final class PlaceholderCode
 {
     public const COOKIE_NAME = '{{ cookie_name }}';
     public const HEADER_NAME = '{{ header_name }}';
-    public const MEDIA_TYPE = '{{ media_type }}';
     public const REQUEST_METHOD = '{{ request_method }}';
     public const REQUEST_URI = '{{ request_uri }}';
     public const ROUTE_URI = '{{ route_uri }}';

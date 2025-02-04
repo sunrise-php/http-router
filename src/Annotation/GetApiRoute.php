@@ -21,7 +21,7 @@ use Attribute;
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
 final class GetApiRoute extends ApiRoute
 {
-    public function __construct(string $name = '', string $path = '')
+    public function __construct(string $name, string $path = '')
     {
         parent::__construct($name, $path, self::METHOD_GET);
     }

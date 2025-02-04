@@ -98,6 +98,6 @@ final class ResponseResolverChain implements ResponseResolverChainInterface
 
     public static function stringifyResponder(ReflectionMethod $responder): string
     {
-        return sprintf('%s::%s()', $responder->getDeclaringClass()->getName(), $responder->getName());
+        return sprintf('%s::%s()', $responder->class, $responder->name);
     }
 }

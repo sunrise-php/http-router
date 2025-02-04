@@ -35,7 +35,7 @@ class Route implements RequestMethodInterface
     public ?string $pattern = null;
 
     public function __construct(
-        public string $name = '',
+        public string $name,
         public string $path = '',
         /** @var array<string, string> */
         public array $patterns = [],

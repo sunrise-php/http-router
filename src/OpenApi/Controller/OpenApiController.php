@@ -27,11 +27,10 @@ use Sunrise\Http\Router\OpenApi\OpenApiDocumentManagerInterface;
 /**
  * @since 3.0.0
  */
-#[GetRoute(self::ROUTE_NAME, self::ROUTE_PATH)]
+#[GetRoute(self::class, self::ROUTE_PATH)]
 #[Priority(-1)]
 final class OpenApiController implements RequestHandlerInterface
 {
-    public const ROUTE_NAME = '@openapi';
     public const ROUTE_PATH = '/openapi';
 
     public function __construct(

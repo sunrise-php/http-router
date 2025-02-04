@@ -1,7 +1,7 @@
 {
   "name": "sunrise/http-router",
   "homepage": "https://github.com/sunrise-php/http-router",
-  "description": "HTTP router for PHP 8.1+ based on PSR-7 and PSR-15",
+  "description": "HTTP router for PHP 8.1+ based on PSR-7 and PSR-15 with support for Swagger",
   "license": "MIT",
   "keywords": [
     "fenric",
@@ -37,7 +37,7 @@
     "phpstan/phpstan": "^1.12",
     "phpunit/phpunit": "^10.5",
     "ramsey/uuid": "^4.7",
-    "squizlabs/php_codesniffer": "^3.10",
+    "squizlabs/php_codesniffer": "^3.11",
     "sunrise/http-message": "^v3.3",
     "sunrise/hydrator": "^v3.14",
     "symfony/console": "^6.4",

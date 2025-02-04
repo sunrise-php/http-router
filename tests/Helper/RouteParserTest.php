@@ -6,23 +6,20 @@ namespace Sunrise\Http\Router\Tests\Helper;
 
 use Generator;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\Helper\RouteParser;
 
 final class RouteParserTest extends TestCase
 {
-    /**
-     * @dataProvider validRouteProvider
-     */
+    #[DataProvider('validRouteProvider')]
     public function testParseValidRoute(string $route, array $expectedVariables): void
     {
         $actualVariables = RouteParser::parseRoute($route);
         $this->assertEquals($expectedVariables, $actualVariables);
     }
 
-    /**
-     * @dataProvider invalidRouteProvider
-     */
+    #[DataProvider('invalidRouteProvider')]
     public function testParseInvalidRoute(string $route, string $expectedMessageRegex): void
     {
         $this->expectException(InvalidArgumentException::class);

@@ -93,7 +93,7 @@ final class DescriptorLoaderTest extends TestCase
         $this->assertSame([PageController::class, 'update'], $route->getRequestHandler());
         $this->assertSame(['PUT'], $route->getMethods());
         $this->assertSame(['Pages'], $route->getTags());
-        $this->assertSame('Updates a page', $route->getSummary());
+        $this->assertSame('Updates a page by ID', $route->getSummary());
         $expectedRoutePattern = RouteCompiler::compileRoute($route->getPath(), $route->getPatterns());
         $this->assertSame($expectedRoutePattern, $route->getPattern());
     }
@@ -122,7 +122,7 @@ final class DescriptorLoaderTest extends TestCase
         $this->assertSame([PageController::class, 'update'], $route->getRequestHandler());
         $this->assertSame(['PUT'], $route->getMethods());
         $this->assertSame(['Pages'], $route->getTags());
-        $this->assertSame('Updates a page', $route->getSummary());
+        $this->assertSame('Updates a page by ID', $route->getSummary());
         $expectedRoutePattern = RouteCompiler::compileRoute($route->getPath(), $route->getPatterns());
         $this->assertSame($expectedRoutePattern, $route->getPattern());
     }
@@ -151,7 +151,7 @@ final class DescriptorLoaderTest extends TestCase
         $this->assertSame([PageController::class, 'update'], $route->getRequestHandler());
         $this->assertSame(['PUT'], $route->getMethods());
         $this->assertSame(['Pages'], $route->getTags());
-        $this->assertSame('Updates a page', $route->getSummary());
+        $this->assertSame('Updates a page by ID', $route->getSummary());
         $expectedRoutePattern = RouteCompiler::compileRoute($route->getPath(), $route->getPatterns());
         $this->assertSame($expectedRoutePattern, $route->getPattern());
     }
@@ -205,7 +205,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[Route]
+            #[Route('test')]
             private function test(): void
             {
             }
@@ -218,7 +218,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[Route]
+            #[Route('test')]
             protected function test(): void
             {
             }
@@ -231,7 +231,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[Route]
+            #[Route('test')]
             public static function test(): void
             {
             }
@@ -242,7 +242,7 @@ final class DescriptorLoaderTest extends TestCase
 
     public function testClassRequestHandler(): void
     {
-        $controller = new #[Route] class ('89c854d6-0e82-47da-b9c8-001b77e2417a') extends TestCase implements RequestHandlerInterface
+        $controller = new #[Route(self::class)] class ('89c854d6-0e82-47da-b9c8-001b77e2417a') extends TestCase implements RequestHandlerInterface
         {
             public function handle(ServerRequestInterface $request): ResponseInterface
             {
@@ -259,7 +259,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[Route]
+            #[Route('test')]
             public function test(): void
             {
             }
@@ -274,7 +274,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[Route(methods: ['get'])]
+            #[Route('test', methods: ['get'])]
             public function test(): void
             {
             }
@@ -285,11 +285,34 @@ final class DescriptorLoaderTest extends TestCase
         $this->assertSame(['GET'], $route->getMethods());
     }
 
+    public function testPriorityAnnotation(): void
+    {
+        $controller = new class
+        {
+            #[Route('foo'), Priority(1)]
+            public function foo(): void
+            {
+            }
+
+            #[Route('bar'), Priority(2)]
+            public function bar(): void
+            {
+            }
+        };
+
+        /** @var list<RouteInterface> $routes */
+        $routes = [...(new DescriptorLoader([$controller::class]))->load()];
+        $this->assertArrayHasKey(0, $routes);
+        $this->assertSame('bar', $routes[0]->getName());
+        $this->assertArrayHasKey(1, $routes);
+        $this->assertSame("foo", $routes[1]->getName());
+    }
+
     public function testNamePrefixAnnotation(): void
     {
         $controller = new #[NamePrefix('foo.')] class
         {
-            #[Route]
+            #[Route('test')]
             public function test(): void
             {
             }
@@ -304,7 +327,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new #[PathPrefix('/api')] class
         {
-            #[Route(path: '/test')]
+            #[Route('test', '/test')]
             public function test(): void
             {
             }
@@ -319,7 +342,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new #[PathPostfix('.json')] class
         {
-            #[Route(path: '/test')]
+            #[Route('test', '/test')]
             public function test(): void
             {
             }
@@ -334,7 +357,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[Route(path: '/test/{foo}'), Pattern('foo', 'bar')]
+            #[Route('test', '/test/{foo}'), Pattern('foo', 'bar')]
             public function test(): void
             {
             }
@@ -349,7 +372,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[Route, Method('GET')]
+            #[Route('test'), Method('GET')]
             public function test(): void
             {
             }
@@ -364,7 +387,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[Route, DefaultAttribute('foo', 'bar')]
+            #[Route('test'), DefaultAttribute('foo', 'bar')]
             public function test(): void
             {
             }
@@ -379,7 +402,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[Route, Middleware('foo')]
+            #[Route('test'), Middleware('foo')]
             public function test(): void
             {
             }
@@ -394,7 +417,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[Route, Consumes(MediaType::JSON)]
+            #[Route('test'), Consumes(MediaType::JSON)]
             public function test(): void
             {
             }
@@ -409,7 +432,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[Route, Produces(MediaType::JSON)]
+            #[Route('test'), Produces(MediaType::JSON)]
             public function test(): void
             {
             }
@@ -424,7 +447,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[Route, Tag('foo')]
+            #[Route('test'), Tag('foo')]
             public function test(): void
             {
             }
@@ -439,7 +462,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[Route, Summary('foo')]
+            #[Route('test'), Summary('foo')]
             public function test(): void
             {
             }
@@ -454,7 +477,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[Route, Description('foo')]
+            #[Route('test'), Description('foo')]
             public function test(): void
             {
             }
@@ -469,7 +492,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[Route, Deprecated]
+            #[Route('test'), Deprecated]
             public function test(): void
             {
             }
@@ -484,7 +507,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[ApiRoute]
+            #[ApiRoute('test')]
             public function test(): void
             {
             }
@@ -499,7 +522,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[Route, HeadMethod]
+            #[Route('test'), HeadMethod]
             public function test(): void
             {
             }
@@ -514,7 +537,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[Route, GetMethod]
+            #[Route('test'), GetMethod]
             public function test(): void
             {
             }
@@ -529,7 +552,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[Route, PostMethod]
+            #[Route('test'), PostMethod]
             public function test(): void
             {
             }
@@ -544,7 +567,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[Route, PutMethod]
+            #[Route('test'), PutMethod]
             public function test(): void
             {
             }
@@ -559,7 +582,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[Route, PatchMethod]
+            #[Route('test'), PatchMethod]
             public function test(): void
             {
             }
@@ -574,7 +597,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[Route, DeleteMethod]
+            #[Route('test'), DeleteMethod]
             public function test(): void
             {
             }
@@ -589,7 +612,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[Route, PurgeMethod]
+            #[Route('test'), PurgeMethod]
             public function test(): void
             {
             }
@@ -604,7 +627,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[Route, OptionsMethod]
+            #[Route('test'), OptionsMethod]
             public function test(): void
             {
             }
@@ -619,7 +642,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[HeadRoute]
+            #[HeadRoute('test')]
             public function test(): void
             {
             }
@@ -634,7 +657,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[GetRoute]
+            #[GetRoute('test')]
             public function test(): void
             {
             }
@@ -649,7 +672,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[PostRoute]
+            #[PostRoute('test')]
             public function test(): void
             {
             }
@@ -664,7 +687,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[PutRoute]
+            #[PutRoute('test')]
             public function test(): void
             {
             }
@@ -679,7 +702,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[PatchRoute]
+            #[PatchRoute('test')]
             public function test(): void
             {
             }
@@ -694,7 +717,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[DeleteRoute]
+            #[DeleteRoute('test')]
             public function test(): void
             {
             }
@@ -709,7 +732,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[PurgeRoute]
+            #[PurgeRoute('test')]
             public function test(): void
             {
             }
@@ -724,7 +747,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[OptionsRoute]
+            #[OptionsRoute('test')]
             public function test(): void
             {
             }
@@ -739,7 +762,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[HeadApiRoute]
+            #[HeadApiRoute('test')]
             public function test(): void
             {
             }
@@ -755,7 +778,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[GetApiRoute]
+            #[GetApiRoute('test')]
             public function test(): void
             {
             }
@@ -771,7 +794,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[PostApiRoute]
+            #[PostApiRoute('test')]
             public function test(): void
             {
             }
@@ -787,7 +810,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[PutApiRoute]
+            #[PutApiRoute('test')]
             public function test(): void
             {
             }
@@ -803,7 +826,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[PatchApiRoute]
+            #[PatchApiRoute('test')]
             public function test(): void
             {
             }
@@ -819,7 +842,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[DeleteApiRoute]
+            #[DeleteApiRoute('test')]
             public function test(): void
             {
             }
@@ -835,7 +858,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[PurgeApiRoute]
+            #[PurgeApiRoute('test')]
             public function test(): void
             {
             }
@@ -851,7 +874,7 @@ final class DescriptorLoaderTest extends TestCase
     {
         $controller = new class
         {
-            #[OptionsApiRoute]
+            #[OptionsApiRoute('test')]
             public function test(): void
             {
             }
@@ -861,28 +884,5 @@ final class DescriptorLoaderTest extends TestCase
         $this->assertInstanceOf(RouteInterface::class, $route);
         $this->assertSame([Method::METHOD_OPTIONS], $route->getMethods());
         $this->assertTrue($route->isApiRoute());
-    }
-
-    public function testPriorityAnnotation(): void
-    {
-        $controller = new class
-        {
-            #[Route, Priority(1)]
-            public function b(): void
-            {
-            }
-
-            #[Route, Priority(2)]
-            public function a(): void
-            {
-            }
-        };
-
-        /** @var list<RouteInterface> $routes */
-        $routes = [...(new DescriptorLoader([$controller::class]))->load()];
-        $this->assertArrayHasKey(0, $routes);
-        $this->assertSame('a', $routes[0]->getName());
-        $this->assertArrayHasKey(1, $routes);
-        $this->assertSame('b', $routes[1]->getName());
     }
 }
