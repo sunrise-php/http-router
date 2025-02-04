@@ -354,12 +354,9 @@ final class DescriptorLoader implements DescriptorLoaderInterface
     private static function completeDescriptor(Descriptor $descriptor, ReflectionClass|ReflectionMethod $holder): void
     {
         $descriptor->holder = $holder instanceof ReflectionClass ? $holder->name : [$holder->class, $holder->name];
-
         $descriptor->name = implode($descriptor->namePrefixes) . $descriptor->name;
         $descriptor->path = implode($descriptor->pathPrefixes) . $descriptor->path;
-
         $descriptor->methods = array_map(strtoupper(...), $descriptor->methods);
-
         $descriptor->pattern = RouteCompiler::compileRoute($descriptor->path, $descriptor->patterns);
     }
 }
