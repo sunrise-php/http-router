@@ -42,22 +42,11 @@ final class ReferenceResolver implements ReferenceResolverInterface
         array $responseResolvers = [],
         ?ContainerInterface $container = null,
     ): ReferenceResolverInterface {
-        $parameterResolverChain = new ParameterResolverChain($parameterResolvers);
-        $responseResolverChain = new ResponseResolverChain($responseResolvers);
-
-        $classResolver = new ClassResolver($parameterResolverChain, $container);
-
-        $middlewareResolver = new MiddlewareResolver(
-            $classResolver,
-            $parameterResolverChain,
-            $responseResolverChain,
-        );
-
-        $requestHandlerResolver = new RequestHandlerResolver(
-            $classResolver,
-            $parameterResolverChain,
-            $responseResolverChain,
-        );
+        $parameterResolver = new ParameterResolverChain($parameterResolvers);
+        $responseResolver = new ResponseResolverChain($responseResolvers);
+        $classResolver = new ClassResolver($parameterResolver, $container);
+        $middlewareResolver = new MiddlewareResolver($classResolver, $parameterResolver, $responseResolver);
+        $requestHandlerResolver = new RequestHandlerResolver($classResolver, $parameterResolver, $responseResolver);
 
         return new self($middlewareResolver, $requestHandlerResolver);
     }
