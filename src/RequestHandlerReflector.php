@@ -47,9 +47,9 @@ final class RequestHandlerReflector implements RequestHandlerReflectorInterface
         }
 
         // https://github.com/php/php-src/blob/3ed526441400060aa4e618b91b3352371fcd02a8/Zend/zend_API.c#L3884-L3932
-        if (is_array($reference) && is_callable($reference, true, $method)) {
+        if (is_array($reference) && is_callable($reference, true, $referenceName)) {
             try {
-                return new ReflectionMethod($method);
+                return new ReflectionMethod($referenceName);
             } catch (ReflectionException) {
             }
         }
