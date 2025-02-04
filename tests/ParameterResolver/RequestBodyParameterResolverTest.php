@@ -45,7 +45,7 @@ final class RequestBodyParameterResolverTest extends TestCase
         $this->assertSame($pageCreateRequest, $arguments->current());
     }
 
-    public function testNonRequestContext(): void
+    public function testUnsupportedContext(): void
     {
         $parameter = new ReflectionParameter(fn(#[RequestBody] PageCreateRequest $p) => null, 'p');
         $arguments = (new RequestBodyParameterResolver($this->mockedHydrator))->resolveParameter($parameter, null);

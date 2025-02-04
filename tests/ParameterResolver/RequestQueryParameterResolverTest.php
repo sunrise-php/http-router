@@ -47,7 +47,7 @@ final class RequestQueryParameterResolverTest extends TestCase
         $this->assertSame($pageListRequest, $arguments->current());
     }
 
-    public function testNonRequestContext(): void
+    public function testUnsupportedContext(): void
     {
         $parameter = new ReflectionParameter(fn(#[RequestQuery] PageListRequest $p) => null, 'p');
         $arguments = (new RequestQueryParameterResolver($this->mockedHydrator))->resolveParameter($parameter, null);
