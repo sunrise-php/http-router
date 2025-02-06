@@ -25,7 +25,8 @@ final class EmptyResponseResolverTest extends TestCase
 
     public function testResolveResponse(): void
     {
-        $responder = new ReflectionMethod(new class {
+        $responder = new ReflectionMethod(new class
+        {
             public function test(): void
             {
             }
@@ -39,7 +40,8 @@ final class EmptyResponseResolverTest extends TestCase
 
     public function testUnsupportedResponse(): void
     {
-        $responder = new ReflectionMethod(new class {
+        $responder = new ReflectionMethod(new class
+        {
             public function test(): void
             {
             }

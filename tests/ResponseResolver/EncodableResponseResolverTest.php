@@ -44,7 +44,8 @@ final class EncodableResponseResolverTest extends TestCase
 
     public function testResolveResponse(): void
     {
-        $responder = new ReflectionMethod(new class {
+        $responder = new ReflectionMethod(new class
+        {
             #[EncodableResponse]
             public function test(): void
             {
@@ -59,14 +60,13 @@ final class EncodableResponseResolverTest extends TestCase
         $this->mockedResponse->expects(self::once())->method('getBody')->willReturn($this->mockedResponseBody);
         $this->mockedResponseBody->expects(self::once())->method('write')->with('["foo"]');
         $this->mockedResponseFactory->expects(self::once())->method('createResponse')->with(200)->willReturn($this->mockedResponse);
-        $resolvedResponse = (new EncodableResponseResolver($this->mockedResponseFactory, $this->mockedCodecManager, $this->mockedMediaType))
-            ->resolveResponse(['foo'], $responder, $this->mockedServerRequest);
-        $this->assertSame($this->mockedResponse, $resolvedResponse);
+        $this->assertSame($this->mockedResponse, (new EncodableResponseResolver($this->mockedResponseFactory, $this->mockedCodecManager, $this->mockedMediaType))->resolveResponse(['foo'], $responder, $this->mockedServerRequest));
     }
 
     public function testUnsupportedResponse(): void
     {
-        $responder = new ReflectionMethod(new class {
+        $responder = new ReflectionMethod(new class
+        {
             public function test(): void
             {
             }
@@ -74,13 +74,13 @@ final class EncodableResponseResolverTest extends TestCase
 
         $this->mockedCodecManager->expects(self::never())->method('encode');
         $this->mockedResponseFactory->expects(self::never())->method('createResponse');
-        $this->assertNull((new EncodableResponseResolver($this->mockedResponseFactory, $this->mockedCodecManager, $this->mockedMediaType))
-            ->resolveResponse(['foo'], $responder, $this->mockedServerRequest));
+        $this->assertNull((new EncodableResponseResolver($this->mockedResponseFactory, $this->mockedCodecManager, $this->mockedMediaType))->resolveResponse(['foo'], $responder, $this->mockedServerRequest));
     }
 
     public function testInvalidResponse(): void
     {
-        $responder = new ReflectionMethod(new class {
+        $responder = new ReflectionMethod(new class
+        {
             #[EncodableResponse]
             public function test(): void
             {
@@ -100,7 +100,8 @@ final class EncodableResponseResolverTest extends TestCase
 
     public function testDefaultMediaType(): void
     {
-        $responder = new ReflectionMethod(new class {
+        $responder = new ReflectionMethod(new class
+        {
             #[EncodableResponse]
             public function test(): void
             {
@@ -115,14 +116,13 @@ final class EncodableResponseResolverTest extends TestCase
         $this->mockedResponse->expects(self::once())->method('getBody')->willReturn($this->mockedResponseBody);
         $this->mockedResponseBody->expects(self::once())->method('write')->with('["foo"]');
         $this->mockedResponseFactory->expects(self::once())->method('createResponse')->with(200)->willReturn($this->mockedResponse);
-        $resolvedResponse = (new EncodableResponseResolver($this->mockedResponseFactory, $this->mockedCodecManager, $this->mockedMediaType))
-            ->resolveResponse(['foo'], $responder, $this->mockedServerRequest);
-        $this->assertSame($this->mockedResponse, $resolvedResponse);
+        $this->assertSame($this->mockedResponse, (new EncodableResponseResolver($this->mockedResponseFactory, $this->mockedCodecManager, $this->mockedMediaType))->resolveResponse(['foo'], $responder, $this->mockedServerRequest));
     }
 
     public function testDefaultMediaTypeFromAnnotation(): void
     {
-        $responder = new ReflectionMethod(new class {
+        $responder = new ReflectionMethod(new class
+        {
             #[EncodableResponse(defaultMediaType: MediaType::JSON)]
             public function test(): void
             {
@@ -137,14 +137,13 @@ final class EncodableResponseResolverTest extends TestCase
         $this->mockedResponse->expects(self::once())->method('getBody')->willReturn($this->mockedResponseBody);
         $this->mockedResponseBody->expects(self::once())->method('write')->with('["foo"]');
         $this->mockedResponseFactory->expects(self::once())->method('createResponse')->with(200)->willReturn($this->mockedResponse);
-        $resolvedResponse = (new EncodableResponseResolver($this->mockedResponseFactory, $this->mockedCodecManager, $this->mockedMediaType))
-            ->resolveResponse(['foo'], $responder, $this->mockedServerRequest);
-        $this->assertSame($this->mockedResponse, $resolvedResponse);
+        $this->assertSame($this->mockedResponse, (new EncodableResponseResolver($this->mockedResponseFactory, $this->mockedCodecManager, $this->mockedMediaType))->resolveResponse(['foo'], $responder, $this->mockedServerRequest));
     }
 
     public function testClientPreferredMediaType(): void
     {
-        $responder = new ReflectionMethod(new class {
+        $responder = new ReflectionMethod(new class
+        {
             #[EncodableResponse(defaultMediaType: MediaType::JSON)]
             public function test(): void
             {
@@ -164,14 +163,13 @@ final class EncodableResponseResolverTest extends TestCase
         $this->mockedResponse->expects(self::once())->method('getBody')->willReturn($this->mockedResponseBody);
         $this->mockedResponseBody->expects(self::once())->method('write')->with('["foo"]');
         $this->mockedResponseFactory->expects(self::once())->method('createResponse')->with(200)->willReturn($this->mockedResponse);
-        $resolvedResponse = (new EncodableResponseResolver($this->mockedResponseFactory, $this->mockedCodecManager, $this->mockedMediaType))
-            ->resolveResponse(['foo'], $responder, $this->mockedServerRequest);
-        $this->assertSame($this->mockedResponse, $resolvedResponse);
+        $this->assertSame($this->mockedResponse, (new EncodableResponseResolver($this->mockedResponseFactory, $this->mockedCodecManager, $this->mockedMediaType))->resolveResponse(['foo'], $responder, $this->mockedServerRequest));
     }
 
     public function testCaseInsensitiveClientMediaType(): void
     {
-        $responder = new ReflectionMethod(new class {
+        $responder = new ReflectionMethod(new class
+        {
             #[EncodableResponse]
             public function test(): void
             {
@@ -186,14 +184,13 @@ final class EncodableResponseResolverTest extends TestCase
         $this->mockedResponse->expects(self::once())->method('getBody')->willReturn($this->mockedResponseBody);
         $this->mockedResponseBody->expects(self::once())->method('write')->with('["foo"]');
         $this->mockedResponseFactory->expects(self::once())->method('createResponse')->with(200)->willReturn($this->mockedResponse);
-        $resolvedResponse = (new EncodableResponseResolver($this->mockedResponseFactory, $this->mockedCodecManager, $this->mockedMediaType))
-            ->resolveResponse(['foo'], $responder, $this->mockedServerRequest);
-        $this->assertSame($this->mockedResponse, $resolvedResponse);
+        $this->assertSame($this->mockedResponse, (new EncodableResponseResolver($this->mockedResponseFactory, $this->mockedCodecManager, $this->mockedMediaType))->resolveResponse(['foo'], $responder, $this->mockedServerRequest));
     }
 
     public function testCodecContext(): void
     {
-        $responder = new ReflectionMethod(new class {
+        $responder = new ReflectionMethod(new class
+        {
             #[EncodableResponse(codecContext: ['foo' => 'baz', 'baz' => 'qux'])]
             public function test(): void
             {
@@ -208,9 +205,7 @@ final class EncodableResponseResolverTest extends TestCase
         $this->mockedResponse->expects(self::once())->method('getBody')->willReturn($this->mockedResponseBody);
         $this->mockedResponseBody->expects(self::once())->method('write')->with('["foo"]');
         $this->mockedResponseFactory->expects(self::once())->method('createResponse')->with(200)->willReturn($this->mockedResponse);
-        $resolvedResponse = (new EncodableResponseResolver($this->mockedResponseFactory, $this->mockedCodecManager, $this->mockedMediaType, codecContext: ['foo' => 'bar', 'bar' => 'baz']))
-            ->resolveResponse(['foo'], $responder, $this->mockedServerRequest);
-        $this->assertSame($this->mockedResponse, $resolvedResponse);
+        $this->assertSame($this->mockedResponse, (new EncodableResponseResolver($this->mockedResponseFactory, $this->mockedCodecManager, $this->mockedMediaType, codecContext: ['foo' => 'bar', 'bar' => 'baz']))->resolveResponse(['foo'], $responder, $this->mockedServerRequest));
     }
 
     public function testWeight(): void

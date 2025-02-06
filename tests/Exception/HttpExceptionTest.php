@@ -33,18 +33,18 @@ final class HttpExceptionTest extends TestCase
 
     public function testHeaderFields(): void
     {
-        $baz = new class implements Stringable
+        $qux = new class implements Stringable
         {
             public function __toString(): string
             {
-                return 'baz';
+                return 'qux';
             }
         };
 
         $exception = new HttpException('foo', 400);
-        $exception->addHeaderField('x-foo', 'bar', $baz);
-        $exception->addHeaderField('x-bar', 'baz');
-        $this->assertSame([['x-foo', 'bar, baz'], ['x-bar', 'baz']], $exception->getHeaderFields());
+        $exception->addHeaderField('x-foo', 'bar');
+        $exception->addHeaderField('x-bar', 'baz', $qux);
+        $this->assertSame([['x-foo', 'bar'], ['x-bar', 'baz, qux']], $exception->getHeaderFields());
     }
 
     public function testConstraintViolations(): void

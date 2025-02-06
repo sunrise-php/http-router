@@ -27,7 +27,8 @@ final class ClassResolverTest extends TestCase
 
     public function testResolveClass(): void
     {
-        $testClass = new class ('', '') {
+        $testClass = new class ('', '')
+        {
             public function __construct(
                 public readonly string $foo,
                 public readonly string $bar,
@@ -44,7 +45,8 @@ final class ClassResolverTest extends TestCase
 
     public function testContainer(): void
     {
-        $expectedClass = new class {
+        $expectedClass = new class
+        {
         };
 
         $this->mockedContainer->expects(self::once())->method('has')->with($expectedClass::class)->willReturn(true);
@@ -56,7 +58,8 @@ final class ClassResolverTest extends TestCase
 
     public function testContainerUnknownClass(): void
     {
-        $testClass = new class {
+        $testClass = new class
+        {
         };
 
         $this->mockedContainer->expects(self::once())->method('has')->with($testClass::class)->willReturn(false);
@@ -68,7 +71,8 @@ final class ClassResolverTest extends TestCase
 
     public function testCacheResult(): void
     {
-        $testClass = new class {
+        $testClass = new class
+        {
         };
 
         $this->mockedParameterResolverChain->expects(self::once())->method('resolveParameters')->with()->willReturnCallback(static fn(): Generator => yield from []);
