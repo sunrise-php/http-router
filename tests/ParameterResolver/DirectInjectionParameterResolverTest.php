@@ -51,4 +51,9 @@ final class DirectInjectionParameterResolverTest extends TestCase
         $arguments = (new DirectInjectionParameterResolver($dependency))->resolveParameter($parameter, null);
         $this->assertFalse($arguments->valid());
     }
+
+    public function testWeight(): void
+    {
+        $this->assertSame(100, (new DirectInjectionParameterResolver(new \stdClass()))->getWeight());
+    }
 }

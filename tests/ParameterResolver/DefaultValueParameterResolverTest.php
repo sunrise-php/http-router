@@ -23,4 +23,9 @@ final class DefaultValueParameterResolverTest extends TestCase
         $arguments = (new DefaultValueParameterResolver())->resolveParameter($parameter, null);
         $this->assertFalse($arguments->valid());
     }
+
+    public function testWeight(): void
+    {
+        $this->assertSame(-1000, (new DefaultValueParameterResolver())->getWeight());
+    }
 }

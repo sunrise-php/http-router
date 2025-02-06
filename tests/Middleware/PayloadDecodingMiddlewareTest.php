@@ -15,6 +15,7 @@ use Sunrise\Http\Router\Dictionary\HeaderName;
 use Sunrise\Http\Router\Dictionary\MediaType;
 use Sunrise\Http\Router\Exception\CodecException;
 use Sunrise\Http\Router\Exception\HttpException;
+use Sunrise\Http\Router\MediaTypeInterface;
 use Sunrise\Http\Router\Middleware\PayloadDecodingMiddleware;
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\RouteInterface;
@@ -61,8 +62,10 @@ final class PayloadDecodingMiddlewareTest extends TestCase
 
     public function testServerNotConsumedMediaType(): void
     {
+        $serverConsumedMediaType = $this->createMock(MediaTypeInterface::class);
+        $serverConsumedMediaType->method('getIdentifier')->willReturn('application/xml');
         $this->mockedServerRequest->expects(self::once())->method('getHeaderLine')->with(HeaderName::CONTENT_TYPE)->willReturn('application/json');
-        $this->mockedRoute->expects(self::once())->method('getConsumedMediaTypes')->willReturn([]);
+        $this->mockedRoute->expects(self::once())->method('getConsumedMediaTypes')->willReturn([$serverConsumedMediaType]);
         $this->mockedServerRequest->expects(self::once())->method('getAttribute')->with(RouteInterface::class)->willReturn($this->mockedRoute);
         $this->mockedCodecManager->expects(self::never())->method('decode');
         (new PayloadDecodingMiddleware($this->mockedCodecManager))->process($this->mockedServerRequest, $this->mockedRequestHandler);

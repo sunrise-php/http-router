@@ -96,6 +96,6 @@ final class EncodableResponseResolver implements ResponseResolverInterface
 
     public function getWeight(): int
     {
-        return 0;
+        return 10;
     }
 }

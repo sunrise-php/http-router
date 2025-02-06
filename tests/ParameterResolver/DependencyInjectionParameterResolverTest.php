@@ -54,4 +54,9 @@ final class DependencyInjectionParameterResolverTest extends TestCase
         $arguments = (new DependencyInjectionParameterResolver($this->mockedContainer))->resolveParameter($parameter, null);
         $this->assertFalse($arguments->valid());
     }
+
+    public function testWeight(): void
+    {
+        $this->assertSame(-100, (new DependencyInjectionParameterResolver($this->mockedContainer))->getWeight());
+    }
 }

@@ -26,15 +26,15 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class RequestQueryParameterResolverTest extends TestCase
 {
-    private ServerRequestInterface&MockObject $mockedServerRequest;
     private HydratorInterface&MockObject $mockedHydrator;
     private ValidatorInterface&MockObject $mockedValidator;
+    private ServerRequestInterface&MockObject $mockedServerRequest;
 
     protected function setUp(): void
     {
-        $this->mockedServerRequest = $this->createMock(ServerRequestInterface::class);
         $this->mockedHydrator = $this->createMock(HydratorInterface::class);
         $this->mockedValidator = $this->createMock(ValidatorInterface::class);
+        $this->mockedServerRequest = $this->createMock(ServerRequestInterface::class);
     }
 
     public function testResolveParameter(): void
@@ -49,6 +49,7 @@ final class RequestQueryParameterResolverTest extends TestCase
 
     public function testUnsupportedContext(): void
     {
+        $this->mockedHydrator->expects(self::never())->method('hydrate');
         $parameter = new ReflectionParameter(fn(#[RequestQuery] PageListRequest $p) => null, 'p');
         $arguments = (new RequestQueryParameterResolver($this->mockedHydrator))->resolveParameter($parameter, null);
         $this->assertFalse($arguments->valid());
@@ -56,6 +57,7 @@ final class RequestQueryParameterResolverTest extends TestCase
 
     public function testNonAnnotatedParameter(): void
     {
+        $this->mockedHydrator->expects(self::never())->method('hydrate');
         $parameter = new ReflectionParameter(fn(PageListRequest $p) => null, 'p');
         $arguments = (new RequestQueryParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedServerRequest);
         $this->assertFalse($arguments->valid());
@@ -63,6 +65,7 @@ final class RequestQueryParameterResolverTest extends TestCase
 
     public function testNonNamedParameterType(): void
     {
+        $this->mockedHydrator->expects(self::never())->method('hydrate');
         $parameter = new ReflectionParameter(fn(#[RequestQuery] PageListRequest&JsonSerializable $p) => null, 'p');
         $arguments = (new RequestQueryParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedServerRequest);
         $this->expectException(InvalidArgumentException::class);
@@ -72,6 +75,7 @@ final class RequestQueryParameterResolverTest extends TestCase
 
     public function testBuiltInParameterType(): void
     {
+        $this->mockedHydrator->expects(self::never())->method('hydrate');
         $parameter = new ReflectionParameter(fn(#[RequestQuery] object $p) => null, 'p');
         $arguments = (new RequestQueryParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedServerRequest);
         $this->expectException(InvalidArgumentException::class);
@@ -228,5 +232,10 @@ final class RequestQueryParameterResolverTest extends TestCase
         $this->mockedValidator->expects(self::once())->method('validate')->with($pageListRequest);
         $parameter = new ReflectionParameter(fn(#[RequestQuery(validationEnabled: true)] PageListRequest $p) => null, 'p');
         (new RequestQueryParameterResolver($this->mockedHydrator, $this->mockedValidator, defaultValidationEnabled: false))->resolveParameter($parameter, $this->mockedServerRequest)->rewind();
+    }
+
+    public function testWeight(): void
+    {
+        $this->assertSame(0, (new RequestQueryParameterResolver($this->mockedHydrator))->getWeight());
     }
 }
