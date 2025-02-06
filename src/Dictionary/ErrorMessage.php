@@ -22,8 +22,6 @@ final class ErrorMessage
     public const MALFORMED_URI = 'The request URI is malformed and cannot be accepted by the server.';
     public const RESOURCE_NOT_FOUND = 'The requested resource was not found for this URI.';
     public const METHOD_NOT_ALLOWED = 'The requested method is not allowed for this resource.';
-    public const MISSING_CONTENT_TYPE = 'The request header "Content-Type" must be provided and cannot be empty.';
-    public const UNSUPPORTED_MEDIA_TYPE = 'The media type "{{ media_type }}" is not supported.';
     public const INVALID_VARIABLE = 'The value of the variable {{{ variable_name }}} in the request URI "{{ route_uri }}" is invalid.';
     public const INVALID_QUERY = 'The request parameters are invalid.';
     public const MISSING_HEADER = 'The request header "{{ header_name }}" is missing.';

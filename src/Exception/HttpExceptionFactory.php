@@ -58,30 +58,6 @@ final class HttpExceptionFactory
         );
     }
 
-    public static function missingContentType(
-        ?string $message = null,
-        ?int $code = null,
-        ?Throwable $previous = null,
-    ): HttpException {
-        return new HttpException(
-            $message ?? ErrorMessage::MISSING_CONTENT_TYPE,
-            $code ?? StatusCodeInterface::STATUS_BAD_REQUEST,
-            $previous,
-        );
-    }
-
-    public static function unsupportedMediaType(
-        ?string $message = null,
-        ?int $code = null,
-        ?Throwable $previous = null,
-    ): HttpException {
-        return new HttpException(
-            $message ?? ErrorMessage::UNSUPPORTED_MEDIA_TYPE,
-            $code ?? StatusCodeInterface::STATUS_UNSUPPORTED_MEDIA_TYPE,
-            $previous,
-        );
-    }
-
     public static function invalidVariable(
         ?string $message = null,
         ?int $code = null,
