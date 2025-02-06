@@ -56,7 +56,7 @@ final class EncodableResponseResolverTest extends TestCase
         $this->mockedRoute->expects(self::once())->method('getProducedMediaTypes')->willReturn([$this->mockedMediaType]);
         $this->mockedServerRequest->expects(self::once())->method('getHeaderLine')->with('Accept')->willReturn('application/json');
         $this->mockedCodecManager->expects(self::once())->method('encode')->with($this->mockedMediaType, ['foo'])->willReturn('["foo"]');
-        $this->mockedResponse->expects(self::once())->method('withHeader')->with('Content-Type', 'application/json; charset=UTF-8')->willReturn($this->mockedResponse);
+        $this->mockedResponse->expects(self::once())->method('withHeader')->with('Content-Type', 'application/json; charset=UTF-8')->willReturnSelf();
         $this->mockedResponse->expects(self::once())->method('getBody')->willReturn($this->mockedResponseBody);
         $this->mockedResponseBody->expects(self::once())->method('write')->with('["foo"]');
         $this->mockedResponseFactory->expects(self::once())->method('createResponse')->with(200)->willReturn($this->mockedResponse);
@@ -112,7 +112,7 @@ final class EncodableResponseResolverTest extends TestCase
         $this->mockedRoute->expects(self::once())->method('getProducedMediaTypes')->willReturn([]);
         $this->mockedServerRequest->expects(self::never())->method('getHeaderLine');
         $this->mockedCodecManager->expects(self::once())->method('encode')->with($this->mockedMediaType, ['foo'])->willReturn('["foo"]');
-        $this->mockedResponse->expects(self::once())->method('withHeader')->with('Content-Type', 'application/json; charset=UTF-8')->willReturn($this->mockedResponse);
+        $this->mockedResponse->expects(self::once())->method('withHeader')->with('Content-Type', 'application/json; charset=UTF-8')->willReturnSelf();
         $this->mockedResponse->expects(self::once())->method('getBody')->willReturn($this->mockedResponseBody);
         $this->mockedResponseBody->expects(self::once())->method('write')->with('["foo"]');
         $this->mockedResponseFactory->expects(self::once())->method('createResponse')->with(200)->willReturn($this->mockedResponse);
@@ -133,7 +133,7 @@ final class EncodableResponseResolverTest extends TestCase
         $this->mockedRoute->expects(self::once())->method('getProducedMediaTypes')->willReturn([]);
         $this->mockedServerRequest->expects(self::never())->method('getHeaderLine');
         $this->mockedCodecManager->expects(self::once())->method('encode')->with(MediaType::JSON, ['foo'])->willReturn('["foo"]');
-        $this->mockedResponse->expects(self::once())->method('withHeader')->with('Content-Type', 'application/json; charset=UTF-8')->willReturn($this->mockedResponse);
+        $this->mockedResponse->expects(self::once())->method('withHeader')->with('Content-Type', 'application/json; charset=UTF-8')->willReturnSelf();
         $this->mockedResponse->expects(self::once())->method('getBody')->willReturn($this->mockedResponseBody);
         $this->mockedResponseBody->expects(self::once())->method('write')->with('["foo"]');
         $this->mockedResponseFactory->expects(self::once())->method('createResponse')->with(200)->willReturn($this->mockedResponse);
@@ -159,7 +159,7 @@ final class EncodableResponseResolverTest extends TestCase
         $this->mockedRoute->expects(self::once())->method('getProducedMediaTypes')->willReturn([$applicationXml, $applicationYaml, $applicationJson]);
         $this->mockedServerRequest->expects(self::once())->method('getHeaderLine')->with('Accept')->willReturn('application/xml; q=0.25, application/json; q=0.75, application/yaml; q=0.5');
         $this->mockedCodecManager->expects(self::once())->method('encode')->with($applicationXml, ['foo'])->willReturn('["foo"]');
-        $this->mockedResponse->expects(self::once())->method('withHeader')->with('Content-Type', 'application/json; charset=UTF-8')->willReturn($this->mockedResponse);
+        $this->mockedResponse->expects(self::once())->method('withHeader')->with('Content-Type', 'application/json; charset=UTF-8')->willReturnSelf();
         $this->mockedResponse->expects(self::once())->method('getBody')->willReturn($this->mockedResponseBody);
         $this->mockedResponseBody->expects(self::once())->method('write')->with('["foo"]');
         $this->mockedResponseFactory->expects(self::once())->method('createResponse')->with(200)->willReturn($this->mockedResponse);
@@ -180,7 +180,7 @@ final class EncodableResponseResolverTest extends TestCase
         $this->mockedRoute->expects(self::once())->method('getProducedMediaTypes')->willReturn([$this->mockedMediaType]);
         $this->mockedServerRequest->expects(self::once())->method('getHeaderLine')->with('Accept')->willReturn('APPLICATION/JSON');
         $this->mockedCodecManager->expects(self::once())->method('encode')->with($this->mockedMediaType, ['foo'])->willReturn('["foo"]');
-        $this->mockedResponse->expects(self::once())->method('withHeader')->with('Content-Type', 'application/json; charset=UTF-8')->willReturn($this->mockedResponse);
+        $this->mockedResponse->expects(self::once())->method('withHeader')->with('Content-Type', 'application/json; charset=UTF-8')->willReturnSelf();
         $this->mockedResponse->expects(self::once())->method('getBody')->willReturn($this->mockedResponseBody);
         $this->mockedResponseBody->expects(self::once())->method('write')->with('["foo"]');
         $this->mockedResponseFactory->expects(self::once())->method('createResponse')->with(200)->willReturn($this->mockedResponse);
@@ -201,7 +201,7 @@ final class EncodableResponseResolverTest extends TestCase
         $this->mockedRoute->expects(self::once())->method('getProducedMediaTypes')->willReturn([$this->mockedMediaType]);
         $this->mockedServerRequest->expects(self::once())->method('getHeaderLine')->with('Accept')->willReturn('application/json');
         $this->mockedCodecManager->expects(self::once())->method('encode')->with($this->mockedMediaType, ['foo'], ['foo' => 'baz', 'baz' => 'qux', 'bar' => 'baz'])->willReturn('["foo"]');
-        $this->mockedResponse->expects(self::once())->method('withHeader')->with('Content-Type', 'application/json; charset=UTF-8')->willReturn($this->mockedResponse);
+        $this->mockedResponse->expects(self::once())->method('withHeader')->with('Content-Type', 'application/json; charset=UTF-8')->willReturnSelf();
         $this->mockedResponse->expects(self::once())->method('getBody')->willReturn($this->mockedResponseBody);
         $this->mockedResponseBody->expects(self::once())->method('write')->with('["foo"]');
         $this->mockedResponseFactory->expects(self::once())->method('createResponse')->with(200)->willReturn($this->mockedResponse);

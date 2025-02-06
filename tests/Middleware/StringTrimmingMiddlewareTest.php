@@ -27,9 +27,9 @@ final class StringTrimmingMiddlewareTest extends TestCase
     public function testProcess(): void
     {
         $this->mockedServerRequest->expects(self::once())->method('getQueryParams')->willReturn([[' foo ']]);
-        $this->mockedServerRequest->expects(self::once())->method('withQueryParams')->with([['foo']])->willReturn($this->mockedServerRequest);
+        $this->mockedServerRequest->expects(self::once())->method('withQueryParams')->with([['foo']])->willReturnSelf();
         $this->mockedServerRequest->expects(self::once())->method('getParsedBody')->willReturn([[' bar ']]);
-        $this->mockedServerRequest->expects(self::once())->method('withParsedBody')->with([['bar']])->willReturn($this->mockedServerRequest);
+        $this->mockedServerRequest->expects(self::once())->method('withParsedBody')->with([['bar']])->willReturnSelf();
         $this->mockedRequestHandler->expects(self::once())->method('handle')->with($this->mockedServerRequest)->willReturn($this->mockedResponse);
         $this->assertSame($this->mockedResponse, (new StringTrimmingMiddleware())->process($this->mockedServerRequest, $this->mockedRequestHandler));
     }
@@ -54,9 +54,9 @@ final class StringTrimmingMiddlewareTest extends TestCase
     public function testCustomTrimmer(): void
     {
         $this->mockedServerRequest->expects(self::once())->method('getQueryParams')->willReturn(['foo']);
-        $this->mockedServerRequest->expects(self::once())->method('withQueryParams')->with(['xxx'])->willReturn($this->mockedServerRequest);
+        $this->mockedServerRequest->expects(self::once())->method('withQueryParams')->with(['xxx'])->willReturnSelf();
         $this->mockedServerRequest->expects(self::once())->method('getParsedBody')->willReturn(['bar']);
-        $this->mockedServerRequest->expects(self::once())->method('withParsedBody')->with(['xxx'])->willReturn($this->mockedServerRequest);
+        $this->mockedServerRequest->expects(self::once())->method('withParsedBody')->with(['xxx'])->willReturnSelf();
         (new StringTrimmingMiddleware(static fn(): string => 'xxx'))->process($this->mockedServerRequest, $this->mockedRequestHandler);
     }
 }

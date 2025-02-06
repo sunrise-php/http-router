@@ -47,7 +47,7 @@ final class PayloadDecodingMiddlewareTest extends TestCase
         $this->mockedCodecManager->expects(self::once())->method('supportsMediaType')->willReturn(true);
         $this->mockedServerRequestBody->expects(self::once())->method('__toString')->willReturn('{"foo":"bar"}');
         $this->mockedCodecManager->expects(self::once())->method('decode')->with(self::anything(), '{"foo":"bar"}')->willReturn(['foo' => 'bar']);
-        $this->mockedServerRequest->expects(self::once())->method('withParsedBody')->with(['foo' => 'bar'])->willReturn($this->mockedServerRequest);
+        $this->mockedServerRequest->expects(self::once())->method('withParsedBody')->with(['foo' => 'bar'])->willReturnSelf();
         $this->mockedRequestHandler->expects(self::once())->method('handle')->with($this->mockedServerRequest)->willReturn($this->mockedResponse);
         $this->assertSame($this->mockedResponse, (new PayloadDecodingMiddleware($this->mockedCodecManager))->process($this->mockedServerRequest, $this->mockedRequestHandler));
     }
@@ -60,7 +60,7 @@ final class PayloadDecodingMiddlewareTest extends TestCase
         $this->mockedCodecManager->expects(self::once())->method('supportsMediaType')->willReturn(true);
         $this->mockedServerRequestBody->expects(self::once())->method('__toString')->willReturn('{"foo":"bar"}');
         $this->mockedCodecManager->expects(self::once())->method('decode')->with(self::anything(), '{"foo":"bar"}')->willReturn(['foo' => 'bar']);
-        $this->mockedServerRequest->expects(self::once())->method('withParsedBody')->with(['foo' => 'bar'])->willReturn($this->mockedServerRequest);
+        $this->mockedServerRequest->expects(self::once())->method('withParsedBody')->with(['foo' => 'bar'])->willReturnSelf();
         $this->mockedRequestHandler->expects(self::once())->method('handle')->with($this->mockedServerRequest)->willReturn($this->mockedResponse);
         $this->assertSame($this->mockedResponse, (new PayloadDecodingMiddleware($this->mockedCodecManager))->process($this->mockedServerRequest, $this->mockedRequestHandler));
     }
@@ -121,7 +121,7 @@ final class PayloadDecodingMiddlewareTest extends TestCase
         $this->mockedCodecManager->expects(self::once())->method('supportsMediaType')->willReturn(true);
         $this->mockedServerRequestBody->expects(self::once())->method('__toString')->willReturn('{}');
         $this->mockedCodecManager->expects(self::once())->method('decode')->with(self::anything(), self::anything(), ['foo' => 'bar'])->willReturn([]);
-        $this->mockedServerRequest->expects(self::once())->method('withParsedBody')->with([])->willReturn($this->mockedServerRequest);
+        $this->mockedServerRequest->expects(self::once())->method('withParsedBody')->with([])->willReturnSelf();
         $this->mockedRequestHandler->expects(self::once())->method('handle')->with($this->mockedServerRequest);
         (new PayloadDecodingMiddleware($this->mockedCodecManager, codecContext: ['foo' => 'bar']))->process($this->mockedServerRequest, $this->mockedRequestHandler);
     }

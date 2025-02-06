@@ -75,8 +75,8 @@ final class RequestHandlerResolverTest extends TestCase
         $parametersResolver = fn(): Generator => yield from [$this->mockedServerRequest, $this->mockedServerRequestBody];
 
         $this->mockedClassResolver->expects(self::once())->method('resolveClass')->with($testObject::class)->willReturn($testObject);
-        $this->mockedParameterResolverChain->expects(self::once())->method('withContext')->with($this->mockedServerRequest)->willReturn($this->mockedParameterResolverChain);
-        $this->mockedParameterResolverChain->expects(self::once())->method('withResolver')->willReturn($this->mockedParameterResolverChain);
+        $this->mockedParameterResolverChain->expects(self::once())->method('withContext')->with($this->mockedServerRequest)->willReturnSelf();
+        $this->mockedParameterResolverChain->expects(self::once())->method('withResolver')->willReturnSelf();
         $this->mockedParameterResolverChain->expects(self::once())->method('resolveParameters')->with($actualServerRequestArg, $actualServerRequestBodyArg)->willReturnCallback($parametersResolver);
         $this->mockedResponseResolverChain->expects(self::once())->method('resolveResponse')->with($this->mockedResponse)->willReturn($this->mockedResponse);
         $this->assertSame($this->mockedResponse, $this->createResolver()->resolveRequestHandler([$testObject::class, 'test'])->handle($this->mockedServerRequest));
@@ -90,8 +90,8 @@ final class RequestHandlerResolverTest extends TestCase
         $parametersResolver = fn(): Generator => yield from [$this->mockedServerRequest, $this->mockedServerRequestBody];
 
         $this->mockedClassResolver->expects(self::never())->method('resolveClass');
-        $this->mockedParameterResolverChain->expects(self::once())->method('withContext')->with($this->mockedServerRequest)->willReturn($this->mockedParameterResolverChain);
-        $this->mockedParameterResolverChain->expects(self::once())->method('withResolver')->willReturn($this->mockedParameterResolverChain);
+        $this->mockedParameterResolverChain->expects(self::once())->method('withContext')->with($this->mockedServerRequest)->willReturnSelf();
+        $this->mockedParameterResolverChain->expects(self::once())->method('withResolver')->willReturnSelf();
         $this->mockedParameterResolverChain->expects(self::once())->method('resolveParameters')->with($actualServerRequestArg, $actualServerRequestBodyArg)->willReturnCallback($parametersResolver);
         $this->mockedResponseResolverChain->expects(self::once())->method('resolveResponse')->with($this->mockedResponse)->willReturn($this->mockedResponse);
         $this->assertSame($this->mockedResponse, $this->createResolver()->resolveRequestHandler([$testObject, 'test'])->handle($this->mockedServerRequest));
