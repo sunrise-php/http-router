@@ -100,8 +100,8 @@ final class RequestHandlerResolverTest extends TestCase
     public function testResolveUnsupportedReference(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('The request handler reference "null" could not be resolved.');
-        $this->createResolver()->resolveRequestHandler(null);
+        $this->expectExceptionMessage('The request handler reference "stdClass::bar" could not be resolved.');
+        $this->createResolver()->resolveRequestHandler([new \stdClass(), 'bar']);
     }
 
     private function createTestObject(): object

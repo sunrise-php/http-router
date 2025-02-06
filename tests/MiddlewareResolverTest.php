@@ -105,8 +105,8 @@ final class MiddlewareResolverTest extends TestCase
     public function testResolveUnsupportedReference(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('The middleware reference "null" could not be resolved.');
-        $this->createResolver()->resolveMiddleware(null);
+        $this->expectExceptionMessage('The middleware reference "foo" could not be resolved.');
+        $this->createResolver()->resolveMiddleware('foo');
     }
 
     private function createTestObject(): object

@@ -80,7 +80,7 @@ final class ClassResolverTest extends TestCase
         $this->assertSame($classResolver->resolveClass($testClass::class), $classResolver->resolveClass($testClass::class));
     }
 
-    public function testUndefinedClass(): void
+    public function testUnknownClass(): void
     {
         $this->mockedParameterResolverChain->expects(self::never())->method('resolveParameters');
         $classResolver = new ClassResolver($this->mockedParameterResolverChain);
