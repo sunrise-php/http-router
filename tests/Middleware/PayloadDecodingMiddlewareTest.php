@@ -11,7 +11,6 @@ use Psr\Http\Message\StreamInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\CodecManagerInterface;
 use Sunrise\Http\Router\Dictionary\ErrorMessage;
-use Sunrise\Http\Router\Dictionary\HeaderName;
 use Sunrise\Http\Router\Dictionary\MediaType;
 use Sunrise\Http\Router\Exception\CodecException;
 use Sunrise\Http\Router\Exception\HttpException;
@@ -42,7 +41,20 @@ final class PayloadDecodingMiddlewareTest extends TestCase
 
     public function testProcess(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getHeaderLine')->with(HeaderName::CONTENT_TYPE)->willReturn('application/json');
+        $this->mockedServerRequest->expects(self::once())->method('getHeaderLine')->with('Content-Type')->willReturn('application/json');
+        $this->mockedRoute->expects(self::once())->method('getConsumedMediaTypes')->willReturn([MediaType::JSON]);
+        $this->mockedServerRequest->expects(self::once())->method('getAttribute')->with(RouteInterface::class)->willReturn($this->mockedRoute);
+        $this->mockedCodecManager->expects(self::once())->method('supportsMediaType')->willReturn(true);
+        $this->mockedServerRequestBody->expects(self::once())->method('__toString')->willReturn('{"foo":"bar"}');
+        $this->mockedCodecManager->expects(self::once())->method('decode')->with(self::anything(), '{"foo":"bar"}')->willReturn(['foo' => 'bar']);
+        $this->mockedServerRequest->expects(self::once())->method('withParsedBody')->with(['foo' => 'bar'])->willReturn($this->mockedServerRequest);
+        $this->mockedRequestHandler->expects(self::once())->method('handle')->with($this->mockedServerRequest)->willReturn($this->mockedResponse);
+        $this->assertSame($this->mockedResponse, (new PayloadDecodingMiddleware($this->mockedCodecManager))->process($this->mockedServerRequest, $this->mockedRequestHandler));
+    }
+
+    public function testCaseInsensitiveClientMediaType(): void
+    {
+        $this->mockedServerRequest->expects(self::once())->method('getHeaderLine')->with('Content-Type')->willReturn('APPLICATION/JSON');
         $this->mockedRoute->expects(self::once())->method('getConsumedMediaTypes')->willReturn([MediaType::JSON]);
         $this->mockedServerRequest->expects(self::once())->method('getAttribute')->with(RouteInterface::class)->willReturn($this->mockedRoute);
         $this->mockedCodecManager->expects(self::once())->method('supportsMediaType')->willReturn(true);
@@ -55,7 +67,7 @@ final class PayloadDecodingMiddlewareTest extends TestCase
 
     public function testClientNotProducedMediaType(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getHeaderLine')->with(HeaderName::CONTENT_TYPE)->willReturn('');
+        $this->mockedServerRequest->expects(self::once())->method('getHeaderLine')->with('Content-Type')->willReturn('');
         $this->mockedCodecManager->expects(self::never())->method('decode');
         (new PayloadDecodingMiddleware($this->mockedCodecManager))->process($this->mockedServerRequest, $this->mockedRequestHandler);
     }
@@ -64,7 +76,7 @@ final class PayloadDecodingMiddlewareTest extends TestCase
     {
         $serverConsumedMediaType = $this->createMock(MediaTypeInterface::class);
         $serverConsumedMediaType->method('getIdentifier')->willReturn('application/xml');
-        $this->mockedServerRequest->expects(self::once())->method('getHeaderLine')->with(HeaderName::CONTENT_TYPE)->willReturn('application/json');
+        $this->mockedServerRequest->expects(self::once())->method('getHeaderLine')->with('Content-Type')->willReturn('application/json');
         $this->mockedRoute->expects(self::once())->method('getConsumedMediaTypes')->willReturn([$serverConsumedMediaType]);
         $this->mockedServerRequest->expects(self::once())->method('getAttribute')->with(RouteInterface::class)->willReturn($this->mockedRoute);
         $this->mockedCodecManager->expects(self::never())->method('decode');
@@ -73,7 +85,7 @@ final class PayloadDecodingMiddlewareTest extends TestCase
 
     public function testCodecManagerNotSupportedMediaType(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getHeaderLine')->with(HeaderName::CONTENT_TYPE)->willReturn('application/json');
+        $this->mockedServerRequest->expects(self::once())->method('getHeaderLine')->with('Content-Type')->willReturn('application/json');
         $this->mockedRoute->expects(self::once())->method('getConsumedMediaTypes')->willReturn([MediaType::JSON]);
         $this->mockedServerRequest->expects(self::once())->method('getAttribute')->with(RouteInterface::class)->willReturn($this->mockedRoute);
         $this->mockedCodecManager->expects(self::once())->method('supportsMediaType')->willReturn(false);
@@ -83,7 +95,7 @@ final class PayloadDecodingMiddlewareTest extends TestCase
 
     public function testInvalidPayload(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getHeaderLine')->with(HeaderName::CONTENT_TYPE)->willReturn('application/json');
+        $this->mockedServerRequest->expects(self::once())->method('getHeaderLine')->with('Content-Type')->willReturn('application/json');
         $this->mockedRoute->expects(self::once())->method('getConsumedMediaTypes')->willReturn([MediaType::JSON]);
         $this->mockedServerRequest->expects(self::once())->method('getAttribute')->with(RouteInterface::class)->willReturn($this->mockedRoute);
         $this->mockedCodecManager->expects(self::once())->method('supportsMediaType')->willReturn(true);
@@ -103,7 +115,7 @@ final class PayloadDecodingMiddlewareTest extends TestCase
 
     public function testCodecContext(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getHeaderLine')->with(HeaderName::CONTENT_TYPE)->willReturn('application/json');
+        $this->mockedServerRequest->expects(self::once())->method('getHeaderLine')->with('Content-Type')->willReturn('application/json');
         $this->mockedRoute->expects(self::once())->method('getConsumedMediaTypes')->willReturn([MediaType::JSON]);
         $this->mockedServerRequest->expects(self::once())->method('getAttribute')->with(RouteInterface::class)->willReturn($this->mockedRoute);
         $this->mockedCodecManager->expects(self::once())->method('supportsMediaType')->willReturn(true);
@@ -116,7 +128,7 @@ final class PayloadDecodingMiddlewareTest extends TestCase
 
     public function testErrorStatusCode(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getHeaderLine')->with(HeaderName::CONTENT_TYPE)->willReturn('application/json');
+        $this->mockedServerRequest->expects(self::once())->method('getHeaderLine')->with('Content-Type')->willReturn('application/json');
         $this->mockedRoute->expects(self::once())->method('getConsumedMediaTypes')->willReturn([MediaType::JSON]);
         $this->mockedServerRequest->expects(self::once())->method('getAttribute')->with(RouteInterface::class)->willReturn($this->mockedRoute);
         $this->mockedCodecManager->expects(self::once())->method('supportsMediaType')->willReturn(true);
@@ -135,7 +147,7 @@ final class PayloadDecodingMiddlewareTest extends TestCase
 
     public function testErrorMessage(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getHeaderLine')->with(HeaderName::CONTENT_TYPE)->willReturn('application/json');
+        $this->mockedServerRequest->expects(self::once())->method('getHeaderLine')->with('Content-Type')->willReturn('application/json');
         $this->mockedRoute->expects(self::once())->method('getConsumedMediaTypes')->willReturn([MediaType::JSON]);
         $this->mockedServerRequest->expects(self::once())->method('getAttribute')->with(RouteInterface::class)->willReturn($this->mockedRoute);
         $this->mockedCodecManager->expects(self::once())->method('supportsMediaType')->willReturn(true);
