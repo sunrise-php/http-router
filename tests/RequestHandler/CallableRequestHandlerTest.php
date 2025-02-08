@@ -12,22 +12,22 @@ use PHPUnit\Framework\TestCase;
 
 final class CallableRequestHandlerTest extends TestCase
 {
-    private ServerRequestInterface&MockObject $mockedServerRequest;
+    private ServerRequestInterface&MockObject $mockedRequest;
     private ResponseInterface&MockObject $mockedResponse;
 
     protected function setUp(): void
     {
-        $this->mockedServerRequest = $this->createMock(ServerRequestInterface::class);
+        $this->mockedRequest = $this->createMock(ServerRequestInterface::class);
         $this->mockedResponse = $this->createMock(ResponseInterface::class);
     }
 
     public function testHandle(): void
     {
         $callback = function (ServerRequestInterface $request): ResponseInterface {
-            $this->assertSame($this->mockedServerRequest, $request);
+            $this->assertSame($this->mockedRequest, $request);
             return $this->mockedResponse;
         };
 
-        $this->assertSame($this->mockedResponse, (new CallableRequestHandler($callback))->handle($this->mockedServerRequest));
+        $this->assertSame($this->mockedResponse, (new CallableRequestHandler($callback))->handle($this->mockedRequest));
     }
 }

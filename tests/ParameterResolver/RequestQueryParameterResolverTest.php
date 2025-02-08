@@ -28,22 +28,22 @@ final class RequestQueryParameterResolverTest extends TestCase
 {
     private HydratorInterface&MockObject $mockedHydrator;
     private ValidatorInterface&MockObject $mockedValidator;
-    private ServerRequestInterface&MockObject $mockedServerRequest;
+    private ServerRequestInterface&MockObject $mockedRequest;
 
     protected function setUp(): void
     {
         $this->mockedHydrator = $this->createMock(HydratorInterface::class);
         $this->mockedValidator = $this->createMock(ValidatorInterface::class);
-        $this->mockedServerRequest = $this->createMock(ServerRequestInterface::class);
+        $this->mockedRequest = $this->createMock(ServerRequestInterface::class);
     }
 
     public function testResolveParameter(): void
     {
         $pageListRequest = new PageListRequest(filter: new PageFilterRequest(name: 'foo'));
-        $this->mockedServerRequest->expects(self::once())->method('getQueryParams')->willReturn(['filter' => ['name' => 'foo']]);
+        $this->mockedRequest->expects(self::once())->method('getQueryParams')->willReturn(['filter' => ['name' => 'foo']]);
         $this->mockedHydrator->expects(self::once())->method('hydrate')->with(PageListRequest::class, ['filter' => ['name' => 'foo']])->willReturn($pageListRequest);
         $parameter = new ReflectionParameter(fn(#[RequestQuery] PageListRequest $p) => null, 'p');
-        $arguments = (new RequestQueryParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestQueryParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedRequest);
         $this->assertSame($pageListRequest, $arguments->current());
     }
 
@@ -59,7 +59,7 @@ final class RequestQueryParameterResolverTest extends TestCase
     {
         $this->mockedHydrator->expects(self::never())->method('hydrate');
         $parameter = new ReflectionParameter(fn(PageListRequest $p) => null, 'p');
-        $arguments = (new RequestQueryParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestQueryParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedRequest);
         $this->assertFalse($arguments->valid());
     }
 
@@ -67,7 +67,7 @@ final class RequestQueryParameterResolverTest extends TestCase
     {
         $this->mockedHydrator->expects(self::never())->method('hydrate');
         $parameter = new ReflectionParameter(fn(#[RequestQuery] PageListRequest&JsonSerializable $p) => null, 'p');
-        $arguments = (new RequestQueryParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestQueryParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedRequest);
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessageMatches('/must be typed with an object/');
         $arguments->rewind();
@@ -77,7 +77,7 @@ final class RequestQueryParameterResolverTest extends TestCase
     {
         $this->mockedHydrator->expects(self::never())->method('hydrate');
         $parameter = new ReflectionParameter(fn(#[RequestQuery] object $p) => null, 'p');
-        $arguments = (new RequestQueryParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestQueryParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedRequest);
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessageMatches('/must be typed with an object/');
         $arguments->rewind();
@@ -85,12 +85,12 @@ final class RequestQueryParameterResolverTest extends TestCase
 
     public function testHydratorError(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getQueryParams')->willReturn(['filter' => null]);
+        $this->mockedRequest->expects(self::once())->method('getQueryParams')->willReturn(['filter' => null]);
         $invalidValueException = InvalidValueException::mustBeArray(['filter']);
         $invalidDataException = new InvalidDataException('Invalid data', [$invalidValueException]);
         $this->mockedHydrator->expects(self::once())->method('hydrate')->with(PageListRequest::class)->willThrowException($invalidDataException);
         $parameter = new ReflectionParameter(fn(#[RequestQuery] PageListRequest $p) => null, 'p');
-        $arguments = (new RequestQueryParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestQueryParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedRequest);
         $this->expectException(HttpException::class);
         $this->expectExceptionMessage(ErrorMessage::INVALID_QUERY);
 
@@ -111,7 +111,7 @@ final class RequestQueryParameterResolverTest extends TestCase
     public function testValidatorError(): void
     {
         $pageListRequest = new PageListRequest(pagination: new PaginationDto(limit: 0));
-        $this->mockedServerRequest->expects(self::once())->method('getQueryParams')->willReturn(['pagination' => ['limit' => 0]]);
+        $this->mockedRequest->expects(self::once())->method('getQueryParams')->willReturn(['pagination' => ['limit' => 0]]);
         $this->mockedHydrator->expects(self::once())->method('hydrate')->with(PageListRequest::class, ['pagination' => ['limit' => 0]])->willReturn($pageListRequest);
         $constraintViolation = $this->createMock(ConstraintViolationInterface::class);
         $constraintViolation->method('getMessage')->willReturn('pagination limit is invalid');
@@ -121,7 +121,7 @@ final class RequestQueryParameterResolverTest extends TestCase
         $constraintViolationList = new ConstraintViolationList([$constraintViolation]);
         $this->mockedValidator->expects(self::once())->method('validate')->with($pageListRequest)->willReturn($constraintViolationList);
         $parameter = new ReflectionParameter(fn(#[RequestQuery] PageListRequest $p) => null, 'p');
-        $arguments = (new RequestQueryParameterResolver($this->mockedHydrator, $this->mockedValidator))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestQueryParameterResolver($this->mockedHydrator, $this->mockedValidator))->resolveParameter($parameter, $this->mockedRequest);
         $this->expectException(HttpException::class);
         $this->expectExceptionMessage(ErrorMessage::INVALID_QUERY);
 
@@ -141,10 +141,10 @@ final class RequestQueryParameterResolverTest extends TestCase
 
     public function testDefaultErrorStatusCode(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getQueryParams')->willReturn([]);
+        $this->mockedRequest->expects(self::once())->method('getQueryParams')->willReturn([]);
         $this->mockedHydrator->expects(self::once())->method('hydrate')->with(PageListRequest::class)->willThrowException(new InvalidDataException('Invalid data'));
         $parameter = new ReflectionParameter(fn(#[RequestQuery] PageListRequest $p) => null, 'p');
-        $arguments = (new RequestQueryParameterResolver($this->mockedHydrator, defaultErrorStatusCode: 500))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestQueryParameterResolver($this->mockedHydrator, defaultErrorStatusCode: 500))->resolveParameter($parameter, $this->mockedRequest);
 
         try {
             $arguments->rewind();
@@ -155,10 +155,10 @@ final class RequestQueryParameterResolverTest extends TestCase
 
     public function testErrorStatusCodeFromAnnotation(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getQueryParams')->willReturn([]);
+        $this->mockedRequest->expects(self::once())->method('getQueryParams')->willReturn([]);
         $this->mockedHydrator->expects(self::once())->method('hydrate')->with(PageListRequest::class)->willThrowException(new InvalidDataException('Invalid data'));
         $parameter = new ReflectionParameter(fn(#[RequestQuery(errorStatusCode: 503)] PageListRequest $p) => null, 'p');
-        $arguments = (new RequestQueryParameterResolver($this->mockedHydrator, defaultErrorStatusCode: 500))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestQueryParameterResolver($this->mockedHydrator, defaultErrorStatusCode: 500))->resolveParameter($parameter, $this->mockedRequest);
 
         try {
             $arguments->rewind();
@@ -169,10 +169,10 @@ final class RequestQueryParameterResolverTest extends TestCase
 
     public function testDefaultErrorMessage(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getQueryParams')->willReturn([]);
+        $this->mockedRequest->expects(self::once())->method('getQueryParams')->willReturn([]);
         $this->mockedHydrator->expects(self::once())->method('hydrate')->with(PageListRequest::class)->willThrowException(new InvalidDataException('Invalid data'));
         $parameter = new ReflectionParameter(fn(#[RequestQuery] PageListRequest $p) => null, 'p');
-        $arguments = (new RequestQueryParameterResolver($this->mockedHydrator, defaultErrorMessage: 'foo'))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestQueryParameterResolver($this->mockedHydrator, defaultErrorMessage: 'foo'))->resolveParameter($parameter, $this->mockedRequest);
 
         try {
             $arguments->rewind();
@@ -183,10 +183,10 @@ final class RequestQueryParameterResolverTest extends TestCase
 
     public function testErrorMessageFromAnnotation(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getQueryParams')->willReturn([]);
+        $this->mockedRequest->expects(self::once())->method('getQueryParams')->willReturn([]);
         $this->mockedHydrator->expects(self::once())->method('hydrate')->with(PageListRequest::class)->willThrowException(new InvalidDataException('Invalid data'));
         $parameter = new ReflectionParameter(fn(#[RequestQuery(errorMessage: 'bar')] PageListRequest $p) => null, 'p');
-        $arguments = (new RequestQueryParameterResolver($this->mockedHydrator, defaultErrorMessage: 'foo'))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestQueryParameterResolver($this->mockedHydrator, defaultErrorMessage: 'foo'))->resolveParameter($parameter, $this->mockedRequest);
 
         try {
             $arguments->rewind();
@@ -198,40 +198,40 @@ final class RequestQueryParameterResolverTest extends TestCase
     public function testHydratorContext(): void
     {
         $pageListRequest = new PageListRequest();
-        $this->mockedServerRequest->expects(self::once())->method('getQueryParams')->willReturn(['name' => 'foo']);
+        $this->mockedRequest->expects(self::once())->method('getQueryParams')->willReturn(['name' => 'foo']);
         $this->mockedHydrator->expects(self::once())->method('hydrate')->with(PageListRequest::class, ['name' => 'foo'], [], ['foo' => 'baz', 'baz' => 'qux', 'bar' => 'baz'])->willReturn($pageListRequest);
         $parameter = new ReflectionParameter(fn(#[RequestQuery(hydratorContext: ['foo' => 'baz', 'baz' => 'qux'])] PageListRequest $p) => null, 'p');
-        (new RequestQueryParameterResolver($this->mockedHydrator, hydratorContext: ['foo' => 'bar', 'bar' => 'baz']))->resolveParameter($parameter, $this->mockedServerRequest)->rewind();
+        (new RequestQueryParameterResolver($this->mockedHydrator, hydratorContext: ['foo' => 'bar', 'bar' => 'baz']))->resolveParameter($parameter, $this->mockedRequest)->rewind();
     }
 
     public function testDisableValidationByDefault(): void
     {
         $pageListRequest = new PageListRequest();
-        $this->mockedServerRequest->expects(self::once())->method('getQueryParams')->willReturn(['name' => 'foo']);
+        $this->mockedRequest->expects(self::once())->method('getQueryParams')->willReturn(['name' => 'foo']);
         $this->mockedHydrator->expects(self::once())->method('hydrate')->with(PageListRequest::class, ['name' => 'foo'])->willReturn($pageListRequest);
         $this->mockedValidator->expects(self::never())->method('validate');
         $parameter = new ReflectionParameter(fn(#[RequestQuery] PageListRequest $p) => null, 'p');
-        (new RequestQueryParameterResolver($this->mockedHydrator, $this->mockedValidator, defaultValidationEnabled: false))->resolveParameter($parameter, $this->mockedServerRequest)->rewind();
+        (new RequestQueryParameterResolver($this->mockedHydrator, $this->mockedValidator, defaultValidationEnabled: false))->resolveParameter($parameter, $this->mockedRequest)->rewind();
     }
 
     public function testDisableValidationFromAnnotation(): void
     {
         $pageListRequest = new PageListRequest();
-        $this->mockedServerRequest->expects(self::once())->method('getQueryParams')->willReturn(['name' => 'foo']);
+        $this->mockedRequest->expects(self::once())->method('getQueryParams')->willReturn(['name' => 'foo']);
         $this->mockedHydrator->expects(self::once())->method('hydrate')->with(PageListRequest::class, ['name' => 'foo'])->willReturn($pageListRequest);
         $this->mockedValidator->expects(self::never())->method('validate');
         $parameter = new ReflectionParameter(fn(#[RequestQuery(validationEnabled: false)] PageListRequest $p) => null, 'p');
-        (new RequestQueryParameterResolver($this->mockedHydrator, $this->mockedValidator))->resolveParameter($parameter, $this->mockedServerRequest)->rewind();
+        (new RequestQueryParameterResolver($this->mockedHydrator, $this->mockedValidator))->resolveParameter($parameter, $this->mockedRequest)->rewind();
     }
 
     public function testEnableValidationFromAnnotation(): void
     {
         $pageListRequest = new PageListRequest();
-        $this->mockedServerRequest->expects(self::once())->method('getQueryParams')->willReturn(['name' => 'foo']);
+        $this->mockedRequest->expects(self::once())->method('getQueryParams')->willReturn(['name' => 'foo']);
         $this->mockedHydrator->expects(self::once())->method('hydrate')->with(PageListRequest::class, ['name' => 'foo'])->willReturn($pageListRequest);
         $this->mockedValidator->expects(self::once())->method('validate')->with($pageListRequest);
         $parameter = new ReflectionParameter(fn(#[RequestQuery(validationEnabled: true)] PageListRequest $p) => null, 'p');
-        (new RequestQueryParameterResolver($this->mockedHydrator, $this->mockedValidator, defaultValidationEnabled: false))->resolveParameter($parameter, $this->mockedServerRequest)->rewind();
+        (new RequestQueryParameterResolver($this->mockedHydrator, $this->mockedValidator, defaultValidationEnabled: false))->resolveParameter($parameter, $this->mockedRequest)->rewind();
     }
 
     public function testWeight(): void

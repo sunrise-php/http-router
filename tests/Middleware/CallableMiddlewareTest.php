@@ -13,13 +13,13 @@ use PHPUnit\Framework\TestCase;
 
 final class CallableMiddlewareTest extends TestCase
 {
-    private ServerRequestInterface&MockObject $mockedServerRequest;
+    private ServerRequestInterface&MockObject $mockedRequest;
     private RequestHandlerInterface&MockObject $mockedRequestHandler;
     private ResponseInterface&MockObject $mockedResponse;
 
     protected function setUp(): void
     {
-        $this->mockedServerRequest = $this->createMock(ServerRequestInterface::class);
+        $this->mockedRequest = $this->createMock(ServerRequestInterface::class);
         $this->mockedRequestHandler = $this->createMock(RequestHandlerInterface::class);
         $this->mockedResponse = $this->createMock(ResponseInterface::class);
     }
@@ -27,11 +27,11 @@ final class CallableMiddlewareTest extends TestCase
     public function testProcess(): void
     {
         $callback = function (ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface {
-            $this->assertSame($this->mockedServerRequest, $request);
+            $this->assertSame($this->mockedRequest, $request);
             $this->assertSame($this->mockedRequestHandler, $handler);
             return $this->mockedResponse;
         };
 
-        $this->assertSame($this->mockedResponse, (new CallableMiddleware($callback))->process($this->mockedServerRequest, $this->mockedRequestHandler));
+        $this->assertSame($this->mockedResponse, (new CallableMiddleware($callback))->process($this->mockedRequest, $this->mockedRequestHandler));
     }
 }

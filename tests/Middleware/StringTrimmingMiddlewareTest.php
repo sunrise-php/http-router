@@ -13,50 +13,50 @@ use PHPUnit\Framework\TestCase;
 
 final class StringTrimmingMiddlewareTest extends TestCase
 {
-    private ServerRequestInterface&MockObject $mockedServerRequest;
+    private ServerRequestInterface&MockObject $mockedRequest;
     private RequestHandlerInterface&MockObject $mockedRequestHandler;
     private ResponseInterface&MockObject $mockedResponse;
 
     protected function setUp(): void
     {
-        $this->mockedServerRequest = $this->createMock(ServerRequestInterface::class);
+        $this->mockedRequest = $this->createMock(ServerRequestInterface::class);
         $this->mockedRequestHandler = $this->createMock(RequestHandlerInterface::class);
         $this->mockedResponse = $this->createMock(ResponseInterface::class);
     }
 
     public function testProcess(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getQueryParams')->willReturn([[' foo ']]);
-        $this->mockedServerRequest->expects(self::once())->method('withQueryParams')->with([['foo']])->willReturnSelf();
-        $this->mockedServerRequest->expects(self::once())->method('getParsedBody')->willReturn([[' bar ']]);
-        $this->mockedServerRequest->expects(self::once())->method('withParsedBody')->with([['bar']])->willReturnSelf();
-        $this->mockedRequestHandler->expects(self::once())->method('handle')->with($this->mockedServerRequest)->willReturn($this->mockedResponse);
-        $this->assertSame($this->mockedResponse, (new StringTrimmingMiddleware())->process($this->mockedServerRequest, $this->mockedRequestHandler));
+        $this->mockedRequest->expects(self::once())->method('getQueryParams')->willReturn([[' foo ']]);
+        $this->mockedRequest->expects(self::once())->method('withQueryParams')->with([['foo']])->willReturnSelf();
+        $this->mockedRequest->expects(self::once())->method('getParsedBody')->willReturn([[' bar ']]);
+        $this->mockedRequest->expects(self::once())->method('withParsedBody')->with([['bar']])->willReturnSelf();
+        $this->mockedRequestHandler->expects(self::once())->method('handle')->with($this->mockedRequest)->willReturn($this->mockedResponse);
+        $this->assertSame($this->mockedResponse, (new StringTrimmingMiddleware())->process($this->mockedRequest, $this->mockedRequestHandler));
     }
 
     public function testEmptyArrays(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getQueryParams')->willReturn([]);
-        $this->mockedServerRequest->expects(self::never())->method('withQueryParams');
-        $this->mockedServerRequest->expects(self::once())->method('getParsedBody')->willReturn([]);
-        $this->mockedServerRequest->expects(self::never())->method('withParsedBody');
-        (new StringTrimmingMiddleware())->process($this->mockedServerRequest, $this->mockedRequestHandler);
+        $this->mockedRequest->expects(self::once())->method('getQueryParams')->willReturn([]);
+        $this->mockedRequest->expects(self::never())->method('withQueryParams');
+        $this->mockedRequest->expects(self::once())->method('getParsedBody')->willReturn([]);
+        $this->mockedRequest->expects(self::never())->method('withParsedBody');
+        (new StringTrimmingMiddleware())->process($this->mockedRequest, $this->mockedRequestHandler);
     }
 
     public function testNonArrayParsedBody(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getQueryParams')->willReturn([]);
-        $this->mockedServerRequest->expects(self::once())->method('getParsedBody')->willReturn((object) ['foo']);
-        $this->mockedServerRequest->expects(self::never())->method('withParsedBody');
-        (new StringTrimmingMiddleware())->process($this->mockedServerRequest, $this->mockedRequestHandler);
+        $this->mockedRequest->expects(self::once())->method('getQueryParams')->willReturn([]);
+        $this->mockedRequest->expects(self::once())->method('getParsedBody')->willReturn((object) ['foo']);
+        $this->mockedRequest->expects(self::never())->method('withParsedBody');
+        (new StringTrimmingMiddleware())->process($this->mockedRequest, $this->mockedRequestHandler);
     }
 
     public function testCustomTrimmer(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getQueryParams')->willReturn(['foo']);
-        $this->mockedServerRequest->expects(self::once())->method('withQueryParams')->with(['xxx'])->willReturnSelf();
-        $this->mockedServerRequest->expects(self::once())->method('getParsedBody')->willReturn(['bar']);
-        $this->mockedServerRequest->expects(self::once())->method('withParsedBody')->with(['xxx'])->willReturnSelf();
-        (new StringTrimmingMiddleware(static fn(): string => 'xxx'))->process($this->mockedServerRequest, $this->mockedRequestHandler);
+        $this->mockedRequest->expects(self::once())->method('getQueryParams')->willReturn(['foo']);
+        $this->mockedRequest->expects(self::once())->method('withQueryParams')->with(['xxx'])->willReturnSelf();
+        $this->mockedRequest->expects(self::once())->method('getParsedBody')->willReturn(['bar']);
+        $this->mockedRequest->expects(self::once())->method('withParsedBody')->with(['xxx'])->willReturnSelf();
+        (new StringTrimmingMiddleware(static fn(): string => 'xxx'))->process($this->mockedRequest, $this->mockedRequestHandler);
     }
 }

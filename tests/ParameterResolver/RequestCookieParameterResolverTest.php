@@ -28,7 +28,7 @@ final class RequestCookieParameterResolverTest extends TestCase
     private HydratorInterface&MockObject $mockedHydrator;
     private ValidatorInterface&MockObject $mockedValidator;
     private ContextualValidatorInterface&MockObject $mockedContextualValidator;
-    private ServerRequestInterface&MockObject $mockedServerRequest;
+    private ServerRequestInterface&MockObject $mockedRequest;
 
     protected function setUp(): void
     {
@@ -36,15 +36,15 @@ final class RequestCookieParameterResolverTest extends TestCase
         $this->mockedValidator = $this->createMock(ValidatorInterface::class);
         $this->mockedContextualValidator = $this->createMock(ContextualValidatorInterface::class);
         $this->mockedValidator->method('startContext')->willReturn($this->mockedContextualValidator);
-        $this->mockedServerRequest = $this->createMock(ServerRequestInterface::class);
+        $this->mockedRequest = $this->createMock(ServerRequestInterface::class);
     }
 
     public function testResolveParameter(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getCookieParams')->willReturn(['foo' => 'bar']);
+        $this->mockedRequest->expects(self::once())->method('getCookieParams')->willReturn(['foo' => 'bar']);
         $this->mockedHydrator->expects(self::once())->method('castValue')->with('bar')->willReturn('bar');
         $parameter = new ReflectionParameter(fn(#[RequestCookie('foo')] string $p) => null, 'p');
-        $arguments = (new RequestCookieParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestCookieParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedRequest);
         $this->assertSame('bar', $arguments->current());
     }
 
@@ -60,25 +60,25 @@ final class RequestCookieParameterResolverTest extends TestCase
     {
         $this->mockedHydrator->expects(self::never())->method('castValue');
         $parameter = new ReflectionParameter(fn(string $p) => null, 'p');
-        $arguments = (new RequestCookieParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestCookieParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedRequest);
         $this->assertFalse($arguments->valid());
     }
 
     public function testDefaultParameterValue(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getCookieParams')->willReturn([]);
+        $this->mockedRequest->expects(self::once())->method('getCookieParams')->willReturn([]);
         $this->mockedHydrator->expects(self::never())->method('castValue');
         $parameter = new ReflectionParameter(fn(#[RequestCookie('foo')] string $p = 'bar') => null, 'p');
-        $arguments = (new RequestCookieParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestCookieParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedRequest);
         $this->assertSame('bar', $arguments->current());
     }
 
     public function testMissingCookie(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getCookieParams')->willReturn([]);
+        $this->mockedRequest->expects(self::once())->method('getCookieParams')->willReturn([]);
         $this->mockedHydrator->expects(self::never())->method('castValue');
         $parameter = new ReflectionParameter(fn(#[RequestCookie('foo')] string $p) => null, 'p');
-        $arguments = (new RequestCookieParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestCookieParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedRequest);
         $this->expectException(HttpException::class);
 
         try {
@@ -92,10 +92,10 @@ final class RequestCookieParameterResolverTest extends TestCase
     #[DataProvider('hydratorErrorDataProvider')]
     public function testHydratorError(InvalidDataException|InvalidValueException $hydratorError): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getCookieParams')->willReturn(['foo' => ['bar']]);
+        $this->mockedRequest->expects(self::once())->method('getCookieParams')->willReturn(['foo' => ['bar']]);
         $this->mockedHydrator->expects(self::once())->method('castValue')->with(['bar'])->willThrowException($hydratorError);
         $parameter = new ReflectionParameter(fn(#[RequestCookie('foo')] string $p) => null, 'p');
-        $arguments = (new RequestCookieParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestCookieParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedRequest);
         $this->expectException(HttpException::class);
 
         $hydratorViolations = $hydratorError instanceof InvalidValueException ? [$hydratorError] : $hydratorError->getExceptions();
@@ -129,7 +129,7 @@ final class RequestCookieParameterResolverTest extends TestCase
 
     public function testValidatorError(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getCookieParams')->willReturn(['foo' => '']);
+        $this->mockedRequest->expects(self::once())->method('getCookieParams')->willReturn(['foo' => '']);
         $this->mockedHydrator->expects(self::once())->method('castValue')->with('')->willReturn('');
         $validatorViolation = $this->createMock(ConstraintViolationInterface::class);
         $validatorViolation->method('getMessage')->willReturn('This value should not be blank.');
@@ -141,7 +141,7 @@ final class RequestCookieParameterResolverTest extends TestCase
         $this->mockedContextualValidator->expects(self::once())->method('validate')->with('')->willReturn($this->mockedContextualValidator);
         $this->mockedContextualValidator->expects(self::once())->method('getViolations')->willReturn($validatorViolations);
         $parameter = new ReflectionParameter(fn(#[RequestCookie('foo'), Constraint(new NotBlank())] string $p) => null, 'p');
-        $arguments = (new RequestCookieParameterResolver($this->mockedHydrator, $this->mockedValidator))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestCookieParameterResolver($this->mockedHydrator, $this->mockedValidator))->resolveParameter($parameter, $this->mockedRequest);
         $this->expectException(HttpException::class);
 
         try {
@@ -160,10 +160,10 @@ final class RequestCookieParameterResolverTest extends TestCase
 
     public function testDefaultErrorStatusCode(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getCookieParams')->willReturn(['foo' => ['bar']]);
+        $this->mockedRequest->expects(self::once())->method('getCookieParams')->willReturn(['foo' => ['bar']]);
         $this->mockedHydrator->expects(self::once())->method('castValue')->with(['bar'])->willThrowException(InvalidValueException::mustBeString(['foo']));
         $parameter = new ReflectionParameter(fn(#[RequestCookie('foo')] string $p) => null, 'p');
-        $arguments = (new RequestCookieParameterResolver($this->mockedHydrator, defaultErrorStatusCode: 500))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestCookieParameterResolver($this->mockedHydrator, defaultErrorStatusCode: 500))->resolveParameter($parameter, $this->mockedRequest);
 
         try {
             $arguments->rewind();
@@ -174,10 +174,10 @@ final class RequestCookieParameterResolverTest extends TestCase
 
     public function testErrorStatusCodeFromAnnotation(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getCookieParams')->willReturn(['foo' => ['bar']]);
+        $this->mockedRequest->expects(self::once())->method('getCookieParams')->willReturn(['foo' => ['bar']]);
         $this->mockedHydrator->expects(self::once())->method('castValue')->with(['bar'])->willThrowException(InvalidValueException::mustBeString(['foo']));
         $parameter = new ReflectionParameter(fn(#[RequestCookie('foo', errorStatusCode: 503)] string $p) => null, 'p');
-        $arguments = (new RequestCookieParameterResolver($this->mockedHydrator, defaultErrorStatusCode: 500))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestCookieParameterResolver($this->mockedHydrator, defaultErrorStatusCode: 500))->resolveParameter($parameter, $this->mockedRequest);
 
         try {
             $arguments->rewind();
@@ -188,10 +188,10 @@ final class RequestCookieParameterResolverTest extends TestCase
 
     public function testDefaultErrorMessage(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getCookieParams')->willReturn(['foo' => ['bar']]);
+        $this->mockedRequest->expects(self::once())->method('getCookieParams')->willReturn(['foo' => ['bar']]);
         $this->mockedHydrator->expects(self::once())->method('castValue')->with(['bar'])->willThrowException(InvalidValueException::mustBeString(['foo']));
         $parameter = new ReflectionParameter(fn(#[RequestCookie('foo')] string $p) => null, 'p');
-        $arguments = (new RequestCookieParameterResolver($this->mockedHydrator, defaultErrorMessage: 'foo'))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestCookieParameterResolver($this->mockedHydrator, defaultErrorMessage: 'foo'))->resolveParameter($parameter, $this->mockedRequest);
 
         try {
             $arguments->rewind();
@@ -202,10 +202,10 @@ final class RequestCookieParameterResolverTest extends TestCase
 
     public function testErrorMessageFromAnnotation(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getCookieParams')->willReturn(['foo' => ['bar']]);
+        $this->mockedRequest->expects(self::once())->method('getCookieParams')->willReturn(['foo' => ['bar']]);
         $this->mockedHydrator->expects(self::once())->method('castValue')->with(['bar'])->willThrowException(InvalidValueException::mustBeString(['foo']));
         $parameter = new ReflectionParameter(fn(#[RequestCookie('foo', errorMessage: 'bar')] string $p) => null, 'p');
-        $arguments = (new RequestCookieParameterResolver($this->mockedHydrator, defaultErrorMessage: 'foo'))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestCookieParameterResolver($this->mockedHydrator, defaultErrorMessage: 'foo'))->resolveParameter($parameter, $this->mockedRequest);
 
         try {
             $arguments->rewind();
@@ -216,39 +216,39 @@ final class RequestCookieParameterResolverTest extends TestCase
 
     public function testHydratorContext(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getCookieParams')->willReturn(['foo' => 'bar']);
+        $this->mockedRequest->expects(self::once())->method('getCookieParams')->willReturn(['foo' => 'bar']);
         $this->mockedHydrator->expects(self::once())->method('castValue')->with('bar', self::anything(), self::anything(), ['foo' => 'baz', 'baz' => 'qux', 'bar' => 'baz'])->willReturn('bar');
         $parameter = new ReflectionParameter(fn(#[RequestCookie('foo', hydratorContext: ['foo' => 'baz', 'baz' => 'qux'])] string $p) => null, 'p');
-        (new RequestCookieParameterResolver($this->mockedHydrator, hydratorContext: ['foo' => 'bar', 'bar' => 'baz']))->resolveParameter($parameter, $this->mockedServerRequest)->rewind();
+        (new RequestCookieParameterResolver($this->mockedHydrator, hydratorContext: ['foo' => 'bar', 'bar' => 'baz']))->resolveParameter($parameter, $this->mockedRequest)->rewind();
     }
 
     public function testDisableValidationByDefault(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getCookieParams')->willReturn(['foo' => 'bar']);
+        $this->mockedRequest->expects(self::once())->method('getCookieParams')->willReturn(['foo' => 'bar']);
         $this->mockedHydrator->expects(self::once())->method('castValue')->with('bar')->willReturn('bar');
         $this->mockedValidator->expects(self::never())->method('validate');
         $parameter = new ReflectionParameter(fn(#[RequestCookie('foo')] string $p) => null, 'p');
-        (new RequestCookieParameterResolver($this->mockedHydrator, $this->mockedValidator, defaultValidationEnabled: false))->resolveParameter($parameter, $this->mockedServerRequest)->rewind();
+        (new RequestCookieParameterResolver($this->mockedHydrator, $this->mockedValidator, defaultValidationEnabled: false))->resolveParameter($parameter, $this->mockedRequest)->rewind();
     }
 
     public function testDisableValidationFromAnnotation(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getCookieParams')->willReturn(['foo' => 'bar']);
+        $this->mockedRequest->expects(self::once())->method('getCookieParams')->willReturn(['foo' => 'bar']);
         $this->mockedHydrator->expects(self::once())->method('castValue')->with('bar')->willReturn('bar');
         $this->mockedValidator->expects(self::never())->method('validate');
         $parameter = new ReflectionParameter(fn(#[RequestCookie('foo', validationEnabled: false)] string $p) => null, 'p');
-        (new RequestCookieParameterResolver($this->mockedHydrator, $this->mockedValidator))->resolveParameter($parameter, $this->mockedServerRequest)->rewind();
+        (new RequestCookieParameterResolver($this->mockedHydrator, $this->mockedValidator))->resolveParameter($parameter, $this->mockedRequest)->rewind();
     }
 
     public function testEnableValidationFromAnnotation(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getCookieParams')->willReturn(['foo' => 'bar']);
+        $this->mockedRequest->expects(self::once())->method('getCookieParams')->willReturn(['foo' => 'bar']);
         $this->mockedHydrator->expects(self::once())->method('castValue')->with('bar')->willReturn('bar');
         $this->mockedContextualValidator->expects(self::once())->method('atPath')->with('foo')->willReturn($this->mockedContextualValidator);
         $this->mockedContextualValidator->expects(self::once())->method('validate')->with('bar')->willReturn($this->mockedContextualValidator);
         $this->mockedContextualValidator->expects(self::once())->method('getViolations');
         $parameter = new ReflectionParameter(fn(#[RequestCookie('foo', validationEnabled: true)] string $p) => null, 'p');
-        (new RequestCookieParameterResolver($this->mockedHydrator, $this->mockedValidator, defaultValidationEnabled: false))->resolveParameter($parameter, $this->mockedServerRequest)->rewind();
+        (new RequestCookieParameterResolver($this->mockedHydrator, $this->mockedValidator, defaultValidationEnabled: false))->resolveParameter($parameter, $this->mockedRequest)->rewind();
     }
 
     public function testWeight(): void

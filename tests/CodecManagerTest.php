@@ -9,10 +9,11 @@ use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\CodecInterface;
 use Sunrise\Http\Router\CodecManager;
 use Sunrise\Http\Router\Exception\CodecException;
-use Sunrise\Http\Router\MediaTypeInterface;
 
 final class CodecManagerTest extends TestCase
 {
+    use TestKit;
+
     /**
      * @var list<CodecInterface&MockObject>
      */
@@ -132,13 +133,5 @@ final class CodecManagerTest extends TestCase
         $this->assertSame('1', (new CodecManager($this->mockedCodecs, $codecsContext))->encode($this->mockMediaType('test/foo'), 1, $codecContext));
         $this->assertSame('2', (new CodecManager($this->mockedCodecs, $codecsContext))->encode($this->mockMediaType('test/bar'), 2, $codecContext));
         $this->assertSame('2', (new CodecManager($this->mockedCodecs, $codecsContext))->encode($this->mockMediaType('test/baz'), 2, $codecContext));
-    }
-
-    private function mockMediaType(string $identifier): MediaTypeInterface&MockObject
-    {
-        $mediaType = $this->createMock(MediaTypeInterface::class);
-        $mediaType->method('getIdentifier')->willReturn($identifier);
-
-        return $mediaType;
     }
 }

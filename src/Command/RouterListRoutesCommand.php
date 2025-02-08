@@ -51,7 +51,7 @@ final class RouterListRoutesCommand extends Command
             $table->addRow([
                 $route->getName(),
                 $route->getPath(),
-                $route->getMethods() === [] ? '*' : implode(', ', $route->getMethods()),
+                implode(', ', $route->getMethods()),
             ]);
         }
 

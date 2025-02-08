@@ -24,9 +24,9 @@ final class MiddlewareResolverTest extends TestCase
     private ClassResolverInterface&MockObject $mockedClassResolver;
     private ParameterResolverChainInterface&MockObject $mockedParameterResolverChain;
     private ResponseResolverChainInterface&MockObject $mockedResponseResolverChain;
-    private ServerRequestInterface&MockObject $mockedServerRequest;
-    private StreamInterface&MockObject $mockedServerRequestBody;
-    private RequestHandlerInterface&MockObject $mockedServerRequestHandler;
+    private ServerRequestInterface&MockObject $mockedRequest;
+    private StreamInterface&MockObject $mockedRequestBody;
+    private RequestHandlerInterface&MockObject $mockedRequestHandler;
     private ResponseInterface&MockObject $mockedResponse;
 
     protected function setUp(): void
@@ -34,10 +34,10 @@ final class MiddlewareResolverTest extends TestCase
         $this->mockedClassResolver = $this->createMock(ClassResolverInterface::class);
         $this->mockedParameterResolverChain = $this->createMock(ParameterResolverChainInterface::class);
         $this->mockedResponseResolverChain = $this->createMock(ResponseResolverChainInterface::class);
-        $this->mockedServerRequest = $this->createMock(ServerRequestInterface::class);
-        $this->mockedServerRequestBody = $this->createMock(StreamInterface::class);
-        $this->mockedServerRequest->method('getBody')->willReturn($this->mockedServerRequestBody);
-        $this->mockedServerRequestHandler = $this->createMock(RequestHandlerInterface::class);
+        $this->mockedRequest = $this->createMock(ServerRequestInterface::class);
+        $this->mockedRequestBody = $this->createMock(StreamInterface::class);
+        $this->mockedRequest->method('getBody')->willReturn($this->mockedRequestBody);
+        $this->mockedRequestHandler = $this->createMock(RequestHandlerInterface::class);
         $this->mockedResponse = $this->createMock(ResponseInterface::class);
     }
 
@@ -76,14 +76,14 @@ final class MiddlewareResolverTest extends TestCase
         $actualServerRequestArg = self::callback(static fn(ReflectionParameter $p) => $p->name === 'actualServerRequest');
         $actualServerRequestBodyArg = self::callback(static fn(ReflectionParameter $p) => $p->name === 'actualServerRequestBody');
         $actualServerRequestHandlerArg = self::callback(static fn(ReflectionParameter $p) => $p->name === 'actualServerRequestHandler');
-        $parametersResolver = fn(): Generator => yield from [$this->mockedServerRequest, $this->mockedServerRequestBody, $this->mockedServerRequestHandler];
+        $parametersResolver = fn(): Generator => yield from [$this->mockedRequest, $this->mockedRequestBody, $this->mockedRequestHandler];
 
         $this->mockedClassResolver->expects(self::once())->method('resolveClass')->with($testObject::class)->willReturn($testObject);
-        $this->mockedParameterResolverChain->expects(self::once())->method('withContext')->with($this->mockedServerRequest)->willReturnSelf();
+        $this->mockedParameterResolverChain->expects(self::once())->method('withContext')->with($this->mockedRequest)->willReturnSelf();
         $this->mockedParameterResolverChain->expects(self::once())->method('withResolver')->willReturnSelf();
         $this->mockedParameterResolverChain->expects(self::once())->method('resolveParameters')->with($actualServerRequestArg, $actualServerRequestBodyArg, $actualServerRequestHandlerArg)->willReturnCallback($parametersResolver);
         $this->mockedResponseResolverChain->expects(self::once())->method('resolveResponse')->with($this->mockedResponse)->willReturn($this->mockedResponse);
-        $this->assertSame($this->mockedResponse, $this->createResolver()->resolveMiddleware([$testObject::class, 'test'])->process($this->mockedServerRequest, $this->mockedServerRequestHandler));
+        $this->assertSame($this->mockedResponse, $this->createResolver()->resolveMiddleware([$testObject::class, 'test'])->process($this->mockedRequest, $this->mockedRequestHandler));
     }
 
     public function testResolveObjectMethodName(): void
@@ -92,14 +92,14 @@ final class MiddlewareResolverTest extends TestCase
         $actualServerRequestArg = self::callback(static fn(ReflectionParameter $p) => $p->name === 'actualServerRequest');
         $actualServerRequestBodyArg = self::callback(static fn(ReflectionParameter $p) => $p->name === 'actualServerRequestBody');
         $actualServerRequestHandlerArg = self::callback(static fn(ReflectionParameter $p) => $p->name === 'actualServerRequestHandler');
-        $parametersResolver = fn(): Generator => yield from [$this->mockedServerRequest, $this->mockedServerRequestBody, $this->mockedServerRequestHandler];
+        $parametersResolver = fn(): Generator => yield from [$this->mockedRequest, $this->mockedRequestBody, $this->mockedRequestHandler];
 
         $this->mockedClassResolver->expects(self::never())->method('resolveClass');
-        $this->mockedParameterResolverChain->expects(self::once())->method('withContext')->with($this->mockedServerRequest)->willReturnSelf();
+        $this->mockedParameterResolverChain->expects(self::once())->method('withContext')->with($this->mockedRequest)->willReturnSelf();
         $this->mockedParameterResolverChain->expects(self::once())->method('withResolver')->willReturnSelf();
         $this->mockedParameterResolverChain->expects(self::once())->method('resolveParameters')->with($actualServerRequestArg, $actualServerRequestBodyArg, $actualServerRequestHandlerArg)->willReturnCallback($parametersResolver);
         $this->mockedResponseResolverChain->expects(self::once())->method('resolveResponse')->with($this->mockedResponse)->willReturn($this->mockedResponse);
-        $this->assertSame($this->mockedResponse, $this->createResolver()->resolveMiddleware([$testObject, 'test'])->process($this->mockedServerRequest, $this->mockedServerRequestHandler));
+        $this->assertSame($this->mockedResponse, $this->createResolver()->resolveMiddleware([$testObject, 'test'])->process($this->mockedRequest, $this->mockedRequestHandler));
     }
 
     public function testResolveUnsupportedReference(): void
@@ -113,9 +113,9 @@ final class MiddlewareResolverTest extends TestCase
     {
         return new class (
             name: '85160283-1280-4020-90bf-9cdca4891fbf',
-            expectedServerRequest: $this->mockedServerRequest,
-            expectedServerRequestBody: $this->mockedServerRequestBody,
-            expectedServerRequestHandler: $this->mockedServerRequestHandler,
+            expectedServerRequest: $this->mockedRequest,
+            expectedServerRequestBody: $this->mockedRequestBody,
+            expectedServerRequestHandler: $this->mockedRequestHandler,
             response: $this->mockedResponse,
         ) extends TestCase {
             public function __construct(

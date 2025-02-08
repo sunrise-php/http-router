@@ -14,13 +14,13 @@ use PHPUnit\Framework\TestCase;
 
 final class QueueableRequestHandlerTest extends TestCase
 {
-    private ServerRequestInterface&MockObject $mockedServerRequest;
+    private ServerRequestInterface&MockObject $mockedRequest;
     private ResponseInterface&MockObject $mockedResponse;
     private RequestHandlerInterface&MockObject $mockedEndpoint;
 
     protected function setUp(): void
     {
-        $this->mockedServerRequest = $this->createMock(ServerRequestInterface::class);
+        $this->mockedRequest = $this->createMock(ServerRequestInterface::class);
         $this->mockedResponse = $this->createMock(ResponseInterface::class);
         $this->mockedEndpoint = $this->createMock(RequestHandlerInterface::class);
     }
@@ -31,22 +31,22 @@ final class QueueableRequestHandlerTest extends TestCase
         $this->assertCount(0, $requestHandler);
 
         $callableMiddleware = function (ServerRequestInterface $request, QueueableRequestHandler $handler): ResponseInterface {
-            $this->assertSame($this->mockedServerRequest, $request);
+            $this->assertSame($this->mockedRequest, $request);
             return $handler->handle($request);
         };
 
         $middleware = $this->createMock(MiddlewareInterface::class);
-        $middleware->expects(self::once())->method('process')->with($this->mockedServerRequest, $requestHandler)->willReturnCallback($callableMiddleware);
+        $middleware->expects(self::once())->method('process')->with($this->mockedRequest, $requestHandler)->willReturnCallback($callableMiddleware);
         $requestHandler->enqueue($middleware);
         $this->assertCount(1, $requestHandler);
 
         $middleware = $this->createMock(MiddlewareInterface::class);
-        $middleware->expects(self::once())->method('process')->with($this->mockedServerRequest, $requestHandler)->willReturnCallback($callableMiddleware);
+        $middleware->expects(self::once())->method('process')->with($this->mockedRequest, $requestHandler)->willReturnCallback($callableMiddleware);
         $requestHandler->enqueue($middleware);
         $this->assertCount(2, $requestHandler);
 
-        $this->mockedEndpoint->expects(self::once())->method('handle')->with($this->mockedServerRequest)->willReturn($this->mockedResponse);
-        $this->assertSame($this->mockedResponse, $requestHandler->handle($this->mockedServerRequest));
+        $this->mockedEndpoint->expects(self::once())->method('handle')->with($this->mockedRequest)->willReturn($this->mockedResponse);
+        $this->assertSame($this->mockedResponse, $requestHandler->handle($this->mockedRequest));
 
         // The request handler is immutable.
         $this->assertCount(2, $requestHandler);
@@ -57,17 +57,17 @@ final class QueueableRequestHandlerTest extends TestCase
         $requestHandler = new QueueableRequestHandler($this->mockedEndpoint);
 
         $middleware = $this->createMock(MiddlewareInterface::class);
-        $middleware->expects(self::once())->method('process')->with($this->mockedServerRequest, $requestHandler)->willReturn($this->mockedResponse);
+        $middleware->expects(self::once())->method('process')->with($this->mockedRequest, $requestHandler)->willReturn($this->mockedResponse);
         $requestHandler->enqueue($middleware);
 
         $this->mockedEndpoint->expects(self::never())->method('handle');
-        $this->assertSame($this->mockedResponse, $requestHandler->handle($this->mockedServerRequest));
+        $this->assertSame($this->mockedResponse, $requestHandler->handle($this->mockedRequest));
     }
 
     public function testHandleWithoutMiddlewares(): void
     {
         $requestHandler = new QueueableRequestHandler($this->mockedEndpoint);
-        $this->mockedEndpoint->expects(self::once())->method('handle')->with($this->mockedServerRequest)->willReturn($this->mockedResponse);
-        $this->assertSame($this->mockedResponse, $requestHandler->handle($this->mockedServerRequest));
+        $this->mockedEndpoint->expects(self::once())->method('handle')->with($this->mockedRequest)->willReturn($this->mockedResponse);
+        $this->assertSame($this->mockedResponse, $requestHandler->handle($this->mockedRequest));
     }
 }

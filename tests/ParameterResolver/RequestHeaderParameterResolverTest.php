@@ -28,7 +28,7 @@ final class RequestHeaderParameterResolverTest extends TestCase
     private HydratorInterface&MockObject $mockedHydrator;
     private ValidatorInterface&MockObject $mockedValidator;
     private ContextualValidatorInterface&MockObject $mockedContextualValidator;
-    private ServerRequestInterface&MockObject $mockedServerRequest;
+    private ServerRequestInterface&MockObject $mockedRequest;
 
     protected function setUp(): void
     {
@@ -36,16 +36,16 @@ final class RequestHeaderParameterResolverTest extends TestCase
         $this->mockedValidator = $this->createMock(ValidatorInterface::class);
         $this->mockedContextualValidator = $this->createMock(ContextualValidatorInterface::class);
         $this->mockedValidator->method('startContext')->willReturn($this->mockedContextualValidator);
-        $this->mockedServerRequest = $this->createMock(ServerRequestInterface::class);
+        $this->mockedRequest = $this->createMock(ServerRequestInterface::class);
     }
 
     public function testResolveParameter(): void
     {
-        $this->mockedServerRequest->expects(self::exactly(1))->method('hasHeader')->with('x-foo')->willReturn(true);
-        $this->mockedServerRequest->expects(self::exactly(1))->method('getHeaderLine')->with('x-foo')->willReturn('bar');
+        $this->mockedRequest->expects(self::exactly(1))->method('hasHeader')->with('x-foo')->willReturn(true);
+        $this->mockedRequest->expects(self::exactly(1))->method('getHeaderLine')->with('x-foo')->willReturn('bar');
         $this->mockedHydrator->expects(self::once())->method('castValue')->with('bar')->willReturn('bar');
         $parameter = new ReflectionParameter(fn(#[RequestHeader('x-foo')] string $p) => null, 'p');
-        $arguments = (new RequestHeaderParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestHeaderParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedRequest);
         $this->assertSame('bar', $arguments->current());
     }
 
@@ -61,25 +61,25 @@ final class RequestHeaderParameterResolverTest extends TestCase
     {
         $this->mockedHydrator->expects(self::never())->method('castValue');
         $parameter = new ReflectionParameter(fn(string $p) => null, 'p');
-        $arguments = (new RequestHeaderParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestHeaderParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedRequest);
         $this->assertFalse($arguments->valid());
     }
 
     public function testDefaultParameterValue(): void
     {
-        $this->mockedServerRequest->expects(self::exactly(1))->method('hasHeader')->with('x-foo')->willReturn(false);
+        $this->mockedRequest->expects(self::exactly(1))->method('hasHeader')->with('x-foo')->willReturn(false);
         $this->mockedHydrator->expects(self::never())->method('castValue');
         $parameter = new ReflectionParameter(fn(#[RequestHeader('x-foo')] string $p = 'bar') => null, 'p');
-        $arguments = (new RequestHeaderParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestHeaderParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedRequest);
         $this->assertSame('bar', $arguments->current());
     }
 
     public function testMissingHeader(): void
     {
-        $this->mockedServerRequest->expects(self::exactly(1))->method('hasHeader')->with('x-foo')->willReturn(false);
+        $this->mockedRequest->expects(self::exactly(1))->method('hasHeader')->with('x-foo')->willReturn(false);
         $this->mockedHydrator->expects(self::never())->method('castValue');
         $parameter = new ReflectionParameter(fn(#[RequestHeader('x-foo')] string $p) => null, 'p');
-        $arguments = (new RequestHeaderParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestHeaderParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedRequest);
         $this->expectException(HttpException::class);
 
         try {
@@ -93,11 +93,11 @@ final class RequestHeaderParameterResolverTest extends TestCase
     #[DataProvider('hydratorErrorDataProvider')]
     public function testHydratorError(InvalidDataException|InvalidValueException $hydratorError): void
     {
-        $this->mockedServerRequest->expects(self::exactly(1))->method('hasHeader')->with('x-foo')->willReturn(true);
-        $this->mockedServerRequest->expects(self::exactly(1))->method('getHeaderLine')->with('x-foo')->willReturn('bar');
+        $this->mockedRequest->expects(self::exactly(1))->method('hasHeader')->with('x-foo')->willReturn(true);
+        $this->mockedRequest->expects(self::exactly(1))->method('getHeaderLine')->with('x-foo')->willReturn('bar');
         $this->mockedHydrator->expects(self::once())->method('castValue')->with('bar')->willThrowException($hydratorError);
         $parameter = new ReflectionParameter(fn(#[RequestHeader('x-foo')] int $p) => null, 'p');
-        $arguments = (new RequestHeaderParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestHeaderParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedRequest);
         $this->expectException(HttpException::class);
 
         $hydratorViolations = $hydratorError instanceof InvalidValueException ? [$hydratorError] : $hydratorError->getExceptions();
@@ -131,8 +131,8 @@ final class RequestHeaderParameterResolverTest extends TestCase
 
     public function testValidatorError(): void
     {
-        $this->mockedServerRequest->expects(self::exactly(1))->method('hasHeader')->with('x-foo')->willReturn(true);
-        $this->mockedServerRequest->expects(self::exactly(1))->method('getHeaderLine')->with('x-foo')->willReturn('');
+        $this->mockedRequest->expects(self::exactly(1))->method('hasHeader')->with('x-foo')->willReturn(true);
+        $this->mockedRequest->expects(self::exactly(1))->method('getHeaderLine')->with('x-foo')->willReturn('');
         $this->mockedHydrator->expects(self::once())->method('castValue')->with('')->willReturn('');
         $validatorViolation = $this->createMock(ConstraintViolationInterface::class);
         $validatorViolation->method('getMessage')->willReturn('This value should not be blank.');
@@ -144,7 +144,7 @@ final class RequestHeaderParameterResolverTest extends TestCase
         $this->mockedContextualValidator->expects(self::once())->method('validate')->with('')->willReturn($this->mockedContextualValidator);
         $this->mockedContextualValidator->expects(self::once())->method('getViolations')->willReturn($validatorViolations);
         $parameter = new ReflectionParameter(fn(#[RequestHeader('x-foo'), Constraint(new NotBlank())] string $p) => null, 'p');
-        $arguments = (new RequestHeaderParameterResolver($this->mockedHydrator, $this->mockedValidator))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestHeaderParameterResolver($this->mockedHydrator, $this->mockedValidator))->resolveParameter($parameter, $this->mockedRequest);
         $this->expectException(HttpException::class);
 
         try {
@@ -163,11 +163,11 @@ final class RequestHeaderParameterResolverTest extends TestCase
 
     public function testDefaultErrorStatusCode(): void
     {
-        $this->mockedServerRequest->expects(self::exactly(1))->method('hasHeader')->with('x-foo')->willReturn(true);
-        $this->mockedServerRequest->expects(self::exactly(1))->method('getHeaderLine')->with('x-foo')->willReturn('bar');
+        $this->mockedRequest->expects(self::exactly(1))->method('hasHeader')->with('x-foo')->willReturn(true);
+        $this->mockedRequest->expects(self::exactly(1))->method('getHeaderLine')->with('x-foo')->willReturn('bar');
         $this->mockedHydrator->expects(self::once())->method('castValue')->with('bar')->willThrowException(InvalidValueException::mustBeInteger(['x-foo']));
         $parameter = new ReflectionParameter(fn(#[RequestHeader('x-foo')] int $p) => null, 'p');
-        $arguments = (new RequestHeaderParameterResolver($this->mockedHydrator, defaultErrorStatusCode: 500))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestHeaderParameterResolver($this->mockedHydrator, defaultErrorStatusCode: 500))->resolveParameter($parameter, $this->mockedRequest);
 
         try {
             $arguments->rewind();
@@ -178,11 +178,11 @@ final class RequestHeaderParameterResolverTest extends TestCase
 
     public function testErrorStatusCodeFromAnnotation(): void
     {
-        $this->mockedServerRequest->expects(self::exactly(1))->method('hasHeader')->with('x-foo')->willReturn(true);
-        $this->mockedServerRequest->expects(self::exactly(1))->method('getHeaderLine')->with('x-foo')->willReturn('bar');
+        $this->mockedRequest->expects(self::exactly(1))->method('hasHeader')->with('x-foo')->willReturn(true);
+        $this->mockedRequest->expects(self::exactly(1))->method('getHeaderLine')->with('x-foo')->willReturn('bar');
         $this->mockedHydrator->expects(self::once())->method('castValue')->with('bar')->willThrowException(InvalidValueException::mustBeInteger(['x-foo']));
         $parameter = new ReflectionParameter(fn(#[RequestHeader('x-foo', errorStatusCode: 503)] int $p) => null, 'p');
-        $arguments = (new RequestHeaderParameterResolver($this->mockedHydrator, defaultErrorStatusCode: 500))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestHeaderParameterResolver($this->mockedHydrator, defaultErrorStatusCode: 500))->resolveParameter($parameter, $this->mockedRequest);
 
         try {
             $arguments->rewind();
@@ -193,11 +193,11 @@ final class RequestHeaderParameterResolverTest extends TestCase
 
     public function testDefaultErrorMessage(): void
     {
-        $this->mockedServerRequest->expects(self::exactly(1))->method('hasHeader')->with('x-foo')->willReturn(true);
-        $this->mockedServerRequest->expects(self::exactly(1))->method('getHeaderLine')->with('x-foo')->willReturn('bar');
+        $this->mockedRequest->expects(self::exactly(1))->method('hasHeader')->with('x-foo')->willReturn(true);
+        $this->mockedRequest->expects(self::exactly(1))->method('getHeaderLine')->with('x-foo')->willReturn('bar');
         $this->mockedHydrator->expects(self::once())->method('castValue')->with('bar')->willThrowException(InvalidValueException::mustBeInteger(['x-foo']));
         $parameter = new ReflectionParameter(fn(#[RequestHeader('x-foo')] int $p) => null, 'p');
-        $arguments = (new RequestHeaderParameterResolver($this->mockedHydrator, defaultErrorMessage: 'foo'))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestHeaderParameterResolver($this->mockedHydrator, defaultErrorMessage: 'foo'))->resolveParameter($parameter, $this->mockedRequest);
 
         try {
             $arguments->rewind();
@@ -208,11 +208,11 @@ final class RequestHeaderParameterResolverTest extends TestCase
 
     public function testErrorMessageFromAnnotation(): void
     {
-        $this->mockedServerRequest->expects(self::exactly(1))->method('hasHeader')->with('x-foo')->willReturn(true);
-        $this->mockedServerRequest->expects(self::exactly(1))->method('getHeaderLine')->with('x-foo')->willReturn('bar');
+        $this->mockedRequest->expects(self::exactly(1))->method('hasHeader')->with('x-foo')->willReturn(true);
+        $this->mockedRequest->expects(self::exactly(1))->method('getHeaderLine')->with('x-foo')->willReturn('bar');
         $this->mockedHydrator->expects(self::once())->method('castValue')->with('bar')->willThrowException(InvalidValueException::mustBeInteger(['x-foo']));
         $parameter = new ReflectionParameter(fn(#[RequestHeader('x-foo', errorMessage: 'bar')] int $p) => null, 'p');
-        $arguments = (new RequestHeaderParameterResolver($this->mockedHydrator, defaultErrorMessage: 'foo'))->resolveParameter($parameter, $this->mockedServerRequest);
+        $arguments = (new RequestHeaderParameterResolver($this->mockedHydrator, defaultErrorMessage: 'foo'))->resolveParameter($parameter, $this->mockedRequest);
 
         try {
             $arguments->rewind();
@@ -223,43 +223,43 @@ final class RequestHeaderParameterResolverTest extends TestCase
 
     public function testHydratorContext(): void
     {
-        $this->mockedServerRequest->expects(self::exactly(1))->method('hasHeader')->with('x-foo')->willReturn(true);
-        $this->mockedServerRequest->expects(self::exactly(1))->method('getHeaderLine')->with('x-foo')->willReturn('bar');
+        $this->mockedRequest->expects(self::exactly(1))->method('hasHeader')->with('x-foo')->willReturn(true);
+        $this->mockedRequest->expects(self::exactly(1))->method('getHeaderLine')->with('x-foo')->willReturn('bar');
         $this->mockedHydrator->expects(self::once())->method('castValue')->with('bar', self::anything(), self::anything(), ['foo' => 'baz', 'baz' => 'qux', 'bar' => 'baz'])->willReturn('bar');
         $parameter = new ReflectionParameter(fn(#[RequestHeader('x-foo', hydratorContext: ['foo' => 'baz', 'baz' => 'qux'])] string $p) => null, 'p');
-        (new RequestHeaderParameterResolver($this->mockedHydrator, hydratorContext: ['foo' => 'bar', 'bar' => 'baz']))->resolveParameter($parameter, $this->mockedServerRequest)->rewind();
+        (new RequestHeaderParameterResolver($this->mockedHydrator, hydratorContext: ['foo' => 'bar', 'bar' => 'baz']))->resolveParameter($parameter, $this->mockedRequest)->rewind();
     }
 
     public function testDisableValidationByDefault(): void
     {
-        $this->mockedServerRequest->expects(self::exactly(1))->method('hasHeader')->with('x-foo')->willReturn(true);
-        $this->mockedServerRequest->expects(self::exactly(1))->method('getHeaderLine')->with('x-foo')->willReturn('bar');
+        $this->mockedRequest->expects(self::exactly(1))->method('hasHeader')->with('x-foo')->willReturn(true);
+        $this->mockedRequest->expects(self::exactly(1))->method('getHeaderLine')->with('x-foo')->willReturn('bar');
         $this->mockedHydrator->expects(self::once())->method('castValue')->with('bar')->willReturn('bar');
         $this->mockedValidator->expects(self::never())->method('validate');
         $parameter = new ReflectionParameter(fn(#[RequestHeader('x-foo')] string $p) => null, 'p');
-        (new RequestHeaderParameterResolver($this->mockedHydrator, $this->mockedValidator, defaultValidationEnabled: false))->resolveParameter($parameter, $this->mockedServerRequest)->rewind();
+        (new RequestHeaderParameterResolver($this->mockedHydrator, $this->mockedValidator, defaultValidationEnabled: false))->resolveParameter($parameter, $this->mockedRequest)->rewind();
     }
 
     public function testDisableValidationFromAnnotation(): void
     {
-        $this->mockedServerRequest->expects(self::exactly(1))->method('hasHeader')->with('x-foo')->willReturn(true);
-        $this->mockedServerRequest->expects(self::exactly(1))->method('getHeaderLine')->with('x-foo')->willReturn('bar');
+        $this->mockedRequest->expects(self::exactly(1))->method('hasHeader')->with('x-foo')->willReturn(true);
+        $this->mockedRequest->expects(self::exactly(1))->method('getHeaderLine')->with('x-foo')->willReturn('bar');
         $this->mockedHydrator->expects(self::once())->method('castValue')->with('bar')->willReturn('bar');
         $this->mockedValidator->expects(self::never())->method('validate');
         $parameter = new ReflectionParameter(fn(#[RequestHeader('x-foo', validationEnabled: false)] string $p) => null, 'p');
-        (new RequestHeaderParameterResolver($this->mockedHydrator, $this->mockedValidator))->resolveParameter($parameter, $this->mockedServerRequest)->rewind();
+        (new RequestHeaderParameterResolver($this->mockedHydrator, $this->mockedValidator))->resolveParameter($parameter, $this->mockedRequest)->rewind();
     }
 
     public function testEnableValidationFromAnnotation(): void
     {
-        $this->mockedServerRequest->expects(self::exactly(1))->method('hasHeader')->with('x-foo')->willReturn(true);
-        $this->mockedServerRequest->expects(self::exactly(1))->method('getHeaderLine')->with('x-foo')->willReturn('bar');
+        $this->mockedRequest->expects(self::exactly(1))->method('hasHeader')->with('x-foo')->willReturn(true);
+        $this->mockedRequest->expects(self::exactly(1))->method('getHeaderLine')->with('x-foo')->willReturn('bar');
         $this->mockedHydrator->expects(self::once())->method('castValue')->with('bar')->willReturn('bar');
         $this->mockedContextualValidator->expects(self::once())->method('atPath')->with('x-foo')->willReturn($this->mockedContextualValidator);
         $this->mockedContextualValidator->expects(self::once())->method('validate')->with('bar')->willReturn($this->mockedContextualValidator);
         $this->mockedContextualValidator->expects(self::once())->method('getViolations');
         $parameter = new ReflectionParameter(fn(#[RequestHeader('x-foo', validationEnabled: true)] string $p) => null, 'p');
-        (new RequestHeaderParameterResolver($this->mockedHydrator, $this->mockedValidator, defaultValidationEnabled: false))->resolveParameter($parameter, $this->mockedServerRequest)->rewind();
+        (new RequestHeaderParameterResolver($this->mockedHydrator, $this->mockedValidator, defaultValidationEnabled: false))->resolveParameter($parameter, $this->mockedRequest)->rewind();
     }
 
     public function testWeight(): void

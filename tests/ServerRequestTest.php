@@ -13,7 +13,6 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use Psr\Http\Message\UriInterface;
-use Sunrise\Http\Router\LanguageInterface;
 use Sunrise\Http\Router\LocaleInterface;
 use Sunrise\Http\Router\MediaTypeInterface;
 use Sunrise\Http\Router\RouteInterface;
@@ -23,52 +22,54 @@ use function array_map;
 
 final class ServerRequestTest extends TestCase
 {
-    private ServerRequestInterface&MockObject $mockedServerRequest;
+    use TestKit;
+
+    private ServerRequestInterface&MockObject $mockedRequest;
     private RouteInterface&MockObject $mockedRoute;
 
     protected function setUp(): void
     {
-        $this->mockedServerRequest = $this->createMock(ServerRequestInterface::class);
+        $this->mockedRequest = $this->createMock(ServerRequestInterface::class);
         $this->mockedRoute = $this->createMock(RouteInterface::class);
     }
 
     public function testCreate(): void
     {
-        $serverRequest = ServerRequest::create($this->mockedServerRequest);
+        $serverRequest = ServerRequest::create($this->mockedRequest);
         $this->assertSame($serverRequest, ServerRequest::create($serverRequest));
     }
 
     public function testHasRouteFalse(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getAttribute')->with(RouteInterface::class)->willReturn(null);
-        $this->assertFalse(ServerRequest::create($this->mockedServerRequest)->hasRoute());
+        $this->mockedRequest->expects(self::once())->method('getAttribute')->with(RouteInterface::class)->willReturn(null);
+        $this->assertFalse(ServerRequest::create($this->mockedRequest)->hasRoute());
     }
 
     public function testHasRouteTrue(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getAttribute')->with(RouteInterface::class)->willReturn($this->mockedRoute);
-        $this->assertTrue(ServerRequest::create($this->mockedServerRequest)->hasRoute());
+        $this->mockedRequest->expects(self::once())->method('getAttribute')->with(RouteInterface::class)->willReturn($this->mockedRoute);
+        $this->assertTrue(ServerRequest::create($this->mockedRequest)->hasRoute());
     }
 
     public function testGetRouteInstance(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getAttribute')->with(RouteInterface::class)->willReturn($this->mockedRoute);
-        $this->assertSame($this->mockedRoute, ServerRequest::create($this->mockedServerRequest)->getRoute());
+        $this->mockedRequest->expects(self::once())->method('getAttribute')->with(RouteInterface::class)->willReturn($this->mockedRoute);
+        $this->assertSame($this->mockedRoute, ServerRequest::create($this->mockedRequest)->getRoute());
     }
 
     public function testGetRouteException(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getAttribute')->with(RouteInterface::class)->willReturn(null);
+        $this->mockedRequest->expects(self::once())->method('getAttribute')->with(RouteInterface::class)->willReturn(null);
         $this->expectException(LogicException::class);
         $this->expectExceptionMessageMatches('/the request does not contain information about the requested route/');
-        ServerRequest::create($this->mockedServerRequest)->getRoute();
+        ServerRequest::create($this->mockedRequest)->getRoute();
     }
 
     #[DataProvider('getClientProducedMediaTypeDataProvider')]
     public function testGetClientProducedMediaType(string $requestContentTypeHeader, ?string $expectedMediaTypeIdentifier): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getHeaderLine')->with('Content-Type')->willReturn($requestContentTypeHeader);
-        $this->assertSame($expectedMediaTypeIdentifier, ServerRequest::create($this->mockedServerRequest)->getClientProducedMediaType()?->getIdentifier());
+        $this->mockedRequest->expects(self::once())->method('getHeaderLine')->with('Content-Type')->willReturn($requestContentTypeHeader);
+        $this->assertSame($expectedMediaTypeIdentifier, ServerRequest::create($this->mockedRequest)->getClientProducedMediaType()?->getIdentifier());
     }
 
     public static function getClientProducedMediaTypeDataProvider(): Generator
@@ -83,9 +84,9 @@ final class ServerRequestTest extends TestCase
     #[DataProvider('getClientConsumedMediaTypesDataProvider')]
     public function testGetClientConsumedMediaTypes(string $requestAcceptHeader, array $expectedMediaTypeIdentifiers): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getHeaderLine')->with('Accept')->willReturn($requestAcceptHeader);
+        $this->mockedRequest->expects(self::once())->method('getHeaderLine')->with('Accept')->willReturn($requestAcceptHeader);
         $mediaTypeStringifier = static fn(MediaTypeInterface $mediaType): string => $mediaType->getIdentifier();
-        $this->assertSame($expectedMediaTypeIdentifiers, array_map($mediaTypeStringifier, [...ServerRequest::create($this->mockedServerRequest)->getClientConsumedMediaTypes()]));
+        $this->assertSame($expectedMediaTypeIdentifiers, array_map($mediaTypeStringifier, [...ServerRequest::create($this->mockedRequest)->getClientConsumedMediaTypes()]));
     }
 
     public static function getClientConsumedMediaTypesDataProvider(): Generator
@@ -103,8 +104,8 @@ final class ServerRequestTest extends TestCase
     #[DataProvider('getClientPreferredMediaTypeDataProvider')]
     public function testGetClientPreferredMediaType(string $requestAcceptHeader, array $serverProducedMediaTypeIdentifiers, ?string $expectedMediaTypeIdentifier): void
     {
-        $this->mockedServerRequest->expects(self::exactly(empty($serverProducedMediaTypeIdentifiers) ? 0 : 1))->method('getHeaderLine')->with('Accept')->willReturn($requestAcceptHeader);
-        $this->assertSame($expectedMediaTypeIdentifier, ServerRequest::create($this->mockedServerRequest)->getClientPreferredMediaType(...array_map($this->mockMediaType(...), $serverProducedMediaTypeIdentifiers))?->getIdentifier());
+        $this->mockedRequest->expects(self::exactly(empty($serverProducedMediaTypeIdentifiers) ? 0 : 1))->method('getHeaderLine')->with('Accept')->willReturn($requestAcceptHeader);
+        $this->assertSame($expectedMediaTypeIdentifier, ServerRequest::create($this->mockedRequest)->getClientPreferredMediaType(...array_map($this->mockMediaType(...), $serverProducedMediaTypeIdentifiers))?->getIdentifier());
     }
 
     public static function getClientPreferredMediaTypeDataProvider(): Generator
@@ -129,9 +130,9 @@ final class ServerRequestTest extends TestCase
     #[DataProvider('serverConsumesMediaTypeDataProvider')]
     public function testServerConsumesMediaType(string $clientProducedMediaTypeIdentifier, array $serverConsumedMediaTypeIdentifiers, bool $expectedResult): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getAttribute')->with(RouteInterface::class)->willReturn($this->mockedRoute);
+        $this->mockedRequest->expects(self::once())->method('getAttribute')->with(RouteInterface::class)->willReturn($this->mockedRoute);
         $this->mockedRoute->expects(self::once())->method('getConsumedMediaTypes')->willReturn(array_map($this->mockMediaType(...), $serverConsumedMediaTypeIdentifiers));
-        $this->assertSame($expectedResult, ServerRequest::create($this->mockedServerRequest)->serverConsumesMediaType($this->mockMediaType($clientProducedMediaTypeIdentifier)));
+        $this->assertSame($expectedResult, ServerRequest::create($this->mockedRequest)->serverConsumesMediaType($this->mockMediaType($clientProducedMediaTypeIdentifier)));
     }
 
     public static function serverConsumesMediaTypeDataProvider(): Generator
@@ -147,9 +148,9 @@ final class ServerRequestTest extends TestCase
     #[DataProvider('getClientConsumedLocalesDataProvider')]
     public function testGetClientConsumedLocales(string $requestAcceptLanguageHeader, array $expectedLocaleCodes): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getHeaderLine')->with('Accept-Language')->willReturn($requestAcceptLanguageHeader);
+        $this->mockedRequest->expects(self::once())->method('getHeaderLine')->with('Accept-Language')->willReturn($requestAcceptLanguageHeader);
         $localeStringifier = static fn(LocaleInterface $locale): string => $locale->getLanguageCode() . '-' . ($locale->getRegionCode() ?? '?');
-        $this->assertSame($expectedLocaleCodes, array_map($localeStringifier, [...ServerRequest::create($this->mockedServerRequest)->getClientConsumedLocales()]));
+        $this->assertSame($expectedLocaleCodes, array_map($localeStringifier, [...ServerRequest::create($this->mockedRequest)->getClientConsumedLocales()]));
     }
 
     public static function getClientConsumedLocalesDataProvider(): Generator
@@ -169,8 +170,8 @@ final class ServerRequestTest extends TestCase
     #[DataProvider('getClientPreferredLanguageDataProvider')]
     public function testGetClientPreferredLanguage(string $requestAcceptLanguageHeader, array $serverProducedLanguageCodes, ?string $expectedLanguageCode): void
     {
-        $this->mockedServerRequest->expects(self::exactly(empty($serverProducedLanguageCodes) ? 0 : 1))->method('getHeaderLine')->with('Accept-Language')->willReturn($requestAcceptLanguageHeader);
-        $this->assertSame($expectedLanguageCode, ServerRequest::create($this->mockedServerRequest)->getClientPreferredLanguage(...array_map($this->mockLanguage(...), $serverProducedLanguageCodes))?->getCode());
+        $this->mockedRequest->expects(self::exactly(empty($serverProducedLanguageCodes) ? 0 : 1))->method('getHeaderLine')->with('Accept-Language')->willReturn($requestAcceptLanguageHeader);
+        $this->assertSame($expectedLanguageCode, ServerRequest::create($this->mockedRequest)->getClientPreferredLanguage(...array_map($this->mockLanguage(...), $serverProducedLanguageCodes))?->getCode());
     }
 
     public static function getClientPreferredLanguageDataProvider(): Generator
@@ -194,223 +195,207 @@ final class ServerRequestTest extends TestCase
 
     public function testGetProtocolVersion(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getProtocolVersion')->willReturn('1.1');
-        $this->assertSame('1.1', ServerRequest::create($this->mockedServerRequest)->getProtocolVersion());
+        $this->mockedRequest->expects(self::once())->method('getProtocolVersion')->willReturn('1.1');
+        $this->assertSame('1.1', ServerRequest::create($this->mockedRequest)->getProtocolVersion());
     }
 
     public function testGetHeaders(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getHeaders')->willReturn(['foo' => ['bar']]);
-        $this->assertSame(['foo' => ['bar']], ServerRequest::create($this->mockedServerRequest)->getHeaders());
+        $this->mockedRequest->expects(self::once())->method('getHeaders')->willReturn(['foo' => ['bar']]);
+        $this->assertSame(['foo' => ['bar']], ServerRequest::create($this->mockedRequest)->getHeaders());
     }
 
     public function testHasHeaderTrue(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('hasHeader')->with('x-foo')->willReturn(true);
-        $this->assertTrue(ServerRequest::create($this->mockedServerRequest)->hasHeader('x-foo'));
+        $this->mockedRequest->expects(self::once())->method('hasHeader')->with('x-foo')->willReturn(true);
+        $this->assertTrue(ServerRequest::create($this->mockedRequest)->hasHeader('x-foo'));
     }
 
     public function testHasHeaderFalse(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('hasHeader')->with('x-foo')->willReturn(false);
-        $this->assertFalse(ServerRequest::create($this->mockedServerRequest)->hasHeader('x-foo'));
+        $this->mockedRequest->expects(self::once())->method('hasHeader')->with('x-foo')->willReturn(false);
+        $this->assertFalse(ServerRequest::create($this->mockedRequest)->hasHeader('x-foo'));
     }
 
     public function testGetHeader(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getHeader')->with('x-foo')->willReturn(['bar']);
-        $this->assertSame(['bar'], ServerRequest::create($this->mockedServerRequest)->getHeader('x-foo'));
+        $this->mockedRequest->expects(self::once())->method('getHeader')->with('x-foo')->willReturn(['bar']);
+        $this->assertSame(['bar'], ServerRequest::create($this->mockedRequest)->getHeader('x-foo'));
     }
 
     public function testGetHeaderLine(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getHeaderLine')->with('x-foo')->willReturn('bar');
-        $this->assertSame('bar', ServerRequest::create($this->mockedServerRequest)->getHeaderLine('x-foo'));
+        $this->mockedRequest->expects(self::once())->method('getHeaderLine')->with('x-foo')->willReturn('bar');
+        $this->assertSame('bar', ServerRequest::create($this->mockedRequest)->getHeaderLine('x-foo'));
     }
 
     public function testGetBody(): void
     {
         $body = $this->createMock(StreamInterface::class);
-        $this->mockedServerRequest->expects(self::once())->method('getBody')->willReturn($body);
-        $this->assertSame($body, ServerRequest::create($this->mockedServerRequest)->getBody());
+        $this->mockedRequest->expects(self::once())->method('getBody')->willReturn($body);
+        $this->assertSame($body, ServerRequest::create($this->mockedRequest)->getBody());
     }
 
     public function testGetMethod(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getMethod')->willReturn('GET');
-        $this->assertSame('GET', ServerRequest::create($this->mockedServerRequest)->getMethod());
+        $this->mockedRequest->expects(self::once())->method('getMethod')->willReturn('GET');
+        $this->assertSame('GET', ServerRequest::create($this->mockedRequest)->getMethod());
     }
 
     public function testGetUri(): void
     {
         $uri = $this->createMock(UriInterface::class);
-        $this->mockedServerRequest->expects(self::once())->method('getUri')->willReturn($uri);
-        $this->assertSame($uri, ServerRequest::create($this->mockedServerRequest)->getUri());
+        $this->mockedRequest->expects(self::once())->method('getUri')->willReturn($uri);
+        $this->assertSame($uri, ServerRequest::create($this->mockedRequest)->getUri());
     }
 
     public function testGetRequestTarget(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getRequestTarget')->willReturn('/');
-        $this->assertSame('/', ServerRequest::create($this->mockedServerRequest)->getRequestTarget());
+        $this->mockedRequest->expects(self::once())->method('getRequestTarget')->willReturn('/');
+        $this->assertSame('/', ServerRequest::create($this->mockedRequest)->getRequestTarget());
     }
 
     public function testGetServerParams(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getServerParams')->willReturn(['USER' => 'foo']);
-        $this->assertSame(['USER' => 'foo'], ServerRequest::create($this->mockedServerRequest)->getServerParams());
+        $this->mockedRequest->expects(self::once())->method('getServerParams')->willReturn(['USER' => 'foo']);
+        $this->assertSame(['USER' => 'foo'], ServerRequest::create($this->mockedRequest)->getServerParams());
     }
 
     public function testGetQueryParams(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getQueryParams')->willReturn(['foo' => 'bar']);
-        $this->assertSame(['foo' => 'bar'], ServerRequest::create($this->mockedServerRequest)->getQueryParams());
+        $this->mockedRequest->expects(self::once())->method('getQueryParams')->willReturn(['foo' => 'bar']);
+        $this->assertSame(['foo' => 'bar'], ServerRequest::create($this->mockedRequest)->getQueryParams());
     }
 
     public function testGetCookieParams(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getCookieParams')->willReturn(['foo' => 'bar']);
-        $this->assertSame(['foo' => 'bar'], ServerRequest::create($this->mockedServerRequest)->getCookieParams());
+        $this->mockedRequest->expects(self::once())->method('getCookieParams')->willReturn(['foo' => 'bar']);
+        $this->assertSame(['foo' => 'bar'], ServerRequest::create($this->mockedRequest)->getCookieParams());
     }
 
     public function testGetUploadedFiles(): void
     {
         $uploadedFile = $this->createMock(UploadedFileInterface::class);
-        $this->mockedServerRequest->expects(self::once())->method('getUploadedFiles')->willReturn(['foo' => $uploadedFile]);
-        $this->assertSame(['foo' => $uploadedFile], ServerRequest::create($this->mockedServerRequest)->getUploadedFiles());
+        $this->mockedRequest->expects(self::once())->method('getUploadedFiles')->willReturn(['foo' => $uploadedFile]);
+        $this->assertSame(['foo' => $uploadedFile], ServerRequest::create($this->mockedRequest)->getUploadedFiles());
     }
 
     public function testGetParsedBody(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getParsedBody')->willReturn(['foo' => 'bar']);
-        $this->assertSame(['foo' => 'bar'], ServerRequest::create($this->mockedServerRequest)->getParsedBody());
+        $this->mockedRequest->expects(self::once())->method('getParsedBody')->willReturn(['foo' => 'bar']);
+        $this->assertSame(['foo' => 'bar'], ServerRequest::create($this->mockedRequest)->getParsedBody());
     }
 
     public function testGetAttributes(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getAttributes')->willReturn(['foo' => 'bar']);
-        $this->assertSame(['foo' => 'bar'], ServerRequest::create($this->mockedServerRequest)->getAttributes());
+        $this->mockedRequest->expects(self::once())->method('getAttributes')->willReturn(['foo' => 'bar']);
+        $this->assertSame(['foo' => 'bar'], ServerRequest::create($this->mockedRequest)->getAttributes());
     }
 
     public function testGetAttribute(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('getAttribute')->with('foo', 'bar')->willReturn('bar');
-        $this->assertSame('bar', ServerRequest::create($this->mockedServerRequest)->getAttribute('foo', 'bar'));
-    }
-
-    private function mockMediaType(string $identifier): MediaTypeInterface&MockObject
-    {
-        $mediaType = $this->createMock(MediaTypeInterface::class);
-        $mediaType->method('getIdentifier')->willReturn($identifier);
-
-        return $mediaType;
+        $this->mockedRequest->expects(self::once())->method('getAttribute')->with('foo', 'bar')->willReturn('bar');
+        $this->assertSame('bar', ServerRequest::create($this->mockedRequest)->getAttribute('foo', 'bar'));
     }
 
     public function testWithProtocolVersion(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('withProtocolVersion')->with('1.1')->willReturn($this->mockedServerRequest);
-        $serverRequest = ServerRequest::create($this->mockedServerRequest);
+        $this->mockedRequest->expects(self::once())->method('withProtocolVersion')->with('1.1')->willReturn($this->mockedRequest);
+        $serverRequest = ServerRequest::create($this->mockedRequest);
         $this->assertNotSame($serverRequest, $serverRequest->withProtocolVersion('1.1'));
     }
 
     public function testWithHeader(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('withHeader')->with('x-foo', 'bar')->willReturn($this->mockedServerRequest);
-        $serverRequest = ServerRequest::create($this->mockedServerRequest);
+        $this->mockedRequest->expects(self::once())->method('withHeader')->with('x-foo', 'bar')->willReturn($this->mockedRequest);
+        $serverRequest = ServerRequest::create($this->mockedRequest);
         $this->assertNotSame($serverRequest, $serverRequest->withHeader('x-foo', 'bar'));
     }
 
     public function testWithAddedHeader(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('withAddedHeader')->with('x-foo', 'bar')->willReturn($this->mockedServerRequest);
-        $serverRequest = ServerRequest::create($this->mockedServerRequest);
+        $this->mockedRequest->expects(self::once())->method('withAddedHeader')->with('x-foo', 'bar')->willReturn($this->mockedRequest);
+        $serverRequest = ServerRequest::create($this->mockedRequest);
         $this->assertNotSame($serverRequest, $serverRequest->withAddedHeader('x-foo', 'bar'));
     }
 
     public function testWithoutHeader(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('withoutHeader')->with('x-foo')->willReturn($this->mockedServerRequest);
-        $serverRequest = ServerRequest::create($this->mockedServerRequest);
+        $this->mockedRequest->expects(self::once())->method('withoutHeader')->with('x-foo')->willReturn($this->mockedRequest);
+        $serverRequest = ServerRequest::create($this->mockedRequest);
         $this->assertNotSame($serverRequest, $serverRequest->withoutHeader('x-foo'));
     }
 
     public function testWithBody(): void
     {
         $body = $this->createMock(StreamInterface::class);
-        $this->mockedServerRequest->expects(self::once())->method('withBody')->with($body)->willReturn($this->mockedServerRequest);
-        $serverRequest = ServerRequest::create($this->mockedServerRequest);
+        $this->mockedRequest->expects(self::once())->method('withBody')->with($body)->willReturn($this->mockedRequest);
+        $serverRequest = ServerRequest::create($this->mockedRequest);
         $this->assertNotSame($serverRequest, $serverRequest->withBody($body));
     }
 
     public function testWithMethod(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('withMethod')->with('GET')->willReturn($this->mockedServerRequest);
-        $serverRequest = ServerRequest::create($this->mockedServerRequest);
+        $this->mockedRequest->expects(self::once())->method('withMethod')->with('GET')->willReturn($this->mockedRequest);
+        $serverRequest = ServerRequest::create($this->mockedRequest);
         $this->assertNotSame($serverRequest, $serverRequest->withMethod('GET'));
     }
 
     public function testWithUri(): void
     {
         $uri = $this->createMock(UriInterface::class);
-        $this->mockedServerRequest->expects(self::once())->method('withUri')->with($uri)->willReturn($this->mockedServerRequest);
-        $serverRequest = ServerRequest::create($this->mockedServerRequest);
+        $this->mockedRequest->expects(self::once())->method('withUri')->with($uri)->willReturn($this->mockedRequest);
+        $serverRequest = ServerRequest::create($this->mockedRequest);
         $this->assertNotSame($serverRequest, $serverRequest->withUri($uri));
     }
 
     public function testWithRequestTarget(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('withRequestTarget')->with('/')->willReturn($this->mockedServerRequest);
-        $serverRequest = ServerRequest::create($this->mockedServerRequest);
+        $this->mockedRequest->expects(self::once())->method('withRequestTarget')->with('/')->willReturn($this->mockedRequest);
+        $serverRequest = ServerRequest::create($this->mockedRequest);
         $this->assertNotSame($serverRequest, $serverRequest->withRequestTarget('/'));
     }
 
     public function testWithQueryParams(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('withQueryParams')->with(['foo' => 'bar'])->willReturn($this->mockedServerRequest);
-        $serverRequest = ServerRequest::create($this->mockedServerRequest);
+        $this->mockedRequest->expects(self::once())->method('withQueryParams')->with(['foo' => 'bar'])->willReturn($this->mockedRequest);
+        $serverRequest = ServerRequest::create($this->mockedRequest);
         $this->assertNotSame($serverRequest, $serverRequest->withQueryParams(['foo' => 'bar']));
     }
 
     public function testWithCookieParams(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('withCookieParams')->with(['foo' => 'bar'])->willReturn($this->mockedServerRequest);
-        $serverRequest = ServerRequest::create($this->mockedServerRequest);
+        $this->mockedRequest->expects(self::once())->method('withCookieParams')->with(['foo' => 'bar'])->willReturn($this->mockedRequest);
+        $serverRequest = ServerRequest::create($this->mockedRequest);
         $this->assertNotSame($serverRequest, $serverRequest->withCookieParams(['foo' => 'bar']));
     }
 
     public function testWithUploadedFiles(): void
     {
         $uploadFile = $this->createMock(UploadedFileInterface::class);
-        $this->mockedServerRequest->expects(self::once())->method('withUploadedFiles')->with(['foo' => $uploadFile])->willReturn($this->mockedServerRequest);
-        $serverRequest = ServerRequest::create($this->mockedServerRequest);
+        $this->mockedRequest->expects(self::once())->method('withUploadedFiles')->with(['foo' => $uploadFile])->willReturn($this->mockedRequest);
+        $serverRequest = ServerRequest::create($this->mockedRequest);
         $this->assertNotSame($serverRequest, $serverRequest->withUploadedFiles(['foo' => $uploadFile]));
     }
 
     public function testWithParsedBody(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('withParsedBody')->with(['foo' => 'bar'])->willReturn($this->mockedServerRequest);
-        $serverRequest = ServerRequest::create($this->mockedServerRequest);
+        $this->mockedRequest->expects(self::once())->method('withParsedBody')->with(['foo' => 'bar'])->willReturn($this->mockedRequest);
+        $serverRequest = ServerRequest::create($this->mockedRequest);
         $this->assertNotSame($serverRequest, $serverRequest->withParsedBody(['foo' => 'bar']));
     }
 
     public function testWithAttribute(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('withAttribute')->with('foo', 'bar')->willReturn($this->mockedServerRequest);
-        $serverRequest = ServerRequest::create($this->mockedServerRequest);
+        $this->mockedRequest->expects(self::once())->method('withAttribute')->with('foo', 'bar')->willReturn($this->mockedRequest);
+        $serverRequest = ServerRequest::create($this->mockedRequest);
         $this->assertNotSame($serverRequest, $serverRequest->withAttribute('foo', 'bar'));
     }
 
     public function testWithoutAttribute(): void
     {
-        $this->mockedServerRequest->expects(self::once())->method('withoutAttribute')->with('foo')->willReturn($this->mockedServerRequest);
-        $serverRequest = ServerRequest::create($this->mockedServerRequest);
+        $this->mockedRequest->expects(self::once())->method('withoutAttribute')->with('foo')->willReturn($this->mockedRequest);
+        $serverRequest = ServerRequest::create($this->mockedRequest);
         $this->assertNotSame($serverRequest, $serverRequest->withoutAttribute('foo'));
-    }
-
-    private function mockLanguage(string $code): LanguageInterface&MockObject
-    {
-        $locale = $this->createMock(LanguageInterface::class);
-        $locale->method('getCode')->willReturn($code);
-
-        return $locale;
     }
 }

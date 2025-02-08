@@ -15,12 +15,12 @@ use Sunrise\Http\Router\ResponseResolver\EmptyResponseResolver;
 final class EmptyResponseResolverTest extends TestCase
 {
     private ResponseFactoryInterface&MockObject $mockedResponseFactory;
-    private ServerRequestInterface&MockObject $mockedServerRequest;
+    private ServerRequestInterface&MockObject $mockedRequest;
 
     protected function setUp(): void
     {
         $this->mockedResponseFactory = $this->createMock(ResponseFactoryInterface::class);
-        $this->mockedServerRequest = $this->createMock(ServerRequestInterface::class);
+        $this->mockedRequest = $this->createMock(ServerRequestInterface::class);
     }
 
     public function testResolveResponse(): void
@@ -34,7 +34,7 @@ final class EmptyResponseResolverTest extends TestCase
 
         $expectedResponse = $this->createMock(ResponseInterface::class);
         $this->mockedResponseFactory->expects(self::once())->method('createResponse')->with(204)->willReturn($expectedResponse);
-        $resolvedResponse = (new EmptyResponseResolver($this->mockedResponseFactory))->resolveResponse(null, $responder, $this->mockedServerRequest);
+        $resolvedResponse = (new EmptyResponseResolver($this->mockedResponseFactory))->resolveResponse(null, $responder, $this->mockedRequest);
         $this->assertSame($expectedResponse, $resolvedResponse);
     }
 
@@ -48,7 +48,7 @@ final class EmptyResponseResolverTest extends TestCase
         }, 'test');
 
         $this->mockedResponseFactory->expects(self::never())->method('createResponse');
-        $this->assertNull((new EmptyResponseResolver($this->mockedResponseFactory))->resolveResponse(0, $responder, $this->mockedServerRequest));
+        $this->assertNull((new EmptyResponseResolver($this->mockedResponseFactory))->resolveResponse(0, $responder, $this->mockedRequest));
     }
 
     public function testWeight(): void
