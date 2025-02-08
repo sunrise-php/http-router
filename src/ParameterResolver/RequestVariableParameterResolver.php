@@ -76,7 +76,6 @@ final class RequestVariableParameterResolver implements ParameterResolverInterfa
 
         $route = ServerRequest::create($context)->getRoute();
         $processParams = $annotations[0]->newInstance();
-
         $variableName = $processParams->name ?? $parameter->name;
         $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
         $errorMessage = $processParams->errorMessage ?? $this->defaultErrorMessage;

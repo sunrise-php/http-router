@@ -69,7 +69,6 @@ final class RequestHeaderParameterResolver implements ParameterResolverInterface
         }
 
         $processParams = $annotations[0]->newInstance();
-
         $headerName = $processParams->name;
         $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
         $errorMessage = $processParams->errorMessage ?? $this->defaultErrorMessage;

@@ -149,12 +149,14 @@ final class ServerRequest implements ServerRequestInterface
      */
     public function getClientConsumedLocales(): Generator
     {
+        // @codeCoverageIgnoreStart
         if (!extension_loaded('intl')) {
             throw new LogicException(
                 'To get the locales consumed by the client, ' .
                 'the Intl (https://www.php.net/intl) extension must be installed.'
             );
         }
+        // @codeCoverageIgnoreEnd
 
         $values = HeaderParser::parseHeader($this->request->getHeaderLine(HeaderName::ACCEPT_LANGUAGE));
         if ($values === []) {
@@ -403,16 +405,6 @@ final class ServerRequest implements ServerRequestInterface
     public function getCookieParams(): array
     {
         return $this->request->getCookieParams();
-    }
-
-    public function hasCookieParam(string $name): bool
-    {
-        return isset($this->request->getCookieParams()[$name]);
-    }
-
-    public function getCookieParam(string $name, mixed $default = null): mixed
-    {
-        return $this->request->getCookieParams()[$name] ?? $default;
     }
 
     /**

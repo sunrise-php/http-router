@@ -80,7 +80,6 @@ final class RequestQueryParameterResolver implements ParameterResolverInterface
         /** @var class-string $className */
         $className = $type->getName();
         $processParams = $annotations[0]->newInstance();
-
         $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
         $errorMessage = $processParams->errorMessage ?? $this->defaultErrorMessage;
         $hydratorContext = $processParams->hydratorContext + $this->hydratorContext;

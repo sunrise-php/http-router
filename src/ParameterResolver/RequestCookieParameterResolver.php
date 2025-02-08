@@ -70,15 +70,15 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
         }
 
         $request = ServerRequest::create($context);
+        $requestCookieParams = $request->getCookieParams();
         $processParams = $annotations[0]->newInstance();
-
         $cookieName = $processParams->name;
         $errorStatusCode = $processParams->errorStatusCode ?? $this->defaultErrorStatusCode;
         $errorMessage = $processParams->errorMessage ?? $this->defaultErrorMessage;
         $hydratorContext = $processParams->hydratorContext + $this->hydratorContext;
         $validationEnabled = $processParams->validationEnabled ?? $this->defaultValidationEnabled;
 
-        if (!$request->hasCookieParam($cookieName)) {
+        if (!isset($requestCookieParams[$cookieName])) {
             if ($parameter->isDefaultValueAvailable()) {
                 return yield $parameter->getDefaultValue();
             }
@@ -89,7 +89,7 @@ final class RequestCookieParameterResolver implements ParameterResolverInterface
 
         try {
             $argument = $this->hydrator->castValue(
-                $request->getCookieParam($cookieName),
+                $requestCookieParams[$cookieName],
                 Type::fromParameter($parameter),
                 path: [$cookieName],
                 context: $hydratorContext,
