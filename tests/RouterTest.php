@@ -380,6 +380,7 @@ final class RouterTest extends TestCase
         $this->mockedRequestHandler->expects(self::once())->method('handle')->with($request)->willReturn($this->mockedResponse);
         $this->mockedReferenceResolver->expects(self::exactly(6))->method('resolveMiddleware')->withAnyParameters()->willReturnArgument(0);
         $this->mockedReferenceResolver->expects(self::once())->method('resolveRequestHandler')->with('@test')->willReturn($this->mockedRequestHandler);
+
         $eventOverriddenRequest = $this->createMock(ServerRequestInterface::class);
         $eventOverriddenResponse = $this->createMock(ResponseInterface::class);
 
