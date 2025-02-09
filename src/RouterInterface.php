@@ -44,27 +44,11 @@ interface RouterInterface extends RequestHandlerInterface
     public function hasRoute(string $name): bool;
 
     /**
-     * @throws HttpException
-     *
-     * @since 1.0.0
-     */
-    public function match(ServerRequestInterface $request): RouteInterface;
-
-    /**
-     * @inheritDoc
-     *
-     * @throws HttpException
-     *
-     * @since 1.0.0
-     */
-    public function handle(ServerRequestInterface $request): ResponseInterface;
-
-    /**
      * @throws InvalidArgumentException
      *
      * @since 3.0.0
      */
-    public function runRoute(RouteInterface|string $route, ServerRequestInterface $request): ResponseInterface;
+    public function runRoute(RouteInterface $route, ServerRequestInterface $request): ResponseInterface;
 
     /**
      * @param array<string, mixed> $values
@@ -73,21 +57,12 @@ interface RouterInterface extends RequestHandlerInterface
      *
      * @since 3.0.0
      */
-    public function buildRoute(RouteInterface|string $route, array $values = []): string;
+    public function buildRoute(RouteInterface $route, array $values = []): string;
 
     /**
-     * @return non-empty-string
+     * @throws HttpException
      *
-     * @throws InvalidArgumentException
-     *
-     * @since 3.0.0
+     * @since 1.0.0
      */
-    public function compileRoute(RouteInterface|string $route): string;
-
-    /**
-     * @throws InvalidArgumentException
-     *
-     * @since 3.0.0
-     */
-    public function getRouteRequestHandler(RouteInterface|string $route): RequestHandlerInterface;
+    public function match(ServerRequestInterface $request): RouteInterface;
 }

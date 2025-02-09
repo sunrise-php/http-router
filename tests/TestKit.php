@@ -44,6 +44,21 @@ trait TestKit
         return $middleware;
     }
 
+    /**
+     * @return Generator<array-key, MiddlewareInterface&MockObject>
+     */
+    protected function mockChainBreakingMiddlewares(
+        int $count,
+        ResponseInterface $response,
+        ?ServerRequestInterface $request = null,
+        ?RequestHandlerInterface $handler = null,
+        int|InvocationOrder|null $calls = null,
+    ): Generator {
+        for ($i = 0; $i < $count; $i++) {
+            yield $this->mockChainBreakingMiddleware($response, $request, $handler, $calls);
+        }
+    }
+
     protected function mockChainContinuingMiddleware(
         ?ServerRequestInterface $request = null,
         ?RequestHandlerInterface $handler = null,
@@ -52,6 +67,20 @@ trait TestKit
         $middleware = $this->createMock(MiddlewareInterface::class);
         $middleware->expects(self::normalizeInvocationOrder($calls))->method('process')->with($request ?? self::anything(), $handler ?? self::anything())->willReturnCallback(self::createChainContinuingCallbackMiddleware());
         return $middleware;
+    }
+
+    /**
+     * @return Generator<array-key, MiddlewareInterface&MockObject>
+     */
+    protected function mockChainContinuingMiddlewares(
+        int $count,
+        ?ServerRequestInterface $request = null,
+        ?RequestHandlerInterface $handler = null,
+        int|InvocationOrder|null $calls = null,
+    ): Generator {
+        for ($i = 0; $i < $count; $i++) {
+            yield $this->mockChainContinuingMiddleware($request, $handler, $calls);
+        }
     }
 
     protected function mockLanguage(
@@ -105,16 +134,19 @@ trait TestKit
         string $path = '/',
         array $methods = ['GET'],
         mixed $requestHandler = null,
+        array $middlewares = [],
         int|InvocationOrder|null $nameCalls = null,
         int|InvocationOrder|null $pathCalls = null,
         int|InvocationOrder|null $methodsCalls = null,
         int|InvocationOrder|null $requestHandlerCalls = null,
+        int|InvocationOrder|null $middlewaresCalls = null,
     ): RouteInterface&MockObject {
         $route = $this->createMock(RouteInterface::class);
         $route->expects(self::normalizeInvocationOrder($nameCalls))->method('getName')->willReturn($name);
         $route->expects(self::normalizeInvocationOrder($pathCalls))->method('getPath')->willReturn($path);
         $route->expects(self::normalizeInvocationOrder($methodsCalls))->method('getMethods')->willReturn($methods);
         $route->expects(self::normalizeInvocationOrder($requestHandlerCalls))->method('getRequestHandler')->willReturn($requestHandler);
+        $route->expects(self::normalizeInvocationOrder($middlewaresCalls))->method('getMiddlewares')->willReturn($middlewares);
         return $route;
     }
 

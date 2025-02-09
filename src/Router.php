@@ -173,12 +173,8 @@ final class Router implements RouterInterface
      *
      * @throws InvalidArgumentException
      */
-    public function runRoute(RouteInterface|string $route, ServerRequestInterface $request): ResponseInterface
+    public function runRoute(RouteInterface $route, ServerRequestInterface $request): ResponseInterface
     {
-        if (! $route instanceof RouteInterface) {
-            $route = $this->getRoute($route);
-        }
-
         foreach ($route->getAttributes() as $name => $value) {
             $request = $request->withAttribute($name, $value);
         }
@@ -207,12 +203,8 @@ final class Router implements RouterInterface
      *
      * @throws InvalidArgumentException
      */
-    public function buildRoute(RouteInterface|string $route, array $values = [], bool $strictly = false): string
+    public function buildRoute(RouteInterface $route, array $values = [], bool $strictly = false): string
     {
-        if (! $route instanceof RouteInterface) {
-            $route = $this->getRoute($route);
-        }
-
         $result = RouteBuilder::buildRoute($route->getPath(), $values + $route->getAttributes());
 
         if ($strictly && !RouteMatcher::matchRoute($this->compileRoute($route), $result)) {
@@ -226,31 +218,21 @@ final class Router implements RouterInterface
     }
 
     /**
-     * @inheritDoc
-     *
      * @throws InvalidArgumentException
      */
-    public function compileRoute(RouteInterface|string $route): string
+    private function compileRoute(RouteInterface $route): string
     {
-        if (! $route instanceof RouteInterface) {
-            $route = $this->getRoute($route);
-        }
-
         return $this->routePatterns[$route->getName()] ??= $route->getPattern()
             ?? RouteCompiler::compileRoute($route->getPath(), $route->getPatterns());
     }
 
     /**
-     * @inheritDoc
+     * @internal
      *
      * @throws InvalidArgumentException
      */
-    public function getRouteRequestHandler(RouteInterface|string $route): RequestHandlerInterface
+    public function getRouteRequestHandler(RouteInterface $route): RequestHandlerInterface
     {
-        if (! $route instanceof RouteInterface) {
-            $route = $this->getRoute($route);
-        }
-
         $name = $route->getName();
         if (isset($this->routeRequestHandlers[$name])) {
             return $this->routeRequestHandlers[$name];
@@ -271,9 +253,11 @@ final class Router implements RouterInterface
     }
 
     /**
+     * @internal
+     *
      * @throws InvalidArgumentException
      */
-    private function getRequestHandler(): RequestHandlerInterface
+    public function getRequestHandler(): RequestHandlerInterface
     {
         if ($this->requestHandler !== null) {
             return $this->requestHandler;
@@ -302,6 +286,7 @@ final class Router implements RouterInterface
         foreach ($this->loaders as $loader) {
             foreach ($loader->load() as $route) {
                 $name = $route->getName();
+
                 if (isset($this->routes[$name])) {
                     throw new InvalidArgumentException(sprintf('The route "%s" already exists.', $name));
                 }
