@@ -94,6 +94,11 @@ final class RouteParserTest extends TestCase
     public static function invalidRouteProvider(): Generator
     {
         yield [
+            '(',
+            '/contains an unclosed variable or optional part/'
+        ];
+
+        yield [
             '((',
             '/nested optional parts are not supported/',
         ];
@@ -101,6 +106,11 @@ final class RouteParserTest extends TestCase
         yield [
             ')',
             '/open optional part was not found/',
+        ];
+
+        yield [
+            '{',
+            '/contains an unclosed variable or optional part/'
         ];
 
         yield [
@@ -114,13 +124,38 @@ final class RouteParserTest extends TestCase
         ];
 
         yield [
-            '}',
-            '/open variable was not found/',
+            '{!',
+            '/variable names must consist only of digits, letters and underscores/'
+        ];
+
+        yield [
+            '{0',
+            '/variable names cannot start with digits/',
+        ];
+
+        yield [
+            '{xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+            '/variable names must not exceed 32 characters/'
+        ];
+
+        yield [
+            '{x<.>!}',
+            '/variable at this position must be closed/'
+        ];
+
+        yield [
+            '{x}{x}',
+            '/the variable name "x" is already in use/'
         ];
 
         yield [
             '{}',
             '/name is required for its declaration/',
+        ];
+
+        yield [
+            '}',
+            '/open variable was not found/',
         ];
 
         yield [
@@ -134,8 +169,8 @@ final class RouteParserTest extends TestCase
         ];
 
         yield [
-            '{>',
-            '/open pattern was not found/',
+            '/{<#/',
+            '/variable patterns cannot contain the character "#"/'
         ];
 
         yield [
@@ -144,38 +179,8 @@ final class RouteParserTest extends TestCase
         ];
 
         yield [
-            '{0',
-            '/variable names cannot start with digits/',
-        ];
-
-        yield [
-            '{!',
-            '/variable names must consist only of digits, letters and underscores/'
-        ];
-
-        yield [
-            '{xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-            '/variable names must not exceed 32 characters/'
-        ];
-
-        yield [
-            '/{<#/',
-            '/variable patterns cannot contain the character "#"/'
-        ];
-
-        yield [
-            '{x<.>!}',
-            '/variable at this position must be closed/'
-        ];
-
-        yield [
-            '(',
-            '/contains an unclosed variable or optional part/'
-        ];
-
-        yield [
-            '{',
-            '/contains an unclosed variable or optional part/'
+            '{>',
+            '/open pattern was not found/',
         ];
     }
 }
