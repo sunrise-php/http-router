@@ -43,8 +43,8 @@ final class ArgumentConstraintValidatorTest extends TestCase
 
         $this->mockedContextualValidator->expects(self::once())->method('validate')->willReturnCallback(
             function (mixed $value, array $constraints) {
-                $this->assertSame('foo', $value);
-                $this->assertCount(2, $constraints);
+                self::assertSame('foo', $value);
+                self::assertCount(2, $constraints);
                 return $this->mockedContextualValidator;
             }
         );

@@ -21,6 +21,8 @@ use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\MediaTypeInterface;
 use Sunrise\Http\Router\ParameterResolverInterface;
 use Sunrise\Http\Router\RouteInterface;
+use Symfony\Component\Validator\ConstraintViolationInterface as ValidatorConstraintViolationInterface;
+use Symfony\Component\Validator\ConstraintViolationInterface;
 
 use function is_int;
 use function is_null;
@@ -133,6 +135,24 @@ trait TestKit
         $stream->expects(self::any())->method('__toString')->willReturn($body);
         $request->expects(self::normalizeInvocationOrder($bodyCalls))->method('getBody')->willReturn($stream);
         return $request;
+    }
+
+    protected function mockValidatorConstraintViolation(
+        string $message,
+        string $propertyPath,
+        string $code,
+        mixed $invalidValue,
+        int|InvocationOrder|null $messageCalls = null,
+        int|InvocationOrder|null $propertyPathCalls = null,
+        int|InvocationOrder|null $codeCalls = null,
+        int|InvocationOrder|null $invalidValueCalls = null,
+    ): ValidatorConstraintViolationInterface&MockObject {
+        $violation = $this->createMock(ConstraintViolationInterface::class);
+        $violation->expects(self::normalizeInvocationOrder($messageCalls))->method('getMessage')->willReturn($message);
+        $violation->expects(self::normalizeInvocationOrder($propertyPathCalls))->method('getPropertyPath')->willReturn($propertyPath);
+        $violation->expects(self::normalizeInvocationOrder($codeCalls))->method('getCode')->willReturn($code);
+        $violation->expects(self::normalizeInvocationOrder($invalidValueCalls))->method('getInvalidValue')->willReturn($invalidValue);
+        return $violation;
     }
 
     protected static function createChainBreakingCallbackMiddleware(ResponseInterface $response): Closure

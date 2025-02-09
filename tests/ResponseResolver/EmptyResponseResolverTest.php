@@ -35,7 +35,7 @@ final class EmptyResponseResolverTest extends TestCase
         $expectedResponse = $this->createMock(ResponseInterface::class);
         $this->mockedResponseFactory->expects(self::once())->method('createResponse')->with(204)->willReturn($expectedResponse);
         $resolvedResponse = (new EmptyResponseResolver($this->mockedResponseFactory))->resolveResponse(null, $responder, $this->mockedRequest);
-        $this->assertSame($expectedResponse, $resolvedResponse);
+        self::assertSame($expectedResponse, $resolvedResponse);
     }
 
     public function testUnsupportedResponse(): void
@@ -48,11 +48,11 @@ final class EmptyResponseResolverTest extends TestCase
         }, 'test');
 
         $this->mockedResponseFactory->expects(self::never())->method('createResponse');
-        $this->assertNull((new EmptyResponseResolver($this->mockedResponseFactory))->resolveResponse(0, $responder, $this->mockedRequest));
+        self::assertNull((new EmptyResponseResolver($this->mockedResponseFactory))->resolveResponse(0, $responder, $this->mockedRequest));
     }
 
     public function testWeight(): void
     {
-        $this->assertSame(0, (new EmptyResponseResolver($this->mockedResponseFactory))->getWeight());
+        self::assertSame(0, (new EmptyResponseResolver($this->mockedResponseFactory))->getWeight());
     }
 }

@@ -21,13 +21,13 @@ final class JsonCodecTest extends TestCase
             $supportedMediaTypeIdentifiers[] = $supportedMediaType->getIdentifier();
         }
 
-        $this->assertSame(['application/json'], $supportedMediaTypeIdentifiers);
+        self::assertSame(['application/json'], $supportedMediaTypeIdentifiers);
     }
 
     #[DataProvider('decodeDataProvider')]
     public function testDecode(mixed $expectedData, string $codingData, array $codingContext = [], array $codecContext = []): void
     {
-        $this->assertSame($expectedData, (new JsonCodec($codecContext))->decode($codingData, $codingContext));
+        self::assertSame($expectedData, (new JsonCodec($codecContext))->decode($codingData, $codingContext));
     }
 
     #[DataProvider('decodeInvalidDataProvider')]
@@ -41,7 +41,7 @@ final class JsonCodecTest extends TestCase
     #[DataProvider('encodeDataProvider')]
     public function testEncode(string $expectedData, mixed $codingData, array $codingContext = [], array $codecContext = []): void
     {
-        $this->assertSame($expectedData, (new JsonCodec($codecContext))->encode($codingData, $codingContext));
+        self::assertSame($expectedData, (new JsonCodec($codecContext))->encode($codingData, $codingContext));
     }
 
     #[DataProvider('encodeInvalidDataProvider')]

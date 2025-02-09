@@ -51,7 +51,7 @@ final class PayloadDecodingMiddlewareTest extends TestCase
         $this->mockedCodecManager->expects(self::once())->method('decode')->with(self::anything(), '{"foo":"bar"}')->willReturn(['foo' => 'bar']);
         $this->mockedRequest->expects(self::once())->method('withParsedBody')->with(['foo' => 'bar'])->willReturnSelf();
         $this->mockedRequestHandler->expects(self::once())->method('handle')->with($this->mockedRequest)->willReturn($this->mockedResponse);
-        $this->assertSame($this->mockedResponse, (new PayloadDecodingMiddleware($this->mockedCodecManager))->process($this->mockedRequest, $this->mockedRequestHandler));
+        self::assertSame($this->mockedResponse, (new PayloadDecodingMiddleware($this->mockedCodecManager))->process($this->mockedRequest, $this->mockedRequestHandler));
     }
 
     public function testCaseInsensitiveClientMediaType(): void
@@ -64,7 +64,7 @@ final class PayloadDecodingMiddlewareTest extends TestCase
         $this->mockedCodecManager->expects(self::once())->method('decode')->with(self::anything(), '{"foo":"bar"}')->willReturn(['foo' => 'bar']);
         $this->mockedRequest->expects(self::once())->method('withParsedBody')->with(['foo' => 'bar'])->willReturnSelf();
         $this->mockedRequestHandler->expects(self::once())->method('handle')->with($this->mockedRequest)->willReturn($this->mockedResponse);
-        $this->assertSame($this->mockedResponse, (new PayloadDecodingMiddleware($this->mockedCodecManager))->process($this->mockedRequest, $this->mockedRequestHandler));
+        self::assertSame($this->mockedResponse, (new PayloadDecodingMiddleware($this->mockedCodecManager))->process($this->mockedRequest, $this->mockedRequestHandler));
     }
 
     public function testClientNotProducedMediaType(): void
@@ -108,7 +108,7 @@ final class PayloadDecodingMiddlewareTest extends TestCase
         try {
             $middleware->process($this->mockedRequest, $this->mockedRequestHandler);
         } catch (HttpException $e) {
-            $this->assertSame(400, $e->getCode());
+            self::assertSame(400, $e->getCode());
             throw $e;
         }
     }
@@ -140,7 +140,7 @@ final class PayloadDecodingMiddlewareTest extends TestCase
         try {
             $middleware->process($this->mockedRequest, $this->mockedRequestHandler);
         } catch (HttpException $e) {
-            $this->assertSame(500, $e->getCode());
+            self::assertSame(500, $e->getCode());
             throw $e;
         }
     }

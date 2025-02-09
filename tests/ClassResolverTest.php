@@ -39,8 +39,8 @@ final class ClassResolverTest extends TestCase
         $parametersResolver = static fn(ReflectionParameter $foo, ReflectionParameter $bar): Generator => yield from [$foo->getName(), $bar->getName()];
         $this->mockedParameterResolverChain->expects(self::once())->method('resolveParameters')->willReturnCallback($parametersResolver);
         $resolvedClass = (new ClassResolver($this->mockedParameterResolverChain))->resolveClass($testClass::class);
-        $this->assertSame('foo', $resolvedClass->foo);
-        $this->assertSame('bar', $resolvedClass->bar);
+        self::assertSame('foo', $resolvedClass->foo);
+        self::assertSame('bar', $resolvedClass->bar);
     }
 
     public function testContainer(): void
@@ -53,7 +53,7 @@ final class ClassResolverTest extends TestCase
         $this->mockedContainer->expects(self::once())->method('get')->with($expectedClass::class)->willReturn($expectedClass);
         $this->mockedParameterResolverChain->expects(self::never())->method('resolveParameters');
         $resolvedClass = (new ClassResolver($this->mockedParameterResolverChain, $this->mockedContainer))->resolveClass($expectedClass::class);
-        $this->assertSame($expectedClass, $resolvedClass);
+        self::assertSame($expectedClass, $resolvedClass);
     }
 
     public function testContainerUnknownClass(): void
@@ -66,7 +66,7 @@ final class ClassResolverTest extends TestCase
         $this->mockedContainer->expects(self::never())->method('get');
         $this->mockedParameterResolverChain->expects(self::once())->method('resolveParameters')->with(/* no parameters */)->willReturnCallback(static fn(): Generator => yield from []);
         $resolvedClass = (new ClassResolver($this->mockedParameterResolverChain, $this->mockedContainer))->resolveClass($testClass::class);
-        $this->assertSame($testClass::class, $resolvedClass::class);
+        self::assertSame($testClass::class, $resolvedClass::class);
     }
 
     public function testCacheResult(): void
@@ -77,7 +77,7 @@ final class ClassResolverTest extends TestCase
 
         $this->mockedParameterResolverChain->expects(self::once())->method('resolveParameters')->with()->willReturnCallback(static fn(): Generator => yield from []);
         $classResolver = new ClassResolver($this->mockedParameterResolverChain);
-        $this->assertSame($classResolver->resolveClass($testClass::class), $classResolver->resolveClass($testClass::class));
+        self::assertSame($classResolver->resolveClass($testClass::class), $classResolver->resolveClass($testClass::class));
     }
 
     public function testUnknownClass(): void

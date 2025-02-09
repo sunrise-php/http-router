@@ -27,11 +27,11 @@ final class CallableMiddlewareTest extends TestCase
     public function testProcess(): void
     {
         $callback = function (ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface {
-            $this->assertSame($this->mockedRequest, $request);
-            $this->assertSame($this->mockedRequestHandler, $handler);
+            self::assertSame($this->mockedRequest, $request);
+            self::assertSame($this->mockedRequestHandler, $handler);
             return $this->mockedResponse;
         };
 
-        $this->assertSame($this->mockedResponse, (new CallableMiddleware($callback))->process($this->mockedRequest, $this->mockedRequestHandler));
+        self::assertSame($this->mockedResponse, (new CallableMiddleware($callback))->process($this->mockedRequest, $this->mockedRequestHandler));
     }
 }

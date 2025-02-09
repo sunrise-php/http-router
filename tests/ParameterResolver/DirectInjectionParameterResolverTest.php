@@ -18,7 +18,7 @@ final class DirectInjectionParameterResolverTest extends TestCase
         $dependency = $this->createMock(ServerRequestInterface::class);
         $parameter = new ReflectionParameter(fn(ServerRequestInterface $p) => null, 'p');
         $arguments = (new DirectInjectionParameterResolver($dependency))->resolveParameter($parameter, null);
-        $this->assertSame($dependency, $arguments->current());
+        self::assertSame($dependency, $arguments->current());
     }
 
     public function testResolveParameterWithSubtype(): void
@@ -26,14 +26,14 @@ final class DirectInjectionParameterResolverTest extends TestCase
         $dependency = $this->createMock(ServerRequestInterface::class);
         $parameter = new ReflectionParameter(fn(RequestInterface $p) => null, 'p');
         $arguments = (new DirectInjectionParameterResolver($dependency))->resolveParameter($parameter, null);
-        $this->assertSame($dependency, $arguments->current());
+        self::assertSame($dependency, $arguments->current());
     }
 
     public function testUnknownDependency(): void
     {
         $parameter = new ReflectionParameter(fn(ServerRequestInterface $p) => null, 'p');
         $arguments = (new DirectInjectionParameterResolver(new stdClass()))->resolveParameter($parameter, null);
-        $this->assertFalse($arguments->valid());
+        self::assertFalse($arguments->valid());
     }
 
     public function testNonNamedParameterType(): void
@@ -41,7 +41,7 @@ final class DirectInjectionParameterResolverTest extends TestCase
         $dependency = $this->createMock(ServerRequestInterface::class);
         $parameter = new ReflectionParameter(fn(ServerRequestInterface|RequestInterface $p) => null, 'p');
         $arguments = (new DirectInjectionParameterResolver($dependency))->resolveParameter($parameter, null);
-        $this->assertFalse($arguments->valid());
+        self::assertFalse($arguments->valid());
     }
 
     public function testBuiltInParameterType(): void
@@ -49,11 +49,11 @@ final class DirectInjectionParameterResolverTest extends TestCase
         $dependency = $this->createMock(ServerRequestInterface::class);
         $parameter = new ReflectionParameter(fn(int $p) => null, 'p');
         $arguments = (new DirectInjectionParameterResolver($dependency))->resolveParameter($parameter, null);
-        $this->assertFalse($arguments->valid());
+        self::assertFalse($arguments->valid());
     }
 
     public function testWeight(): void
     {
-        $this->assertSame(100, (new DirectInjectionParameterResolver(new \stdClass()))->getWeight());
+        self::assertSame(100, (new DirectInjectionParameterResolver(new \stdClass()))->getWeight());
     }
 }

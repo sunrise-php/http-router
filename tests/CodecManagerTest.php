@@ -49,32 +49,32 @@ final class CodecManagerTest extends TestCase
 
     public function testSupportsMediaType(): void
     {
-        $this->assertTrue((new CodecManager($this->mockedCodecs))->supportsMediaType($this->mockMediaType('test/foo')));
-        $this->assertTrue((new CodecManager($this->mockedCodecs))->supportsMediaType($this->mockMediaType('test/bar')));
-        $this->assertTrue((new CodecManager($this->mockedCodecs))->supportsMediaType($this->mockMediaType('test/baz')));
-        $this->assertFalse((new CodecManager($this->mockedCodecs))->supportsMediaType($this->mockMediaType('test/bat')));
+        self::assertTrue((new CodecManager($this->mockedCodecs))->supportsMediaType($this->mockMediaType('test/foo')));
+        self::assertTrue((new CodecManager($this->mockedCodecs))->supportsMediaType($this->mockMediaType('test/bar')));
+        self::assertTrue((new CodecManager($this->mockedCodecs))->supportsMediaType($this->mockMediaType('test/baz')));
+        self::assertFalse((new CodecManager($this->mockedCodecs))->supportsMediaType($this->mockMediaType('test/bat')));
     }
 
     public function testSupportsCaseInsensitiveMediaType(): void
     {
-        $this->assertTrue((new CodecManager($this->mockedCodecs))->supportsMediaType($this->mockMediaType('TEST/FOO')));
-        $this->assertTrue((new CodecManager($this->mockedCodecs))->supportsMediaType($this->mockMediaType('TEST/BAR')));
-        $this->assertTrue((new CodecManager($this->mockedCodecs))->supportsMediaType($this->mockMediaType('TEST/BAZ')));
-        $this->assertFalse((new CodecManager($this->mockedCodecs))->supportsMediaType($this->mockMediaType('TEST/BAT')));
+        self::assertTrue((new CodecManager($this->mockedCodecs))->supportsMediaType($this->mockMediaType('TEST/FOO')));
+        self::assertTrue((new CodecManager($this->mockedCodecs))->supportsMediaType($this->mockMediaType('TEST/BAR')));
+        self::assertTrue((new CodecManager($this->mockedCodecs))->supportsMediaType($this->mockMediaType('TEST/BAZ')));
+        self::assertFalse((new CodecManager($this->mockedCodecs))->supportsMediaType($this->mockMediaType('TEST/BAT')));
     }
 
     public function testDecode(): void
     {
-        $this->assertSame(1, (new CodecManager($this->mockedCodecs))->decode($this->mockMediaType('test/foo'), '1'));
-        $this->assertSame(2, (new CodecManager($this->mockedCodecs))->decode($this->mockMediaType('test/bar'), '2'));
-        $this->assertSame(2, (new CodecManager($this->mockedCodecs))->decode($this->mockMediaType('test/baz'), '2'));
+        self::assertSame(1, (new CodecManager($this->mockedCodecs))->decode($this->mockMediaType('test/foo'), '1'));
+        self::assertSame(2, (new CodecManager($this->mockedCodecs))->decode($this->mockMediaType('test/bar'), '2'));
+        self::assertSame(2, (new CodecManager($this->mockedCodecs))->decode($this->mockMediaType('test/baz'), '2'));
     }
 
     public function testDecodeCaseInsensitiveMediaType(): void
     {
-        $this->assertSame(1, (new CodecManager($this->mockedCodecs))->decode($this->mockMediaType('TEST/FOO'), '1'));
-        $this->assertSame(2, (new CodecManager($this->mockedCodecs))->decode($this->mockMediaType('TEST/BAR'), '2'));
-        $this->assertSame(2, (new CodecManager($this->mockedCodecs))->decode($this->mockMediaType('TEST/BAZ'), '2'));
+        self::assertSame(1, (new CodecManager($this->mockedCodecs))->decode($this->mockMediaType('TEST/FOO'), '1'));
+        self::assertSame(2, (new CodecManager($this->mockedCodecs))->decode($this->mockMediaType('TEST/BAR'), '2'));
+        self::assertSame(2, (new CodecManager($this->mockedCodecs))->decode($this->mockMediaType('TEST/BAZ'), '2'));
     }
 
     public function testDecodeUnsupportedMediaType(): void
@@ -93,16 +93,16 @@ final class CodecManagerTest extends TestCase
 
     public function testEncode(): void
     {
-        $this->assertSame('1', (new CodecManager($this->mockedCodecs))->encode($this->mockMediaType('test/foo'), 1));
-        $this->assertSame('2', (new CodecManager($this->mockedCodecs))->encode($this->mockMediaType('test/bar'), 2));
-        $this->assertSame('2', (new CodecManager($this->mockedCodecs))->encode($this->mockMediaType('test/baz'), 2));
+        self::assertSame('1', (new CodecManager($this->mockedCodecs))->encode($this->mockMediaType('test/foo'), 1));
+        self::assertSame('2', (new CodecManager($this->mockedCodecs))->encode($this->mockMediaType('test/bar'), 2));
+        self::assertSame('2', (new CodecManager($this->mockedCodecs))->encode($this->mockMediaType('test/baz'), 2));
     }
 
     public function testEncodeCaseInsensitiveMediaType(): void
     {
-        $this->assertSame('1', (new CodecManager($this->mockedCodecs))->encode($this->mockMediaType('TEST/FOO'), 1));
-        $this->assertSame('2', (new CodecManager($this->mockedCodecs))->encode($this->mockMediaType('TEST/BAR'), 2));
-        $this->assertSame('2', (new CodecManager($this->mockedCodecs))->encode($this->mockMediaType('TEST/BAZ'), 2));
+        self::assertSame('1', (new CodecManager($this->mockedCodecs))->encode($this->mockMediaType('TEST/FOO'), 1));
+        self::assertSame('2', (new CodecManager($this->mockedCodecs))->encode($this->mockMediaType('TEST/BAR'), 2));
+        self::assertSame('2', (new CodecManager($this->mockedCodecs))->encode($this->mockMediaType('TEST/BAZ'), 2));
     }
 
     public function testEncodeUnsupportedMediaType(): void
@@ -126,12 +126,12 @@ final class CodecManagerTest extends TestCase
 
         $this->expectedCodecContext = $codecContext + $codecsContext;
 
-        $this->assertSame(1, (new CodecManager($this->mockedCodecs, $codecsContext))->decode($this->mockMediaType('test/foo'), '1', $codecContext));
-        $this->assertSame(2, (new CodecManager($this->mockedCodecs, $codecsContext))->decode($this->mockMediaType('test/bar'), '2', $codecContext));
-        $this->assertSame(2, (new CodecManager($this->mockedCodecs, $codecsContext))->decode($this->mockMediaType('test/baz'), '2', $codecContext));
+        self::assertSame(1, (new CodecManager($this->mockedCodecs, $codecsContext))->decode($this->mockMediaType('test/foo'), '1', $codecContext));
+        self::assertSame(2, (new CodecManager($this->mockedCodecs, $codecsContext))->decode($this->mockMediaType('test/bar'), '2', $codecContext));
+        self::assertSame(2, (new CodecManager($this->mockedCodecs, $codecsContext))->decode($this->mockMediaType('test/baz'), '2', $codecContext));
 
-        $this->assertSame('1', (new CodecManager($this->mockedCodecs, $codecsContext))->encode($this->mockMediaType('test/foo'), 1, $codecContext));
-        $this->assertSame('2', (new CodecManager($this->mockedCodecs, $codecsContext))->encode($this->mockMediaType('test/bar'), 2, $codecContext));
-        $this->assertSame('2', (new CodecManager($this->mockedCodecs, $codecsContext))->encode($this->mockMediaType('test/baz'), 2, $codecContext));
+        self::assertSame('1', (new CodecManager($this->mockedCodecs, $codecsContext))->encode($this->mockMediaType('test/foo'), 1, $codecContext));
+        self::assertSame('2', (new CodecManager($this->mockedCodecs, $codecsContext))->encode($this->mockMediaType('test/bar'), 2, $codecContext));
+        self::assertSame('2', (new CodecManager($this->mockedCodecs, $codecsContext))->encode($this->mockMediaType('test/baz'), 2, $codecContext));
     }
 }

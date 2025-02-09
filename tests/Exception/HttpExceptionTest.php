@@ -16,9 +16,9 @@ final class HttpExceptionTest extends TestCase
     {
         $previous = $this->createMock(Throwable::class);
         $exception = new HttpException('foo', 400, $previous);
-        $this->assertSame('foo', $exception->getMessage());
-        $this->assertSame(400, $exception->getCode());
-        $this->assertSame($previous, $exception->getPrevious());
+        self::assertSame('foo', $exception->getMessage());
+        self::assertSame(400, $exception->getCode());
+        self::assertSame($previous, $exception->getPrevious());
     }
 
     public function testMessagePlaceholders(): void
@@ -26,9 +26,9 @@ final class HttpExceptionTest extends TestCase
         $exception = new HttpException('foo {bar}, {bar}! {baz}!', 400);
         $exception->addMessagePlaceholder('{bar}', 1);
         $exception->addMessagePlaceholder('{baz}', 2);
-        $this->assertSame('foo 1, 1! 2!', $exception->getMessage());
-        $this->assertSame('foo {bar}, {bar}! {baz}!', $exception->getMessageTemplate());
-        $this->assertSame(['{bar}' => 1, '{baz}' => 2], $exception->getMessagePlaceholders());
+        self::assertSame('foo 1, 1! 2!', $exception->getMessage());
+        self::assertSame('foo {bar}, {bar}! {baz}!', $exception->getMessageTemplate());
+        self::assertSame(['{bar}' => 1, '{baz}' => 2], $exception->getMessagePlaceholders());
     }
 
     public function testHeaderFields(): void
@@ -44,7 +44,7 @@ final class HttpExceptionTest extends TestCase
         $exception = new HttpException('foo', 400);
         $exception->addHeaderField('x-foo', 'bar');
         $exception->addHeaderField('x-bar', 'baz', $qux);
-        $this->assertSame([['x-foo', 'bar'], ['x-bar', 'baz, qux']], $exception->getHeaderFields());
+        self::assertSame([['x-foo', 'bar'], ['x-bar', 'baz, qux']], $exception->getHeaderFields());
     }
 
     public function testConstraintViolations(): void
@@ -53,6 +53,6 @@ final class HttpExceptionTest extends TestCase
         $foo = $this->createMock(ConstraintViolationInterface::class);
         $bar = $this->createMock(ConstraintViolationInterface::class);
         $exception->addConstraintViolation($foo, $bar);
-        $this->assertSame([$foo, $bar], $exception->getConstraintViolations());
+        self::assertSame([$foo, $bar], $exception->getConstraintViolations());
     }
 }

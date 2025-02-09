@@ -31,7 +31,7 @@ final class StringTrimmingMiddlewareTest extends TestCase
         $this->mockedRequest->expects(self::once())->method('getParsedBody')->willReturn([[' bar ']]);
         $this->mockedRequest->expects(self::once())->method('withParsedBody')->with([['bar']])->willReturnSelf();
         $this->mockedRequestHandler->expects(self::once())->method('handle')->with($this->mockedRequest)->willReturn($this->mockedResponse);
-        $this->assertSame($this->mockedResponse, (new StringTrimmingMiddleware())->process($this->mockedRequest, $this->mockedRequestHandler));
+        self::assertSame($this->mockedResponse, (new StringTrimmingMiddleware())->process($this->mockedRequest, $this->mockedRequestHandler));
     }
 
     public function testEmptyArrays(): void

@@ -16,7 +16,7 @@ final class RouteParserTest extends TestCase
     public function testParseValidRoute(string $route, array $expectedVariables): void
     {
         $actualVariables = RouteParser::parseRoute($route);
-        $this->assertEquals($expectedVariables, $actualVariables);
+        self::assertEquals($expectedVariables, $actualVariables);
     }
 
     #[DataProvider('invalidRouteProvider')]

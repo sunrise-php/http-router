@@ -40,7 +40,7 @@ final class RouterTest extends TestCase
         $barRoute = $this->mockRoute('bar');
         $bazRoute = $this->mockRoute('baz');
 
-        $this->assertSame([
+        self::assertSame([
             'foo' => $fooRoute,
             'bar' => $barRoute,
             'baz' => $bazRoute,
@@ -66,7 +66,7 @@ final class RouterTest extends TestCase
     {
         $route = $this->mockRoute('foo');
 
-        $this->assertSame($route, (new Router(referenceResolver: $this->mockedReferenceResolver, loaders: [
+        self::assertSame($route, (new Router(referenceResolver: $this->mockedReferenceResolver, loaders: [
             $this->mockLoader([$route], calls: 1),
         ]))->getRoute('foo'));
     }
@@ -81,12 +81,12 @@ final class RouterTest extends TestCase
 
     public function testHasRouteFalse(): void
     {
-        $this->assertFalse((new Router(referenceResolver: $this->mockedReferenceResolver, loaders: []))->hasRoute('foo'));
+        self::assertFalse((new Router(referenceResolver: $this->mockedReferenceResolver, loaders: []))->hasRoute('foo'));
     }
 
     public function testHasRouteTrue(): void
     {
-        $this->assertTrue((new Router(referenceResolver: $this->mockedReferenceResolver, loaders: [
+        self::assertTrue((new Router(referenceResolver: $this->mockedReferenceResolver, loaders: [
             $this->mockLoader([$this->mockRoute('foo')], calls: 1),
         ]))->hasRoute('foo'));
     }
@@ -147,6 +147,6 @@ final class RouterTest extends TestCase
             eventDispatcher: $this->mockedEventDispatcher,
         );
 
-        $this->assertSame($eventOverriddenResponse, $router->handle($request));
+        self::assertSame($eventOverriddenResponse, $router->handle($request));
     }
 }

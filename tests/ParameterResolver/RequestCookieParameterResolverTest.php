@@ -14,10 +14,10 @@ use Sunrise\Http\Router\Annotation\Constraint;
 use Sunrise\Http\Router\Annotation\RequestCookie;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\ParameterResolver\RequestCookieParameterResolver;
+use Sunrise\Http\Router\Tests\TestKit;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
-use Symfony\Component\Validator\ConstraintViolationInterface;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Validator\ContextualValidatorInterface;
@@ -25,6 +25,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class RequestCookieParameterResolverTest extends TestCase
 {
+    use TestKit;
+
     private HydratorInterface&MockObject $mockedHydrator;
     private ValidatorInterface&MockObject $mockedValidator;
     private ContextualValidatorInterface&MockObject $mockedContextualValidator;
@@ -45,7 +47,7 @@ final class RequestCookieParameterResolverTest extends TestCase
         $this->mockedHydrator->expects(self::once())->method('castValue')->with('bar')->willReturn('bar');
         $parameter = new ReflectionParameter(fn(#[RequestCookie('foo')] string $p) => null, 'p');
         $arguments = (new RequestCookieParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedRequest);
-        $this->assertSame('bar', $arguments->current());
+        self::assertSame('bar', $arguments->current());
     }
 
     public function testUnsupportedContext(): void
@@ -53,7 +55,7 @@ final class RequestCookieParameterResolverTest extends TestCase
         $this->mockedHydrator->expects(self::never())->method('castValue');
         $parameter = new ReflectionParameter(fn(#[RequestCookie('foo')] string $p) => null, 'p');
         $arguments = (new RequestCookieParameterResolver($this->mockedHydrator))->resolveParameter($parameter, null);
-        $this->assertFalse($arguments->valid());
+        self::assertFalse($arguments->valid());
     }
 
     public function testNonAnnotatedParameter(): void
@@ -61,7 +63,7 @@ final class RequestCookieParameterResolverTest extends TestCase
         $this->mockedHydrator->expects(self::never())->method('castValue');
         $parameter = new ReflectionParameter(fn(string $p) => null, 'p');
         $arguments = (new RequestCookieParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedRequest);
-        $this->assertFalse($arguments->valid());
+        self::assertFalse($arguments->valid());
     }
 
     public function testDefaultParameterValue(): void
@@ -70,7 +72,7 @@ final class RequestCookieParameterResolverTest extends TestCase
         $this->mockedHydrator->expects(self::never())->method('castValue');
         $parameter = new ReflectionParameter(fn(#[RequestCookie('foo')] string $p = 'bar') => null, 'p');
         $arguments = (new RequestCookieParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedRequest);
-        $this->assertSame('bar', $arguments->current());
+        self::assertSame('bar', $arguments->current());
     }
 
     public function testMissingCookie(): void
@@ -84,7 +86,7 @@ final class RequestCookieParameterResolverTest extends TestCase
         try {
             $arguments->rewind();
         } catch (HttpException $e) {
-            $this->assertSame(400, $e->getCode());
+            self::assertSame(400, $e->getCode());
             throw $e;
         }
     }
@@ -103,13 +105,13 @@ final class RequestCookieParameterResolverTest extends TestCase
         try {
             $arguments->rewind();
         } catch (HttpException $e) {
-            $this->assertSame(400, $e->getCode());
+            self::assertSame(400, $e->getCode());
             $violations = $e->getConstraintViolations();
-            $this->assertArrayHasKey(0, $violations);
-            $this->assertSame($hydratorViolations[0]->getMessage(), $violations[0]->getMessage());
-            $this->assertSame($hydratorViolations[0]->getPropertyPath(), $violations[0]->getPropertyPath());
-            $this->assertSame($hydratorViolations[0]->getErrorCode(), $violations[0]->getCode());
-            $this->assertSame($hydratorViolations[0]->getInvalidValue(), $violations[0]->getInvalidValue());
+            self::assertArrayHasKey(0, $violations);
+            self::assertSame($hydratorViolations[0]->getMessage(), $violations[0]->getMessage());
+            self::assertSame($hydratorViolations[0]->getPropertyPath(), $violations[0]->getPropertyPath());
+            self::assertSame($hydratorViolations[0]->getErrorCode(), $violations[0]->getCode());
+            self::assertSame($hydratorViolations[0]->getInvalidValue(), $violations[0]->getInvalidValue());
             throw $e;
         }
     }
@@ -131,15 +133,10 @@ final class RequestCookieParameterResolverTest extends TestCase
     {
         $this->mockedRequest->expects(self::once())->method('getCookieParams')->willReturn(['foo' => '']);
         $this->mockedHydrator->expects(self::once())->method('castValue')->with('')->willReturn('');
-        $validatorViolation = $this->createMock(ConstraintViolationInterface::class);
-        $validatorViolation->method('getMessage')->willReturn('This value should not be blank.');
-        $validatorViolation->method('getPropertyPath')->willReturn('foo');
-        $validatorViolation->method('getCode')->willReturn(NotBlank::IS_BLANK_ERROR);
-        $validatorViolation->method('getInvalidValue')->willReturn('');
-        $validatorViolations = new ConstraintViolationList([$validatorViolation]);
+        $validatorViolation = $this->mockValidatorConstraintViolation(message: 'This value should not be blank.', propertyPath: 'foo', code: NotBlank::IS_BLANK_ERROR, invalidValue: '');
         $this->mockedContextualValidator->expects(self::once())->method('atPath')->with('foo')->willReturn($this->mockedContextualValidator);
         $this->mockedContextualValidator->expects(self::once())->method('validate')->with('')->willReturn($this->mockedContextualValidator);
-        $this->mockedContextualValidator->expects(self::once())->method('getViolations')->willReturn($validatorViolations);
+        $this->mockedContextualValidator->expects(self::once())->method('getViolations')->willReturn(new ConstraintViolationList([$validatorViolation]));
         $parameter = new ReflectionParameter(fn(#[RequestCookie('foo'), Constraint(new NotBlank())] string $p) => null, 'p');
         $arguments = (new RequestCookieParameterResolver($this->mockedHydrator, $this->mockedValidator))->resolveParameter($parameter, $this->mockedRequest);
         $this->expectException(HttpException::class);
@@ -147,13 +144,13 @@ final class RequestCookieParameterResolverTest extends TestCase
         try {
             $arguments->rewind();
         } catch (HttpException $e) {
-            $this->assertSame(400, $e->getCode());
+            self::assertSame(400, $e->getCode());
             $violations = $e->getConstraintViolations();
-            $this->assertArrayHasKey(0, $violations);
-            $this->assertSame($validatorViolations[0]->getMessage(), $violations[0]->getMessage());
-            $this->assertSame($validatorViolations[0]->getPropertyPath(), $violations[0]->getPropertyPath());
-            $this->assertSame($validatorViolations[0]->getCode(), $violations[0]->getCode());
-            $this->assertSame($validatorViolations[0]->getInvalidValue(), $violations[0]->getInvalidValue());
+            self::assertArrayHasKey(0, $violations);
+            self::assertSame($validatorViolation->getMessage(), $violations[0]->getMessage());
+            self::assertSame($validatorViolation->getPropertyPath(), $violations[0]->getPropertyPath());
+            self::assertSame($validatorViolation->getCode(), $violations[0]->getCode());
+            self::assertSame($validatorViolation->getInvalidValue(), $violations[0]->getInvalidValue());
             throw $e;
         }
     }
@@ -168,7 +165,7 @@ final class RequestCookieParameterResolverTest extends TestCase
         try {
             $arguments->rewind();
         } catch (HttpException $e) {
-            $this->assertSame(500, $e->getCode());
+            self::assertSame(500, $e->getCode());
         }
     }
 
@@ -182,7 +179,7 @@ final class RequestCookieParameterResolverTest extends TestCase
         try {
             $arguments->rewind();
         } catch (HttpException $e) {
-            $this->assertSame(503, $e->getCode());
+            self::assertSame(503, $e->getCode());
         }
     }
 
@@ -196,7 +193,7 @@ final class RequestCookieParameterResolverTest extends TestCase
         try {
             $arguments->rewind();
         } catch (HttpException $e) {
-            $this->assertSame('foo', $e->getMessage());
+            self::assertSame('foo', $e->getMessage());
         }
     }
 
@@ -210,7 +207,7 @@ final class RequestCookieParameterResolverTest extends TestCase
         try {
             $arguments->rewind();
         } catch (HttpException $e) {
-            $this->assertSame('bar', $e->getMessage());
+            self::assertSame('bar', $e->getMessage());
         }
     }
 
@@ -253,6 +250,6 @@ final class RequestCookieParameterResolverTest extends TestCase
 
     public function testWeight(): void
     {
-        $this->assertSame(0, (new RequestCookieParameterResolver($this->mockedHydrator))->getWeight());
+        self::assertSame(0, (new RequestCookieParameterResolver($this->mockedHydrator))->getWeight());
     }
 }

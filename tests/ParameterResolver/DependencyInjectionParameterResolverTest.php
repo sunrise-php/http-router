@@ -25,7 +25,7 @@ final class DependencyInjectionParameterResolverTest extends TestCase
         $this->mockedContainer->expects(self::once())->method('has')->with('foo')->willReturn(true);
         $this->mockedContainer->expects(self::once())->method('get')->with('foo')->willReturn('bar');
         $arguments = (new DependencyInjectionParameterResolver($this->mockedContainer))->resolveParameter($parameter, null);
-        $this->assertSame('bar', $arguments->current());
+        self::assertSame('bar', $arguments->current());
     }
 
     public function testUnknownDependency(): void
@@ -34,7 +34,7 @@ final class DependencyInjectionParameterResolverTest extends TestCase
         $this->mockedContainer->expects(self::once())->method('has')->with('foo')->willReturn(false);
         $this->mockedContainer->expects(self::never())->method('get');
         $arguments = (new DependencyInjectionParameterResolver($this->mockedContainer))->resolveParameter($parameter, null);
-        $this->assertFalse($arguments->valid());
+        self::assertFalse($arguments->valid());
     }
 
     public function testNonNamedParameterType(): void
@@ -43,7 +43,7 @@ final class DependencyInjectionParameterResolverTest extends TestCase
         $this->mockedContainer->expects(self::never())->method('has');
         $this->mockedContainer->expects(self::never())->method('get');
         $arguments = (new DependencyInjectionParameterResolver($this->mockedContainer))->resolveParameter($parameter, null);
-        $this->assertFalse($arguments->valid());
+        self::assertFalse($arguments->valid());
     }
 
     public function testBuiltInParameterType(): void
@@ -52,11 +52,11 @@ final class DependencyInjectionParameterResolverTest extends TestCase
         $this->mockedContainer->expects(self::never())->method('has');
         $this->mockedContainer->expects(self::never())->method('get');
         $arguments = (new DependencyInjectionParameterResolver($this->mockedContainer))->resolveParameter($parameter, null);
-        $this->assertFalse($arguments->valid());
+        self::assertFalse($arguments->valid());
     }
 
     public function testWeight(): void
     {
-        $this->assertSame(-100, (new DependencyInjectionParameterResolver($this->mockedContainer))->getWeight());
+        self::assertSame(-100, (new DependencyInjectionParameterResolver($this->mockedContainer))->getWeight());
     }
 }

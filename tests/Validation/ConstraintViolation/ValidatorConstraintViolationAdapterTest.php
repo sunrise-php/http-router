@@ -22,11 +22,11 @@ final class ValidatorConstraintViolationAdapterTest extends TestCase
 
         $adaptedViolation = new ValidatorConstraintViolationAdapter($validatorViolation);
 
-        $this->assertSame('foo, bar!', $adaptedViolation->getMessage());
-        $this->assertSame('foo, {bar}!', $adaptedViolation->getMessageTemplate());
-        $this->assertSame(['{bar}' => 'bar'], $adaptedViolation->getMessagePlaceholders());
-        $this->assertSame('foo.0.bar', $adaptedViolation->getPropertyPath());
-        $this->assertSame('287272ea-e485-405e-aab4-c5e522daaa78', $adaptedViolation->getCode());
-        $this->assertSame(0, $adaptedViolation->getInvalidValue());
+        self::assertSame('foo, bar!', $adaptedViolation->getMessage());
+        self::assertSame('foo, {bar}!', $adaptedViolation->getMessageTemplate());
+        self::assertSame(['{bar}' => 'bar'], $adaptedViolation->getMessagePlaceholders());
+        self::assertSame('foo.0.bar', $adaptedViolation->getPropertyPath());
+        self::assertSame('287272ea-e485-405e-aab4-c5e522daaa78', $adaptedViolation->getCode());
+        self::assertSame(0, $adaptedViolation->getInvalidValue());
     }
 }

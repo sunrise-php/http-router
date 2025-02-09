@@ -14,18 +14,18 @@ final class DefaultValueParameterResolverTest extends TestCase
     {
         $parameter = new ReflectionParameter(fn($p = 1) => null, 'p');
         $arguments = (new DefaultValueParameterResolver())->resolveParameter($parameter, null);
-        $this->assertSame(1, $arguments->current());
+        self::assertSame(1, $arguments->current());
     }
 
     public function testResolveParameterWithoutDefaultValue(): void
     {
         $parameter = new ReflectionParameter(fn($p) => null, 'p');
         $arguments = (new DefaultValueParameterResolver())->resolveParameter($parameter, null);
-        $this->assertFalse($arguments->valid());
+        self::assertFalse($arguments->valid());
     }
 
     public function testWeight(): void
     {
-        $this->assertSame(-1000, (new DefaultValueParameterResolver())->getWeight());
+        self::assertSame(-1000, (new DefaultValueParameterResolver())->getWeight());
     }
 }

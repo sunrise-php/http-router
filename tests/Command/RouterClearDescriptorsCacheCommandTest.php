@@ -18,6 +18,6 @@ final class RouterClearDescriptorsCacheCommandTest extends TestCase
         $command = new RouterClearDescriptorsCacheCommand($descriptorLoader);
         $commandTester = new CommandTester($command);
         $descriptorLoader->expects(self::once())->method('clearCache');
-        $this->assertSame(Command::SUCCESS, $commandTester->execute([]));
+        self::assertSame(Command::SUCCESS, $commandTester->execute([]));
     }
 }

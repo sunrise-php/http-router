@@ -67,33 +67,33 @@ final class DescriptorLoaderTest extends TestCase
             __DIR__ . '/../Fixture/App/Controller',
         ]))->load()];
 
-        $this->assertArrayHasKey('home', $routes);
+        self::assertArrayHasKey('home', $routes);
         $route = $routes['home'];
-        $this->assertSame('/', $route->getPath());
-        $this->assertSame(HomeController::class, $route->getRequestHandler());
-        $this->assertSame(['GET'], $route->getMethods());
+        self::assertSame('/', $route->getPath());
+        self::assertSame(HomeController::class, $route->getRequestHandler());
+        self::assertSame(['GET'], $route->getMethods());
         $expectedRoutePattern = RouteCompiler::compileRoute($route->getPath(), $route->getPatterns());
-        $this->assertSame($expectedRoutePattern, $route->getPattern());
+        self::assertSame($expectedRoutePattern, $route->getPattern());
 
-        $this->assertArrayHasKey('api.pages.create', $routes);
+        self::assertArrayHasKey('api.pages.create', $routes);
         $route = $routes['api.pages.create'];
-        $this->assertSame('/api/pages', $route->getPath());
-        $this->assertSame([PageController::class, 'create'], $route->getRequestHandler());
-        $this->assertSame(['POST'], $route->getMethods());
-        $this->assertSame(['Pages'], $route->getTags());
-        $this->assertSame('Creates a new page', $route->getSummary());
+        self::assertSame('/api/pages', $route->getPath());
+        self::assertSame([PageController::class, 'create'], $route->getRequestHandler());
+        self::assertSame(['POST'], $route->getMethods());
+        self::assertSame(['Pages'], $route->getTags());
+        self::assertSame('Creates a new page', $route->getSummary());
         $expectedRoutePattern = RouteCompiler::compileRoute($route->getPath(), $route->getPatterns());
-        $this->assertSame($expectedRoutePattern, $route->getPattern());
+        self::assertSame($expectedRoutePattern, $route->getPattern());
 
-        $this->assertArrayHasKey('api.pages.update', $routes);
+        self::assertArrayHasKey('api.pages.update', $routes);
         $route = $routes['api.pages.update'];
-        $this->assertSame('/api/pages/{id}', $route->getPath());
-        $this->assertSame([PageController::class, 'update'], $route->getRequestHandler());
-        $this->assertSame(['PUT'], $route->getMethods());
-        $this->assertSame(['Pages'], $route->getTags());
-        $this->assertSame('Updates a page by ID', $route->getSummary());
+        self::assertSame('/api/pages/{id}', $route->getPath());
+        self::assertSame([PageController::class, 'update'], $route->getRequestHandler());
+        self::assertSame(['PUT'], $route->getMethods());
+        self::assertSame(['Pages'], $route->getTags());
+        self::assertSame('Updates a page by ID', $route->getSummary());
         $expectedRoutePattern = RouteCompiler::compileRoute($route->getPath(), $route->getPatterns());
-        $this->assertSame($expectedRoutePattern, $route->getPattern());
+        self::assertSame($expectedRoutePattern, $route->getPattern());
     }
 
     public function testLoadFromFile(): void
@@ -103,25 +103,25 @@ final class DescriptorLoaderTest extends TestCase
             __DIR__ . '/../Fixture/App/Controller/Api/PageController.php',
         ]))->load()];
 
-        $this->assertArrayHasKey('api.pages.create', $routes);
+        self::assertArrayHasKey('api.pages.create', $routes);
         $route = $routes['api.pages.create'];
-        $this->assertSame('/api/pages', $route->getPath());
-        $this->assertSame([PageController::class, 'create'], $route->getRequestHandler());
-        $this->assertSame(['POST'], $route->getMethods());
-        $this->assertSame(['Pages'], $route->getTags());
-        $this->assertSame('Creates a new page', $route->getSummary());
+        self::assertSame('/api/pages', $route->getPath());
+        self::assertSame([PageController::class, 'create'], $route->getRequestHandler());
+        self::assertSame(['POST'], $route->getMethods());
+        self::assertSame(['Pages'], $route->getTags());
+        self::assertSame('Creates a new page', $route->getSummary());
         $expectedRoutePattern = RouteCompiler::compileRoute($route->getPath(), $route->getPatterns());
-        $this->assertSame($expectedRoutePattern, $route->getPattern());
+        self::assertSame($expectedRoutePattern, $route->getPattern());
 
-        $this->assertArrayHasKey('api.pages.update', $routes);
+        self::assertArrayHasKey('api.pages.update', $routes);
         $route = $routes['api.pages.update'];
-        $this->assertSame('/api/pages/{id}', $route->getPath());
-        $this->assertSame([PageController::class, 'update'], $route->getRequestHandler());
-        $this->assertSame(['PUT'], $route->getMethods());
-        $this->assertSame(['Pages'], $route->getTags());
-        $this->assertSame('Updates a page by ID', $route->getSummary());
+        self::assertSame('/api/pages/{id}', $route->getPath());
+        self::assertSame([PageController::class, 'update'], $route->getRequestHandler());
+        self::assertSame(['PUT'], $route->getMethods());
+        self::assertSame(['Pages'], $route->getTags());
+        self::assertSame('Updates a page by ID', $route->getSummary());
         $expectedRoutePattern = RouteCompiler::compileRoute($route->getPath(), $route->getPatterns());
-        $this->assertSame($expectedRoutePattern, $route->getPattern());
+        self::assertSame($expectedRoutePattern, $route->getPattern());
     }
 
     public function testLoadFromClass(): void
@@ -129,25 +129,25 @@ final class DescriptorLoaderTest extends TestCase
         /** @var array<array-key, RouteInterface> $routes */
         $routes = [...(new DescriptorLoader([PageController::class]))->load()];
 
-        $this->assertArrayHasKey('api.pages.create', $routes);
+        self::assertArrayHasKey('api.pages.create', $routes);
         $route = $routes['api.pages.create'];
-        $this->assertSame('/api/pages', $route->getPath());
-        $this->assertSame([PageController::class, 'create'], $route->getRequestHandler());
-        $this->assertSame(['POST'], $route->getMethods());
-        $this->assertSame(['Pages'], $route->getTags());
-        $this->assertSame('Creates a new page', $route->getSummary());
+        self::assertSame('/api/pages', $route->getPath());
+        self::assertSame([PageController::class, 'create'], $route->getRequestHandler());
+        self::assertSame(['POST'], $route->getMethods());
+        self::assertSame(['Pages'], $route->getTags());
+        self::assertSame('Creates a new page', $route->getSummary());
         $expectedRoutePattern = RouteCompiler::compileRoute($route->getPath(), $route->getPatterns());
-        $this->assertSame($expectedRoutePattern, $route->getPattern());
+        self::assertSame($expectedRoutePattern, $route->getPattern());
 
-        $this->assertArrayHasKey('api.pages.update', $routes);
+        self::assertArrayHasKey('api.pages.update', $routes);
         $route = $routes['api.pages.update'];
-        $this->assertSame('/api/pages/{id}', $route->getPath());
-        $this->assertSame([PageController::class, 'update'], $route->getRequestHandler());
-        $this->assertSame(['PUT'], $route->getMethods());
-        $this->assertSame(['Pages'], $route->getTags());
-        $this->assertSame('Updates a page by ID', $route->getSummary());
+        self::assertSame('/api/pages/{id}', $route->getPath());
+        self::assertSame([PageController::class, 'update'], $route->getRequestHandler());
+        self::assertSame(['PUT'], $route->getMethods());
+        self::assertSame(['Pages'], $route->getTags());
+        self::assertSame('Updates a page by ID', $route->getSummary());
         $expectedRoutePattern = RouteCompiler::compileRoute($route->getPath(), $route->getPatterns());
-        $this->assertSame($expectedRoutePattern, $route->getPattern());
+        self::assertSame($expectedRoutePattern, $route->getPattern());
     }
 
     public function testLoadFromCache(): void
@@ -158,10 +158,10 @@ final class DescriptorLoaderTest extends TestCase
         $descriptor = new Route('test');
         $cache->expects(self::once())->method('get')->with($cacheKey)->willReturn([$descriptor]);
         $routes = $loader->load();
-        $this->assertTrue($routes->valid());
+        self::assertTrue($routes->valid());
         $route = $routes->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame($descriptor->name, $route->getName());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame($descriptor->name, $route->getName());
     }
 
     public function testUpdateCache(): void
@@ -169,14 +169,14 @@ final class DescriptorLoaderTest extends TestCase
         $cache = new CacheMock();
         $loader = new DescriptorLoader([HomeController::class], $cache);
         $routes = $loader->load();
-        $this->assertTrue($routes->valid());
+        self::assertTrue($routes->valid());
         $route = $routes->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
+        self::assertInstanceOf(RouteInterface::class, $route);
         $cacheKey = DescriptorLoader::DESCRIPTORS_CACHE_KEY;
         /** @var list<Route> $cachedDescriptors */
         $cachedDescriptors = $cache->get($cacheKey);
-        $this->assertArrayHasKey(0, $cachedDescriptors);
-        $this->assertSame($route->getName(), $cachedDescriptors[0]->name);
+        self::assertArrayHasKey(0, $cachedDescriptors);
+        self::assertSame($route->getName(), $cachedDescriptors[0]->name);
     }
 
     public function testClearCache(): void
@@ -205,7 +205,7 @@ final class DescriptorLoaderTest extends TestCase
             }
         };
 
-        $this->assertFalse((new DescriptorLoader([$controller::class]))->load()->valid());
+        self::assertFalse((new DescriptorLoader([$controller::class]))->load()->valid());
     }
 
     public function testProtectedClassMethod(): void
@@ -218,7 +218,7 @@ final class DescriptorLoaderTest extends TestCase
             }
         };
 
-        $this->assertFalse((new DescriptorLoader([$controller::class]))->load()->valid());
+        self::assertFalse((new DescriptorLoader([$controller::class]))->load()->valid());
     }
 
     public function testStaticClassMethod(): void
@@ -231,7 +231,7 @@ final class DescriptorLoaderTest extends TestCase
             }
         };
 
-        $this->assertFalse((new DescriptorLoader([$controller::class]))->load()->valid());
+        self::assertFalse((new DescriptorLoader([$controller::class]))->load()->valid());
     }
 
     public function testClassRequestHandler(): void
@@ -245,8 +245,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame($controller::class, $route->getRequestHandler());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame($controller::class, $route->getRequestHandler());
     }
 
     public function testClassMethodRequestHandler(): void
@@ -260,8 +260,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([$controller::class, 'test'], $route->getRequestHandler());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([$controller::class, 'test'], $route->getRequestHandler());
     }
 
     public function testLowercaseMethod(): void
@@ -275,8 +275,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame(['GET'], $route->getMethods());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame(['GET'], $route->getMethods());
     }
 
     public function testPriorityAnnotation(): void
@@ -296,10 +296,10 @@ final class DescriptorLoaderTest extends TestCase
 
         /** @var list<RouteInterface> $routes */
         $routes = [...(new DescriptorLoader([$controller::class]))->load()];
-        $this->assertArrayHasKey('bar', $routes);
-        $this->assertSame('bar', $routes['bar']->getName());
-        $this->assertArrayHasKey('foo', $routes);
-        $this->assertSame('foo', $routes['foo']->getName());
+        self::assertArrayHasKey('bar', $routes);
+        self::assertSame('bar', $routes['bar']->getName());
+        self::assertArrayHasKey('foo', $routes);
+        self::assertSame('foo', $routes['foo']->getName());
     }
 
     public function testNamePrefixAnnotation(): void
@@ -313,8 +313,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame('foo.test', $route->getName());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame('foo.test', $route->getName());
     }
 
     public function testPathPrefixAnnotation(): void
@@ -328,8 +328,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame('/api/test', $route->getPath());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame('/api/test', $route->getPath());
     }
 
     public function testPathPostfixAnnotation(): void
@@ -343,8 +343,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame('/test.json', $route->getPath());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame('/test.json', $route->getPath());
     }
 
     public function testPatternAnnotation(): void
@@ -358,8 +358,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame(['foo' => 'bar'], $route->getPatterns());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame(['foo' => 'bar'], $route->getPatterns());
     }
 
     public function testMethodAnnotation(): void
@@ -373,8 +373,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame(['GET'], $route->getMethods());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame(['GET'], $route->getMethods());
     }
 
     public function testDefaultAttributeAnnotation(): void
@@ -388,8 +388,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame('bar', $route->getAttribute('foo'));
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame('bar', $route->getAttribute('foo'));
     }
 
     public function testMiddlewareAnnotation(): void
@@ -403,8 +403,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame(['foo'], $route->getMiddlewares());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame(['foo'], $route->getMiddlewares());
     }
 
     public function testConsumesAnnotation(): void
@@ -418,8 +418,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([MediaType::JSON], $route->getConsumedMediaTypes());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([MediaType::JSON], $route->getConsumedMediaTypes());
     }
 
     public function testProducesAnnotation(): void
@@ -433,8 +433,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([MediaType::JSON], $route->getProducedMediaTypes());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([MediaType::JSON], $route->getProducedMediaTypes());
     }
 
     public function testTagAnnotation(): void
@@ -448,8 +448,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame(['foo'], $route->getTags());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame(['foo'], $route->getTags());
     }
 
     public function testSummaryAnnotation(): void
@@ -463,8 +463,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame('foo', $route->getSummary());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame('foo', $route->getSummary());
     }
 
     public function testDescriptionAnnotation(): void
@@ -478,8 +478,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame('foo', $route->getDescription());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame('foo', $route->getDescription());
     }
 
     public function testDeprecatedAnnotation(): void
@@ -493,8 +493,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertTrue($route->isDeprecated());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertTrue($route->isDeprecated());
     }
 
     public function testApiRouteAnnotation(): void
@@ -508,8 +508,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertTrue($route->isApiRoute());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertTrue($route->isApiRoute());
     }
 
     public function testHeadMethodAnnotation(): void
@@ -523,8 +523,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([Method::METHOD_HEAD], $route->getMethods());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([Method::METHOD_HEAD], $route->getMethods());
     }
 
     public function testGetMethodAnnotation(): void
@@ -538,8 +538,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([Method::METHOD_GET], $route->getMethods());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([Method::METHOD_GET], $route->getMethods());
     }
 
     public function testPostMethodAnnotation(): void
@@ -553,8 +553,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([Method::METHOD_POST], $route->getMethods());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([Method::METHOD_POST], $route->getMethods());
     }
 
     public function testPutMethodAnnotation(): void
@@ -568,8 +568,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([Method::METHOD_PUT], $route->getMethods());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([Method::METHOD_PUT], $route->getMethods());
     }
 
     public function testPatchMethodAnnotation(): void
@@ -583,8 +583,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([Method::METHOD_PATCH], $route->getMethods());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([Method::METHOD_PATCH], $route->getMethods());
     }
 
     public function testDeleteMethodAnnotation(): void
@@ -598,8 +598,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([Method::METHOD_DELETE], $route->getMethods());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([Method::METHOD_DELETE], $route->getMethods());
     }
 
     public function testPurgeMethodAnnotation(): void
@@ -613,8 +613,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([Method::METHOD_PURGE], $route->getMethods());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([Method::METHOD_PURGE], $route->getMethods());
     }
 
     public function testOptionsMethodAnnotation(): void
@@ -628,8 +628,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([Method::METHOD_OPTIONS], $route->getMethods());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([Method::METHOD_OPTIONS], $route->getMethods());
     }
 
     public function testHeadRouteAnnotation(): void
@@ -643,8 +643,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([Method::METHOD_HEAD], $route->getMethods());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([Method::METHOD_HEAD], $route->getMethods());
     }
 
     public function testGetRouteAnnotation(): void
@@ -658,8 +658,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([Method::METHOD_GET], $route->getMethods());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([Method::METHOD_GET], $route->getMethods());
     }
 
     public function testPostRouteAnnotation(): void
@@ -673,8 +673,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([Method::METHOD_POST], $route->getMethods());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([Method::METHOD_POST], $route->getMethods());
     }
 
     public function testPutRouteAnnotation(): void
@@ -688,8 +688,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([Method::METHOD_PUT], $route->getMethods());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([Method::METHOD_PUT], $route->getMethods());
     }
 
     public function testPatchRouteAnnotation(): void
@@ -703,8 +703,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([Method::METHOD_PATCH], $route->getMethods());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([Method::METHOD_PATCH], $route->getMethods());
     }
 
     public function testDeleteRouteAnnotation(): void
@@ -718,8 +718,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([Method::METHOD_DELETE], $route->getMethods());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([Method::METHOD_DELETE], $route->getMethods());
     }
 
     public function testPurgeRouteAnnotation(): void
@@ -733,8 +733,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([Method::METHOD_PURGE], $route->getMethods());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([Method::METHOD_PURGE], $route->getMethods());
     }
 
     public function testOptionsRouteAnnotation(): void
@@ -748,8 +748,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([Method::METHOD_OPTIONS], $route->getMethods());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([Method::METHOD_OPTIONS], $route->getMethods());
     }
 
     public function testHeadApiRouteAnnotation(): void
@@ -763,9 +763,9 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([Method::METHOD_HEAD], $route->getMethods());
-        $this->assertTrue($route->isApiRoute());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([Method::METHOD_HEAD], $route->getMethods());
+        self::assertTrue($route->isApiRoute());
     }
 
     public function testGetApiRouteAnnotation(): void
@@ -779,9 +779,9 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([Method::METHOD_GET], $route->getMethods());
-        $this->assertTrue($route->isApiRoute());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([Method::METHOD_GET], $route->getMethods());
+        self::assertTrue($route->isApiRoute());
     }
 
     public function testPostApiRouteAnnotation(): void
@@ -795,9 +795,9 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([Method::METHOD_POST], $route->getMethods());
-        $this->assertTrue($route->isApiRoute());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([Method::METHOD_POST], $route->getMethods());
+        self::assertTrue($route->isApiRoute());
     }
 
     public function testPutApiRouteAnnotation(): void
@@ -811,9 +811,9 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([Method::METHOD_PUT], $route->getMethods());
-        $this->assertTrue($route->isApiRoute());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([Method::METHOD_PUT], $route->getMethods());
+        self::assertTrue($route->isApiRoute());
     }
 
     public function testPatchApiRouteAnnotation(): void
@@ -827,9 +827,9 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([Method::METHOD_PATCH], $route->getMethods());
-        $this->assertTrue($route->isApiRoute());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([Method::METHOD_PATCH], $route->getMethods());
+        self::assertTrue($route->isApiRoute());
     }
 
     public function testDeleteApiRouteAnnotation(): void
@@ -843,9 +843,9 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([Method::METHOD_DELETE], $route->getMethods());
-        $this->assertTrue($route->isApiRoute());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([Method::METHOD_DELETE], $route->getMethods());
+        self::assertTrue($route->isApiRoute());
     }
 
     public function testPurgeApiRouteAnnotation(): void
@@ -859,9 +859,9 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([Method::METHOD_PURGE], $route->getMethods());
-        $this->assertTrue($route->isApiRoute());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([Method::METHOD_PURGE], $route->getMethods());
+        self::assertTrue($route->isApiRoute());
     }
 
     public function testOptionsApiRouteAnnotation(): void
@@ -875,8 +875,8 @@ final class DescriptorLoaderTest extends TestCase
         };
 
         $route = (new DescriptorLoader([$controller::class]))->load()->current();
-        $this->assertInstanceOf(RouteInterface::class, $route);
-        $this->assertSame([Method::METHOD_OPTIONS], $route->getMethods());
-        $this->assertTrue($route->isApiRoute());
+        self::assertInstanceOf(RouteInterface::class, $route);
+        self::assertSame([Method::METHOD_OPTIONS], $route->getMethods());
+        self::assertTrue($route->isApiRoute());
     }
 }

@@ -17,15 +17,17 @@ use Sunrise\Http\Router\ParameterResolver\RequestQueryParameterResolver;
 use Sunrise\Http\Router\Tests\Fixture\App\Dto\Common\PaginationDto;
 use Sunrise\Http\Router\Tests\Fixture\App\Dto\Page\PageFilterRequest;
 use Sunrise\Http\Router\Tests\Fixture\App\Dto\Page\PageListRequest;
+use Sunrise\Http\Router\Tests\TestKit;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorInterface;
-use Symfony\Component\Validator\ConstraintViolationInterface;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class RequestQueryParameterResolverTest extends TestCase
 {
+    use TestKit;
+
     private HydratorInterface&MockObject $mockedHydrator;
     private ValidatorInterface&MockObject $mockedValidator;
     private ServerRequestInterface&MockObject $mockedRequest;
@@ -44,7 +46,7 @@ final class RequestQueryParameterResolverTest extends TestCase
         $this->mockedHydrator->expects(self::once())->method('hydrate')->with(PageListRequest::class, ['filter' => ['name' => 'foo']])->willReturn($pageListRequest);
         $parameter = new ReflectionParameter(fn(#[RequestQuery] PageListRequest $p) => null, 'p');
         $arguments = (new RequestQueryParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedRequest);
-        $this->assertSame($pageListRequest, $arguments->current());
+        self::assertSame($pageListRequest, $arguments->current());
     }
 
     public function testUnsupportedContext(): void
@@ -52,7 +54,7 @@ final class RequestQueryParameterResolverTest extends TestCase
         $this->mockedHydrator->expects(self::never())->method('hydrate');
         $parameter = new ReflectionParameter(fn(#[RequestQuery] PageListRequest $p) => null, 'p');
         $arguments = (new RequestQueryParameterResolver($this->mockedHydrator))->resolveParameter($parameter, null);
-        $this->assertFalse($arguments->valid());
+        self::assertFalse($arguments->valid());
     }
 
     public function testNonAnnotatedParameter(): void
@@ -60,7 +62,7 @@ final class RequestQueryParameterResolverTest extends TestCase
         $this->mockedHydrator->expects(self::never())->method('hydrate');
         $parameter = new ReflectionParameter(fn(PageListRequest $p) => null, 'p');
         $arguments = (new RequestQueryParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedRequest);
-        $this->assertFalse($arguments->valid());
+        self::assertFalse($arguments->valid());
     }
 
     public function testNonNamedParameterType(): void
@@ -97,13 +99,13 @@ final class RequestQueryParameterResolverTest extends TestCase
         try {
             $arguments->rewind();
         } catch (HttpException $e) {
-            $this->assertSame(400, $e->getCode());
+            self::assertSame(400, $e->getCode());
             $violations = $e->getConstraintViolations();
-            $this->assertArrayHasKey(0, $violations);
-            $this->assertSame($invalidValueException->getMessage(), $violations[0]->getMessage());
-            $this->assertSame($invalidValueException->getPropertyPath(), $violations[0]->getPropertyPath());
-            $this->assertSame($invalidValueException->getErrorCode(), $violations[0]->getCode());
-            $this->assertSame($invalidValueException->getInvalidValue(), $violations[0]->getInvalidValue());
+            self::assertArrayHasKey(0, $violations);
+            self::assertSame($invalidValueException->getMessage(), $violations[0]->getMessage());
+            self::assertSame($invalidValueException->getPropertyPath(), $violations[0]->getPropertyPath());
+            self::assertSame($invalidValueException->getErrorCode(), $violations[0]->getCode());
+            self::assertSame($invalidValueException->getInvalidValue(), $violations[0]->getInvalidValue());
             throw $e;
         }
     }
@@ -113,13 +115,8 @@ final class RequestQueryParameterResolverTest extends TestCase
         $pageListRequest = new PageListRequest(pagination: new PaginationDto(limit: 0));
         $this->mockedRequest->expects(self::once())->method('getQueryParams')->willReturn(['pagination' => ['limit' => 0]]);
         $this->mockedHydrator->expects(self::once())->method('hydrate')->with(PageListRequest::class, ['pagination' => ['limit' => 0]])->willReturn($pageListRequest);
-        $constraintViolation = $this->createMock(ConstraintViolationInterface::class);
-        $constraintViolation->method('getMessage')->willReturn('pagination limit is invalid');
-        $constraintViolation->method('getPropertyPath')->willReturn('pagination.limit');
-        $constraintViolation->method('getCode')->willReturn('332628a6-5f6c-4cbf-9d92-69f1c81ba4d9');
-        $constraintViolation->method('getInvalidValue')->willReturn($pageListRequest->pagination->limit);
-        $constraintViolationList = new ConstraintViolationList([$constraintViolation]);
-        $this->mockedValidator->expects(self::once())->method('validate')->with($pageListRequest)->willReturn($constraintViolationList);
+        $constraintViolation = $this->mockValidatorConstraintViolation(message: 'pagination limit is invalid', propertyPath: 'pagination.limit', code: '332628a6-5f6c-4cbf-9d92-69f1c81ba4d9', invalidValue: $pageListRequest->pagination->limit);
+        $this->mockedValidator->expects(self::once())->method('validate')->with($pageListRequest)->willReturn(new ConstraintViolationList([$constraintViolation]));
         $parameter = new ReflectionParameter(fn(#[RequestQuery] PageListRequest $p) => null, 'p');
         $arguments = (new RequestQueryParameterResolver($this->mockedHydrator, $this->mockedValidator))->resolveParameter($parameter, $this->mockedRequest);
         $this->expectException(HttpException::class);
@@ -128,13 +125,13 @@ final class RequestQueryParameterResolverTest extends TestCase
         try {
             $arguments->rewind();
         } catch (HttpException $e) {
-            $this->assertSame(400, $e->getCode());
+            self::assertSame(400, $e->getCode());
             $violations = $e->getConstraintViolations();
-            $this->assertArrayHasKey(0, $violations);
-            $this->assertSame($constraintViolation->getMessage(), $violations[0]->getMessage());
-            $this->assertSame($constraintViolation->getPropertyPath(), $violations[0]->getPropertyPath());
-            $this->assertSame($constraintViolation->getCode(), $violations[0]->getCode());
-            $this->assertSame($constraintViolation->getInvalidValue(), $violations[0]->getInvalidValue());
+            self::assertArrayHasKey(0, $violations);
+            self::assertSame($constraintViolation->getMessage(), $violations[0]->getMessage());
+            self::assertSame($constraintViolation->getPropertyPath(), $violations[0]->getPropertyPath());
+            self::assertSame($constraintViolation->getCode(), $violations[0]->getCode());
+            self::assertSame($constraintViolation->getInvalidValue(), $violations[0]->getInvalidValue());
             throw $e;
         }
     }
@@ -149,7 +146,7 @@ final class RequestQueryParameterResolverTest extends TestCase
         try {
             $arguments->rewind();
         } catch (HttpException $e) {
-            $this->assertSame(500, $e->getCode());
+            self::assertSame(500, $e->getCode());
         }
     }
 
@@ -163,7 +160,7 @@ final class RequestQueryParameterResolverTest extends TestCase
         try {
             $arguments->rewind();
         } catch (HttpException $e) {
-            $this->assertSame(503, $e->getCode());
+            self::assertSame(503, $e->getCode());
         }
     }
 
@@ -177,7 +174,7 @@ final class RequestQueryParameterResolverTest extends TestCase
         try {
             $arguments->rewind();
         } catch (HttpException $e) {
-            $this->assertSame('foo', $e->getMessage());
+            self::assertSame('foo', $e->getMessage());
         }
     }
 
@@ -191,7 +188,7 @@ final class RequestQueryParameterResolverTest extends TestCase
         try {
             $arguments->rewind();
         } catch (HttpException $e) {
-            $this->assertSame('bar', $e->getMessage());
+            self::assertSame('bar', $e->getMessage());
         }
     }
 
@@ -236,6 +233,6 @@ final class RequestQueryParameterResolverTest extends TestCase
 
     public function testWeight(): void
     {
-        $this->assertSame(0, (new RequestQueryParameterResolver($this->mockedHydrator))->getWeight());
+        self::assertSame(0, (new RequestQueryParameterResolver($this->mockedHydrator))->getWeight());
     }
 }

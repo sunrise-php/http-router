@@ -50,7 +50,7 @@ final class RequestHandlerResolverTest extends TestCase
     public function testResolveObject(): void
     {
         $expectedObject = $this->createMock(RequestHandlerInterface::class);
-        $this->assertSame($expectedObject, $this->createResolver()->resolveRequestHandler($expectedObject));
+        self::assertSame($expectedObject, $this->createResolver()->resolveRequestHandler($expectedObject));
     }
 
     public function testResolveClassName(): void
@@ -64,7 +64,7 @@ final class RequestHandlerResolverTest extends TestCase
         };
 
         $this->mockedClassResolver->expects(self::once())->method('resolveClass')->with($expectedObject::class)->willReturn($expectedObject);
-        $this->assertSame($expectedObject, $this->createResolver()->resolveRequestHandler($expectedObject::class));
+        self::assertSame($expectedObject, $this->createResolver()->resolveRequestHandler($expectedObject::class));
     }
 
     public function testResolveClassMethodName(): void
@@ -79,7 +79,7 @@ final class RequestHandlerResolverTest extends TestCase
         $this->mockedParameterResolverChain->expects(self::once())->method('withResolver')->willReturnSelf();
         $this->mockedParameterResolverChain->expects(self::once())->method('resolveParameters')->with($actualServerRequestArg, $actualServerRequestBodyArg)->willReturnCallback($parametersResolver);
         $this->mockedResponseResolverChain->expects(self::once())->method('resolveResponse')->with($this->mockedResponse)->willReturn($this->mockedResponse);
-        $this->assertSame($this->mockedResponse, $this->createResolver()->resolveRequestHandler([$testObject::class, 'test'])->handle($this->mockedRequest));
+        self::assertSame($this->mockedResponse, $this->createResolver()->resolveRequestHandler([$testObject::class, 'test'])->handle($this->mockedRequest));
     }
 
     public function testResolveObjectMethodName(): void
@@ -94,7 +94,7 @@ final class RequestHandlerResolverTest extends TestCase
         $this->mockedParameterResolverChain->expects(self::once())->method('withResolver')->willReturnSelf();
         $this->mockedParameterResolverChain->expects(self::once())->method('resolveParameters')->with($actualServerRequestArg, $actualServerRequestBodyArg)->willReturnCallback($parametersResolver);
         $this->mockedResponseResolverChain->expects(self::once())->method('resolveResponse')->with($this->mockedResponse)->willReturn($this->mockedResponse);
-        $this->assertSame($this->mockedResponse, $this->createResolver()->resolveRequestHandler([$testObject, 'test'])->handle($this->mockedRequest));
+        self::assertSame($this->mockedResponse, $this->createResolver()->resolveRequestHandler([$testObject, 'test'])->handle($this->mockedRequest));
     }
 
     public function testResolveUnsupportedReference(): void
@@ -125,8 +125,8 @@ final class RequestHandlerResolverTest extends TestCase
                 ServerRequestInterface $actualServerRequest,
                 StreamInterface $actualServerRequestBody,
             ): ResponseInterface {
-                $this->assertSame($this->expectedServerRequest, $actualServerRequest);
-                $this->assertSame($this->expectedServerRequestBody, $actualServerRequestBody);
+                self::assertSame($this->expectedServerRequest, $actualServerRequest);
+                self::assertSame($this->expectedServerRequestBody, $actualServerRequestBody);
                 return $this->response;
             }
         };

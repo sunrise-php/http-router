@@ -37,14 +37,14 @@ final class ReferenceResolverTest extends TestCase
     {
         $middleware = $this->createMock(MiddlewareInterface::class);
         $this->mockedMiddlewareResolver->expects(self::once())->method('resolveMiddleware')->with('foo')->willReturn($middleware);
-        $this->assertSame($middleware, (new ReferenceResolver($this->mockedMiddlewareResolver, $this->mockedRequestHandlerResolver))->resolveMiddleware('foo'));
+        self::assertSame($middleware, (new ReferenceResolver($this->mockedMiddlewareResolver, $this->mockedRequestHandlerResolver))->resolveMiddleware('foo'));
     }
 
     public function testResolveRequestHandler(): void
     {
         $requestHandler = $this->createMock(RequestHandlerInterface::class);
         $this->mockedRequestHandlerResolver->expects(self::once())->method('resolveRequestHandler')->with('foo')->willReturn($requestHandler);
-        $this->assertSame($requestHandler, (new ReferenceResolver($this->mockedMiddlewareResolver, $this->mockedRequestHandlerResolver))->resolveRequestHandler('foo'));
+        self::assertSame($requestHandler, (new ReferenceResolver($this->mockedMiddlewareResolver, $this->mockedRequestHandlerResolver))->resolveRequestHandler('foo'));
     }
 
     public function testBuild(): void

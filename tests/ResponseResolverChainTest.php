@@ -38,7 +38,7 @@ final class ResponseResolverChainTest extends TestCase
         $responseResolver = $this->createMock(ResponseResolverInterface::class);
         $responseResolver->expects(self::never())->method('resolveResponse');
 
-        $this->assertSame($expectedResponse, (new ResponseResolverChain([$responseResolver]))->resolveResponse($expectedResponse, $responder, $this->mockedRequest));
+        self::assertSame($expectedResponse, (new ResponseResolverChain([$responseResolver]))->resolveResponse($expectedResponse, $responder, $this->mockedRequest));
     }
 
     public function testResolveResponse(): void
@@ -69,7 +69,7 @@ final class ResponseResolverChainTest extends TestCase
         $responseResolvers[0]->expects(self::once())->method('resolveResponse')->with(null, $responder, $this->mockedRequest)->willReturn(null);
         $responseResolvers[0]->method('getWeight')->willReturn(2);
 
-        $this->assertSame($expectedResponse, (new ResponseResolverChain($responseResolvers))->resolveResponse(null, $responder, $this->mockedRequest));
+        self::assertSame($expectedResponse, (new ResponseResolverChain($responseResolvers))->resolveResponse(null, $responder, $this->mockedRequest));
     }
 
     public function testCompleteResponse(): void
@@ -96,7 +96,7 @@ final class ResponseResolverChainTest extends TestCase
         $responseResolver = $this->createMock(ResponseResolverInterface::class);
         $responseResolver->expects(self::once())->method('resolveResponse')->with(null, $responder, $this->mockedRequest)->willReturn($expectedResponse);
 
-        $this->assertSame($expectedResponse, (new ResponseResolverChain([$responseResolver]))->resolveResponse(null, $responder, $this->mockedRequest));
+        self::assertSame($expectedResponse, (new ResponseResolverChain([$responseResolver]))->resolveResponse(null, $responder, $this->mockedRequest));
     }
 
     public function testUnsupportedResponse(): void

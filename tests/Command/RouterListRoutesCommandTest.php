@@ -20,6 +20,6 @@ final class RouterListRoutesCommandTest extends TestCase
         $router->expects(self::once())->method('getRoutes')->willReturn($routes);
         $command = new RouterListRoutesCommand($router);
         $commandTester = new CommandTester($command);
-        $this->assertSame(Command::SUCCESS, $commandTester->execute([]));
+        self::assertSame(Command::SUCCESS, $commandTester->execute([]));
     }
 }

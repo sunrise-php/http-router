@@ -24,10 +24,10 @@ final class CallableRequestHandlerTest extends TestCase
     public function testHandle(): void
     {
         $callback = function (ServerRequestInterface $request): ResponseInterface {
-            $this->assertSame($this->mockedRequest, $request);
+            self::assertSame($this->mockedRequest, $request);
             return $this->mockedResponse;
         };
 
-        $this->assertSame($this->mockedResponse, (new CallableRequestHandler($callback))->handle($this->mockedRequest));
+        self::assertSame($this->mockedResponse, (new CallableRequestHandler($callback))->handle($this->mockedRequest));
     }
 }

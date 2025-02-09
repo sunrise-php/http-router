@@ -37,7 +37,7 @@ final class ParameterResolverChainTest extends TestCase
         $this->mockParameterResolver('foo', value: '1', weight: 1, calls: 1, registry: $this->mockedParameterResolvers);
         $this->mockParameterResolver('baz', value: '3', weight: 3, calls: 3, registry: $this->mockedParameterResolvers);
 
-        $this->assertSame(['1', '2', '3'], [...(new ParameterResolverChain($this->mockedParameterResolvers))->resolveParameters($foo, $bar, $baz)]);
+        self::assertSame(['1', '2', '3'], [...(new ParameterResolverChain($this->mockedParameterResolvers))->resolveParameters($foo, $bar, $baz)]);
     }
 
     public function testWithContext(): void
@@ -56,8 +56,8 @@ final class ParameterResolverChainTest extends TestCase
         $resolverChain = new ParameterResolverChain($this->mockedParameterResolvers);
         $resolverChainCopy = $resolverChain->withContext($context);
 
-        $this->assertNotSame($resolverChainCopy, $resolverChain);
-        $this->assertSame(['1', '2', '3'], [...$resolverChainCopy->resolveParameters($foo, $bar, $baz)]);
+        self::assertNotSame($resolverChainCopy, $resolverChain);
+        self::assertSame(['1', '2', '3'], [...$resolverChainCopy->resolveParameters($foo, $bar, $baz)]);
     }
 
     public function testWithResolver(): void
@@ -77,8 +77,8 @@ final class ParameterResolverChainTest extends TestCase
             $this->mockParameterResolver('bar', value: '22', weight: 25, calls: 2),
         );
 
-        $this->assertNotSame($resolverChainCopy, $resolverChain);
-        $this->assertSame(['1', '22', '33'], [...$resolverChainCopy->resolveParameters($foo, $bar, $baz)]);
+        self::assertNotSame($resolverChainCopy, $resolverChain);
+        self::assertSame(['1', '22', '33'], [...$resolverChainCopy->resolveParameters($foo, $bar, $baz)]);
     }
 
     public function testResolveUnsupportedParameter(): void

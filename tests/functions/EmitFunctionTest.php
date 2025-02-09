@@ -35,7 +35,7 @@ final class EmitFunctionTest extends TestCase
         emit($response);
         ob_end_clean();
 
-        $this->assertSame([
+        self::assertSame([
             'x-foo: bar',
             'x-bar: baz',
             'x-bar: qux',
@@ -56,6 +56,6 @@ final class EmitFunctionTest extends TestCase
         emit($response);
         $output = ob_get_clean();
 
-        $this->assertSame('foo', $output);
+        self::assertSame('foo', $output);
     }
 }

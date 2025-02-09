@@ -17,34 +17,34 @@ final class RequestHandlerReflectorTest extends TestCase
     {
         $requestHandler = $this->createMock(RequestHandlerInterface::class);
         $reflectedRequestHandler = (new RequestHandlerReflector())->reflectRequestHandler($requestHandler);
-        $this->assertInstanceOf(ReflectionClass::class, $reflectedRequestHandler);
-        $this->assertSame($requestHandler::class, $reflectedRequestHandler->name);
+        self::assertInstanceOf(ReflectionClass::class, $reflectedRequestHandler);
+        self::assertSame($requestHandler::class, $reflectedRequestHandler->name);
     }
 
     public function testReflectClass(): void
     {
         $requestHandler = $this->createMock(RequestHandlerInterface::class);
         $reflectedRequestHandler = (new RequestHandlerReflector())->reflectRequestHandler($requestHandler::class);
-        $this->assertInstanceOf(ReflectionClass::class, $reflectedRequestHandler);
-        $this->assertSame($requestHandler::class, $reflectedRequestHandler->name);
+        self::assertInstanceOf(ReflectionClass::class, $reflectedRequestHandler);
+        self::assertSame($requestHandler::class, $reflectedRequestHandler->name);
     }
 
     public function testReflectObjectMethod(): void
     {
         $requestHandler = $this->createMock(RequestHandlerInterface::class);
         $reflectedRequestHandler = (new RequestHandlerReflector())->reflectRequestHandler([$requestHandler, 'expects']);
-        $this->assertInstanceOf(ReflectionMethod::class, $reflectedRequestHandler);
-        $this->assertSame($requestHandler::class, $reflectedRequestHandler->class);
-        $this->assertSame('expects', $reflectedRequestHandler->name);
+        self::assertInstanceOf(ReflectionMethod::class, $reflectedRequestHandler);
+        self::assertSame($requestHandler::class, $reflectedRequestHandler->class);
+        self::assertSame('expects', $reflectedRequestHandler->name);
     }
 
     public function testReflectClassMethod(): void
     {
         $requestHandler = $this->createMock(RequestHandlerInterface::class);
         $reflectedRequestHandler = (new RequestHandlerReflector())->reflectRequestHandler([$requestHandler::class, 'expects']);
-        $this->assertInstanceOf(ReflectionMethod::class, $reflectedRequestHandler);
-        $this->assertSame($requestHandler::class, $reflectedRequestHandler->class);
-        $this->assertSame('expects', $reflectedRequestHandler->name);
+        self::assertInstanceOf(ReflectionMethod::class, $reflectedRequestHandler);
+        self::assertSame($requestHandler::class, $reflectedRequestHandler->class);
+        self::assertSame('expects', $reflectedRequestHandler->name);
     }
 
     public function testReflectUnknownClass(): void
