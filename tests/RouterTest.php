@@ -12,8 +12,10 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Router\Dictionary\ErrorMessage;
 use Sunrise\Http\Router\Event\RoutePostRunEvent;
 use Sunrise\Http\Router\Event\RoutePreRunEvent;
+use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\ReferenceResolverInterface;
 use Sunrise\Http\Router\RouteInterface;
 use Sunrise\Http\Router\Router;
@@ -51,7 +53,7 @@ final class RouterTest extends TestCase
         );
     }
 
-    public function testLoadRoutes(): void
+    public function testLoad(): void
     {
         $fooRoute = $this->mockRoute('foo', nameCalls: 1);
         $barRoute = $this->mockRoute('bar', nameCalls: 1);
@@ -68,11 +70,10 @@ final class RouterTest extends TestCase
         ])->getRoutes());
     }
 
-    public function testLoadDuplicateRoute(): void
+    public function testDuplicateRoute(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('The route "foo" already exists.');
-
         $this->createRouter([
             $this->mockLoader([$this->mockRoute('foo', nameCalls: 1)], calls: 1),
             $this->mockLoader([$this->mockRoute('foo', nameCalls: 1)], calls: 1),
@@ -82,17 +83,13 @@ final class RouterTest extends TestCase
     public function testGetRoute(): void
     {
         $route = $this->mockRoute('foo', nameCalls: 1);
-
-        self::assertSame($route, $this->createRouter([
-            $this->mockLoader([$route], calls: 1),
-        ])->getRoute('foo'));
+        self::assertSame($route, $this->createRouter([$this->mockLoader([$route], calls: 1)])->getRoute('foo'));
     }
 
-    public function testGetUnknownRoute(): void
+    public function testUnknownRoute(): void
     {
-        $this->expectException('InvalidArgumentException');
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('The route "foo" does not exist.');
-
         $this->createRouter([])->getRoute('foo');
     }
 
@@ -103,9 +100,7 @@ final class RouterTest extends TestCase
 
     public function testHasRouteTrue(): void
     {
-        self::assertTrue($this->createRouter([
-            $this->mockLoader([$this->mockRoute('foo', nameCalls: 1)], calls: 1),
-        ])->hasRoute('foo'));
+        self::assertTrue($this->createRouter([$this->mockLoader([$this->mockRoute('foo', nameCalls: 1)], calls: 1)])->hasRoute('foo'));
     }
 
     public function testMatchWithoutRoutes(): void
@@ -117,13 +112,91 @@ final class RouterTest extends TestCase
 
     public function testMatchWithEncodedRequestPath(): void
     {
-        $route = $this->mockRoute('test', path: '/test', nameCalls: 3, pathCalls: 1, methodsCalls: 1,);
+        $route = $this->mockRoute('test', path: '/test', nameCalls: 2, pathCalls: 1, methodsCalls: 1);
+        $request = $this->mockServerRequest(path: '/%74%65%73%74', methodCalls: 1, pathCalls: 1);
+        self::assertSame($route, $this->createRouter([$this->mockLoader([$route], calls: 1)])->match($request));
+    }
 
-        $route = (new Router(
-            referenceResolver: $this->mockedReferenceResolver,
-            loaders: [
-            ],
-        ))->match($this->mockedRequest);
+    public function testMatchWithMalformedRequestPath(): void
+    {
+        $route = $this->mockRoute('test', path: '/test', nameCalls: 2, pathCalls: 1, methodsCalls: 0);
+        $request = $this->mockServerRequest(path: '/test%FF', methodCalls: 1, pathCalls: 1);
+        $this->expectException(HttpException::class);
+        $this->expectExceptionMessage(ErrorMessage::MALFORMED_URI);
+        try {
+            $this->createRouter([$this->mockLoader([$route], calls: 1)])->match($request);
+        } catch (HttpException $e) {
+            self::assertSame(400, $e->getCode());
+            throw $e;
+        }
+    }
+
+    public function testMatchWithUnresolvedRequestPath(): void
+    {
+        $route = $this->mockRoute('test', path: '/test/{id<\d+>}', nameCalls: 2, pathCalls: 1, methodsCalls: 0);
+        $request = $this->mockServerRequest(path: '/test/foo', methodCalls: 1, pathCalls: 1);
+        $this->expectException(HttpException::class);
+        $this->expectExceptionMessage(ErrorMessage::RESOURCE_NOT_FOUND);
+        try {
+            $this->createRouter([$this->mockLoader([$route], calls: 1)])->match($request);
+        } catch (HttpException $e) {
+            self::assertSame(404, $e->getCode());
+            throw $e;
+        }
+    }
+
+    public function testMatchWithEmptyRoutePattern(): void
+    {
+        $route = $this->mockRoute('test', path: '/test', nameCalls: 2, pathCalls: 0, methodsCalls: 0);
+        $route->expects(self::any())->method('getPattern')->willReturn('');
+        $request = $this->mockServerRequest(path: '/test', methodCalls: 1, pathCalls: 1);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/This problem is most likely related to one of the route patterns/');
+        $this->createRouter([$this->mockLoader([$route], calls: 1)])->match($request);
+    }
+
+    public function testMatchWithInvalidRoutePattern(): void
+    {
+        $route = $this->mockRoute('test', path: '/test', nameCalls: 2, pathCalls: 0, methodsCalls: 0);
+        $route->expects(self::any())->method('getPattern')->willReturn('#');
+        $request = $this->mockServerRequest(path: '/test', methodCalls: 1, pathCalls: 1);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/This problem is most likely related to one of the route patterns/');
+        $this->createRouter([$this->mockLoader([$route], calls: 1)])->match($request);
+    }
+
+    public function testMatchWithInvalidRouteVariablePattern(): void
+    {
+        $route = $this->mockRoute('test', path: '/test/{id}', nameCalls: 2, pathCalls: 1, methodsCalls: 0);
+        $route->expects(self::any())->method('getPatterns')->willReturn(['id' => '#']);
+        $request = $this->mockServerRequest(path: '/test/1', methodCalls: 1, pathCalls: 1);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/This problem is most likely related to one of the route patterns/');
+        $this->createRouter([$this->mockLoader([$route], calls: 1)])->match($request);
+    }
+
+    public function testMatchWithInvalidRoutePathVariablePattern(): void
+    {
+        $route = $this->mockRoute('test', path: '/test/{id<][>}', nameCalls: 2, pathCalls: 1, methodsCalls: 0);
+        $request = $this->mockServerRequest(path: '/test/1', methodCalls: 1, pathCalls: 1);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/This problem is most likely related to one of the route patterns/');
+        $this->createRouter([$this->mockLoader([$route], calls: 1)])->match($request);
+    }
+
+    public function testMatchWithUnsupportedRequestMethod(): void
+    {
+        $route = $this->mockRoute('test', path: '/test', nameCalls: 2, pathCalls: 1, methodsCalls: 1);
+        $request = $this->mockServerRequest(method: 'HEAD', path: '/test', methodCalls: 1, pathCalls: 1);
+        $this->expectException(HttpException::class);
+        $this->expectExceptionMessage(ErrorMessage::METHOD_NOT_ALLOWED);
+        try {
+            $this->createRouter([$this->mockLoader([$route], calls: 1)])->match($request);
+        } catch (HttpException $e) {
+            self::assertSame(405, $e->getCode());
+            self::assertContains(['Allow', 'GET'], $e->getHeaderFields());
+            throw $e;
+        }
     }
 
     public function testHandle(): void
