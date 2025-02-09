@@ -41,7 +41,7 @@ final class RouteMatcher
      * @throws InvalidArgumentException
      * @throws UnexpectedValueException
      */
-    public static function matchRoute(string $route, string $pattern, string $subject, ?array &$matches = null): bool
+    public static function matchRoute(string $pattern, string $subject, ?array &$matches = null): bool
     {
         try {
             if (($result = @preg_match($pattern, $subject, $matches, PREG_UNMATCHED_AS_NULL)) === false) {
@@ -51,7 +51,7 @@ final class RouteMatcher
             if (preg_last_error() === PREG_BAD_UTF8_ERROR) {
                 throw new UnexpectedValueException(sprintf(
                     'The route "%s" could not be matched due to an invalid subject: %s.',
-                    $route,
+                    $pattern,
                     preg_last_error_msg(),
                 ));
             }
@@ -59,7 +59,7 @@ final class RouteMatcher
             throw new InvalidArgumentException(sprintf(
                 'The route "%s" could not be matched due to: %s. ' .
                 'This problem is most likely related to one of the route patterns.',
-                $route,
+                $pattern,
                 preg_last_error_msg(),
             ), preg_last_error());
         }

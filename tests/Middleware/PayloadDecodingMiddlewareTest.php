@@ -35,7 +35,7 @@ final class PayloadDecodingMiddlewareTest extends TestCase
         $this->mockedCodecManager = $this->createMock(CodecManagerInterface::class);
         $this->mockedRequest = $this->createMock(ServerRequestInterface::class);
         $this->mockedRequestBody = $this->createMock(StreamInterface::class);
-        $this->mockedRequest->method('getBody')->willReturn($this->mockedRequestBody);
+        $this->mockedRequest->expects(self::any())->method('getBody')->willReturn($this->mockedRequestBody);
         $this->mockedRequestHandler = $this->createMock(RequestHandlerInterface::class);
         $this->mockedResponse = $this->createMock(ResponseInterface::class);
         $this->mockedRoute = $this->createMock(RouteInterface::class);

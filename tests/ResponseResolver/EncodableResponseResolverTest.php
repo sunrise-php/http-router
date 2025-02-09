@@ -40,7 +40,7 @@ final class EncodableResponseResolverTest extends TestCase
         $this->mockedMediaType = $this->createMock(MediaTypeInterface::class);
         $this->mockedRequest = $this->createMock(ServerRequestInterface::class);
         $this->mockedRoute = $this->createMock(RouteInterface::class);
-        $this->mockedRequest->method('getAttribute')->with(RouteInterface::class)->willReturn($this->mockedRoute);
+        $this->mockedRequest->expects(self::any())->method('getAttribute')->with(RouteInterface::class)->willReturn($this->mockedRoute);
         $this->mockedResponse = $this->createMock(ResponseInterface::class);
         $this->mockedResponseBody = $this->createMock(StreamInterface::class);
     }
@@ -55,7 +55,7 @@ final class EncodableResponseResolverTest extends TestCase
             }
         }, 'test');
 
-        $this->mockedMediaType->method('getIdentifier')->willReturn('application/json');
+        $this->mockedMediaType->expects(self::any())->method('getIdentifier')->willReturn('application/json');
         $this->mockedRoute->expects(self::once())->method('getProducedMediaTypes')->willReturn([$this->mockedMediaType]);
         $this->mockedRequest->expects(self::once())->method('getHeaderLine')->with('Accept')->willReturn('application/json');
         $this->mockedCodecManager->expects(self::once())->method('encode')->with($this->mockedMediaType, ['foo'])->willReturn('["foo"]');
@@ -90,7 +90,7 @@ final class EncodableResponseResolverTest extends TestCase
             }
         }, 'test');
 
-        $this->mockedMediaType->method('getIdentifier')->willReturn('application/json');
+        $this->mockedMediaType->expects(self::any())->method('getIdentifier')->willReturn('application/json');
         $this->mockedRoute->expects(self::once())->method('getProducedMediaTypes')->willReturn([$this->mockedMediaType]);
         $this->mockedRequest->expects(self::once())->method('getHeaderLine')->with('Accept')->willReturn('application/json');
         $this->mockedCodecManager->expects(self::once())->method('encode')->with($this->mockedMediaType, ["\xff"])->willThrowException(new CodecException());
@@ -176,7 +176,7 @@ final class EncodableResponseResolverTest extends TestCase
             }
         }, 'test');
 
-        $this->mockedMediaType->method('getIdentifier')->willReturn('application/json');
+        $this->mockedMediaType->expects(self::any())->method('getIdentifier')->willReturn('application/json');
         $this->mockedRoute->expects(self::once())->method('getProducedMediaTypes')->willReturn([$this->mockedMediaType]);
         $this->mockedRequest->expects(self::once())->method('getHeaderLine')->with('Accept')->willReturn('APPLICATION/JSON');
         $this->mockedCodecManager->expects(self::once())->method('encode')->with($this->mockedMediaType, ['foo'])->willReturn('["foo"]');
@@ -197,7 +197,7 @@ final class EncodableResponseResolverTest extends TestCase
             }
         }, 'test');
 
-        $this->mockedMediaType->method('getIdentifier')->willReturn('application/json');
+        $this->mockedMediaType->expects(self::any())->method('getIdentifier')->willReturn('application/json');
         $this->mockedRoute->expects(self::once())->method('getProducedMediaTypes')->willReturn([$this->mockedMediaType]);
         $this->mockedRequest->expects(self::once())->method('getHeaderLine')->with('Accept')->willReturn('application/json');
         $this->mockedCodecManager->expects(self::once())->method('encode')->with($this->mockedMediaType, ['foo'], ['foo' => 'baz', 'baz' => 'qux', 'bar' => 'baz'])->willReturn('["foo"]');

@@ -33,7 +33,7 @@ final class ArgumentConstraintValidatorTest extends TestCase
         $this->constraintValidator->initialize($executionContext);
 
         $this->mockedContextualValidator = $this->createMock(ContextualValidatorInterface::class);
-        $validator->method('inContext')->with($executionContext)->willReturn($this->mockedContextualValidator);
+        $validator->expects(self::any())->method('inContext')->with($executionContext)->willReturn($this->mockedContextualValidator);
     }
 
     public function testValidate(): void

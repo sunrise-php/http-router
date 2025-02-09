@@ -34,7 +34,7 @@ final class RequestHandlerResolverTest extends TestCase
         $this->mockedResponseResolverChain = $this->createMock(ResponseResolverChainInterface::class);
         $this->mockedRequest = $this->createMock(ServerRequestInterface::class);
         $this->mockedRequestBody = $this->createMock(StreamInterface::class);
-        $this->mockedRequest->method('getBody')->willReturn($this->mockedRequestBody);
+        $this->mockedRequest->expects(self::any())->method('getBody')->willReturn($this->mockedRequestBody);
         $this->mockedResponse = $this->createMock(ResponseInterface::class);
     }
 

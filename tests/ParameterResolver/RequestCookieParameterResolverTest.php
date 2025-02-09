@@ -37,7 +37,7 @@ final class RequestCookieParameterResolverTest extends TestCase
         $this->mockedHydrator = $this->createMock(HydratorInterface::class);
         $this->mockedValidator = $this->createMock(ValidatorInterface::class);
         $this->mockedContextualValidator = $this->createMock(ContextualValidatorInterface::class);
-        $this->mockedValidator->method('startContext')->willReturn($this->mockedContextualValidator);
+        $this->mockedValidator->expects(self::any())->method('startContext')->willReturn($this->mockedContextualValidator);
         $this->mockedRequest = $this->createMock(ServerRequestInterface::class);
     }
 

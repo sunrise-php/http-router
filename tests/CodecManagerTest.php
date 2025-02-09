@@ -32,19 +32,19 @@ final class CodecManagerTest extends TestCase
             $this->createMock(CodecInterface::class),
         ];
 
-        $this->mockedCodecs[0]->method('getSupportedMediaTypes')->willReturn([]);
+        $this->mockedCodecs[0]->expects(self::any())->method('getSupportedMediaTypes')->willReturn([]);
         $this->mockedCodecs[0]->expects(self::never())->method('decode');
         $this->mockedCodecs[0]->expects(self::never())->method('encode');
 
         $codecContextArgument = self::callback(fn(mixed $argument): bool => $argument === $this->expectedCodecContext);
 
-        $this->mockedCodecs[1]->method('getSupportedMediaTypes')->willReturn([$this->mockMediaType('test/foo')]);
-        $this->mockedCodecs[1]->method('decode')->with('1', $codecContextArgument)->willReturn(1);
-        $this->mockedCodecs[1]->method('encode')->with(1, $codecContextArgument)->willReturn('1');
+        $this->mockedCodecs[1]->expects(self::any())->method('getSupportedMediaTypes')->willReturn([$this->mockMediaType('test/foo')]);
+        $this->mockedCodecs[1]->expects(self::any())->method('decode')->with('1', $codecContextArgument)->willReturn(1);
+        $this->mockedCodecs[1]->expects(self::any())->method('encode')->with(1, $codecContextArgument)->willReturn('1');
 
-        $this->mockedCodecs[2]->method('getSupportedMediaTypes')->willReturn([$this->mockMediaType('test/bar'), $this->mockMediaType('test/baz')]);
-        $this->mockedCodecs[2]->method('decode')->with('2', $codecContextArgument)->willReturn(2);
-        $this->mockedCodecs[2]->method('encode')->with(2, $codecContextArgument)->willReturn('2');
+        $this->mockedCodecs[2]->expects(self::any())->method('getSupportedMediaTypes')->willReturn([$this->mockMediaType('test/bar'), $this->mockMediaType('test/baz')]);
+        $this->mockedCodecs[2]->expects(self::any())->method('decode')->with('2', $codecContextArgument)->willReturn(2);
+        $this->mockedCodecs[2]->expects(self::any())->method('encode')->with(2, $codecContextArgument)->willReturn('2');
     }
 
     public function testSupportsMediaType(): void

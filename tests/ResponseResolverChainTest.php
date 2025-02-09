@@ -61,13 +61,16 @@ final class ResponseResolverChainTest extends TestCase
         ];
 
         $responseResolvers[1]->expects(self::once())->method('resolveResponse')->with(null, $responder, $this->mockedRequest)->willReturn($expectedResponse);
-        $responseResolvers[1]->method('getWeight')->willReturn(1);
+        $responseResolvers[1]->expects(self::any())->method('getWeight')->willReturn(1);
+
         $responseResolvers[2]->expects(self::once())->method('resolveResponse')->with(null, $responder, $this->mockedRequest)->willReturn(null);
-        $responseResolvers[2]->method('getWeight')->willReturn(3);
+        $responseResolvers[2]->expects(self::any())->method('getWeight')->willReturn(3);
+
         $responseResolvers[3]->expects(self::never())->method('resolveResponse');
-        $responseResolvers[3]->method('getWeight')->willReturn(0);
+        $responseResolvers[3]->expects(self::any())->method('getWeight')->willReturn(0);
+
         $responseResolvers[0]->expects(self::once())->method('resolveResponse')->with(null, $responder, $this->mockedRequest)->willReturn(null);
-        $responseResolvers[0]->method('getWeight')->willReturn(2);
+        $responseResolvers[0]->expects(self::any())->method('getWeight')->willReturn(2);
 
         self::assertSame($expectedResponse, (new ResponseResolverChain($responseResolvers))->resolveResponse(null, $responder, $this->mockedRequest));
     }

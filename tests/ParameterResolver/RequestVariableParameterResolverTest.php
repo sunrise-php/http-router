@@ -40,10 +40,10 @@ final class RequestVariableParameterResolverTest extends TestCase
         $this->mockedHydrator = $this->createMock(HydratorInterface::class);
         $this->mockedValidator = $this->createMock(ValidatorInterface::class);
         $this->mockedContextualValidator = $this->createMock(ContextualValidatorInterface::class);
-        $this->mockedValidator->method('startContext')->willReturn($this->mockedContextualValidator);
+        $this->mockedValidator->expects(self::any())->method('startContext')->willReturn($this->mockedContextualValidator);
         $this->mockedRequest = $this->createMock(ServerRequestInterface::class);
         $this->mockedRoute = $this->createMock(RouteInterface::class);
-        $this->mockedRequest->method('getAttribute')->with(RouteInterface::class)->willReturn($this->mockedRoute);
+        $this->mockedRequest->expects(self::any())->method('getAttribute')->with(RouteInterface::class)->willReturn($this->mockedRoute);
     }
 
     public function testResolveParameter(): void
