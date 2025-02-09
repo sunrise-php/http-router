@@ -86,10 +86,12 @@ final class ResponseResolverChainTest extends TestCase
 
         $expectedResponse = $this->createMock(ResponseInterface::class);
         $expectedResponse->expects(self::once())->method('withStatus')->with(204, 'No Content')->willReturnSelf();
-        $expectedResponse->expects(self::exactly(2))->method('withHeader')->willReturnCallback(function ($name, $value) use ($expectedResponse) {
-            $this->assertContains([$name, $value], [['x-foo', 'foo'], ['x-bar', 'bar']]);
-            return $expectedResponse;
-        });
+        $expectedResponse->expects(self::exactly(2))->method('withHeader')->willReturnCallback(
+            static function ($name, $value) use ($expectedResponse) {
+                self::assertContains([$name, $value], [['x-foo', 'foo'], ['x-bar', 'bar']]);
+                return $expectedResponse;
+            }
+        );
 
         $responseResolver = $this->createMock(ResponseResolverInterface::class);
         $responseResolver->expects(self::once())->method('resolveResponse')->with(null, $responder, $this->mockedRequest)->willReturn($expectedResponse);

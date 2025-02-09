@@ -31,7 +31,7 @@ final class QueueableRequestHandlerTest extends TestCase
         $this->assertCount(0, $requestHandler);
 
         $callableMiddleware = function (ServerRequestInterface $request, QueueableRequestHandler $handler): ResponseInterface {
-            $this->assertSame($this->mockedRequest, $request);
+            self::assertSame($this->mockedRequest, $request);
             return $handler->handle($request);
         };
 

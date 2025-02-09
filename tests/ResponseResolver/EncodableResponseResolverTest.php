@@ -19,9 +19,12 @@ use Sunrise\Http\Router\Exception\CodecException;
 use Sunrise\Http\Router\MediaTypeInterface;
 use Sunrise\Http\Router\ResponseResolver\EncodableResponseResolver;
 use Sunrise\Http\Router\RouteInterface;
+use Sunrise\Http\Router\Tests\TestKit;
 
 final class EncodableResponseResolverTest extends TestCase
 {
+    use TestKit;
+
     private ResponseFactoryInterface&MockObject $mockedResponseFactory;
     private CodecManagerInterface&MockObject $mockedCodecManager;
     private MediaTypeInterface&MockObject $mockedMediaType;
@@ -150,12 +153,9 @@ final class EncodableResponseResolverTest extends TestCase
             }
         }, 'test');
 
-        $applicationJson = $this->createMock(MediaTypeInterface::class);
-        $applicationJson->method('getIdentifier')->willReturn('application/json');
-        $applicationXml = $this->createMock(MediaTypeInterface::class);
-        $applicationXml->method('getIdentifier')->willReturn('application/xml');
-        $applicationYaml = $this->createMock(MediaTypeInterface::class);
-        $applicationYaml->method('getIdentifier')->willReturn('application/yaml');
+        $applicationJson = $this->mockMediaType('application/json');
+        $applicationXml = $this->mockMediaType('application/xml');
+        $applicationYaml = $this->mockMediaType('application/yaml');
         $this->mockedRoute->expects(self::once())->method('getProducedMediaTypes')->willReturn([$applicationXml, $applicationYaml, $applicationJson]);
         $this->mockedRequest->expects(self::once())->method('getHeaderLine')->with('Accept')->willReturn('application/xml; q=0.25, application/json; q=0.75, application/yaml; q=0.5');
         $this->mockedCodecManager->expects(self::once())->method('encode')->with($applicationXml, ['foo'])->willReturn('["foo"]');

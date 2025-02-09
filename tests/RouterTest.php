@@ -7,41 +7,47 @@ namespace Sunrise\Http\Router\Tests;
 use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\UriInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Router\Event\RoutePostRunEvent;
+use Sunrise\Http\Router\Event\RoutePreRunEvent;
+use Sunrise\Http\Router\ReferenceResolverInterface;
+use Sunrise\Http\Router\RouteInterface;
 use Sunrise\Http\Router\Router;
 
 final class RouterTest extends TestCase
 {
     use TestKit;
 
-    private ServerRequestInterface&MockObject $mockedRequest;
+    private EventDispatcherInterface&MockObject $mockedEventDispatcher;
+    private ReferenceResolverInterface&MockObject $mockedReferenceResolver;
     private RequestHandlerInterface&MockObject $mockedRequestHandler;
     private ResponseInterface&MockObject $mockedResponse;
 
     protected function setUp(): void
     {
-        $this->mockedRequest = $this->createMock(ServerRequestInterface::class);
+        $this->mockedEventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $this->mockedReferenceResolver = $this->createMock(ReferenceResolverInterface::class);
         $this->mockedRequestHandler = $this->createMock(RequestHandlerInterface::class);
         $this->mockedResponse = $this->createMock(ResponseInterface::class);
     }
 
     public function testLoadRoutes(): void
     {
-        $fooRoute = $this->mockRoute(name: 'foo');
-        $barRoute = $this->mockRoute(name: 'bar');
-        $bazRoute = $this->mockRoute(name: 'baz');
+        $fooRoute = $this->mockRoute('foo');
+        $barRoute = $this->mockRoute('bar');
+        $bazRoute = $this->mockRoute('baz');
 
         $this->assertSame([
             'foo' => $fooRoute,
             'bar' => $barRoute,
             'baz' => $bazRoute,
-        ], (new Router(loaders: [
-            $this->mockLoader(routes: []),
-            $this->mockLoader(routes: [$fooRoute]),
-            $this->mockLoader(routes: [$barRoute, $bazRoute]),
+        ], (new Router(referenceResolver: $this->mockedReferenceResolver, loaders: [
+            $this->mockLoader([], calls: 1),
+            $this->mockLoader([$fooRoute], calls: 1),
+            $this->mockLoader([$barRoute, $bazRoute], calls: 1),
         ]))->getRoutes());
     }
 
@@ -50,18 +56,18 @@ final class RouterTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('The route "foo" already exists.');
 
-        (new Router(loaders: [
-            $this->mockLoader(routes: [$this->mockRoute(name: 'foo')]),
-            $this->mockLoader(routes: [$this->mockRoute(name: 'foo')]),
+        (new Router(referenceResolver: $this->mockedReferenceResolver, loaders: [
+            $this->mockLoader([$this->mockRoute('foo')], calls: 1),
+            $this->mockLoader([$this->mockRoute('foo')], calls: 1),
         ]))->getRoutes();
     }
 
     public function testGetRoute(): void
     {
-        $route = $this->mockRoute(name: 'foo');
+        $route = $this->mockRoute('foo');
 
-        $this->assertSame($route, (new Router(loaders: [
-            $this->mockLoader(routes: [$route]),
+        $this->assertSame($route, (new Router(referenceResolver: $this->mockedReferenceResolver, loaders: [
+            $this->mockLoader([$route], calls: 1),
         ]))->getRoute('foo'));
     }
 
@@ -70,28 +76,77 @@ final class RouterTest extends TestCase
         $this->expectException('InvalidArgumentException');
         $this->expectExceptionMessage('The route "foo" does not exist.');
 
-        (new Router())->getRoute('foo');
+        (new Router(referenceResolver: $this->mockedReferenceResolver, loaders: []))->getRoute('foo');
     }
 
     public function testHasRouteFalse(): void
     {
-        $this->assertFalse((new Router())->hasRoute('foo'));
+        $this->assertFalse((new Router(referenceResolver: $this->mockedReferenceResolver, loaders: []))->hasRoute('foo'));
     }
 
     public function testHasRouteTrue(): void
     {
-        $this->assertTrue((new Router(loaders: [
-            $this->mockLoader(routes: [$this->mockRoute(name: 'foo')]),
+        $this->assertTrue((new Router(referenceResolver: $this->mockedReferenceResolver, loaders: [
+            $this->mockLoader([$this->mockRoute('foo')], calls: 1),
         ]))->hasRoute('foo'));
     }
 
-    public function testUsingMiddlewareWhenHandlingRequest(): void
+    public function testHandle(): void
     {
-        $this->assertSame($this->mockedResponse, (new Router(
-            middlewares: [
-                $this->mockChainContinuingMiddleware($this->mockedRequest),
-                $this->mockChainBreakingMiddleware($this->mockedResponse, $this->mockedRequest),
+        $route = $this->mockRoute('test', path: '/test/{foo<(?:bar)>}/{bar<(?:baz)>}', requestHandler: '@test');
+        $route->expects(self::once())->method('getAttributes')->willReturn(['foo' => 'bar', 'bar' => 'baz']);
+        $route->expects(self::once())->method('withAddedAttributes')->with(['foo' => 'bar', 'bar' => 'baz'])->willReturnSelf();
+
+        $request = $this->mockServerRequest(path: '/test/bar/%62%61%7a');
+
+        $request->expects(self::exactly(3))->method('withAttribute')->willReturnCallback(
+            static function ($name, $value) use ($route, $request) {
+                self::assertContains([$name, $value], [['foo', 'bar'], ['bar', 'baz'], [RouteInterface::class, $route]]);
+                return $request;
+            }
+        );
+
+        $this->mockedRequestHandler->expects(self::once())->method('handle')->with($request)->willReturn($this->mockedResponse);
+
+        $this->mockedReferenceResolver->expects(self::atLeastOnce())->method('resolveMiddleware')->withAnyParameters()->willReturnArgument(0);
+        $this->mockedReferenceResolver->expects(self::once())->method('resolveRequestHandler')->with('@test')->willReturn($this->mockedRequestHandler);
+
+        $eventOverriddenRequest = $this->createMock(ServerRequestInterface::class);
+        $eventOverriddenResponse = $this->createMock(ResponseInterface::class);
+
+        $this->mockedEventDispatcher->expects(self::exactly(2))->method('dispatch')->withAnyParameters()->willReturnCallback(
+            static function (object $event) use ($eventOverriddenRequest, $eventOverriddenResponse) {
+                self::assertContains($event::class, [RoutePreRunEvent::class, RoutePostRunEvent::class]);
+
+                if ($event instanceof RoutePreRunEvent) {
+                    $event->request = $eventOverriddenRequest;
+                }
+                if ($event instanceof RoutePostRunEvent) {
+                    $event->response = $eventOverriddenResponse;
+                }
+            }
+        );
+
+        $router = new Router(
+            referenceResolver: $this->mockedReferenceResolver,
+            loaders: [
+                $this->mockLoader([
+                    $this->mockRoute('bar', path: '/bar'),
+                    $this->mockRoute('baz', path: '/baz'),
+                ], calls: 1),
+                $this->mockLoader([$route], calls: 1),
             ],
-        ))->handle($this->mockedRequest));
+            middlewares: [
+                $this->mockChainContinuingMiddleware(request: $request, calls: 1),
+                $this->mockChainContinuingMiddleware(request: $request, calls: 1),
+            ],
+            routeMiddlewares: [
+                $this->mockChainContinuingMiddleware(request: $eventOverriddenRequest, calls: 1),
+                $this->mockChainContinuingMiddleware(request: $eventOverriddenRequest, calls: 1),
+            ],
+            eventDispatcher: $this->mockedEventDispatcher,
+        );
+
+        $this->assertSame($eventOverriddenResponse, $router->handle($request));
     }
 }

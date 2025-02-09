@@ -15,7 +15,6 @@ namespace Sunrise\Http\Router;
 
 use InvalidArgumentException;
 use LogicException;
-use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -37,16 +36,11 @@ use UnexpectedValueException;
 use function array_flip;
 use function array_keys;
 use function array_merge;
-use function in_array;
 use function rawurldecode;
 use function sprintf;
 
 final class Router implements RouterInterface
 {
-    private readonly ReferenceResolverInterface $referenceResolver;
-
-    private ?RequestHandlerInterface $requestHandler = null;
-
     /** @var array<string, RouteInterface> */
     private array $routes = [];
 
@@ -56,32 +50,23 @@ final class Router implements RouterInterface
     /** @var array<string, RequestHandlerInterface> */
     private array $routeRequestHandlers = [];
 
+    private ?RequestHandlerInterface $requestHandler = null;
+
     private bool $isLoaded = false;
 
     /**
-     * @param array<array-key, ParameterResolverInterface> $parameterResolvers
-     * @param array<array-key, ResponseResolverInterface> $responseResolvers
-     *
      * @since 3.0.0
      */
     public function __construct(
+        private readonly ReferenceResolverInterface $referenceResolver,
         /** @var array<array-key, LoaderInterface> */
-        private readonly array $loaders = [],
+        private readonly array $loaders,
         /** @var array<array-key, mixed> */
         private readonly array $middlewares = [],
         /** @var array<array-key, mixed> */
         private readonly array $routeMiddlewares = [],
-        ?ReferenceResolverInterface $referenceResolver = null,
         private readonly ?EventDispatcherInterface $eventDispatcher = null,
-        array $parameterResolvers = [],
-        array $responseResolvers = [],
-        ?ContainerInterface $container = null,
     ) {
-        $this->referenceResolver = $referenceResolver ?? ReferenceResolver::build(
-            parameterResolvers: $parameterResolvers,
-            responseResolvers: $responseResolvers,
-            container: $container,
-        );
     }
 
     /**
@@ -166,13 +151,13 @@ final class Router implements RouterInterface
                 throw HttpExceptionFactory::malformedUri(previous: $e);
             }
 
-            $routeMethods = $route->getMethods();
-            if (!in_array($requestMethod, $routeMethods, true)) {
-                $allowedMethods += array_flip($routeMethods);
+            $routeMethods = array_flip($route->getMethods());
+            if (!isset($routeMethods[$requestMethod])) {
+                $allowedMethods += $routeMethods;
                 continue;
             }
 
-            return $route->withAddedAttributes($matches);
+            return $matches === [] ? $route : $route->withAddedAttributes($matches);
         }
 
         if ($allowedMethods !== []) {
@@ -280,9 +265,7 @@ final class Router implements RouterInterface
         if ($middlewares !== []) {
             $this->routeRequestHandlers[$name] = new QueueableRequestHandler($this->routeRequestHandlers[$name]);
             foreach ($middlewares as $middleware) {
-                $this->routeRequestHandlers[$name]->enqueue(
-                    $this->referenceResolver->resolveMiddleware($middleware)
-                );
+                $this->routeRequestHandlers[$name]->enqueue($this->referenceResolver->resolveMiddleware($middleware));
             }
         }
 
@@ -299,16 +282,14 @@ final class Router implements RouterInterface
         }
 
         $this->requestHandler = new CallableRequestHandler(
-            fn(ServerRequestInterface $request): ResponseInterface
-                => $this->runRoute($this->match($request), $request),
+            fn(ServerRequestInterface $request): ResponseInterface =>
+                $this->runRoute($this->match($request), $request),
         );
 
         if ($this->middlewares !== []) {
             $this->requestHandler = new QueueableRequestHandler($this->requestHandler);
             foreach ($this->middlewares as $middleware) {
-                $this->requestHandler->enqueue(
-                    $this->referenceResolver->resolveMiddleware($middleware)
-                );
+                $this->requestHandler->enqueue($this->referenceResolver->resolveMiddleware($middleware));
             }
         }
 
@@ -317,33 +298,20 @@ final class Router implements RouterInterface
 
     /**
      * @throws InvalidArgumentException
-     *
-     * @since 3.0.0 This method has become private.
      */
     private function load(): void
     {
         foreach ($this->loaders as $loader) {
-            $this->addRoute(...$loader->load());
+            foreach ($loader->load() as $route) {
+                $name = $route->getName();
+                if (isset($this->routes[$name])) {
+                    throw new InvalidArgumentException(sprintf('The route "%s" already exists.', $name));
+                }
+
+                $this->routes[$name] = $route;
+            }
         }
 
         $this->isLoaded = true;
-    }
-
-    /**
-     * @throws InvalidArgumentException
-     *
-     * @since 3.0.0 This method has become private.
-     */
-    private function addRoute(RouteInterface ...$routes): void
-    {
-        foreach ($routes as $route) {
-            $name = $route->getName();
-
-            if (isset($this->routes[$name])) {
-                throw new InvalidArgumentException(sprintf('The route "%s" already exists.', $name));
-            }
-
-            $this->routes[$name] = $route;
-        }
     }
 }

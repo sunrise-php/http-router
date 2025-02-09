@@ -27,11 +27,11 @@ use function DI\create;
 use function DI\get;
 
 return [
+    'router.parameter_resolvers' => [],
+    'router.response_resolvers' => [],
     'router.loaders' => [],
     'router.middlewares' => [],
     'router.route_middlewares' => [],
-    'router.parameter_resolvers' => [],
-    'router.response_resolvers' => [],
     'router.event_dispatcher' => null,
     'router.codecs' => [],
     'router.codecs.context' => [],
@@ -75,10 +75,10 @@ return [
 
     RouterInterface::class => create(Router::class)
         ->constructor(
+            referenceResolver: get(ReferenceResolverInterface::class),
             loaders: get('router.loaders'),
             middlewares: get('router.middlewares'),
             routeMiddlewares: get('router.route_middlewares'),
-            referenceResolver: get(ReferenceResolverInterface::class),
             eventDispatcher: get('router.event_dispatcher'),
         ),
 

@@ -21,7 +21,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 final class ArgumentConstraintValidatorTest extends TestCase
 {
     private ArgumentConstraintValidator $constraintValidator;
-    private ContextualValidatorInterface&MockObject $contextualValidator;
+    private ContextualValidatorInterface&MockObject $mockedContextualValidator;
 
     protected function setUp(): void
     {
@@ -32,8 +32,8 @@ final class ArgumentConstraintValidatorTest extends TestCase
         $this->constraintValidator = new ArgumentConstraintValidator();
         $this->constraintValidator->initialize($executionContext);
 
-        $this->contextualValidator = $this->createMock(ContextualValidatorInterface::class);
-        $validator->method('inContext')->with($executionContext)->willReturn($this->contextualValidator);
+        $this->mockedContextualValidator = $this->createMock(ContextualValidatorInterface::class);
+        $validator->method('inContext')->with($executionContext)->willReturn($this->mockedContextualValidator);
     }
 
     public function testValidate(): void
@@ -41,11 +41,11 @@ final class ArgumentConstraintValidatorTest extends TestCase
         $parameter = new ReflectionParameter(static fn(#[Constraint(new NotBlank(), new Length(max: 255))] string $p) => null, 'p');
         $constraint = new ArgumentConstraint($parameter);
 
-        $this->contextualValidator->expects(self::once())->method('validate')->willReturnCallback(
+        $this->mockedContextualValidator->expects(self::once())->method('validate')->willReturnCallback(
             function (mixed $value, array $constraints) {
                 $this->assertSame('foo', $value);
                 $this->assertCount(2, $constraints);
-                return $this->contextualValidator;
+                return $this->mockedContextualValidator;
             }
         );
 
@@ -56,7 +56,7 @@ final class ArgumentConstraintValidatorTest extends TestCase
     {
         $parameter = new ReflectionParameter(static fn($p) => null, 'p');
         $constraint = new ArgumentConstraint($parameter);
-        $this->contextualValidator->expects(self::never())->method('validate');
+        $this->mockedContextualValidator->expects(self::never())->method('validate');
         $this->constraintValidator->validate(null, $constraint);
     }
 
@@ -64,7 +64,7 @@ final class ArgumentConstraintValidatorTest extends TestCase
     {
         $parameter = new ReflectionParameter(static fn(#[Constraint] $p) => null, 'p');
         $constraint = new ArgumentConstraint($parameter);
-        $this->contextualValidator->expects(self::never())->method('validate');
+        $this->mockedContextualValidator->expects(self::never())->method('validate');
         $this->constraintValidator->validate(null, $constraint);
     }
 

@@ -21,7 +21,7 @@ use Sunrise\Http\Router\RouteInterface;
 interface LoaderInterface
 {
     /**
-     * @return iterable<int, RouteInterface>
+     * @return iterable<array-key, RouteInterface>
      */
     public function load(): iterable;
 }

@@ -78,7 +78,7 @@ final class DescriptorLoader implements DescriptorLoaderInterface
     public function load(): Generator
     {
         foreach ($this->getDescriptors() as $descriptor) {
-            yield new Route(
+            yield $descriptor->name => new Route(
                 name: $descriptor->name,
                 path: $descriptor->path,
                 requestHandler: $descriptor->holder,

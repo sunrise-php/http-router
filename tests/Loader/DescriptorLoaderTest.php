@@ -54,7 +54,6 @@ use Sunrise\Http\Router\Dictionary\MediaType;
 use Sunrise\Http\Router\Helper\RouteCompiler;
 use Sunrise\Http\Router\Loader\DescriptorLoader;
 use Sunrise\Http\Router\RouteInterface;
-use Sunrise\Http\Router\Router;
 use Sunrise\Http\Router\Tests\Fixture\App\Controller\Api\PageController;
 use Sunrise\Http\Router\Tests\Fixture\App\Controller\HomeController;
 use Sunrise\Http\Router\Tests\Mock\CacheMock;
@@ -63,22 +62,21 @@ final class DescriptorLoaderTest extends TestCase
 {
     public function testLoadFromDir(): void
     {
-        $router = new Router([
-            new DescriptorLoader([
-                __DIR__ . '/../Fixture/App/Controller',
-            ]),
-        ]);
+        /** @var array<array-key, RouteInterface> $routes */
+        $routes = [...(new DescriptorLoader([
+            __DIR__ . '/../Fixture/App/Controller',
+        ]))->load()];
 
-        $this->assertTrue($router->hasRoute('home'));
-        $route = $router->getRoute('home');
+        $this->assertArrayHasKey('home', $routes);
+        $route = $routes['home'];
         $this->assertSame('/', $route->getPath());
         $this->assertSame(HomeController::class, $route->getRequestHandler());
         $this->assertSame(['GET'], $route->getMethods());
         $expectedRoutePattern = RouteCompiler::compileRoute($route->getPath(), $route->getPatterns());
         $this->assertSame($expectedRoutePattern, $route->getPattern());
 
-        $this->assertTrue($router->hasRoute('api.pages.create'));
-        $route = $router->getRoute('api.pages.create');
+        $this->assertArrayHasKey('api.pages.create', $routes);
+        $route = $routes['api.pages.create'];
         $this->assertSame('/api/pages', $route->getPath());
         $this->assertSame([PageController::class, 'create'], $route->getRequestHandler());
         $this->assertSame(['POST'], $route->getMethods());
@@ -87,8 +85,8 @@ final class DescriptorLoaderTest extends TestCase
         $expectedRoutePattern = RouteCompiler::compileRoute($route->getPath(), $route->getPatterns());
         $this->assertSame($expectedRoutePattern, $route->getPattern());
 
-        $this->assertTrue($router->hasRoute('api.pages.update'));
-        $route = $router->getRoute('api.pages.update');
+        $this->assertArrayHasKey('api.pages.update', $routes);
+        $route = $routes['api.pages.update'];
         $this->assertSame('/api/pages/{id}', $route->getPath());
         $this->assertSame([PageController::class, 'update'], $route->getRequestHandler());
         $this->assertSame(['PUT'], $route->getMethods());
@@ -100,14 +98,13 @@ final class DescriptorLoaderTest extends TestCase
 
     public function testLoadFromFile(): void
     {
-        $router = new Router([
-            new DescriptorLoader([
-                __DIR__ . '/../Fixture/App/Controller/Api/PageController.php',
-            ]),
-        ]);
+        /** @var array<array-key, RouteInterface> $routes */
+        $routes = [...(new DescriptorLoader([
+            __DIR__ . '/../Fixture/App/Controller/Api/PageController.php',
+        ]))->load()];
 
-        $this->assertTrue($router->hasRoute('api.pages.create'));
-        $route = $router->getRoute('api.pages.create');
+        $this->assertArrayHasKey('api.pages.create', $routes);
+        $route = $routes['api.pages.create'];
         $this->assertSame('/api/pages', $route->getPath());
         $this->assertSame([PageController::class, 'create'], $route->getRequestHandler());
         $this->assertSame(['POST'], $route->getMethods());
@@ -116,8 +113,8 @@ final class DescriptorLoaderTest extends TestCase
         $expectedRoutePattern = RouteCompiler::compileRoute($route->getPath(), $route->getPatterns());
         $this->assertSame($expectedRoutePattern, $route->getPattern());
 
-        $this->assertTrue($router->hasRoute('api.pages.update'));
-        $route = $router->getRoute('api.pages.update');
+        $this->assertArrayHasKey('api.pages.update', $routes);
+        $route = $routes['api.pages.update'];
         $this->assertSame('/api/pages/{id}', $route->getPath());
         $this->assertSame([PageController::class, 'update'], $route->getRequestHandler());
         $this->assertSame(['PUT'], $route->getMethods());
@@ -129,14 +126,11 @@ final class DescriptorLoaderTest extends TestCase
 
     public function testLoadFromClass(): void
     {
-        $router = new Router([
-            new DescriptorLoader([
-                PageController::class,
-            ]),
-        ]);
+        /** @var array<array-key, RouteInterface> $routes */
+        $routes = [...(new DescriptorLoader([PageController::class]))->load()];
 
-        $this->assertTrue($router->hasRoute('api.pages.create'));
-        $route = $router->getRoute('api.pages.create');
+        $this->assertArrayHasKey('api.pages.create', $routes);
+        $route = $routes['api.pages.create'];
         $this->assertSame('/api/pages', $route->getPath());
         $this->assertSame([PageController::class, 'create'], $route->getRequestHandler());
         $this->assertSame(['POST'], $route->getMethods());
@@ -145,8 +139,8 @@ final class DescriptorLoaderTest extends TestCase
         $expectedRoutePattern = RouteCompiler::compileRoute($route->getPath(), $route->getPatterns());
         $this->assertSame($expectedRoutePattern, $route->getPattern());
 
-        $this->assertTrue($router->hasRoute('api.pages.update'));
-        $route = $router->getRoute('api.pages.update');
+        $this->assertArrayHasKey('api.pages.update', $routes);
+        $route = $routes['api.pages.update'];
         $this->assertSame('/api/pages/{id}', $route->getPath());
         $this->assertSame([PageController::class, 'update'], $route->getRequestHandler());
         $this->assertSame(['PUT'], $route->getMethods());
@@ -302,10 +296,10 @@ final class DescriptorLoaderTest extends TestCase
 
         /** @var list<RouteInterface> $routes */
         $routes = [...(new DescriptorLoader([$controller::class]))->load()];
-        $this->assertArrayHasKey(0, $routes);
-        $this->assertSame('bar', $routes[0]->getName());
-        $this->assertArrayHasKey(1, $routes);
-        $this->assertSame("foo", $routes[1]->getName());
+        $this->assertArrayHasKey('bar', $routes);
+        $this->assertSame('bar', $routes['bar']->getName());
+        $this->assertArrayHasKey('foo', $routes);
+        $this->assertSame('foo', $routes['foo']->getName());
     }
 
     public function testNamePrefixAnnotation(): void
