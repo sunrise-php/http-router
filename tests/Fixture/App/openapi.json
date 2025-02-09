@@ -1,0 +1,205 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/pages": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "Query",
+            "schema": {
+              "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.Dto.Page.PageListRequest"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The operation was successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "array"
+                    },
+                    {
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "operationId": "api.pages.list",
+        "tags": [
+          "Pages"
+        ],
+        "summary": "Lists pages",
+        "description": ""
+      },
+      "post": {
+        "responses": {
+          "201": {
+            "description": "The operation was successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.View.PageView"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.Dto.Page.PageCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "operationId": "api.pages.create",
+        "tags": [
+          "Pages"
+        ],
+        "summary": "Creates a new page",
+        "description": ""
+      }
+    },
+    "/api/pages/{id}": {
+      "put": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string",
+              "pattern": "^[^/]+$"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The operation was successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.View.PageView"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.Dto.Page.PageUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "operationId": "api.pages.update",
+        "tags": [
+          "Pages"
+        ],
+        "summary": "Updates a page by ID",
+        "description": ""
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Sunrise.Http.Router.Tests.Fixture.App.Dto.Page.PageFilterRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "Sunrise.Http.Router.Tests.Fixture.App.Dto.Common.PaginationDto": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "format": "int64",
+            "example": 0
+          },
+          "offset": {
+            "type": "integer",
+            "format": "int64",
+            "example": 0
+          }
+        }
+      },
+      "Sunrise.Http.Router.Tests.Fixture.App.Dto.Page.PageListRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "filter": {
+            "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.Dto.Page.PageFilterRequest"
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.Dto.Common.PaginationDto"
+          }
+        }
+      },
+      "Sunrise.Http.Router.Tests.Fixture.App.View.PageView": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "Sunrise.Http.Router.Tests.Fixture.App.Dto.Page.PageCreateRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "Sunrise.Http.Router.Tests.Fixture.App.Dto.Page.PageUpdateRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      }
+    }
+  }
+}
