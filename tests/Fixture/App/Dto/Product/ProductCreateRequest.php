@@ -18,12 +18,11 @@ use Sunrise\Hydrator\Annotation\Subtype;
 
 final class ProductCreateRequest
 {
-    // this is an empty array for OA, because it's an interface.
-    public readonly \Iterator $iterator;
-    // this is an empty array for OA, because it's a non-instantiable class.
-    public readonly \SplHeap $splHeap;
-    // this is an empty array for OA, because it's an internal class.
-    public readonly \stdClass $stdClass;
+    public $qRakBUXnx34V;
+    public readonly int|float $jk3K7mWSraZf;
+    public readonly \Iterator $FcAkjf2ZaTdv;
+    public readonly \SplHeap $kaVKjQFSEdUm;
+    public readonly \stdClass $dKQLn8yyMsYG;
 
     public readonly int $publicId;
 

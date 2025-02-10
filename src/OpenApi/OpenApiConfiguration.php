@@ -26,6 +26,7 @@ use const DIRECTORY_SEPARATOR;
 final class OpenApiConfiguration
 {
     public const VERSION = '3.1.1';
+    public const JSON_SCHEMA_DIALECT = 'https://json-schema.org/draft/2020-12/schema';
 
     public const DEFAULT_TIMESTAMP_FORMAT = TimestampTypeConverter::DEFAULT_FORMAT;
     public const DEFAULT_RESPONSE_DESCRIPTION = 'The operation was successful.';

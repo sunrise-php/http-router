@@ -14,11 +14,6 @@ use Sunrise\Http\Router\Tests\Fixture\App\Controller\AbstractController as BaseA
 #[NamePrefix('api.')]
 #[Operation([
     // this is bad, just for testing.
-    'externalDocs' => [
-        'description' => 'Find more info here',
-        'url' => 'https://example.com',
-    ],
-    // this is bad, just for testing.
     'parameters' => [
         [
             'in' => 'header',

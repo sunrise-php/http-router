@@ -88,7 +88,7 @@ final class RequestVariableParameterResolverTest extends TestCase
         $parameter = new ReflectionParameter(fn(#[RequestVariable('foo')] string $p) => null, 'p');
         $arguments = (new RequestVariableParameterResolver($this->mockedHydrator))->resolveParameter($parameter, $this->mockedRequest);
         $this->expectException(InvalidArgumentException::class);
-        $arguments->rewind();
+        $arguments->valid();
     }
 
     #[DataProvider('hydratorErrorDataProvider')]
@@ -104,7 +104,7 @@ final class RequestVariableParameterResolverTest extends TestCase
         $hydratorViolations = $hydratorError instanceof InvalidValueException ? [$hydratorError] : $hydratorError->getExceptions();
 
         try {
-            $arguments->rewind();
+            $arguments->valid();
         } catch (HttpException $e) {
             self::assertSame(400, $e->getCode());
             $violations = $e->getConstraintViolations();
@@ -144,7 +144,7 @@ final class RequestVariableParameterResolverTest extends TestCase
         $this->expectException(HttpException::class);
 
         try {
-            $arguments->rewind();
+            $arguments->valid();
         } catch (HttpException $e) {
             self::assertSame(400, $e->getCode());
             $violations = $e->getConstraintViolations();
@@ -166,7 +166,7 @@ final class RequestVariableParameterResolverTest extends TestCase
         $arguments = (new RequestVariableParameterResolver($this->mockedHydrator, defaultErrorStatusCode: 500))->resolveParameter($parameter, $this->mockedRequest);
 
         try {
-            $arguments->rewind();
+            $arguments->valid();
         } catch (HttpException $e) {
             self::assertSame(500, $e->getCode());
         }
@@ -181,7 +181,7 @@ final class RequestVariableParameterResolverTest extends TestCase
         $arguments = (new RequestVariableParameterResolver($this->mockedHydrator, defaultErrorStatusCode: 500))->resolveParameter($parameter, $this->mockedRequest);
 
         try {
-            $arguments->rewind();
+            $arguments->valid();
         } catch (HttpException $e) {
             self::assertSame(503, $e->getCode());
         }
@@ -196,7 +196,7 @@ final class RequestVariableParameterResolverTest extends TestCase
         $arguments = (new RequestVariableParameterResolver($this->mockedHydrator, defaultErrorMessage: 'foo'))->resolveParameter($parameter, $this->mockedRequest);
 
         try {
-            $arguments->rewind();
+            $arguments->valid();
         } catch (HttpException $e) {
             self::assertSame('foo', $e->getMessage());
         }
@@ -211,7 +211,7 @@ final class RequestVariableParameterResolverTest extends TestCase
         $arguments = (new RequestVariableParameterResolver($this->mockedHydrator, defaultErrorMessage: 'foo'))->resolveParameter($parameter, $this->mockedRequest);
 
         try {
-            $arguments->rewind();
+            $arguments->valid();
         } catch (HttpException $e) {
             self::assertSame('bar', $e->getMessage());
         }
@@ -223,7 +223,7 @@ final class RequestVariableParameterResolverTest extends TestCase
         $this->mockedRoute->expects(self::exactly(1))->method('getAttribute')->with('foo')->willReturn('bar');
         $this->mockedHydrator->expects(self::once())->method('castValue')->with('bar', self::anything(), self::anything(), ['foo' => 'baz', 'baz' => 'qux', 'bar' => 'baz'])->willReturn('bar');
         $parameter = new ReflectionParameter(fn(#[RequestVariable('foo', hydratorContext: ['foo' => 'baz', 'baz' => 'qux'])] string $p) => null, 'p');
-        (new RequestVariableParameterResolver($this->mockedHydrator, hydratorContext: ['foo' => 'bar', 'bar' => 'baz']))->resolveParameter($parameter, $this->mockedRequest)->rewind();
+        (new RequestVariableParameterResolver($this->mockedHydrator, hydratorContext: ['foo' => 'bar', 'bar' => 'baz']))->resolveParameter($parameter, $this->mockedRequest)->valid();
     }
 
     public function testDisableValidationByDefault(): void
@@ -233,7 +233,7 @@ final class RequestVariableParameterResolverTest extends TestCase
         $this->mockedHydrator->expects(self::once())->method('castValue')->with('bar')->willReturn('bar');
         $this->mockedValidator->expects(self::never())->method('validate');
         $parameter = new ReflectionParameter(fn(#[RequestVariable('foo')] string $p) => null, 'p');
-        (new RequestVariableParameterResolver($this->mockedHydrator, $this->mockedValidator, defaultValidationEnabled: false))->resolveParameter($parameter, $this->mockedRequest)->rewind();
+        (new RequestVariableParameterResolver($this->mockedHydrator, $this->mockedValidator, defaultValidationEnabled: false))->resolveParameter($parameter, $this->mockedRequest)->valid();
     }
 
     public function testDisableValidationFromAnnotation(): void
@@ -243,7 +243,7 @@ final class RequestVariableParameterResolverTest extends TestCase
         $this->mockedHydrator->expects(self::once())->method('castValue')->with('bar')->willReturn('bar');
         $this->mockedValidator->expects(self::never())->method('validate');
         $parameter = new ReflectionParameter(fn(#[RequestVariable('foo', validationEnabled: false)] string $p) => null, 'p');
-        (new RequestVariableParameterResolver($this->mockedHydrator, $this->mockedValidator))->resolveParameter($parameter, $this->mockedRequest)->rewind();
+        (new RequestVariableParameterResolver($this->mockedHydrator, $this->mockedValidator))->resolveParameter($parameter, $this->mockedRequest)->valid();
     }
 
     public function testEnableValidationFromAnnotation(): void
@@ -255,7 +255,7 @@ final class RequestVariableParameterResolverTest extends TestCase
         $this->mockedContextualValidator->expects(self::once())->method('validate')->with('bar')->willReturn($this->mockedContextualValidator);
         $this->mockedContextualValidator->expects(self::once())->method('getViolations');
         $parameter = new ReflectionParameter(fn(#[RequestVariable('foo', validationEnabled: true)] string $p) => null, 'p');
-        (new RequestVariableParameterResolver($this->mockedHydrator, $this->mockedValidator, defaultValidationEnabled: false))->resolveParameter($parameter, $this->mockedRequest)->rewind();
+        (new RequestVariableParameterResolver($this->mockedHydrator, $this->mockedValidator, defaultValidationEnabled: false))->resolveParameter($parameter, $this->mockedRequest)->valid();
     }
 
     public function testWeight(): void

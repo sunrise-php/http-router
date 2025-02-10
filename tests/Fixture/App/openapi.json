@@ -761,9 +761,11 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "iterator": [],
-          "splHeap": [],
-          "stdClass": [],
+          "qRakBUXnx34V": [],
+          "jk3K7mWSraZf": [],
+          "FcAkjf2ZaTdv": [],
+          "kaVKjQFSEdUm": [],
+          "dKQLn8yyMsYG": [],
           "publicId": {
             "type": "integer",
             "format": "int64",
@@ -830,9 +832,10 @@
           }
         },
         "required": [
-          "iterator",
-          "splHeap",
-          "stdClass",
+          "jk3K7mWSraZf",
+          "FcAkjf2ZaTdv",
+          "kaVKjQFSEdUm",
+          "dKQLn8yyMsYG",
           "publicId",
           "name",
           "price",

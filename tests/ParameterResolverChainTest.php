@@ -87,6 +87,6 @@ final class ParameterResolverChainTest extends TestCase
         $baz = new ReflectionParameter(\abs(...), 'num');
         $this->expectException(LogicException::class);
         $this->expectExceptionMessageMatches('/is not supported/');
-        $resolverChain->resolveParameters($baz)->rewind();
+        $resolverChain->resolveParameters($baz)->valid();
     }
 }

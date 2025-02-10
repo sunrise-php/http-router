@@ -103,6 +103,8 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
             throw new RuntimeException('The OpenAPI document was not saved or is unavailable.');
         }
 
+        // @codeCoverageIgnoreStart
+
         try {
             $result = @fopen($filename, 'rb');
         } catch (Throwable) {
@@ -112,6 +114,8 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
         if ($result === false) {
             throw new RuntimeException('The OpenAPI document could not be read.');
         }
+
+        // @codeCoverageIgnoreEnd
 
         return $result;
     }
