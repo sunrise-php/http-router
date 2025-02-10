@@ -5,12 +5,42 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/api/ping": {
+      "get": {
+        "externalDocs": {
+          "description": "Find more info here",
+          "url": "https://example.com"
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Request-ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "api.ping",
+        "tags": [],
+        "summary": "",
+        "description": ""
+      }
+    },
     "/api/products": {
       "post": {
         "externalDocs": {
           "description": "Find more info here",
           "url": "https://example.com"
         },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Request-ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "204": {
             "description": "The operation was successful."
@@ -41,6 +71,13 @@
           "url": "https://example.com"
         },
         "parameters": [
+          {
+            "in": "header",
+            "name": "X-Request-ID",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "in": "path",
             "name": "id",
@@ -123,6 +160,13 @@
         },
         "parameters": [
           {
+            "in": "header",
+            "name": "X-Request-ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "in": "query",
             "name": "Query",
             "schema": {
@@ -162,6 +206,15 @@
           "description": "Find more info here",
           "url": "https://example.com"
         },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Request-ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "201": {
             "description": "The operation was successful.",
@@ -199,6 +252,13 @@
           "url": "https://example.com"
         },
         "parameters": [
+          {
+            "in": "header",
+            "name": "X-Request-ID",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "in": "path",
             "name": "id",
