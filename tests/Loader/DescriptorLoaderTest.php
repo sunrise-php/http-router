@@ -78,7 +78,7 @@ final class DescriptorLoaderTest extends TestCase
         self::assertArrayHasKey('api.pages.create', $routes);
         $route = $routes['api.pages.create'];
         self::assertSame('/api/pages', $route->getPath());
-        self::assertSame([PageController::class, 'create'], $route->getRequestHandler());
+        self::assertSame([PageController::class, 'createPage'], $route->getRequestHandler());
         self::assertSame(['POST'], $route->getMethods());
         self::assertSame(['Pages'], $route->getTags());
         self::assertSame('Creates a new page', $route->getSummary());
@@ -88,7 +88,7 @@ final class DescriptorLoaderTest extends TestCase
         self::assertArrayHasKey('api.pages.update', $routes);
         $route = $routes['api.pages.update'];
         self::assertSame('/api/pages/{id}', $route->getPath());
-        self::assertSame([PageController::class, 'update'], $route->getRequestHandler());
+        self::assertSame([PageController::class, 'updatePage'], $route->getRequestHandler());
         self::assertSame(['PUT'], $route->getMethods());
         self::assertSame(['Pages'], $route->getTags());
         self::assertSame('Updates a page by ID', $route->getSummary());
@@ -106,7 +106,7 @@ final class DescriptorLoaderTest extends TestCase
         self::assertArrayHasKey('api.pages.create', $routes);
         $route = $routes['api.pages.create'];
         self::assertSame('/api/pages', $route->getPath());
-        self::assertSame([PageController::class, 'create'], $route->getRequestHandler());
+        self::assertSame([PageController::class, 'createPage'], $route->getRequestHandler());
         self::assertSame(['POST'], $route->getMethods());
         self::assertSame(['Pages'], $route->getTags());
         self::assertSame('Creates a new page', $route->getSummary());
@@ -116,7 +116,7 @@ final class DescriptorLoaderTest extends TestCase
         self::assertArrayHasKey('api.pages.update', $routes);
         $route = $routes['api.pages.update'];
         self::assertSame('/api/pages/{id}', $route->getPath());
-        self::assertSame([PageController::class, 'update'], $route->getRequestHandler());
+        self::assertSame([PageController::class, 'updatePage'], $route->getRequestHandler());
         self::assertSame(['PUT'], $route->getMethods());
         self::assertSame(['Pages'], $route->getTags());
         self::assertSame('Updates a page by ID', $route->getSummary());
@@ -132,7 +132,7 @@ final class DescriptorLoaderTest extends TestCase
         self::assertArrayHasKey('api.pages.create', $routes);
         $route = $routes['api.pages.create'];
         self::assertSame('/api/pages', $route->getPath());
-        self::assertSame([PageController::class, 'create'], $route->getRequestHandler());
+        self::assertSame([PageController::class, 'createPage'], $route->getRequestHandler());
         self::assertSame(['POST'], $route->getMethods());
         self::assertSame(['Pages'], $route->getTags());
         self::assertSame('Creates a new page', $route->getSummary());
@@ -142,7 +142,7 @@ final class DescriptorLoaderTest extends TestCase
         self::assertArrayHasKey('api.pages.update', $routes);
         $route = $routes['api.pages.update'];
         self::assertSame('/api/pages/{id}', $route->getPath());
-        self::assertSame([PageController::class, 'update'], $route->getRequestHandler());
+        self::assertSame([PageController::class, 'updatePage'], $route->getRequestHandler());
         self::assertSame(['PUT'], $route->getMethods());
         self::assertSame(['Pages'], $route->getTags());
         self::assertSame('Updates a page by ID', $route->getSummary());

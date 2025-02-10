@@ -9,7 +9,7 @@ use ArrayObject;
 /**
  * @extends ArrayObject<array-key, PageView>
  */
-final class PagesView extends ArrayObject
+final class PageViewCollection extends ArrayObject
 {
     public function __construct(PageView ...$pages)
     {

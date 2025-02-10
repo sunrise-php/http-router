@@ -31,19 +31,17 @@ abstract class AbstractResponseOperationEnricher
     final protected static function getResponseStatusCode(
         ReflectionClass|ReflectionMethod $requestHandler,
     ): ?int {
-        if (! $requestHandler instanceof ReflectionMethod) {
-            return null;
+        if ($requestHandler instanceof ReflectionMethod) {
+            /** @var list<ReflectionAttribute<ResponseStatus>> $annotations */
+            $annotations = $requestHandler->getAttributes(ResponseStatus::class);
+            if (isset($annotations[0])) {
+                $responseStatus = $annotations[0]->newInstance();
+
+                return $responseStatus->code;
+            }
         }
 
-        /** @var list<ReflectionAttribute<ResponseStatus>> $annotations */
-        $annotations = $requestHandler->getAttributes(ResponseStatus::class);
-        if ($annotations === []) {
-            return null;
-        }
-
-        $responseStatus = $annotations[0]->newInstance();
-
-        return $responseStatus->code;
+        return null;
     }
 
     /**
@@ -55,21 +53,19 @@ abstract class AbstractResponseOperationEnricher
         ReflectionClass|ReflectionMethod $requestHandler,
         array &$response,
     ): void {
-        if (! $requestHandler instanceof ReflectionMethod) {
-            return;
-        }
+        if ($requestHandler instanceof ReflectionMethod) {
+            /** @var list<ReflectionAttribute<ResponseHeader>> $annotations */
+            $annotations = $requestHandler->getAttributes(ResponseHeader::class);
+            foreach ($annotations as $annotation) {
+                $responseHeader = $annotation->newInstance();
 
-        /** @var list<ReflectionAttribute<ResponseHeader>> $annotations */
-        $annotations = $requestHandler->getAttributes(ResponseHeader::class);
-        foreach ($annotations as $annotation) {
-            $responseHeader = $annotation->newInstance();
-
-            $response['headers'][$responseHeader->name] = [
-                'schema' => [
-                    'type' => Type::OAS_TYPE_NAME_STRING,
-                    'example' => $responseHeader->value,
-                ],
-            ];
+                $response['headers'][$responseHeader->name] = [
+                    'schema' => [
+                        'type' => Type::OAS_TYPE_NAME_STRING,
+                        'example' => $responseHeader->value,
+                    ],
+                ];
+            }
         }
     }
 }

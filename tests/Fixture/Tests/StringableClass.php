@@ -9,12 +9,12 @@ use Stringable;
 final class StringableClass implements Stringable
 {
     public function __construct(
-        private readonly string $value,
+        private readonly string $string,
     ) {
     }
 
     public function __toString(): string
     {
-        return $this->value;
+        return $this->string;
     }
 }

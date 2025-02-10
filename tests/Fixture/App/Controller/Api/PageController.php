@@ -21,7 +21,7 @@ use Sunrise\Http\Router\Dictionary\MediaType;
 use Sunrise\Http\Router\Tests\Fixture\App\Dto\Page\PageCreateRequest;
 use Sunrise\Http\Router\Tests\Fixture\App\Dto\Page\PageListRequest;
 use Sunrise\Http\Router\Tests\Fixture\App\Dto\Page\PageUpdateRequest;
-use Sunrise\Http\Router\Tests\Fixture\App\View\PagesView;
+use Sunrise\Http\Router\Tests\Fixture\App\View\PageViewCollection;
 use Sunrise\Http\Router\Tests\Fixture\App\View\PageView;
 
 #[PathPrefix('/pages')]
@@ -33,11 +33,11 @@ final class PageController extends AbstractController
     #[Produces(MediaType::JSON)]
     #[EncodableResponse]
     #[Summary('Lists pages')]
-    public function list(
+    public function listPages(
         #[RequestQuery]
-        PageListRequest $pageListRequest,
-    ): PagesView {
-        return new PagesView(
+        PageListRequest $listRequest,
+    ): PageViewCollection {
+        return new PageViewCollection(
             new PageView('Page 1'),
             new PageView('Page 2'),
         );
@@ -49,11 +49,11 @@ final class PageController extends AbstractController
     #[ResponseStatus(201)]
     #[EncodableResponse]
     #[Summary('Creates a new page')]
-    public function create(
+    public function createPage(
         #[RequestBody]
-        PageCreateRequest $pageCreateRequest,
+        PageCreateRequest $createRequest,
     ): PageView {
-        return new PageView($pageCreateRequest->name);
+        return new PageView($createRequest->name);
     }
 
     #[PutApiRoute('update', '/{id}')]
@@ -61,10 +61,10 @@ final class PageController extends AbstractController
     #[Produces(MediaType::JSON)]
     #[EncodableResponse]
     #[Summary('Updates a page by ID')]
-    public function update(
+    public function updatePage(
         #[RequestBody]
-        PageUpdateRequest $pageUpdateRequest,
+        PageUpdateRequest $updateRequest,
     ): PageView {
-        return new PageView($pageUpdateRequest->name);
+        return new PageView($updateRequest->name);
     }
 }

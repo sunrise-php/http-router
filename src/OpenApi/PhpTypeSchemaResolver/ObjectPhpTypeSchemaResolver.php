@@ -149,7 +149,8 @@ final class ObjectPhpTypeSchemaResolver implements
             }
         }
 
-        return false; // will never get here...
+        // Will never get here...
+        return false; // @codeCoverageIgnore
     }
 
     private static function hasPropertyDefaultValue(ReflectionProperty $property): bool

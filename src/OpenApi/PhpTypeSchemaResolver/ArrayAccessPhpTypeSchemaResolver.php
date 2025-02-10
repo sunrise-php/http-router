@@ -96,24 +96,13 @@ final class ArrayAccessPhpTypeSchemaResolver implements
      */
     private static function getCollectionElementPhpType(string $className): Type
     {
-        $class = new ReflectionClass($className);
+        $constructorParameters = (new ReflectionClass($className))->getConstructor()?->getParameters() ?? [];
 
-        $constructor = $class->getConstructor();
-        if ($constructor === null) {
-            return TypeFactory::mixedPhpType();
-        }
+        /** @var ReflectionParameter|false $lastConstructorParameter */
+        $lastConstructorParameter = end($constructorParameters);
 
-        $parameters = $constructor->getParameters();
-        if ($parameters === []) {
-            return TypeFactory::mixedPhpType();
-        }
-
-        /** @var ReflectionParameter $parameter */
-        $parameter = end($parameters);
-        if (!$parameter->isVariadic()) {
-            return TypeFactory::mixedPhpType();
-        }
-
-        return TypeFactory::fromPhpTypeReflection($parameter->getType());
+        return ($lastConstructorParameter instanceof ReflectionParameter && $lastConstructorParameter->isVariadic())
+            ? TypeFactory::fromPhpTypeReflection($lastConstructorParameter->getType())
+            : TypeFactory::mixedPhpType();
     }
 }

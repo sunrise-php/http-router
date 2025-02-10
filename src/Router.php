@@ -219,6 +219,8 @@ final class Router implements RouterInterface
 
     /**
      * @throws InvalidArgumentException
+     *
+     * @return non-empty-string
      */
     private function compileRoute(RouteInterface $route): string
     {
