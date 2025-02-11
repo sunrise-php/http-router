@@ -54,7 +54,7 @@ final class HydratorConstraintViolationAdapter implements ConstraintViolationInt
         return $this->hydratorConstraintViolation->getPropertyPath();
     }
 
-    public function getCode(): ?string
+    public function getCode(): string
     {
         return $this->hydratorConstraintViolation->getErrorCode();
     }

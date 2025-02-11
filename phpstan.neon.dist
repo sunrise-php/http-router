@@ -4,3 +4,4 @@ parameters:
         - '#Readonly property .* is assigned outside of the constructor#'
         - '#Cannot access an offset on mixed#'
         - '#Cannot access offset .* on mixed#'
+        - '#&\$matches @param-out .* Sunrise\\Http\\Router\\Helper\\RouteMatcher::matchRoute\(\)#'

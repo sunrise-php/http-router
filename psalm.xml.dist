@@ -18,7 +18,11 @@
         <MissingConstructor errorLevel="suppress" />
         <MixedArrayAssignment errorLevel="suppress" />
         <MixedAssignment errorLevel="suppress" />
+        <PossiblyUnusedMethod errorLevel="suppress" />
+        <PossiblyUnusedProperty errorLevel="suppress" />
         <UnnecessaryVarAnnotation errorLevel="suppress" />
         <UnresolvableInclude errorLevel="suppress" />
+        <UnusedClass errorLevel="suppress" />
+        <UnusedParam errorLevel="suppress" />
     </issueHandlers>
 </psalm>

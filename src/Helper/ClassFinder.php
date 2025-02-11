@@ -90,7 +90,7 @@ final class ClassFinder
             ));
         }
 
-        /** @var string $filename */
+        /** @var non-empty-string $filename */
         $filename = realpath($filename);
         (static function (string $filename): void {
             require_once $filename;
