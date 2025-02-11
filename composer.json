@@ -59,12 +59,10 @@
     }
   },
   "scripts": {
-    "phpcs": "phpcs --colors",
-    "psalm": "psalm --no-cache",
-    "phpstan": "phpstan analyse src --level=9 --memory-limit=-1",
-    "phpunit": "phpunit --colors=always",
-    "coverage-text": "XDEBUG_MODE=coverage phpunit --coverage-text --colors=always",
-    "coverage-html": "XDEBUG_MODE=coverage phpunit --coverage-html coverage/",
+    "phpcs": "@php phpcs --colors",
+    "psalm": "@php psalm --no-cache",
+    "phpstan": "@php phpstan analyse src --configuration=phpstan.neon.dist.php --level=9 --memory-limit=-1",
+    "phpunit": "@php phpunit --colors=always",
     "test": [
       "@phpcs",
       "@psalm",

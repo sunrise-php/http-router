@@ -1,7 +1,7 @@
 parameters:
     ignoreErrors:
-        - '#Class .* has an uninitialized readonly property#'
-        - '#Readonly property .* is assigned outside of the constructor#'
         - '#Cannot access an offset on mixed#'
         - '#Cannot access offset .* on mixed#'
-        - '#&\$matches @param-out .* Sunrise\\Http\\Router\\Helper\\RouteMatcher::matchRoute\(\)#'
+        - '#Class .* has an uninitialized readonly property#'
+        - '#Parameter &\$matches @param\-out type of method Sunrise\\Http\\Router\\Helper\\RouteMatcher\:\:matchRoute\(\) expects array\<string, string\>, array\<string\|null\> given\.#'
+        - '#Readonly property .* is assigned outside of the constructor#'

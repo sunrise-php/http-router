@@ -1,0 +1,3 @@
+parameters:
+    ignoreErrors:
+        - '#Parameter \#1 \$classOrMethod of static method Sunrise\\Http\\Router\\Loader\\DescriptorLoader\:\:getClassOrMethodDescriptor\(\) expects ReflectionClass\<object\>\|ReflectionMethod, ReflectionClass\<Psr\\Http\\Server\\RequestHandlerInterface\> given\.#'

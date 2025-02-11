@@ -25,6 +25,8 @@ use function is_string;
 use function is_subclass_of;
 use function sprintf;
 
+use const PHP_VERSION_ID;
+
 /**
  * @since 3.0.0
  */
@@ -32,6 +34,8 @@ final class RequestHandlerReflector implements RequestHandlerReflectorInterface
 {
     /**
      * @inheritDoc
+     *
+     * @return ReflectionClass<RequestHandlerInterface>|ReflectionMethod
      *
      * @throws InvalidArgumentException
      * @throws ReflectionException
@@ -49,7 +53,13 @@ final class RequestHandlerReflector implements RequestHandlerReflectorInterface
         // https://github.com/php/php-src/blob/3ed526441400060aa4e618b91b3352371fcd02a8/Zend/zend_API.c#L3884-L3932
         if (is_array($reference) && is_callable($reference, true, $referenceName)) {
             try {
-                return new ReflectionMethod($referenceName);
+                // @codeCoverageIgnoreStart
+                if (PHP_VERSION_ID < 80300) {
+                    return new ReflectionMethod($referenceName);
+                } // @codeCoverageIgnoreEnd
+
+                /** @psalm-var ReflectionMethod */
+                return ReflectionMethod::createFromMethodName($referenceName);
             } catch (ReflectionException) {
             }
         }
