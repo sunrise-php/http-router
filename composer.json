@@ -61,7 +61,7 @@
   "scripts": {
     "phpcs": "@php phpcs --colors",
     "psalm": "@php psalm --no-cache",
-    "phpstan": "@php phpstan analyse src --configuration=phpstan.neon.dist.php --level=9 --memory-limit=-1",
+    "phpstan": "@php phpstan analyse src --configuration=phpstan.neon.php --level=9 --memory-limit=-1",
     "phpunit": "@php phpunit --colors=always",
     "test": [
       "@phpcs",
