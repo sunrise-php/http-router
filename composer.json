@@ -74,5 +74,5 @@
   "config": {
     "sort-packages": true
   },
-  "minimum-stability": "rc"
+  "minimum-stability": "RC"
 }
