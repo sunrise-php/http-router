@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Tests\Fixture\App\Dictionary;
 
-use Sunrise\Http\Router\MediaTypeInterface;
+use Sunrise\Coder\MediaTypeInterface;
 
 enum MediaType: string implements MediaTypeInterface
 {

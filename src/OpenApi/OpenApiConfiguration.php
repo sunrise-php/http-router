@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\OpenApi;
 
-use Sunrise\Http\Router\MediaTypeInterface;
+use Sunrise\Coder\MediaTypeInterface;
 use Sunrise\Hydrator\TypeConverter\TimestampTypeConverter;
 
 use function sys_get_temp_dir;

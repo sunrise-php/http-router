@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Sunrise\Http\Router\CodecManagerInterface;
+use Sunrise\Coder\CodecManagerInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
 use Sunrise\Http\Router\OpenApi\OpenApiDocumentManager;
 use Sunrise\Http\Router\OpenApi\OpenApiDocumentManagerInterface;

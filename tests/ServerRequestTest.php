@@ -13,8 +13,8 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use Psr\Http\Message\UriInterface;
+use Sunrise\Coder\MediaTypeInterface;
 use Sunrise\Http\Router\LocaleInterface;
-use Sunrise\Http\Router\MediaTypeInterface;
 use Sunrise\Http\Router\RouteInterface;
 use Sunrise\Http\Router\ServerRequest;
 

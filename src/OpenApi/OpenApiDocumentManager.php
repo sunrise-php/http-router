@@ -15,7 +15,7 @@ namespace Sunrise\Http\Router\OpenApi;
 
 use ReflectionAttribute;
 use RuntimeException;
-use Sunrise\Http\Router\CodecManagerInterface;
+use Sunrise\Coder\CodecManagerInterface;
 use Sunrise\Http\Router\Helper\ReflectorHelper;
 use Sunrise\Http\Router\Helper\RouteSimplifier;
 use Sunrise\Http\Router\OpenApi\Annotation\Operation;

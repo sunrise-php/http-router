@@ -15,7 +15,7 @@ namespace Sunrise\Http\Router\Annotation;
 
 use Attribute;
 use Fig\Http\Message\RequestMethodInterface;
-use Sunrise\Http\Router\MediaTypeInterface;
+use Sunrise\Coder\MediaTypeInterface;
 
 /**
  * @since 2.0.0

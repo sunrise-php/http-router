@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Psr\Http\Message\ResponseFactoryInterface;
-use Sunrise\Http\Router\CodecManagerInterface;
+use Sunrise\Coder\CodecManagerInterface;
 use Sunrise\Http\Router\ResponseResolver\EncodableResponseResolver;
 
 use function DI\add;

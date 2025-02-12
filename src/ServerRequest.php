@@ -18,6 +18,7 @@ use LogicException;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface;
+use Sunrise\Coder\MediaTypeInterface;
 use Sunrise\Http\Router\Dictionary\HeaderName;
 use Sunrise\Http\Router\Helper\HeaderParser;
 

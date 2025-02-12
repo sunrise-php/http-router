@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router;
 
+use Sunrise\Coder\MediaTypeInterface;
+
 /**
  * @since 3.0.0
  */

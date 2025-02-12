@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Sunrise\Http\Router\CodecManagerInterface;
+use Sunrise\Coder\CodecManagerInterface;
 use Sunrise\Http\Router\Middleware\PayloadDecodingMiddleware;
 
 use function DI\add;

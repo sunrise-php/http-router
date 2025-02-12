@@ -5,8 +5,6 @@ declare(strict_types=1);
 use Psr\Container\ContainerInterface;
 use Sunrise\Http\Router\ClassResolver;
 use Sunrise\Http\Router\ClassResolverInterface;
-use Sunrise\Http\Router\CodecManager;
-use Sunrise\Http\Router\CodecManagerInterface;
 use Sunrise\Http\Router\Dictionary\MediaType;
 use Sunrise\Http\Router\MiddlewareResolver;
 use Sunrise\Http\Router\MiddlewareResolverInterface;
@@ -33,8 +31,6 @@ return [
     'router.middlewares' => [],
     'router.route_middlewares' => [],
     'router.event_dispatcher' => null,
-    'router.codecs' => [],
-    'router.codecs.context' => [],
     'router.default_media_type' => MediaType::JSON,
 
     ParameterResolverChainInterface::class => create(ParameterResolverChain::class)
@@ -80,12 +76,6 @@ return [
             middlewares: get('router.middlewares'),
             routeMiddlewares: get('router.route_middlewares'),
             eventDispatcher: get('router.event_dispatcher'),
-        ),
-
-    CodecManagerInterface::class => create(CodecManager::class)
-        ->constructor(
-            codecs: get('router.codecs'),
-            context: get('router.codecs.context'),
         ),
 
     RequestHandlerReflectorInterface::class => create(RequestHandlerReflector::class),
