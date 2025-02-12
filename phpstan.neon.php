@@ -15,8 +15,8 @@ if (PHP_VERSION_ID < 80300) {
     $config['includes'][] = __DIR__ . '/phpstan.php-lt-83.neon';
 }
 
-if (PHP_VERSION_ID > 80300) {
-    $config['includes'][] = __DIR__ . '/phpstan.php-gt-83.neon';
+if (PHP_VERSION_ID >= 80400) {
+    $config['includes'][] = __DIR__ . '/phpstan.php-gte-84.neon';
 }
 
 return $config;
