@@ -13,15 +13,13 @@ use function DI\create;
 use function DI\get;
 
 return [
-    OpenApiController::class => create()
-        ->constructor(
-            openApiConfiguration: get(OpenApiConfiguration::class),
-            openApiDocumentManager: get(OpenApiDocumentManagerInterface::class),
-            responseFactory: get(ResponseFactoryInterface::class),
-            streamFactory: get(StreamFactoryInterface::class),
-        ),
-
     'router.descriptor_loader.resources' => add([
-        OpenApiController::class,
+        create(OpenApiController::class)
+            ->constructor(
+                openApiConfiguration: get(OpenApiConfiguration::class),
+                openApiDocumentManager: get(OpenApiDocumentManagerInterface::class),
+                responseFactory: get(ResponseFactoryInterface::class),
+                streamFactory: get(StreamFactoryInterface::class),
+            ),
     ]),
 ];
