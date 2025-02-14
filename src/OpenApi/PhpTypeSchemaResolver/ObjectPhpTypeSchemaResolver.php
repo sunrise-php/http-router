@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver;
 
+use BackedEnum;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionException;
@@ -31,6 +32,7 @@ use Sunrise\Hydrator\Annotation\Ignore;
 use Sunrise\Hydrator\TypeConverter\ObjectTypeConverter;
 
 use function class_exists;
+use function is_scalar;
 use function strtr;
 
 /**
@@ -91,14 +93,25 @@ final class ObjectPhpTypeSchemaResolver implements
                 continue;
             }
 
-            $propertyName = self::getPropertyName($property);
             $propertyType = TypeFactory::fromPhpTypeReflection($property->getType());
             $propertyTypeSchema = $this->openApiPhpTypeSchemaResolverManager
                 ->resolvePhpTypeSchema($propertyType, $property);
 
+            $propertyDefaultValue = self::getPropertyDefaultValue($property);
+            $normalizePropertyDefaultValue = self::normalizePropertyDefaultValue($propertyDefaultValue);
+            if ($normalizePropertyDefaultValue !== null) {
+                $propertyTypeSchema = [
+                    'allOf' => [
+                        $propertyTypeSchema,
+                    ],
+                    'default' => $normalizePropertyDefaultValue,
+                ];
+            }
+
+            $propertyName = self::getPropertyName($property);
             $phpTypeSchema['properties'][$propertyName] = $propertyTypeSchema;
 
-            if (!self::isOptionalProperty($property)) {
+            if (!self::hasPropertyDefaultValue($property)) {
                 $phpTypeSchema['required'][] = $propertyName;
             }
         }
@@ -133,28 +146,61 @@ final class ObjectPhpTypeSchemaResolver implements
         return $property->name;
     }
 
-    private static function isOptionalProperty(ReflectionProperty $property): bool
+    private static function hasPropertyDefaultValue(ReflectionProperty $property): bool
     {
-        if (self::hasPropertyDefaultValue($property)) {
+        if ($property->hasDefaultValue()) {
             return true;
         }
 
-        if (!$property->isPromoted()) {
-            return false;
-        }
-
-        foreach ($property->getDeclaringClass()->getConstructor()?->getParameters() ?? [] as $parameter) {
-            if ($parameter->name === $property->name) {
-                return $parameter->isDefaultValueAvailable();
+        if ($property->isPromoted()) {
+            foreach ($property->getDeclaringClass()->getConstructor()?->getParameters() ?? [] as $parameter) {
+                if ($parameter->name === $property->name && $parameter->isDefaultValueAvailable()) {
+                    return true;
+                }
             }
         }
 
-        // Will never get here...
-        return false; // @codeCoverageIgnore
+        if ($property->getAttributes(DefaultValue::class) !== []) {
+            return true;
+        }
+
+        return false;
     }
 
-    private static function hasPropertyDefaultValue(ReflectionProperty $property): bool
+    private static function getPropertyDefaultValue(ReflectionProperty $property): mixed
     {
-        return $property->hasDefaultValue() || $property->getAttributes(DefaultValue::class) !== [];
+        if ($property->hasDefaultValue()) {
+            return $property->getDefaultValue();
+        }
+
+        if ($property->isPromoted()) {
+            foreach ($property->getDeclaringClass()->getConstructor()?->getParameters() ?? [] as $parameter) {
+                if ($parameter->name === $property->name && $parameter->isDefaultValueAvailable()) {
+                    return $parameter->getDefaultValue();
+                }
+            }
+        }
+
+        /** @var list<ReflectionAttribute<DefaultValue>> $annotations */
+        $annotations = $property->getAttributes(DefaultValue::class);
+        if (isset($annotations[0])) {
+            $annotation = $annotations[0]->newInstance();
+            return $annotation->value;
+        }
+
+        return null;
+    }
+
+    private static function normalizePropertyDefaultValue(mixed $value): mixed
+    {
+        if (is_scalar($value)) {
+            return $value;
+        }
+
+        if ($value instanceof BackedEnum) {
+            return $value->value;
+        }
+
+        return null;
     }
 }

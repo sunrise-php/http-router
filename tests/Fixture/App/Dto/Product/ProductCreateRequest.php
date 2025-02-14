@@ -34,7 +34,6 @@ final class ProductCreateRequest
         public readonly ProductTagDtoCollection $tags,
         #[Subtype(ProductFeature::class, limit: 2)]
         public readonly array $features,
-        public readonly ProductStatus $status,
         public readonly bool $isModerated,
         #[Alias('timezone')]
         public readonly DateTimeZone $clientTimezone,
@@ -42,6 +41,7 @@ final class ProductCreateRequest
         // support for php7, not recommended in the context of this library.
         #[DefaultValue(new DateTimeImmutable('now'))]
         public readonly DateTimeImmutable $createdAt,
+        public readonly ProductStatus $status = ProductStatus::Disabled,
         #[Ignore]
         public readonly string $permanentProperty = 'value',
     ) {

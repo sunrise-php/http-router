@@ -322,17 +322,6 @@
           "free-delivery"
         ]
       },
-      "Sunrise.Http.Router.Tests.Fixture.App.Dictionary.ProductStatus": {
-        "type": "integer",
-        "format": "int64",
-        "example": 0,
-        "enum": [
-          0,
-          1,
-          2,
-          3
-        ]
-      },
       "DateTimeZone": {
         "type": "string",
         "enum": [
@@ -756,6 +745,16 @@
           "UTC"
         ]
       },
+      "Sunrise.Http.Router.Tests.Fixture.App.Dictionary.ProductStatus": {
+        "type": "integer",
+        "format": "int64",
+        "enum": [
+          0,
+          1,
+          2,
+          3
+        ]
+      },
       "Sunrise.Http.Router.Tests.Fixture.App.Dto.Product.ProductCreateRequest": {
         "type": "object",
         "additionalProperties": false,
@@ -767,8 +766,7 @@
           "dKQLn8yyMsYG": [],
           "publicId": {
             "type": "integer",
-            "format": "int64",
-            "example": 0
+            "format": "int64"
           },
           "name": {
             "type": "string"
@@ -815,9 +813,6 @@
               }
             ]
           },
-          "status": {
-            "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.Dictionary.ProductStatus"
-          },
           "isModerated": {
             "type": "boolean"
           },
@@ -828,6 +823,14 @@
             "type": "string",
             "format": "date-time",
             "example": "1970-01-01T00:00:00.000+00:00"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.Dictionary.ProductStatus"
+              }
+            ],
+            "default": 0
           }
         },
         "required": [
@@ -841,7 +844,6 @@
           "categoryId",
           "tags",
           "features",
-          "status",
           "isModerated",
           "timezone"
         ]
@@ -867,14 +869,22 @@
         "additionalProperties": false,
         "properties": {
           "limit": {
-            "type": "integer",
-            "format": "int64",
-            "example": 0
+            "allOf": [
+              {
+                "type": "integer",
+                "format": "int64"
+              }
+            ],
+            "default": 20
           },
           "offset": {
-            "type": "integer",
-            "format": "int64",
-            "example": 0
+            "allOf": [
+              {
+                "type": "integer",
+                "format": "int64"
+              }
+            ],
+            "default": 0
           }
         }
       },

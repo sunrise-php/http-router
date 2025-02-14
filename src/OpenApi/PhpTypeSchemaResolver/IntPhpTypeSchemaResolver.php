@@ -40,7 +40,6 @@ final class IntPhpTypeSchemaResolver implements OpenApiPhpTypeSchemaResolverInte
         return [
             'type' => Type::OAS_TYPE_NAME_INTEGER,
             'format' => PHP_INT_SIZE === 4 ? 'int32' : 'int64',
-            'example' => 0,
         ];
     }
 
