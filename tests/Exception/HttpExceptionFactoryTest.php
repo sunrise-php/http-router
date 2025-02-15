@@ -140,4 +140,17 @@ final class HttpExceptionFactoryTest extends TestCase
         self::assertSame('foo', $exception->getMessage());
         self::assertSame($previous, $exception->getPrevious());
     }
+
+    public function testInternalServerError(): void
+    {
+        $exception = HttpExceptionFactory::internalServerError();
+        self::assertSame(500, $exception->getCode());
+        self::assertSame(ErrorMessage::INTERNAL_SERVER_ERROR, $exception->getMessageTemplate());
+
+        $previous = $this->createMock(Throwable::class);
+        $exception = HttpExceptionFactory::internalServerError('foo', 503, $previous);
+        self::assertSame(503, $exception->getCode());
+        self::assertSame('foo', $exception->getMessage());
+        self::assertSame($previous, $exception->getPrevious());
+    }
 }

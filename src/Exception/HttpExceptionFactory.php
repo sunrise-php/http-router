@@ -141,4 +141,16 @@ final class HttpExceptionFactory
             $previous,
         );
     }
+
+    public static function internalServerError(
+        ?string $message = null,
+        ?int $code = null,
+        ?Throwable $previous = null,
+    ): HttpException {
+        return new HttpException(
+            $message ?? ErrorMessage::INTERNAL_SERVER_ERROR,
+            $code ?? StatusCodeInterface::STATUS_INTERNAL_SERVER_ERROR,
+            $previous,
+        );
+    }
 }

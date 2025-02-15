@@ -15,4 +15,5 @@ return [
     ErrorMessage::MISSING_COOKIE => 'Nedostaje cookie "{{ cookie_name }}".',
     ErrorMessage::INVALID_COOKIE => 'Cookie "{{ cookie_name }}" nije validan.',
     ErrorMessage::INVALID_BODY => 'Telo zahteva nije validno.',
+    ErrorMessage::INTERNAL_SERVER_ERROR => 'Nešto nije u redu.',
 ];

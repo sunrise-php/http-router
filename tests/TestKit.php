@@ -21,8 +21,8 @@ use Sunrise\Http\Router\LanguageInterface;
 use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\ParameterResolverInterface;
 use Sunrise\Http\Router\RouteInterface;
+use Sunrise\Http\Router\Validation\ConstraintViolationInterface;
 use Symfony\Component\Validator\ConstraintViolationInterface as ValidatorConstraintViolationInterface;
-use Symfony\Component\Validator\ConstraintViolationInterface;
 
 use function is_int;
 use function is_null;
@@ -81,6 +81,33 @@ trait TestKit
         for ($i = 0; $i < $count; $i++) {
             yield $this->mockChainContinuingMiddleware($request, $handler, $calls);
         }
+    }
+
+    protected function mockConstraintViolation(
+        string $message,
+        string $messageTemplate,
+        array $messagePlaceholders,
+        string $propertyPath = '',
+        ?string $code = null,
+        mixed $invalidValue = null,
+        string $translationDomain = 'test',
+        int|InvocationOrder|null $messageCalls = null,
+        int|InvocationOrder|null $messageTemplateCalls = null,
+        int|InvocationOrder|null $messagePlaceholdersCalls = null,
+        int|InvocationOrder|null $propertyPathCalls = null,
+        int|InvocationOrder|null $codeCalls = null,
+        int|InvocationOrder|null $invalidValueCalls = null,
+        int|InvocationOrder|null $translationDomainCalls = null,
+    ): ConstraintViolationInterface&MockObject {
+        $violation = $this->createMock(ConstraintViolationInterface::class);
+        $violation->expects(self::normalizeInvocationOrder($messageCalls))->method('getMessage')->willReturn($message);
+        $violation->expects(self::normalizeInvocationOrder($messageTemplateCalls))->method('getMessageTemplate')->willReturn($messageTemplate);
+        $violation->expects(self::normalizeInvocationOrder($messagePlaceholdersCalls))->method('getMessagePlaceholders')->willReturn($messagePlaceholders);
+        $violation->expects(self::normalizeInvocationOrder($propertyPathCalls))->method('getPropertyPath')->willReturn($propertyPath);
+        $violation->expects(self::normalizeInvocationOrder($codeCalls))->method('getCode')->willReturn($code);
+        $violation->expects(self::normalizeInvocationOrder($invalidValueCalls))->method('getInvalidValue')->willReturn($invalidValue);
+        $violation->expects(self::normalizeInvocationOrder($translationDomainCalls))->method('getTranslationDomain')->willReturn($translationDomain);
+        return $violation;
     }
 
     protected function mockLanguage(
@@ -179,7 +206,7 @@ trait TestKit
         int|InvocationOrder|null $codeCalls = null,
         int|InvocationOrder|null $invalidValueCalls = null,
     ): ValidatorConstraintViolationInterface&MockObject {
-        $violation = $this->createMock(ConstraintViolationInterface::class);
+        $violation = $this->createMock(ValidatorConstraintViolationInterface::class);
         $violation->expects(self::normalizeInvocationOrder($messageCalls))->method('getMessage')->willReturn($message);
         $violation->expects(self::normalizeInvocationOrder($propertyPathCalls))->method('getPropertyPath')->willReturn($propertyPath);
         $violation->expects(self::normalizeInvocationOrder($codeCalls))->method('getCode')->willReturn($code);

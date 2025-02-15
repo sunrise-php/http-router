@@ -29,5 +29,6 @@ final class ErrorMessage
     public const MISSING_COOKIE = 'The cookie "{{ cookie_name }}" is missing.';
     public const INVALID_COOKIE = 'The cookie "{{ cookie_name }}" is invalid.';
     public const INVALID_BODY = 'The request body is invalid.';
+    public const INTERNAL_SERVER_ERROR = 'Something went wrong.';
     // phpcs:enable Generic.Files.LineLength.TooLong
 }

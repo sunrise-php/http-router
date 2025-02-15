@@ -62,9 +62,8 @@ final class EncodableResponseResolver implements ResponseResolverInterface
         }
 
         $serverRequest = ServerRequest::create($request);
-        $clientPreferredMediaType = $serverRequest->getClientPreferredMediaType(
-            ...$serverRequest->getRoute()->getProducedMediaTypes()
-        );
+        $serverProducedMediaTypes = $serverRequest->getRoute()->getProducedMediaTypes();
+        $clientPreferredMediaType = $serverRequest->getClientPreferredMediaType(...$serverProducedMediaTypes);
 
         $processParams = $annotations[0]->newInstance();
         $codecMediaType = $clientPreferredMediaType ?? $processParams->defaultMediaType ?? $this->defaultMediaType;

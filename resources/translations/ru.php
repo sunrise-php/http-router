@@ -15,4 +15,5 @@ return [
     ErrorMessage::MISSING_COOKIE => 'Отсутствует cookie "{{ cookie_name }}".',
     ErrorMessage::INVALID_COOKIE => 'Cookie "{{ cookie_name }}" невалидно.',
     ErrorMessage::INVALID_BODY => 'Тело запроса невалидно.',
+    ErrorMessage::INTERNAL_SERVER_ERROR => 'Что-то пошло не так.',
 ];
