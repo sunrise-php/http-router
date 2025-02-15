@@ -19,12 +19,10 @@ use function DI\get;
 return [
     'router.openapi.initial_document' => [
         'openapi' => OpenApiConfiguration::VERSION,
-        'info' => get('router.openapi.initial_document.info'),
-    ],
-
-    'router.openapi.initial_document.info' => [
-        'title' => 'API',
-        'version' => '1.0.0',
+        'info' => [
+            'title' => 'API',
+            'version' => '1.0.0',
+        ],
     ],
 
     'router.openapi.initial_operation' => [

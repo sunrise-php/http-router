@@ -26,6 +26,7 @@ final class ConstraintViolation implements ConstraintViolationInterface
         private readonly string $propertyPath,
         private readonly ?string $code,
         private readonly mixed $invalidValue,
+        private readonly string $translationDomain,
     ) {
     }
 
@@ -60,5 +61,10 @@ final class ConstraintViolation implements ConstraintViolationInterface
     public function getInvalidValue(): mixed
     {
         return $this->invalidValue;
+    }
+
+    public function getTranslationDomain(): string
+    {
+        return $this->translationDomain;
     }
 }

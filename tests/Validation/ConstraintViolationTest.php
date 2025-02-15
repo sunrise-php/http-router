@@ -18,6 +18,7 @@ final class ConstraintViolationTest extends TestCase
             propertyPath: 'foo.bar',
             code: '287272ea-e485-405e-aab4-c5e522daaa78',
             invalidValue: 0,
+            translationDomain: 'test',
         );
 
         self::assertSame('foo, bar!', $violation->getMessage());
@@ -26,5 +27,6 @@ final class ConstraintViolationTest extends TestCase
         self::assertSame('foo.bar', $violation->getPropertyPath());
         self::assertSame('287272ea-e485-405e-aab4-c5e522daaa78', $violation->getCode());
         self::assertSame(0, $violation->getInvalidValue());
+        self::assertSame('test', $violation->getTranslationDomain());
     }
 }

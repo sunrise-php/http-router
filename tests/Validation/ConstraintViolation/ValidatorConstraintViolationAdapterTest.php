@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Tests\Validation\ConstraintViolation;
 
 use PHPUnit\Framework\TestCase;
+use Sunrise\Http\Router\Dictionary\TranslationDomain;
 use Sunrise\Http\Router\Validation\ConstraintViolation\ValidatorConstraintViolationAdapter;
 use Symfony\Component\Validator\ConstraintViolationInterface;
 
@@ -28,5 +29,6 @@ final class ValidatorConstraintViolationAdapterTest extends TestCase
         self::assertSame('foo.0.bar', $adaptedViolation->getPropertyPath());
         self::assertSame('287272ea-e485-405e-aab4-c5e522daaa78', $adaptedViolation->getCode());
         self::assertSame(0, $adaptedViolation->getInvalidValue());
+        self::assertSame(TranslationDomain::VALIDATOR, $adaptedViolation->getTranslationDomain());
     }
 }

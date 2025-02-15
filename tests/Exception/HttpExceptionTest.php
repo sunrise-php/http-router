@@ -6,6 +6,7 @@ namespace Sunrise\Http\Router\Tests\Exception;
 
 use PHPUnit\Framework\TestCase;
 use Stringable;
+use Sunrise\Http\Router\Dictionary\TranslationDomain;
 use Sunrise\Http\Router\Exception\HttpException;
 use Sunrise\Http\Router\Validation\ConstraintViolationInterface;
 use Throwable;
@@ -54,5 +55,13 @@ final class HttpExceptionTest extends TestCase
         $bar = $this->createMock(ConstraintViolationInterface::class);
         $exception->addConstraintViolation($foo, $bar);
         self::assertSame([$foo, $bar], $exception->getConstraintViolations());
+    }
+
+    public function testTranslationDomain(): void
+    {
+        $exception = new HttpException('foo', 400);
+        self::assertSame(TranslationDomain::ROUTER, $exception->getTranslationDomain());
+        $exception->setTranslationDomain('test');
+        self::assertSame('test', $exception->getTranslationDomain());
     }
 }

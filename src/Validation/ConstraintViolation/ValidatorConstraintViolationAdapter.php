@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Validation\ConstraintViolation;
 
+use Sunrise\Http\Router\Dictionary\TranslationDomain;
 use Sunrise\Http\Router\Validation\ConstraintViolationInterface as RouterConstraintViolationInterface;
 use Symfony\Component\Validator\ConstraintViolationInterface as ValidatorConstraintViolationInterface;
 
@@ -70,5 +71,10 @@ final class ValidatorConstraintViolationAdapter implements RouterConstraintViola
     private static function adaptPropertyPath(string $propertyPath): string
     {
         return (string) preg_replace(['/\x5b([^\x5b\x5d]+)\x5d/', '/^\x2e/'], ['.$1'], $propertyPath);
+    }
+
+    public function getTranslationDomain(): string
+    {
+        return TranslationDomain::VALIDATOR;
     }
 }

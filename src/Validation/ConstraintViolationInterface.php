@@ -32,4 +32,6 @@ interface ConstraintViolationInterface
     public function getCode(): ?string;
 
     public function getInvalidValue(): mixed;
+
+    public function getTranslationDomain(): string;
 }

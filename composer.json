@@ -31,8 +31,9 @@
     "psr/http-server-middleware": "^1.0",
     "psr/log": "^1.0 || ^2.0 || ^3.0",
     "psr/simple-cache": "^1.0 || ^2.0 || ^3.0",
-    "sunrise/coder": "^1.0@RC",
-    "sunrise/hydrator": "^3.15"
+    "sunrise/coder": "^1.0",
+    "sunrise/hydrator": "^3.15",
+    "sunrise/translator": "^1.0"
   },
   "require-dev": {
     "php-di/php-di": "^7.0",
@@ -73,6 +74,5 @@
   },
   "config": {
     "sort-packages": true
-  },
-  "minimum-stability": "RC"
+  }
 }

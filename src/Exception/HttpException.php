@@ -16,6 +16,7 @@ namespace Sunrise\Http\Router\Exception;
 use Fig\Http\Message\StatusCodeInterface;
 use RuntimeException;
 use Stringable;
+use Sunrise\Http\Router\Dictionary\TranslationDomain;
 use Sunrise\Http\Router\Validation\ConstraintViolationInterface;
 use Throwable;
 
@@ -46,6 +47,8 @@ class HttpException extends RuntimeException implements StatusCodeInterface
      * @var list<ConstraintViolationInterface>
      */
     private array $constraintViolations = [];
+
+    private string $translationDomain = TranslationDomain::ROUTER;
 
     public function __construct(string $message, int $code, ?Throwable $previous = null)
     {
@@ -86,6 +89,11 @@ class HttpException extends RuntimeException implements StatusCodeInterface
         return $this->constraintViolations;
     }
 
+    final public function getTranslationDomain(): string
+    {
+        return $this->translationDomain;
+    }
+
     final public function addMessagePlaceholder(string $placeholder, mixed $replacement): static
     {
         $this->message = strtr($this->message, [$placeholder => $replacement]);
@@ -110,6 +118,13 @@ class HttpException extends RuntimeException implements StatusCodeInterface
         foreach ($constraintViolations as $constraintViolation) {
             $this->constraintViolations[] = $constraintViolation;
         }
+
+        return $this;
+    }
+
+    final public function setTranslationDomain(string $translationDomain): static
+    {
+        $this->translationDomain = $translationDomain;
 
         return $this;
     }
