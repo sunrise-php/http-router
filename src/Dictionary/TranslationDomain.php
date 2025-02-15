@@ -19,6 +19,6 @@ namespace Sunrise\Http\Router\Dictionary;
 final class TranslationDomain
 {
     public const HYDRATOR = 'hydrator';
-    public const ROUTER = 'hydrator';
-    public const VALIDATOR = 'hydrator';
+    public const ROUTER = 'router';
+    public const VALIDATOR = 'validator';
 }
