@@ -56,6 +56,7 @@ final class SwaggerController implements RequestHandlerInterface
             TemplateRenderer::renderTemplate(
                 filename: $this->swaggerConfiguration->templateFilename,
                 variables: [
+                    ...$this->swaggerConfiguration->templateVariables,
                     self::CSS_URLS_VAR_NAME => $this->swaggerConfiguration->cssUrls,
                     self::JS_URLS_VAR_NAME => $this->swaggerConfiguration->jsUrls,
                     self::OPENAPI_URI_VAR_NAME => $this->swaggerConfiguration->openapiUri,

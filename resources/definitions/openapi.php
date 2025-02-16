@@ -42,6 +42,7 @@ return [
     'router.swagger.css_urls' => SwaggerConfiguration::DEFAULT_CSS_URLS,
     'router.swagger.js_urls' => SwaggerConfiguration::DEFAULT_JS_URLS,
     'router.swagger.openapi_uri' => SwaggerConfiguration::DEFAULT_OPENAPI_URI,
+    'router.swagger.template_variables' => [],
 
     OpenApiConfiguration::class => create()
         ->constructor(
@@ -82,5 +83,6 @@ return [
             cssUrls: get('router.swagger.css_urls'),
             jsUrls: get('router.swagger.js_urls'),
             openapiUri: get('router.swagger.openapi_uri'),
+            templateVariables: get('router.swagger.template_variables'),
         ),
 ];

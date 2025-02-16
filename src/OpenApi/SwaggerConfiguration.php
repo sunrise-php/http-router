@@ -35,11 +35,13 @@ final class SwaggerConfiguration
 
     public function __construct(
         public readonly string $templateFilename = self::DEFAULT_TEMPLATE_FILENAME,
-        /** @var string[] */
+        /** @var array<array-key, string> */
         public readonly array $cssUrls = self::DEFAULT_CSS_URLS,
-        /** @var string[] */
+        /** @var array<array-key, string> */
         public readonly array $jsUrls = self::DEFAULT_JS_URLS,
         public readonly string $openapiUri = self::DEFAULT_OPENAPI_URI,
+        /** @var array<string, mixed> */
+        public readonly array $templateVariables = [],
     ) {
     }
 }
