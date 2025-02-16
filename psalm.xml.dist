@@ -14,6 +14,7 @@
     </projectFiles>
 
     <issueHandlers>
+        <ClassMustBeFinal errorLevel="suppress" />
         <InaccessibleProperty errorLevel="suppress" />
         <MissingConstructor errorLevel="suppress" />
         <MixedArrayAssignment errorLevel="suppress" />
