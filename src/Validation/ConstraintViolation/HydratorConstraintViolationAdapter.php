@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Validation\ConstraintViolation;
 
-use Sunrise\Http\Router\Dictionary\TranslationDomain;
 use Sunrise\Http\Router\Validation\ConstraintViolationInterface;
+use Sunrise\Hydrator\Dictionary\TranslationDomain;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 
 /**

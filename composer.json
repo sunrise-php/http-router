@@ -1,7 +1,7 @@
 {
   "name": "sunrise/http-router",
   "homepage": "https://github.com/sunrise-php/http-router",
-  "description": "A flexible HTTP router for PHP 8.1+ based on PSR-7 and PSR-15 with built-in Swagger support.",
+  "description": "A powerful solution as the foundation of your project.",
   "license": "MIT",
   "keywords": [
     "fenric",
@@ -31,8 +31,8 @@
     "psr/http-server-middleware": "^1.0",
     "psr/log": "^1.0 || ^2.0 || ^3.0",
     "psr/simple-cache": "^1.0 || ^2.0 || ^3.0",
-    "sunrise/coder": "^1.0",
-    "sunrise/hydrator": "^3.15",
+    "sunrise/coder": "^1.1",
+    "sunrise/hydrator": "^3.16",
     "sunrise/translator": "^1.0"
   },
   "require-dev": {
