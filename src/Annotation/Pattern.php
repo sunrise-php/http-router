@@ -19,6 +19,7 @@ use Sunrise\Http\Router\Dictionary\VariablePattern;
 /**
  * Pay attention to the {@see VariablePattern} dictionary.
  *
+ * @link https://dev.sunrise-studio.io/docs/reference/router-annotations?id=pattern
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]

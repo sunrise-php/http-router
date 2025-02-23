@@ -18,6 +18,7 @@ use Fig\Http\Message\RequestMethodInterface;
 use Sunrise\Coder\MediaTypeInterface;
 
 /**
+ * @link https://dev.sunrise-studio.io/docs/reference/router-annotations?id=route
  * @since 2.0.0
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]

@@ -16,6 +16,7 @@ namespace Sunrise\Http\Router\Annotation;
 use Attribute;
 
 /**
+ * @link https://dev.sunrise-studio.io/docs/reference/router-annotations?id=constraint
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_PARAMETER | Attribute::IS_REPEATABLE)]

@@ -19,6 +19,7 @@ use Fig\Http\Message\RequestMethodInterface;
 /**
  * Pay attention to the {@see RequestMethodInterface} dictionary.
  *
+ * @link https://dev.sunrise-studio.io/docs/reference/router-annotations?id=method
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]

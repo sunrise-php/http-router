@@ -17,6 +17,7 @@ use Attribute;
 use Sunrise\Coder\MediaTypeInterface;
 
 /**
+ * @link https://dev.sunrise-studio.io/docs/reference/router-annotations?id=produces
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
