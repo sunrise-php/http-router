@@ -35,7 +35,9 @@ return [
     'router.openapi.document_encoding_context' => [],
     'router.openapi.document_filename' => null,
 
-    'router.openapi.default_timestamp_format' => OpenApiConfiguration::DEFAULT_TIMESTAMP_FORMAT,
+    // See https://dev.sunrise-studio.io/docs/reference/parameters?id=appoutput_timestamp_format
+    'router.openapi.default_timestamp_format' => get('app.output_timestamp_format'),
+
     'router.openapi.default_response_description' => OpenApiConfiguration::DEFAULT_RESPONSE_DESCRIPTION,
 
     'router.openapi.php_type_schema_resolvers' => [],
