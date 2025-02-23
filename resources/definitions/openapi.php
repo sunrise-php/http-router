@@ -15,14 +15,17 @@ use Sunrise\Http\Router\RequestHandlerReflectorInterface;
 
 use function DI\create;
 use function DI\get;
+use function DI\string;
 
 return [
     'router.openapi.initial_document' => [
         'openapi' => OpenApiConfiguration::VERSION,
-        'info' => [
-            'title' => 'API',
-            'version' => '1.0.0',
-        ],
+        'info' => get('router.openapi.initial_document.info'),
+    ],
+
+    'router.openapi.initial_document.info' => [
+        'title' => string('{app.name}@{app.env}'),
+        'version' => get('app.version'),
     ],
 
     'router.openapi.initial_operation' => [

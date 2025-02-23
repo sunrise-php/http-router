@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Psr\SimpleCache\CacheInterface;
 use Sunrise\Http\Router\Loader\DescriptorLoader;
 use Sunrise\Http\Router\Loader\DescriptorLoaderInterface;
 
@@ -11,7 +12,7 @@ use function DI\get;
 
 return [
     'router.descriptor_loader.resources' => [],
-    'router.descriptor_loader.cache' => null,
+    'router.descriptor_loader.cache' => get(CacheInterface::class),
 
     'router.loaders' => add([
         get(DescriptorLoaderInterface::class),
