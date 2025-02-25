@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Tests\Dictionary;
 
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\Dictionary\LanguageCode;
+use Sunrise\Http\Router\Dictionary\Language;
 
-final class LanguageCodeTest extends TestCase
+final class LanguageTest extends TestCase
 {
     public function testCode(): void
     {
-        self::assertSame('en', LanguageCode::English->getCode());
+        self::assertSame('en', Language::English->getCode());
     }
 }

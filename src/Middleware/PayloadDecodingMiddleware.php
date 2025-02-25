@@ -13,15 +13,20 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Middleware;
 
+use LogicException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Coder\CodecManagerInterface;
 use Sunrise\Coder\Exception\CodecException;
-use Sunrise\Http\Router\Exception\HttpException;
+use Sunrise\Http\Router\Dictionary\HeaderName;
 use Sunrise\Http\Router\Exception\HttpExceptionFactory;
 use Sunrise\Http\Router\ServerRequest;
+use Sunrise\Http\Router\StringableMediaType;
+
+use function array_map;
+use function sprintf;
 
 /**
  * @since 3.0.0
@@ -34,31 +39,42 @@ final class PayloadDecodingMiddleware implements MiddlewareInterface
     public function __construct(
         private readonly CodecManagerInterface $codecManager,
         private readonly array $codecContext = [],
-        private readonly ?int $errorStatusCode = null,
-        private readonly ?string $errorMessage = null,
     ) {
     }
 
     /**
      * @inheritDoc
-     *
-     * @throws HttpException If the request's payload couldn't be decoded.
      */
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $serverRequest = ServerRequest::create($request);
+        $route = $serverRequest->getRoute();
+        $serverConsumedMediaTypes = $route->getConsumedMediaTypes();
+
+        // The server expects nothing from the client, just keep going...
+        if ($serverConsumedMediaTypes === []) {
+            return $handler->handle($request);
+        }
 
         $clientProducedMediaType = $serverRequest->getClientProducedMediaType();
         if ($clientProducedMediaType === null) {
-            return $handler->handle($request);
+            throw HttpExceptionFactory::missingMediaType();
         }
 
         if (!$serverRequest->serverConsumesMediaType($clientProducedMediaType)) {
-            return $handler->handle($request);
+            throw HttpExceptionFactory::unsupportedMediaType()
+                ->addHeaderField(HeaderName::ACCEPT, ...array_map(
+                    StringableMediaType::create(...),
+                    $serverConsumedMediaTypes,
+                ));
         }
 
         if (!$this->codecManager->supportsMediaType($clientProducedMediaType)) {
-            return $handler->handle($request);
+            throw new LogicException(sprintf(
+                'The route "%s" expects the media type "%s" that is not supported by the codec manager.',
+                $route->getName(),
+                $clientProducedMediaType->getIdentifier(),
+            ));
         }
 
         try {
@@ -69,15 +85,9 @@ final class PayloadDecodingMiddleware implements MiddlewareInterface
                 $this->codecContext,
             );
         } catch (CodecException $e) {
-            throw HttpExceptionFactory::invalidBody(
-                $this->errorMessage,
-                $this->errorStatusCode,
-                previous: $e,
-            );
+            throw HttpExceptionFactory::invalidBody(previous: $e);
         }
 
-        return $handler->handle(
-            $request->withParsedBody($parsedBody)
-        );
+        return $handler->handle($request->withParsedBody($parsedBody));
     }
 }

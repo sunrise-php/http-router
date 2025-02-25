@@ -10,7 +10,7 @@ use Sunrise\Coder\Codec\JsonCodec;
 use Sunrise\Coder\CodecManagerInterface;
 use Sunrise\Coder\Dictionary\MediaType;
 use Sunrise\Coder\MediaTypeInterface;
-use Sunrise\Http\Router\Dictionary\LanguageCode;
+use Sunrise\Http\Router\Dictionary\Language;
 use Sunrise\Http\Router\Middleware\ErrorHandlingMiddleware;
 use Sunrise\Http\Router\OpenApi\Type;
 use Sunrise\Http\Router\View\ErrorView;
@@ -29,7 +29,7 @@ return [
     'router.error_handling_middleware.produced_media_types' => [],
     'router.error_handling_middleware.default_media_type' => MediaType::JSON,
     'router.error_handling_middleware.produced_languages' => [],
-    'router.error_handling_middleware.default_language' => LanguageCode::English,
+    'router.error_handling_middleware.default_language' => Language::English,
     'router.error_handling_middleware.fatal_error_status_code' => null,
     'router.error_handling_middleware.fatal_error_message' => null,
 

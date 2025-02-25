@@ -18,7 +18,7 @@ use Sunrise\Http\Router\LanguageInterface;
 /**
  * @since 3.0.0
  */
-enum LanguageCode: string implements LanguageInterface
+enum Language: string implements LanguageInterface
 {
     case English = 'en';
 
