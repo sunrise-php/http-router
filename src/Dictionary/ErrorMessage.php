@@ -25,7 +25,7 @@ final class ErrorMessage
     public const MISSING_MEDIA_TYPE = 'The request media type is missing.';
     public const UNSUPPORTED_MEDIA_TYPE = 'The request media type is not supported by this resource.';
     public const INVALID_VARIABLE = 'The value of the variable {{{ variable_name }}} in the request URI "{{ route_uri }}" is invalid.';
-    public const INVALID_QUERY = 'The request query is invalid.';
+    public const INVALID_QUERY = 'The request query parameters are invalid.';
     public const MISSING_HEADER = 'The request header "{{ header_name }}" is missing.';
     public const INVALID_HEADER = 'The request header "{{ header_name }}" is invalid.';
     public const MISSING_COOKIE = 'The cookie "{{ cookie_name }}" is missing.';

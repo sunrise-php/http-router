@@ -5,15 +5,17 @@ declare(strict_types=1);
 use Sunrise\Http\Router\Dictionary\ErrorMessage;
 
 return [
-    ErrorMessage::MALFORMED_URI => 'URI zahteva je pogrešno formatirana i server je ne može prihvatiti.',
-    ErrorMessage::RESOURCE_NOT_FOUND => 'Zatraženi resurs nije pronađen za ovaj URI.',
-    ErrorMessage::METHOD_NOT_ALLOWED => 'Zatražena metoda nije dozvoljena za ovaj resurs.',
-    ErrorMessage::INVALID_VARIABLE => 'Vrednost promenljive {{{ variable_name }}} u URI zahteva "{{ route_uri }}" je nevalidna.',
-    ErrorMessage::INVALID_QUERY => 'Parametri zahteva su nevalidni.',
-    ErrorMessage::MISSING_HEADER => 'Nedostaje zaglavlje zahteva "{{ header_name }}".',
-    ErrorMessage::INVALID_HEADER => 'Zaglavlje zahteva "{{ header_name }}" je nevalidno.',
-    ErrorMessage::MISSING_COOKIE => 'Kolačić "{{ cookie_name }}" nedostaje.',
-    ErrorMessage::INVALID_COOKIE => 'Kolačić "{{ cookie_name }}" je nevalidan.',
-    ErrorMessage::INVALID_BODY => 'Telo zahteva je nevalidno.',
-    ErrorMessage::INTERNAL_SERVER_ERROR => 'Došlo je do greške.',
+    ErrorMessage::MALFORMED_URI => 'URI захтева је неисправно форматиран и сервер га не може прихватити.',
+    ErrorMessage::RESOURCE_NOT_FOUND => 'Захтевани ресурс није пронађен за овај URI.',
+    ErrorMessage::METHOD_NOT_ALLOWED => 'Захтевана метода није дозвољена за овај ресурс.',
+    ErrorMessage::MISSING_MEDIA_TYPE => 'Недостаје медијски тип захтева.',
+    ErrorMessage::UNSUPPORTED_MEDIA_TYPE => 'Медијски тип захтева није подржан за овај ресурс.',
+    ErrorMessage::INVALID_VARIABLE => 'Вредност променљиве {{{ variable_name }}} у URI-ју захтева \"{{ route_uri }}\" је неважећа.',
+    ErrorMessage::INVALID_QUERY => 'Параметри упита захтева су неважећи.',
+    ErrorMessage::MISSING_HEADER => 'Заглавље захтева \"{{ header_name }}\" недостаје.',
+    ErrorMessage::INVALID_HEADER => 'Заглавље захтева \"{{ header_name }}\" је неважеће.',
+    ErrorMessage::MISSING_COOKIE => 'Колачић \"{{ cookie_name }}\" недостаје.',
+    ErrorMessage::INVALID_COOKIE => 'Колачић \"{{ cookie_name }}\" је неважећи.',
+    ErrorMessage::INVALID_BODY => 'Тело захтева је неважеће.',
+    ErrorMessage::INTERNAL_SERVER_ERROR => 'Нешто је пошао по злу.',
 ];
