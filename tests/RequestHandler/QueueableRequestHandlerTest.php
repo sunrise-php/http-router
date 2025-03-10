@@ -1,92 +1,73 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Tests\RequestHandler;
 
-/**
- * Import classes
- */
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\MockObject\MockObject;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
-use Sunrise\Http\Router\Tests\Fixtures;
+use PHPUnit\Framework\TestCase;
 
-/**
- * QueueableRequestHandlerTest
- */
-class QueueableRequestHandlerTest extends TestCase
+final class QueueableRequestHandlerTest extends TestCase
 {
+    private ServerRequestInterface&MockObject $mockedRequest;
+    private ResponseInterface&MockObject $mockedResponse;
+    private RequestHandlerInterface&MockObject $mockedEndpoint;
 
-    /**
-     * @return void
-     */
-    public function testContracts() : void
+    protected function setUp(): void
     {
-        $endpoint = new Fixtures\Controllers\BlankController();
-        $requestHandler = new QueueableRequestHandler($endpoint);
-
-        $this->assertInstanceOf(RequestHandlerInterface::class, $requestHandler);
+        $this->mockedRequest = $this->createMock(ServerRequestInterface::class);
+        $this->mockedResponse = $this->createMock(ResponseInterface::class);
+        $this->mockedEndpoint = $this->createMock(RequestHandlerInterface::class);
     }
 
-    /**
-     * @return void
-     */
-    public function testRun() : void
+    public function testHandle(): void
     {
-        $endpoint = new Fixtures\Controllers\BlankController();
-        $requestHandler = new QueueableRequestHandler($endpoint);
+        $requestHandler = new QueueableRequestHandler($this->mockedEndpoint);
+        self::assertCount(0, $requestHandler);
 
-        $request = $this->createMock(ServerRequestInterface::class);
-        $requestHandler->handle($request);
+        $callableMiddleware = function (ServerRequestInterface $request, QueueableRequestHandler $handler): ResponseInterface {
+            self::assertSame($this->mockedRequest, $request);
+            return $handler->handle($request);
+        };
 
-        $this->assertTrue($endpoint->isRunned());
+        $middleware = $this->createMock(MiddlewareInterface::class);
+        $middleware->expects(self::once())->method('process')->with($this->mockedRequest, $requestHandler)->willReturnCallback($callableMiddleware);
+        $requestHandler->enqueue($middleware);
+        self::assertCount(1, $requestHandler);
+
+        $middleware = $this->createMock(MiddlewareInterface::class);
+        $middleware->expects(self::once())->method('process')->with($this->mockedRequest, $requestHandler)->willReturnCallback($callableMiddleware);
+        $requestHandler->enqueue($middleware);
+        self::assertCount(2, $requestHandler);
+
+        $this->mockedEndpoint->expects(self::once())->method('handle')->with($this->mockedRequest)->willReturn($this->mockedResponse);
+        self::assertSame($this->mockedResponse, $requestHandler->handle($this->mockedRequest));
+
+        // The request handler is immutable.
+        self::assertCount(2, $requestHandler);
     }
 
-    /**
-     * @return void
-     */
-    public function testRunWithMiddlewares() : void
+    public function testHandleWithChainBreakingMiddleware(): void
     {
-        $middlewares = [
-            new Fixtures\Middlewares\BlankMiddleware(),
-            new Fixtures\Middlewares\BlankMiddleware(),
-            new Fixtures\Middlewares\BlankMiddleware(),
-        ];
+        $requestHandler = new QueueableRequestHandler($this->mockedEndpoint);
 
-        $endpoint = new Fixtures\Controllers\BlankController();
-        $requestHandler = new QueueableRequestHandler($endpoint);
-        $requestHandler->add(...$middlewares);
+        $middleware = $this->createMock(MiddlewareInterface::class);
+        $middleware->expects(self::once())->method('process')->with($this->mockedRequest, $requestHandler)->willReturn($this->mockedResponse);
+        $requestHandler->enqueue($middleware);
 
-        $request = $this->createMock(ServerRequestInterface::class);
-        $requestHandler->handle($request);
-
-        $this->assertTrue($middlewares[0]->isRunned());
-        $this->assertTrue($middlewares[1]->isRunned());
-        $this->assertTrue($middlewares[2]->isRunned());
-        $this->assertTrue($endpoint->isRunned());
+        $this->mockedEndpoint->expects(self::never())->method('handle');
+        self::assertSame($this->mockedResponse, $requestHandler->handle($this->mockedRequest));
     }
 
-    /**
-     * @return void
-     */
-    public function testRunWithBrokenMiddleware() : void
+    public function testHandleWithoutMiddlewares(): void
     {
-        $middlewares = [
-            new Fixtures\Middlewares\BlankMiddleware(),
-            new Fixtures\Middlewares\BlankMiddleware(true),
-            new Fixtures\Middlewares\BlankMiddleware(),
-        ];
-
-        $endpoint = new Fixtures\Controllers\BlankController();
-        $requestHandler = new QueueableRequestHandler($endpoint);
-        $requestHandler->add(...$middlewares);
-
-        $request = $this->createMock(ServerRequestInterface::class);
-        $requestHandler->handle($request);
-
-        $this->assertTrue($middlewares[0]->isRunned());
-        $this->assertTrue($middlewares[1]->isRunned());
-        $this->assertFalse($middlewares[2]->isRunned());
-        $this->assertFalse($endpoint->isRunned());
+        $requestHandler = new QueueableRequestHandler($this->mockedEndpoint);
+        $this->mockedEndpoint->expects(self::once())->method('handle')->with($this->mockedRequest)->willReturn($this->mockedResponse);
+        self::assertSame($this->mockedResponse, $requestHandler->handle($this->mockedRequest));
     }
 }

@@ -1,46 +1,33 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Tests\RequestHandler;
 
-/**
- * Import classes
- */
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\MockObject\MockObject;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
-use Sunrise\Http\Router\Tests\Fixtures;
+use PHPUnit\Framework\TestCase;
 
-/**
- * CallableRequestHandlerTest
- */
-class CallableRequestHandlerTest extends TestCase
+final class CallableRequestHandlerTest extends TestCase
 {
+    private ServerRequestInterface&MockObject $mockedRequest;
+    private ResponseInterface&MockObject $mockedResponse;
 
-    /**
-     * @return void
-     */
-    public function testContracts() : void
+    protected function setUp(): void
     {
-        $callback = new Fixtures\Controllers\BlankController();
-        $requestHandler = new CallableRequestHandler($callback);
-
-        $this->assertInstanceOf(RequestHandlerInterface::class, $requestHandler);
+        $this->mockedRequest = $this->createMock(ServerRequestInterface::class);
+        $this->mockedResponse = $this->createMock(ResponseInterface::class);
     }
 
-    /**
-     * @return void
-     */
-    public function testRun() : void
+    public function testHandle(): void
     {
-        $callback = new Fixtures\Controllers\BlankController();
-        $requestHandler = new CallableRequestHandler($callback);
+        $callback = function (ServerRequestInterface $request): ResponseInterface {
+            self::assertSame($this->mockedRequest, $request);
+            return $this->mockedResponse;
+        };
 
-        $this->assertSame($callback, $requestHandler->getCallback());
-
-        $request = $this->createMock(ServerRequestInterface::class);
-        $requestHandler->handle($request);
-
-        $this->assertTrue($callback->isRunned());
+        self::assertSame($this->mockedResponse, (new CallableRequestHandler($callback))->handle($this->mockedRequest));
     }
 }

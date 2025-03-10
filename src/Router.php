@@ -1,573 +1,302 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
+ * @author Anatoly Nekhay <afenric@gmail.com>
+ * @copyright Copyright (c) 2018, Anatoly Nekhay
  * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-router
  */
 
+declare(strict_types=1);
+
 namespace Sunrise\Http\Router;
 
-/**
- * Import classes
- */
-use Fig\Http\Message\RequestMethodInterface;
+use InvalidArgumentException;
+use LogicException;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Event\RouteEvent;
-use Sunrise\Http\Router\Exception\InvalidArgumentException;
-use Sunrise\Http\Router\Exception\MethodNotAllowedException;
-use Sunrise\Http\Router\Exception\PageNotFoundException;
-use Sunrise\Http\Router\Exception\RouteNotFoundException;
+use Sunrise\Http\Router\Dictionary\HeaderName;
+use Sunrise\Http\Router\Dictionary\PlaceholderCode;
+use Sunrise\Http\Router\Event\RoutePostRunEvent;
+use Sunrise\Http\Router\Event\RoutePreRunEvent;
+use Sunrise\Http\Router\Exception\HttpException;
+use Sunrise\Http\Router\Exception\HttpExceptionFactory;
+use Sunrise\Http\Router\Helper\RouteBuilder;
+use Sunrise\Http\Router\Helper\RouteCompiler;
+use Sunrise\Http\Router\Helper\RouteMatcher;
 use Sunrise\Http\Router\Loader\LoaderInterface;
 use Sunrise\Http\Router\RequestHandler\CallableRequestHandler;
 use Sunrise\Http\Router\RequestHandler\QueueableRequestHandler;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use UnexpectedValueException;
 
-/**
- * Import functions
- */
-use function Sunrise\Http\Router\path_build;
-use function Sunrise\Http\Router\path_match;
+use function array_flip;
 use function array_keys;
-use function get_class;
-use function spl_object_hash;
+use function array_merge;
+use function rawurldecode;
 use function sprintf;
 
-/**
- * Router
- */
-class Router implements MiddlewareInterface, RequestHandlerInterface, RequestMethodInterface
+final class Router implements RouterInterface
 {
+    /** @var array<string, RouteInterface> */
+    private array $routes = [];
+
+    /** @var array<string, non-empty-string> */
+    private array $routePatterns = [];
+
+    /** @var array<string, RequestHandlerInterface> */
+    private array $routeRequestHandlers = [];
+
+    private ?RequestHandlerInterface $requestHandler = null;
+
+    private bool $isLoaded = false;
 
     /**
-     * Server Request attribute name for routing error instance
-     *
-     * @var string
+     * @since 3.0.0
      */
-    public const ATTR_NAME_FOR_ROUTING_ERROR = '@routing-error';
-
-    /**
-     * Global patterns
-     *
-     * @var array<string, string>
-     *
-     * @since 2.9.0
-     */
-    public static $patterns = [
-        '@slug' => '[0-9a-z-]+',
-        '@uuid' => '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}',
-    ];
-
-    /**
-     * The router's host table
-     *
-     * @var array<string, string[]>
-     *      The key is a host alias and values are hostnames.
-     */
-    private $hosts = [];
-
-    /**
-     * The router's routes
-     *
-     * @var array<string, RouteInterface>
-     *      The key is a route name.
-     */
-    private $routes = [];
-
-    /**
-     * The router's middlewares
-     *
-     * @var array<string, MiddlewareInterface>
-     *      The keys is an object hash.
-     */
-    private $middlewares = [];
-
-    /**
-     * The router's matched route
-     *
-     * @var RouteInterface|null
-     */
-    private $matchedRoute = null;
-
-    /**
-     * The router's event dispatcher
-     *
-     * @var EventDispatcherInterface|null
-     *
-     * @since 2.13.0
-     */
-    private $eventDispatcher = null;
-
-    /**
-     * Gets the router's host table
-     *
-     * @return array<string, string[]>
-     *
-     * @since 2.6.0
-     */
-    public function getHosts() : array
-    {
-        return $this->hosts;
+    public function __construct(
+        private readonly ReferenceResolverInterface $referenceResolver,
+        /** @var array<array-key, LoaderInterface> */
+        private readonly array $loaders,
+        /** @var array<array-key, mixed> */
+        private readonly array $middlewares = [],
+        /** @var array<array-key, mixed> */
+        private readonly array $routeMiddlewares = [],
+        private readonly ?EventDispatcherInterface $eventDispatcher = null,
+    ) {
     }
 
     /**
-     * Resolves the given hostname
-     *
-     * @param string $hostname
-     *
-     * @return string|null
-     *
-     * @since 2.14.0
-     */
-    public function resolveHostname(string $hostname) : ?string
-    {
-        foreach ($this->hosts as $alias => $hostnames) {
-            foreach ($hostnames as $value) {
-                if ($hostname === $value) {
-                    return $alias;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Gets all routes
-     *
-     * @return RouteInterface[]
-     */
-    public function getRoutes() : array
-    {
-        $routes = [];
-        foreach ($this->routes as $route) {
-            $routes[] = $route;
-        }
-
-        return $routes;
-    }
-
-    /**
-     * Gets routes by the given hostname
-     *
-     * @param string $hostname
-     *
-     * @return RouteInterface[]
-     *
-     * @since 2.14.0
-     */
-    public function getRoutesByHostname(string $hostname) : array
-    {
-        // the hostname's alias.
-        $alias = $this->resolveHostname($hostname);
-
-        $routes = [];
-        foreach ($this->routes as $route) {
-            $host = $route->getHost();
-            if ($host === null || $host === $alias) {
-                $routes[] = $route;
-            }
-        }
-
-        return $routes;
-    }
-
-    /**
-     * Gets the router's middlewares
-     *
-     * @return MiddlewareInterface[]
-     */
-    public function getMiddlewares() : array
-    {
-        $middlewares = [];
-        foreach ($this->middlewares as $middleware) {
-            $middlewares[] = $middleware;
-        }
-
-        return $middlewares;
-    }
-
-    /**
-     * Gets the router's matched route
-     *
-     * @return RouteInterface|null
-     */
-    public function getMatchedRoute() : ?RouteInterface
-    {
-        return $this->matchedRoute;
-    }
-
-    /**
-     * Gets the router's event dispatcher
-     *
-     * @return EventDispatcherInterface|null
-     *
-     * @since 2.13.0
-     */
-    public function getEventDispatcher() : ?EventDispatcherInterface
-    {
-        return $this->eventDispatcher;
-    }
-
-    /**
-     * Adds the given patterns to the router
-     *
-     * ```php
-     * $router->addPatterns([
-     *   '@digit' => '\d+',
-     *   '@word' => '\w+',
-     * ]);
-     * ```
-     *
-     * ```php
-     * $route->setPath('/{foo<@digit>}/{bar<@word>}');
-     * ```
-     *
-     * @param array<string, string> $patterns
-     *
-     * @return void
-     *
-     * @since 2.11.0
-     */
-    public function addPatterns(array $patterns) : void
-    {
-        foreach ($patterns as $alias => $pattern) {
-            self::$patterns[$alias] = $pattern;
-        }
-    }
-
-    /**
-     * Adds aliases for hostnames to the router's host table
-     *
-     * ```php
-     * $router->addHosts([
-     *   'local' => ['127.0.0.1', 'localhost'],
-     * ]);
-     * ```
-     *
-     * ```php
-     * // will be available at 127.0.0.1
-     * $route->setHost('local');
-     * ```
-     *
-     * @param array<string, string[]> $hosts
-     *
-     * @return void
-     *
-     * @since 2.11.0
-     */
-    public function addHosts(array $hosts) : void
-    {
-        foreach ($hosts as $alias => $hostnames) {
-            $this->addHost($alias, ...$hostnames);
-        }
-    }
-
-    /**
-     * Adds the given alias for the given hostname(s) to the router's host table
-     *
-     * @param string $alias
-     * @param string ...$hostnames
-     *
-     * @return void
-     *
-     * @since 2.6.0
-     */
-    public function addHost(string $alias, string ...$hostnames) : void
-    {
-        $this->hosts[$alias] = $hostnames;
-    }
-
-    /**
-     * Adds the given route(s) to the router
-     *
-     * @param RouteInterface ...$routes
-     *
-     * @return void
+     * @inheritDoc
      *
      * @throws InvalidArgumentException
-     *         if one of the given routes already exists.
      */
-    public function addRoute(RouteInterface ...$routes) : void
+    public function getRoutes(): array
     {
+        $this->isLoaded or $this->load();
+
+        return $this->routes;
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @throws InvalidArgumentException
+     */
+    public function getRoute(string $name): RouteInterface
+    {
+        $routes = $this->getRoutes();
+
+        if (!isset($routes[$name])) {
+            throw new InvalidArgumentException(sprintf('The route "%s" does not exist.', $name));
+        }
+
+        return $routes[$name];
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @throws InvalidArgumentException
+     */
+    public function hasRoute(string $name): bool
+    {
+        $routes = $this->getRoutes();
+
+        return isset($routes[$name]);
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @throws HttpException
+     * @throws InvalidArgumentException
+     * @throws LogicException
+     */
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        return $this->getRequestHandler()->handle($request);
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @throws HttpException
+     * @throws InvalidArgumentException
+     * @throws LogicException
+     */
+    public function match(ServerRequestInterface $request): RouteInterface
+    {
+        $routes = $this->getRoutes();
+
+        if ($routes === []) {
+            throw new LogicException('The router does not contain any routes.');
+        }
+
+        $requestPath = rawurldecode($request->getUri()->getPath());
+        $requestMethod = $request->getMethod();
+        $allowedMethods = [];
+
         foreach ($routes as $route) {
-            $name = $route->getName();
-            if (isset($this->routes[$name])) {
-                throw new InvalidArgumentException(sprintf(
-                    'The route "%s" already exists.',
-                    $name
-                ));
+            try {
+                if (!RouteMatcher::matchRoute($this->compileRoute($route), $requestPath, $matches)) {
+                    continue;
+                }
+            } catch (UnexpectedValueException $e) {
+                throw HttpExceptionFactory::malformedUri(previous: $e);
             }
 
-            $this->routes[$name] = $route;
+            $routeMethods = array_flip($route->getMethods());
+            if (!isset($routeMethods[$requestMethod])) {
+                $allowedMethods += $routeMethods;
+                continue;
+            }
+
+            return $matches === [] ? $route : $route->withAddedAttributes($matches);
         }
+
+        if ($allowedMethods !== []) {
+            throw HttpExceptionFactory::methodNotAllowed()
+                ->addMessagePlaceholder(PlaceholderCode::REQUEST_METHOD, $requestMethod)
+                ->addHeaderField(HeaderName::ALLOW, ...array_keys($allowedMethods));
+        }
+
+        throw HttpExceptionFactory::resourceNotFound()
+            ->addMessagePlaceholder(PlaceholderCode::REQUEST_URI, $requestPath);
     }
 
     /**
-     * Adds the given middleware(s) to the router
-     *
-     * @param MiddlewareInterface ...$middlewares
-     *
-     * @return void
+     * @inheritDoc
      *
      * @throws InvalidArgumentException
-     *         if one of the given middlewares already exists.
      */
-    public function addMiddleware(MiddlewareInterface ...$middlewares) : void
+    public function runRoute(RouteInterface $route, ServerRequestInterface $request): ResponseInterface
     {
-        foreach ($middlewares as $middleware) {
-            $hash = spl_object_hash($middleware);
-            if (isset($this->middlewares[$hash])) {
-                throw new InvalidArgumentException(sprintf(
-                    'The middleware "%s" already exists.',
-                    get_class($middleware)
-                ));
-            }
-
-            $this->middlewares[$hash] = $middleware;
-        }
-    }
-
-    /**
-     * Sets the given event dispatcher to the router
-     *
-     * @param EventDispatcherInterface|null $eventDispatcher
-     *
-     * @return void
-     *
-     * @since 2.13.0
-     */
-    public function setEventDispatcher(?EventDispatcherInterface $eventDispatcher) : void
-    {
-        $this->eventDispatcher = $eventDispatcher;
-    }
-
-    /**
-     * Gets allowed methods
-     *
-     * @return string[]
-     */
-    public function getAllowedMethods() : array
-    {
-        $methods = [];
-        foreach ($this->routes as $route) {
-            foreach ($route->getMethods() as $method) {
-                $methods[$method] = true;
-            }
+        foreach ($route->getAttributes() as $name => $value) {
+            $request = $request->withAttribute($name, $value);
         }
 
-        return array_keys($methods);
+        $request = $request->withAttribute(RouteInterface::class, $route);
+
+        if ($this->eventDispatcher !== null) {
+            $event = new RoutePreRunEvent($route, $request);
+            $this->eventDispatcher->dispatch($event);
+            $request = $event->request;
+        }
+
+        $response = $this->getRouteRequestHandler($route)->handle($request);
+
+        if ($this->eventDispatcher !== null) {
+            $event = new RoutePostRunEvent($route, $request, $response);
+            $this->eventDispatcher->dispatch($event);
+            $response = $event->response;
+        }
+
+        return $response;
     }
 
     /**
-     * Checks if a route exists by the given name
+     * @inheritDoc
      *
-     * @return bool
+     * @throws InvalidArgumentException
      */
-    public function hasRoute(string $name) : bool
+    public function buildRoute(RouteInterface $route, array $values = [], bool $strictly = false): string
     {
-        return isset($this->routes[$name]);
-    }
+        $result = RouteBuilder::buildRoute($route->getPath(), $values + $route->getAttributes());
 
-    /**
-     * Gets a route for the given name
-     *
-     * @param string $name
-     *
-     * @return RouteInterface
-     *
-     * @throws RouteNotFoundException
-     */
-    public function getRoute(string $name) : RouteInterface
-    {
-        if (!isset($this->routes[$name])) {
-            throw new RouteNotFoundException(sprintf(
-                'No route found for the name "%s".',
-                $name
+        if ($strictly && !RouteMatcher::matchRoute($this->compileRoute($route), $result)) {
+            throw new InvalidArgumentException(sprintf(
+                'The route "%s" could not be built because one of the values does not match its pattern.',
+                $route->getName(),
             ));
         }
 
-        return $this->routes[$name];
+        return $result;
     }
 
     /**
-     * Generates a URI for the given named route
+     * @throws InvalidArgumentException
      *
-     * @param string $name
-     * @param array $attributes
-     * @param bool $strict
-     *
-     * @return string
-     *
-     * @throws RouteNotFoundException
-     *         If the given named route wasn't found.
-     *
-     * @throws Exception\InvalidAttributeValueException
-     *         It can be thrown in strict mode, if an attribute value is not valid.
-     *
-     * @throws Exception\MissingAttributeValueException
-     *         If a required attribute value is not given.
+     * @return non-empty-string
      */
-    public function generateUri(string $name, array $attributes = [], bool $strict = false) : string
+    private function compileRoute(RouteInterface $route): string
     {
-        $route = $this->getRoute($name);
-
-        $attributes += $route->getAttributes();
-
-        return path_build($route->getPath(), $attributes, $strict);
+        return $this->routePatterns[$route->getName()] ??= $route->getPattern()
+            ?? RouteCompiler::compileRoute($route->getPath(), $route->getPatterns());
     }
 
     /**
-     * Looks for a route that matches the given request
+     * @internal
      *
-     * @param ServerRequestInterface $request
-     *
-     * @return RouteInterface
-     *
-     * @throws MethodNotAllowedException
-     * @throws PageNotFoundException
+     * @throws InvalidArgumentException
      */
-    public function match(ServerRequestInterface $request) : RouteInterface
+    public function getRouteRequestHandler(RouteInterface $route): RequestHandlerInterface
     {
-        $currentHost = $request->getUri()->getHost();
-        $currentPath = $request->getUri()->getPath();
-        $currentMethod = $request->getMethod();
-        $allowedMethods = [];
+        $name = $route->getName();
+        if (isset($this->routeRequestHandlers[$name])) {
+            return $this->routeRequestHandlers[$name];
+        }
 
-        $routes = $this->getRoutesByHostname($currentHost);
+        $this->routeRequestHandlers[$name] = $this->referenceResolver
+            ->resolveRequestHandler($route->getRequestHandler());
 
-        foreach ($routes as $route) {
-            // https://github.com/sunrise-php/http-router/issues/50
-            // https://tools.ietf.org/html/rfc7231#section-6.5.5
-            if (!path_match($route->getPath(), $currentPath, $attributes)) {
-                continue;
+        $middlewares = array_merge($this->routeMiddlewares, $route->getMiddlewares());
+        if ($middlewares !== []) {
+            $this->routeRequestHandlers[$name] = new QueueableRequestHandler($this->routeRequestHandlers[$name]);
+            foreach ($middlewares as $middleware) {
+                $this->routeRequestHandlers[$name]->enqueue($this->referenceResolver->resolveMiddleware($middleware));
             }
+        }
 
-            $routeMethods = [];
-            foreach ($route->getMethods() as $routeMethod) {
-                $routeMethods[$routeMethod] = true;
-                $allowedMethods[$routeMethod] = true;
+        return $this->routeRequestHandlers[$name];
+    }
+
+    /**
+     * @internal
+     *
+     * @throws InvalidArgumentException
+     */
+    public function getRequestHandler(): RequestHandlerInterface
+    {
+        if ($this->requestHandler !== null) {
+            return $this->requestHandler;
+        }
+
+        $this->requestHandler = new CallableRequestHandler(
+            fn(ServerRequestInterface $request): ResponseInterface =>
+                $this->runRoute($this->match($request), $request),
+        );
+
+        if ($this->middlewares !== []) {
+            $this->requestHandler = new QueueableRequestHandler($this->requestHandler);
+            foreach ($this->middlewares as $middleware) {
+                $this->requestHandler->enqueue($this->referenceResolver->resolveMiddleware($middleware));
             }
+        }
 
-            if (!isset($routeMethods[$currentMethod])) {
-                continue;
+        return $this->requestHandler;
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function load(): void
+    {
+        foreach ($this->loaders as $loader) {
+            foreach ($loader->load() as $route) {
+                $name = $route->getName();
+
+                if (isset($this->routes[$name])) {
+                    throw new InvalidArgumentException(sprintf('The route "%s" already exists.', $name));
+                }
+
+                $this->routes[$name] = $route;
             }
-
-            return $route->withAddedAttributes($attributes);
         }
 
-        if (!empty($allowedMethods)) {
-            throw new MethodNotAllowedException('Method Not Allowed', [
-                'method' => $currentMethod,
-                'allowed' => array_keys($allowedMethods),
-            ]);
-        }
-
-        throw new PageNotFoundException('Page Not Found');
-    }
-
-    /**
-     * Runs the router
-     *
-     * @param ServerRequestInterface $request
-     *
-     * @return ResponseInterface
-     *
-     * @since 2.8.0
-     */
-    public function run(ServerRequestInterface $request) : ResponseInterface
-    {
-        // lazy resolving of the given request...
-        $routing = new CallableRequestHandler(function (ServerRequestInterface $request) : ResponseInterface {
-            $route = $this->match($request);
-            $this->matchedRoute = $route;
-
-            if (isset($this->eventDispatcher)) {
-                $event = new RouteEvent($route, $request);
-
-                /**
-                 * @psalm-suppress TooManyArguments
-                 */
-                $this->eventDispatcher->dispatch($event, RouteEvent::NAME);
-
-                $request = $event->getRequest();
-            }
-
-            return $route->handle($request);
-        });
-
-        $middlewares = $this->getMiddlewares();
-        if (empty($middlewares)) {
-            return $routing->handle($request);
-        }
-
-        $handler = new QueueableRequestHandler($routing);
-        $handler->add(...$middlewares);
-
-        return $handler->handle($request);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function handle(ServerRequestInterface $request) : ResponseInterface
-    {
-        $route = $this->match($request);
-        $this->matchedRoute = $route;
-
-        if (isset($this->eventDispatcher)) {
-            $event = new RouteEvent($route, $request);
-
-            /**
-             * @psalm-suppress TooManyArguments
-             */
-            $this->eventDispatcher->dispatch($event, RouteEvent::NAME);
-
-            $request = $event->getRequest();
-        }
-
-        $middlewares = $this->getMiddlewares();
-        if (empty($middlewares)) {
-            return $route->handle($request);
-        }
-
-        $handler = new QueueableRequestHandler($route);
-        $handler->add(...$middlewares);
-
-        return $handler->handle($request);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
-    {
-        try {
-            return $this->handle($request);
-        } catch (MethodNotAllowedException|PageNotFoundException $e) {
-            $request = $request->withAttribute(self::ATTR_NAME_FOR_ROUTING_ERROR, $e);
-
-            return $handler->handle($request);
-        }
-    }
-
-    /**
-     * Loads routes through the given loaders
-     *
-     * @param LoaderInterface ...$loaders
-     *
-     * @return void
-     */
-    public function load(LoaderInterface ...$loaders) : void
-    {
-        foreach ($loaders as $loader) {
-            $this->addRoute(...$loader->load()->all());
-        }
+        $this->isLoaded = true;
     }
 }

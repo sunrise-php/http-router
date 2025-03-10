@@ -1,968 +1,413 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Tests;
 
-/**
- * Import classes
- */
+use Generator;
+use InvalidArgumentException;
+use LogicException;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Server\MiddlewareInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Sunrise\Http\Router\Event\RouteEvent;
-use Sunrise\Http\Router\Exception\InvalidArgumentException;
-use Sunrise\Http\Router\Exception\MethodNotAllowedException;
-use Sunrise\Http\Router\Exception\PageNotFoundException;
-use Sunrise\Http\Router\Exception\RouteNotFoundException;
-use Sunrise\Http\Router\Middleware\CallableMiddleware;
-use Sunrise\Http\Router\Loader\LoaderInterface;
-use Sunrise\Http\Router\Route;
-use Sunrise\Http\Router\RouteCollection;
+use Sunrise\Http\Router\Dictionary\ErrorMessage;
+use Sunrise\Http\Router\Event\RoutePostRunEvent;
+use Sunrise\Http\Router\Event\RoutePreRunEvent;
+use Sunrise\Http\Router\Exception\HttpException;
+use Sunrise\Http\Router\ReferenceResolverInterface;
+use Sunrise\Http\Router\RouteInterface;
 use Sunrise\Http\Router\Router;
-use Sunrise\Http\Message\ResponseFactory;
-use Sunrise\Http\ServerRequest\ServerRequestFactory;
-use Symfony\Component\EventDispatcher\EventDispatcher;
+use Sunrise\Http\Router\Tests\Fixture\Tests\IntBackedEnum;
+use Sunrise\Http\Router\Tests\Fixture\Tests\StringableClass;
 
-/**
- * Import functions
- */
-use function array_merge;
-use function array_unique;
-
-/**
- * RouterTest
- */
-class RouterTest extends TestCase
+final class RouterTest extends TestCase
 {
+    use TestKit;
 
-    /**
-     * @return void
-     */
-    public function testContracts() : void
+    private ReferenceResolverInterface&MockObject $mockedReferenceResolver;
+    private EventDispatcherInterface&MockObject $mockedEventDispatcher;
+    private ServerRequestInterface&MockObject $mockedRequest;
+    private RequestHandlerInterface&MockObject $mockedRequestHandler;
+    private ResponseInterface&MockObject $mockedResponse;
+
+    protected function setUp(): void
     {
-        $router = new Router();
-
-        $this->assertInstanceOf(MiddlewareInterface::class, $router);
-        $this->assertInstanceOf(RequestHandlerInterface::class, $router);
+        $this->mockedReferenceResolver = $this->createMock(ReferenceResolverInterface::class);
+        $this->mockedEventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $this->mockedRequest = $this->createMock(ServerRequestInterface::class);
+        $this->mockedRequestHandler = $this->createMock(RequestHandlerInterface::class);
+        $this->mockedResponse = $this->createMock(ResponseInterface::class);
     }
 
-    /**
-     * @return void
-     */
-    public function testAddPatterns() : void
-    {
-        $backup = Router::$patterns;
-
-        $router = new Router();
-
-        try {
-            Router::$patterns = [];
-
-            $router->addPatterns([
-                '@foo' => 'foo',
-                '@bar' => 'bar',
-            ]);
-
-            $this->assertSame([
-                '@foo' => 'foo',
-                '@bar' => 'bar',
-            ], Router::$patterns);
-
-            $router->addPatterns([
-                '@baz' => 'baz',
-            ]);
-
-            $this->assertSame([
-                '@foo' => 'foo',
-                '@bar' => 'bar',
-                '@baz' => 'baz',
-            ], Router::$patterns);
-
-            $router->addPatterns([
-                '@bar' => 'qux',
-            ]);
-
-            $this->assertSame([
-                '@foo' => 'foo',
-                '@bar' => 'qux',
-                '@baz' => 'baz',
-            ], Router::$patterns);
-        } finally {
-            Router::$patterns = $backup;
-        }
+    private function createRouter(
+        array $loaders,
+        array $middlewares = [],
+        array $routeMiddlewares = [],
+    ): Router {
+        return new Router(
+            referenceResolver: $this->mockedReferenceResolver,
+            loaders: $loaders,
+            middlewares: $middlewares,
+            routeMiddlewares: $routeMiddlewares,
+            eventDispatcher: $this->mockedEventDispatcher,
+        );
     }
 
-    /**
-     * @return void
-     */
-    public function testAddHosts() : void
+    public function testLoad(): void
     {
-        $router = new Router();
+        $fooRoute = $this->mockRoute('foo', nameCalls: 1);
+        $barRoute = $this->mockRoute('bar', nameCalls: 1);
+        $bazRoute = $this->mockRoute('baz', nameCalls: 1);
 
-        $this->assertSame([], $router->getHosts());
-
-        $router->addHosts([
-            'foo' => ['foo.com', 'www.foo.com'],
-            'bar' => ['bar.com', 'www.bar.com'],
-        ]);
-
-        $this->assertSame([
-            'foo' => ['foo.com', 'www.foo.com'],
-            'bar' => ['bar.com', 'www.bar.com'],
-        ], $router->getHosts());
-
-        $router->addHosts([
-            'baz' => ['baz.com', 'www.baz.com'],
-        ]);
-
-        $this->assertSame([
-            'foo' => ['foo.com', 'www.foo.com'],
-            'bar' => ['bar.com', 'www.bar.com'],
-            'baz' => ['baz.com', 'www.baz.com'],
-        ], $router->getHosts());
-
-        $router->addHosts([
-            'bar' => ['qux.com', 'www.qux.com'],
-        ]);
-
-        $this->assertSame([
-            'foo' => ['foo.com', 'www.foo.com'],
-            'bar' => ['qux.com', 'www.qux.com'],
-            'baz' => ['baz.com', 'www.baz.com'],
-        ], $router->getHosts());
+        self::assertSame([
+            'foo' => $fooRoute,
+            'bar' => $barRoute,
+            'baz' => $bazRoute,
+        ], $this->createRouter([
+            $this->mockLoader([], calls: 1),
+            $this->mockLoader([$fooRoute], calls: 1),
+            $this->mockLoader([$barRoute, $bazRoute], calls: 1),
+        ])->getRoutes());
     }
 
-    /**
-     * @return void
-     */
-    public function testAddHost() : void
+    public function testDuplicateRoute(): void
     {
-        $router = new Router();
-
-        $this->assertSame([], $router->getHosts());
-
-        $router->addHost('google', 'google.com', 'www.google.com');
-
-        $this->assertSame([
-            'google' => ['google.com', 'www.google.com'],
-        ], $router->getHosts());
-
-        $router->addHost('yahoo', 'yahoo.com');
-
-        $this->assertSame([
-            'google' => ['google.com', 'www.google.com'],
-            'yahoo' => ['yahoo.com'],
-        ], $router->getHosts());
-
-        $router->addHost('google', 'localhost');
-
-        $this->assertSame([
-            'google' => ['localhost'],
-            'yahoo' => ['yahoo.com'],
-        ], $router->getHosts());
-    }
-
-    /**
-     * @return void
-     */
-    public function testAddRoute() : void
-    {
-        $routes = [
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-        ];
-
-        $router = new Router();
-        $router->addRoute(...$routes);
-
-        $this->assertSame($routes, $router->getRoutes());
-    }
-
-    /**
-     * @return void
-     */
-    public function testAddExistingRoute() : void
-    {
-        $route = new Fixtures\Route();
-
-        $router = new Router();
-        $router->addRoute($route);
-
         $this->expectException(InvalidArgumentException::class);
-
-        try {
-            $router->addRoute($route);
-        } catch (InvalidArgumentException $e) {
-            throw $e;
-        }
+        $this->expectExceptionMessage('The route "foo" already exists.');
+        $this->createRouter([
+            $this->mockLoader([$this->mockRoute('foo', nameCalls: 1)], calls: 1),
+            $this->mockLoader([$this->mockRoute('foo', nameCalls: 1)], calls: 1),
+        ])->getRoutes();
     }
 
-    /**
-     * @return void
-     */
-    public function testAddMiddleware() : void
+    public function testGetRoute(): void
     {
-        $middlewares = [
-            new Fixtures\Middlewares\BlankMiddleware(),
-            new Fixtures\Middlewares\BlankMiddleware(),
-            new Fixtures\Middlewares\BlankMiddleware(),
-        ];
-
-        $router = new Router();
-        $router->addMiddleware(...$middlewares);
-
-        $this->assertSame($middlewares, $router->getMiddlewares());
+        $route = $this->mockRoute('foo', nameCalls: 1);
+        self::assertSame($route, $this->createRouter([$this->mockLoader([$route], calls: 1)])->getRoute('foo'));
     }
 
-    /**
-     * @return void
-     */
-    public function testAddExistingMiddleware() : void
+    public function testUnknownRoute(): void
     {
-        $middleware = new Fixtures\Middlewares\BlankMiddleware();
-
-        $router = new Router();
-        $router->addMiddleware($middleware);
-
         $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The route "foo" does not exist.');
+        $this->createRouter([])->getRoute('foo');
+    }
 
+    public function testHasRouteFalse(): void
+    {
+        self::assertFalse($this->createRouter([])->hasRoute('foo'));
+    }
+
+    public function testHasRouteTrue(): void
+    {
+        self::assertTrue($this->createRouter([$this->mockLoader([$this->mockRoute('foo', nameCalls: 1)], calls: 1)])->hasRoute('foo'));
+    }
+
+    public function testMatch(): void
+    {
+        $route = $this->mockRoute('test', path: '/test', nameCalls: 2, pathCalls: 1, methodsCalls: 1);
+        $request = $this->mockServerRequest(path: '/test', methodCalls: 1, pathCalls: 1);
+        self::assertSame($route, $this->createRouter([$this->mockLoader([$route], calls: 1)])->match($request));
+    }
+
+    public function testMatchWithAttributes(): void
+    {
+        $route = $this->mockRoute('test', path: '/test/{id}', nameCalls: 2, pathCalls: 1, methodsCalls: 1);
+        $route->expects(self::once())->method('withAddedAttributes')->with(['id' => '1'])->willReturnSelf();
+        $request = $this->mockServerRequest(path: '/test/1', methodCalls: 1, pathCalls: 1);
+        self::assertSame($route, $this->createRouter([$this->mockLoader([$route], calls: 1)])->match($request));
+    }
+
+    public function testMatchWithoutAttributes(): void
+    {
+        $route = $this->mockRoute('test', path: '/test', nameCalls: 2, pathCalls: 1, methodsCalls: 1);
+        $route->expects(self::never())->method('withAddedAttributes');
+        $request = $this->mockServerRequest(path: '/test', methodCalls: 1, pathCalls: 1);
+        self::assertSame($route, $this->createRouter([$this->mockLoader([$route], calls: 1)])->match($request));
+    }
+
+    public function testMatchWithoutRoutes(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('The router does not contain any routes.');
+        $this->createRouter([])->match($this->mockedRequest);
+    }
+
+    public function testMatchWithEncodedRequestPath(): void
+    {
+        $route = $this->mockRoute('test', path: '/test', nameCalls: 2, pathCalls: 1, methodsCalls: 1);
+        $request = $this->mockServerRequest(path: '/%74%65%73%74', methodCalls: 1, pathCalls: 1);
+        self::assertSame($route, $this->createRouter([$this->mockLoader([$route], calls: 1)])->match($request));
+    }
+
+    public function testMatchWithMalformedRequestPath(): void
+    {
+        $route = $this->mockRoute('test', path: '/test', nameCalls: 2, pathCalls: 1, methodsCalls: 0);
+        $request = $this->mockServerRequest(path: '/test%FF', methodCalls: 1, pathCalls: 1);
+        $this->expectException(HttpException::class);
+        $this->expectExceptionMessage(ErrorMessage::MALFORMED_URI);
         try {
-            $router->addMiddleware($middleware);
-        } catch (InvalidArgumentException $e) {
+            $this->createRouter([$this->mockLoader([$route], calls: 1)])->match($request);
+        } catch (HttpException $e) {
+            self::assertSame(400, $e->getCode());
             throw $e;
         }
     }
 
-    /**
-     * @return void
-     */
-    public function testGetAllowedMethods() : void
+    public function testMatchWithUnresolvedRequestPath(): void
     {
-        $routes = [
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-        ];
-
-        $expected = array_unique(array_merge(
-            $routes[0]->getMethods(),
-            $routes[1]->getMethods(),
-            $routes[2]->getMethods()
-        ));
-
-        $router = new Router();
-
-        $this->assertSame([], $router->getAllowedMethods());
-
-        $router->addRoute(...$routes);
-
-        $this->assertSame($expected, $router->getAllowedMethods());
-    }
-
-    /**
-     * @return void
-     */
-    public function testGetRoute() : void
-    {
-        $routes = [
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-        ];
-
-        $router = new Router();
-        $router->addRoute(...$routes);
-
-        $this->assertSame($routes[1], $router->getRoute($routes[1]->getName()));
-    }
-
-    /**
-     * @return void
-     */
-    public function testGetUndefinedRoute() : void
-    {
-        $routes = [
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-        ];
-
-        $router = new Router();
-        $router->addRoute(...$routes);
-
-        $this->expectException(RouteNotFoundException::class);
-
+        $route = $this->mockRoute('test', path: '/test/{id<\d+>}', nameCalls: 2, pathCalls: 1, methodsCalls: 0);
+        $request = $this->mockServerRequest(path: '/test/foo', methodCalls: 1, pathCalls: 1);
+        $this->expectException(HttpException::class);
+        $this->expectExceptionMessage(ErrorMessage::RESOURCE_NOT_FOUND);
         try {
-            $router->getRoute('foo');
-        } catch (RouteNotFoundException $e) {
+            $this->createRouter([$this->mockLoader([$route], calls: 1)])->match($request);
+        } catch (HttpException $e) {
+            self::assertSame(404, $e->getCode());
             throw $e;
         }
     }
 
-    /**
-     * The test method only proxies the function path_build,
-     * the function should be tested separately.
-     *
-     * @return void
-     */
-    public function testGenerateUri() : void
+    public function testMatchWithEmptyRoutePattern(): void
     {
-        $route = new Fixtures\Route();
-
-        $router = new Router();
-        $router->addRoute($route);
-
-        $this->assertSame($route->getPath(), $router->generateUri($route->getName()));
+        $route = $this->mockRoute('test', path: '/test', nameCalls: 2, pathCalls: 0, methodsCalls: 0);
+        $route->expects(self::any())->method('getPattern')->willReturn('');
+        $request = $this->mockServerRequest(path: '/test', methodCalls: 1, pathCalls: 1);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/This problem is most likely related to one of the route patterns/');
+        $this->createRouter([$this->mockLoader([$route], calls: 1)])->match($request);
     }
 
-    /**
-     * @return void
-     */
-    public function testMatch() : void
+    public function testMatchWithInvalidRoutePattern(): void
     {
-        $routes = [
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-        ];
-
-        $router = new Router();
-        $router->addRoute(...$routes);
-
-        $foundRoute = $router->match((new ServerRequestFactory)
-            ->createServerRequest(
-                $routes[2]->getMethods()[1],
-                $routes[2]->getPath()
-            ));
-
-        $this->assertSame($routes[2]->getName(), $foundRoute->getName());
+        $route = $this->mockRoute('test', path: '/test', nameCalls: 2, pathCalls: 0, methodsCalls: 0);
+        $route->expects(self::any())->method('getPattern')->willReturn('#');
+        $request = $this->mockServerRequest(path: '/test', methodCalls: 1, pathCalls: 1);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/This problem is most likely related to one of the route patterns/');
+        $this->createRouter([$this->mockLoader([$route], calls: 1)])->match($request);
     }
 
-    /**
-     * @return void
-     */
-    public function testMatchWithUnallowedMethod() : void
+    public function testMatchWithInvalidRouteVariablePattern(): void
     {
-        $routes = [
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-        ];
+        $route = $this->mockRoute('test', path: '/test/{id}', nameCalls: 2, pathCalls: 1, methodsCalls: 0);
+        $route->expects(self::any())->method('getPatterns')->willReturn(['id' => '#']);
+        $request = $this->mockServerRequest(path: '/test/1', methodCalls: 1, pathCalls: 1);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/This problem is most likely related to one of the route patterns/');
+        $this->createRouter([$this->mockLoader([$route], calls: 1)])->match($request);
+    }
 
-        $routes[1]->setPath('/foo');
-        $routes[2]->setPath('/foo');
-        $routes[3]->setPath('/foo');
+    public function testMatchWithInvalidRoutePathVariablePattern(): void
+    {
+        $route = $this->mockRoute('test', path: '/test/{id<][>}', nameCalls: 2, pathCalls: 1, methodsCalls: 0);
+        $request = $this->mockServerRequest(path: '/test/1', methodCalls: 1, pathCalls: 1);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/This problem is most likely related to one of the route patterns/');
+        $this->createRouter([$this->mockLoader([$route], calls: 1)])->match($request);
+    }
 
-        $router = new Router();
-        $router->addRoute(...$routes);
-
-        $request = (new ServerRequestFactory)
-            ->createServerRequest('GET', '/foo');
-
-        $this->expectException(MethodNotAllowedException::class);
-
+    public function testMatchWithUnsupportedRequestMethod(): void
+    {
+        $route = $this->mockRoute('test', path: '/test', nameCalls: 2, pathCalls: 1, methodsCalls: 1);
+        $request = $this->mockServerRequest(method: 'HEAD', path: '/test', methodCalls: 1, pathCalls: 1);
+        $this->expectException(HttpException::class);
+        $this->expectExceptionMessage(ErrorMessage::METHOD_NOT_ALLOWED);
         try {
-            $router->match($request);
-        } catch (MethodNotAllowedException $e) {
-            $expected = array_unique(array_merge(
-                $routes[1]->getMethods(),
-                $routes[2]->getMethods(),
-                $routes[3]->getMethods()
-            ));
-
-            $this->assertSame($request->getMethod(), $e->fromContext('method'));
-            $this->assertSame($request->getMethod(), $e->getMethod());
-
-            $this->assertSame($expected, $e->fromContext('allowed'));
-            $this->assertSame($expected, $e->getAllowedMethods());
-
+            $this->createRouter([$this->mockLoader([$route], calls: 1)])->match($request);
+        } catch (HttpException $e) {
+            self::assertSame(405, $e->getCode());
+            self::assertContains(['Allow', 'GET'], $e->getHeaderFields());
             throw $e;
         }
     }
 
-    /**
-     * @return void
-     */
-    public function testMatchWithUndefinedRoute() : void
+    public function testRunRoute(): void
     {
-        $routes = [
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-        ];
-
-        $router = new Router();
-        $router->addRoute(...$routes);
-
-        $request = (new ServerRequestFactory)
-            ->createServerRequest($routes[0]->getMethods()[0], '/');
-
-        $this->expectException(PageNotFoundException::class);
-
-        try {
-            $router->match($request);
-        } catch (PageNotFoundException $e) {
-            throw $e;
-        }
+        $route = $this->mockRoute('test', path: '/test', requestHandler: '@test');
+        $request = $this->mockServerRequest(path: '/test');
+        $request->expects(self::any())->method('withAttribute')->withAnyParameters()->willReturnSelf();
+        $this->mockedReferenceResolver->expects(self::once())->method('resolveRequestHandler')->with('@test')->willReturn($this->mockedRequestHandler);
+        $this->mockedRequestHandler->expects(self::once())->method('handle')->with($request)->willReturn($this->mockedResponse);
+        self::assertSame($this->mockedResponse, $this->createRouter([])->runRoute($route, $request));
     }
 
-    /**
-     * @return void
-     */
-    public function testRun() : void
+    public function testRunRouteAndPassAttributesToRequest(): void
     {
-        $routes = [
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-        ];
-
-        $router = new Router();
-        $router->addRoute(...$routes);
-
-        $router->run((new ServerRequestFactory)
-            ->createServerRequest(
-                $routes[1]->getMethods()[1],
-                $routes[1]->getPath()
-            ));
-
-        $this->assertNotNull($router->getMatchedRoute());
-        $this->assertSame($routes[1]->getName(), $router->getMatchedRoute()->getName());
-        $this->assertTrue($routes[1]->getRequestHandler()->isRunned());
-    }
-
-    /**
-     * @return void
-     */
-    public function testRunWithUnallowedMethod() : void
-    {
-        $routes = [
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-        ];
-
-        $router = new Router();
-        $router->addRoute(...$routes);
-
-        $router->addMiddleware(new CallableMiddleware(function ($request, $handler) {
-            try {
-                return $handler->handle($request);
-            } catch (MethodNotAllowedException $e) {
-                return (new ResponseFactory)->createResponse(405);
+        $route = $this->mockRoute('test', path: '/test', requestHandler: $this->mockedRequestHandler);
+        $route->expects(self::once())->method('getAttributes')->willReturn(['foo' => 'bar']);
+        $request = $this->mockServerRequest(path: '/test');
+        $request->expects(self::exactly(2))->method('withAttribute')->withAnyParameters()->willReturnCallback(
+            static function ($name, $value) use ($route, $request) {
+                self::assertContains([$name, $value], [[RouteInterface::class, $route], ['foo', 'bar']]);
+                return $request;
             }
-        }));
-
-        $response = $router->run((new ServerRequestFactory)
-            ->createServerRequest('UNALLOWED', $routes[1]->getPath()));
-
-        $this->assertSame(405, $response->getStatusCode());
+        );
+        $this->mockedReferenceResolver->expects(self::once())->method('resolveRequestHandler')->withAnyParameters()->willReturnArgument(0);
+        $this->mockedRequestHandler->expects(self::once())->method('handle')->with($request)->willReturn($this->mockedResponse);
+        self::assertSame($this->mockedResponse, $this->createRouter([])->runRoute($route, $request));
     }
 
-    /**
-     * @return void
-     */
-    public function testRunWithUndefinedRoute() : void
+    public function testRunRouteAndRoutePreRunEvent(): void
     {
-        $routes = [
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-        ];
-
-        $router = new Router();
-        $router->addRoute(...$routes);
-
-        $router->addMiddleware(new CallableMiddleware(function ($request, $handler) {
-            try {
-                return $handler->handle($request);
-            } catch (RouteNotFoundException $e) {
-                return (new ResponseFactory)->createResponse(404);
+        $route = $this->mockRoute('test', path: '/test', requestHandler: $this->mockedRequestHandler);
+        $request = $this->mockServerRequest(path: '/test');
+        $request->expects(self::any())->method('withAttribute')->withAnyParameters()->willReturnSelf();
+        $overriddenRequest = $this->createMock(ServerRequestInterface::class);
+        $this->mockedEventDispatcher->expects(self::any())->method('dispatch')->withAnyParameters()->willReturnCallback(
+            static function (object $event) use ($request, $overriddenRequest) {
+                if ($event instanceof RoutePreRunEvent) {
+                    self::assertSame($request, $event->request);
+                    $event->request = $overriddenRequest;
+                }
             }
-        }));
-
-        $response = $router->run((new ServerRequestFactory)
-            ->createServerRequest($routes[1]->getMethods()[1], '/undefined'));
-
-        $this->assertSame(404, $response->getStatusCode());
+        );
+        $this->mockedReferenceResolver->expects(self::once())->method('resolveRequestHandler')->withAnyParameters()->willReturnArgument(0);
+        $this->mockedRequestHandler->expects(self::once())->method('handle')->with($overriddenRequest)->willReturn($this->mockedResponse);
+        self::assertSame($this->mockedResponse, $this->createRouter([])->runRoute($route, $request));
     }
 
-    /**
-     * @return void
-     */
-    public function testHandle() : void
+    public function testRunRouteAndRoutePostRunEvent(): void
     {
-        $routes = [
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-        ];
-
-        $router = new Router();
-        $router->addRoute(...$routes);
-
-        $router->handle((new ServerRequestFactory)
-            ->createServerRequest(
-                $routes[2]->getMethods()[1],
-                $routes[2]->getPath()
-            ));
-
-        $this->assertNotNull($router->getMatchedRoute());
-        $this->assertSame($routes[2]->getName(), $router->getMatchedRoute()->getName());
-        $this->assertTrue($routes[2]->getRequestHandler()->isRunned());
+        $route = $this->mockRoute('test', path: '/test', requestHandler: $this->mockedRequestHandler);
+        $request = $this->mockServerRequest(path: '/test');
+        $request->expects(self::any())->method('withAttribute')->withAnyParameters()->willReturnSelf();
+        $this->mockedReferenceResolver->expects(self::once())->method('resolveRequestHandler')->withAnyParameters()->willReturnArgument(0);
+        $this->mockedRequestHandler->expects(self::once())->method('handle')->with($request)->willReturn($this->mockedResponse);
+        $overriddenResponse = $this->createMock(ResponseInterface::class);
+        $this->mockedEventDispatcher->expects(self::any())->method('dispatch')->withAnyParameters()->willReturnCallback(
+            function (object $event) use ($overriddenResponse) {
+                if ($event instanceof RoutePostRunEvent) {
+                    self::assertSame($this->mockedResponse, $event->response);
+                    $event->response = $overriddenResponse;
+                }
+            }
+        );
+        self::assertSame($overriddenResponse, $this->createRouter([])->runRoute($route, $request));
     }
 
-    /**
-     * @return void
-     */
-    public function testHandleWithMiddlewares() : void
+    public function testRunRouteWithMiddlewares(): void
     {
-        $route = new Fixtures\Route();
-
-        $middlewares = [
-            new Fixtures\Middlewares\BlankMiddleware(),
-            new Fixtures\Middlewares\BlankMiddleware(),
-            new Fixtures\Middlewares\BlankMiddleware(),
-        ];
-
-        $router = new Router();
-        $router->addRoute($route);
-        $router->addMiddleware(...$middlewares);
-
-        $router->handle((new ServerRequestFactory)
-            ->createServerRequest(
-                $route->getMethods()[0],
-                $route->getPath()
-            ));
-
-        $this->assertTrue($middlewares[0]->isRunned());
-        $this->assertTrue($middlewares[1]->isRunned());
-        $this->assertTrue($middlewares[2]->isRunned());
-        $this->assertTrue($route->getRequestHandler()->isRunned());
+        $request = $this->mockServerRequest(path: '/test');
+        $routerMiddlewares = [$this->mockChainContinuingMiddleware(calls: 0)];
+        $commonMiddlewares = [...$this->mockChainContinuingMiddlewares(count: 2, request: $request, calls: 1)];
+        $routeMiddlewares = [...$this->mockChainContinuingMiddlewares(count: 2, request: $request, calls: 1)];
+        $route = $this->mockRoute('test', path: '/test', requestHandler: $this->mockedRequestHandler, middlewares: $routeMiddlewares);
+        $request->expects(self::any())->method('withAttribute')->withAnyParameters()->willReturnSelf();
+        $this->mockedReferenceResolver->expects(self::once())->method('resolveRequestHandler')->withAnyParameters()->willReturnArgument(0);
+        $this->mockedReferenceResolver->expects(self::exactly(4))->method('resolveMiddleware')->withAnyParameters()->willReturnArgument(0);
+        $this->mockedRequestHandler->expects(self::once())->method('handle')->with($request)->willReturn($this->mockedResponse);
+        self::assertSame($this->mockedResponse, $this->createRouter([], middlewares: $routerMiddlewares, routeMiddlewares: $commonMiddlewares)->runRoute($route, $request));
     }
 
-    /**
-     * @return void
-     */
-    public function testHandleWithBrokenMiddleware() : void
+    #[DataProvider('buildRouteDataProvider')]
+    public function testBuildRoute(string $routePath, string $expectedPath, array $variables = [], bool $strictly = false): void
     {
-        $route = new Fixtures\Route();
-
-        $middlewares = [
-            new Fixtures\Middlewares\BlankMiddleware(),
-            new Fixtures\Middlewares\BlankMiddleware(true),
-            new Fixtures\Middlewares\BlankMiddleware(),
-        ];
-
-        $router = new Router();
-        $router->addRoute($route);
-        $router->addMiddleware(...$middlewares);
-
-        $router->handle((new ServerRequestFactory)
-            ->createServerRequest(
-                $route->getMethods()[0],
-                $route->getPath()
-            ));
-
-        $this->assertTrue($middlewares[0]->isRunned());
-        $this->assertTrue($middlewares[1]->isRunned());
-        $this->assertFalse($middlewares[2]->isRunned());
-        $this->assertFalse($route->getRequestHandler()->isRunned());
+        $route = $this->mockRoute('test', path: $routePath);
+        self::assertSame($expectedPath, $this->createRouter([])->buildRoute($route, $variables, $strictly));
     }
 
-    /**
-     * @return void
-     */
-    public function testHandleWithUnallowedMethod() : void
+    public static function buildRouteDataProvider(): Generator
     {
-        $routes = [
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-        ];
-
-        $router = new Router();
-        $router->addRoute(...$routes);
-
-        $request = (new ServerRequestFactory)
-            ->createServerRequest('GET', $routes[1]->getPath());
-
-        $this->expectException(MethodNotAllowedException::class);
-
-        try {
-            $router->handle($request);
-        } catch (MethodNotAllowedException $e) {
-            $allowedMethods = $routes[1]->getMethods();
-
-            // $this->assertSame('GET', $e->fromContext('method'));
-            $this->assertSame($allowedMethods, $e->fromContext('allowed'));
-            $this->assertSame($allowedMethods, $e->getAllowedMethods());
-
-            throw $e;
-        }
+        yield ['/test', '/test'];
+        yield ['/test/{a}', '/test/1', ['a' => '1']];
+        yield ['/test/{a}/{b}', '/test/1/2', ['a' => '1', 'b' => '2']];
+        yield ['/test/{a<\d+>}', '/test/1', ['a' => '1'], true];
+        yield ['/test/{a<\d+>}', '/test/foo', ['a' => 'foo'], false];
+        yield ['/test(/{a})', '/test'];
+        yield ['/test(/{a})', '/test/1', ['a' => '1']];
+        yield ['/test/{a}', '/test/1', ['a' => 1]];
+        yield ['/test/{a}', '/test/1', ['a' => IntBackedEnum::One]];
+        yield ['/test/{a}', '/test/1', ['a' => new StringableClass('1')]];
     }
 
-    /**
-     * @return void
-     */
-    public function testHandleWithUndefinedRoute() : void
+    #[DataProvider('failedBuildRouteDataProvider')]
+    public function testFailedBuildRoute(string $routePath, string $expectedMessageRegex, array $variables = [], bool $strictly = false): void
     {
-        $routes = [
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-        ];
-
-        $router = new Router();
-        $router->addRoute(...$routes);
-
-        $request = (new ServerRequestFactory)
-            ->createServerRequest($routes[0]->getMethods()[0], '/');
-
-        $this->expectException(RouteNotFoundException::class);
-
-        try {
-            $router->handle($request);
-        } catch (RouteNotFoundException $e) {
-            throw $e;
-        }
+        $route = $this->mockRoute('test', path: $routePath);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches($expectedMessageRegex);
+        $this->createRouter([])->buildRoute($route, $variables, $strictly);
     }
 
-    /**
-     * @return void
-     */
-    public function testProcess() : void
+    public static function failedBuildRouteDataProvider(): Generator
     {
-        $routes = [
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-        ];
-
-        $router = new Router();
-        $router->addRoute(...$routes);
-
-        $fallback = new Fixtures\Controllers\BlankController();
-
-        $router->process((new ServerRequestFactory)
-            ->createServerRequest(
-                $routes[2]->getMethods()[1],
-                $routes[2]->getPath()
-            ), $fallback);
-
-        $this->assertTrue($routes[2]->getRequestHandler()->isRunned());
-        $this->assertFalse($fallback->isRunned());
+        yield ['/test/{a}', '/the required value for the variable {a} is missing/'];
+        yield ['/test/{a}', '/the required value for the variable {a} is missing/', ['a' => null]];
+        yield ['/test/{a}', '/supported types are: string, integer, backed enum and stringable object/', ['a' => .0]];
+        yield ['/test/{a}', '/supported types are: string, integer, backed enum and stringable object/', ['a' => []]];
+        yield ['/test/{a}', '/supported types are: string, integer, backed enum and stringable object/', ['a' => (object) []]];
+        yield ['/test/{a<\d+>}', '/one of the values does not match its pattern/', ['a' => 'foo'], true];
     }
 
-    /**
-     * @return void
-     */
-    public function testProcessWithUnallowedMethod() : void
+    public function testCachingRouteRequestHandler(): void
     {
-        $routes = [
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-        ];
+        $route = $this->mockRoute('test');
+        $router = $this->createRouter([]);
+        self::assertSame($router->getRouteRequestHandler($route), $router->getRouteRequestHandler($route));
+    }
 
-        $router = new Router();
-        $router->addRoute(...$routes);
+    public function testCachingRouterRequestHandler(): void
+    {
+        $router = $this->createRouter([]);
+        self::assertSame($router->getRequestHandler(), $router->getRequestHandler());
+    }
 
-        $request = (new ServerRequestFactory)
-            ->createServerRequest('GET', $routes[0]->getPath());
+    public function testHandle(): void
+    {
+        $request = $this->mockServerRequest(path: '/test/bar/%62%61%7a', methodCalls: 1, pathCalls: 1);
 
-        $fallback = new Fixtures\Controllers\BlankController();
+        $routerMiddlewares = [...$this->mockChainContinuingMiddlewares(count: 2, request: $request, calls: 1)];
+        $routerRouteMiddlewares = [...$this->mockChainContinuingMiddlewares(count: 2, request: $request, calls: 1)];
+        $routeMiddlewares = [...$this->mockChainContinuingMiddlewares(count: 2, request: $request, calls: 1)];
 
-        $router->process($request, $fallback);
+        // nameCalls: load; create regex; create request handler.
+        $route = $this->mockRoute('test', path: '/test/{foo<(?:bar)>}/{bar<(?:baz)>}', requestHandler: '@test', middlewares: $routeMiddlewares, nameCalls: 3, pathCalls: 1, methodsCalls: 1, requestHandlerCalls: 1, middlewaresCalls: 1);
+        $route->expects(self::once())->method('getAttributes')->willReturn(['foo' => 'bar', 'bar' => 'baz']);
+        $route->expects(self::once())->method('withAddedAttributes')->with(['foo' => 'bar', 'bar' => 'baz'])->willReturnSelf();
 
-        $this->assertInstanceOf(
-            MethodNotAllowedException::class,
-            $fallback->getRequest()->getAttribute(Router::ATTR_NAME_FOR_ROUTING_ERROR)
+        $request->expects(self::exactly(3))->method('withAttribute')->willReturnCallback(
+            static function ($name, $value) use ($route, $request) {
+                self::assertContains([$name, $value], [['foo', 'bar'], ['bar', 'baz'], [RouteInterface::class, $route]]);
+                return $request;
+            }
         );
 
-        $this->assertTrue($fallback->isRunned());
-    }
+        $this->mockedRequestHandler->expects(self::once())->method('handle')->with($request)->willReturn($this->mockedResponse);
+        $this->mockedReferenceResolver->expects(self::exactly(6))->method('resolveMiddleware')->withAnyParameters()->willReturnArgument(0);
+        $this->mockedReferenceResolver->expects(self::once())->method('resolveRequestHandler')->with('@test')->willReturn($this->mockedRequestHandler);
 
-    /**
-     * @return void
-     */
-    public function testProcessWithUndefinedRoute() : void
-    {
-        $routes = [
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-        ];
+        $eventOverriddenRequest = $this->createMock(ServerRequestInterface::class);
+        $eventOverriddenResponse = $this->createMock(ResponseInterface::class);
 
-        $router = new Router();
-        $router->addRoute(...$routes);
-
-        $request = (new ServerRequestFactory)
-            ->createServerRequest($routes[0]->getMethods()[0], '/');
-
-        $fallback = new Fixtures\Controllers\BlankController();
-
-        $router->process($request, $fallback);
-
-        $this->assertInstanceOf(
-            RouteNotFoundException::class,
-            $fallback->getRequest()->getAttribute(Router::ATTR_NAME_FOR_ROUTING_ERROR)
+        $this->mockedEventDispatcher->expects(self::exactly(2))->method('dispatch')->withAnyParameters()->willReturnCallback(
+            static function (RoutePreRunEvent|RoutePostRunEvent $event) use ($eventOverriddenRequest, $eventOverriddenResponse) {
+                if ($event instanceof RoutePreRunEvent) {
+                    $event->request = $eventOverriddenRequest;
+                }
+                if ($event instanceof RoutePostRunEvent) {
+                    $event->response = $eventOverriddenResponse;
+                }
+            }
         );
 
-        $this->assertTrue($fallback->isRunned());
-    }
+        $router = $this->createRouter(
+            loaders: [
+                $this->mockLoader([
+                    // nameCalls: load; create regex.
+                    $this->mockRoute('foo', path: '/foo', nameCalls: 2, pathCalls: 1, methodsCalls: 0),
+                    $this->mockRoute('bar', path: '/bar', nameCalls: 2, pathCalls: 1, methodsCalls: 0),
+                ], calls: 1),
+                $this->mockLoader([$route], calls: 1),
+            ],
+            middlewares: $routerMiddlewares,
+            routeMiddlewares: $routerRouteMiddlewares,
+        );
 
-    /**
-     * @return void
-     */
-    public function testLoad() : void
-    {
-        $router = new Router();
-
-        $routes = [
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-        ];
-
-        $loader = $this->createMock(LoaderInterface::class);
-        $loader->method('load')
-            ->willReturn(new RouteCollection(...$routes));
-
-        $router->load($loader);
-
-        $this->assertSame($routes, $router->getRoutes());
-    }
-
-    /**
-     * @return void
-     */
-    public function testMultipleLoad() : void
-    {
-        $router = new Router();
-
-        $routes = [
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-        ];
-
-        $loaders = [];
-
-        $loaders[0] = $this->createMock(LoaderInterface::class);
-        $loaders[0]->method('load')
-            ->willReturn(new RouteCollection($routes[0]));
-
-        $loaders[1] = $this->createMock(LoaderInterface::class);
-        $loaders[1]->method('load')
-            ->willReturn(new RouteCollection($routes[1]));
-
-        $loaders[2] = $this->createMock(LoaderInterface::class);
-        $loaders[2]->method('load')
-            ->willReturn(new RouteCollection($routes[2]));
-
-        $router->load(...$loaders);
-
-        $this->assertSame($routes, $router->getRoutes());
-    }
-
-    /**
-     * @return void
-     */
-    public function testMatchWithHosts() : void
-    {
-        $requestHandler = new Fixtures\Controllers\BlankController();
-
-        $routes = [
-            new Route('foo', '/ping', ['GET'], $requestHandler),
-            new Route('bar', '/ping', ['GET'], $requestHandler),
-            new Route('baz', '/ping', ['GET'], $requestHandler),
-            new Route('qux', '/ping', ['GET'], $requestHandler),
-        ];
-
-        $routes[0]->setHost('foo');
-        $routes[1]->setHost('bar');
-        $routes[2]->setHost('baz');
-
-        $router = new Router();
-        $router->addHost('foo', 'foo.net');
-        $router->addHost('bar', 'bar.net');
-        $router->addHost('baz', 'baz.net');
-        $router->addRoute(...$routes);
-
-        // hosted route
-        $foundRoute = $router->match((new ServerRequestFactory)
-            ->createServerRequest('GET', 'http://foo.net/ping'));
-        $this->assertSame($routes[0]->getName(), $foundRoute->getName());
-
-        // hosted route
-        $foundRoute = $router->match((new ServerRequestFactory)
-            ->createServerRequest('GET', 'http://bar.net/ping'));
-        $this->assertSame($routes[1]->getName(), $foundRoute->getName());
-
-        // hosted route
-        $foundRoute = $router->match((new ServerRequestFactory)
-            ->createServerRequest('GET', 'http://baz.net/ping'));
-        $this->assertSame($routes[2]->getName(), $foundRoute->getName());
-
-        // non-hosted route
-        $foundRoute = $router->match((new ServerRequestFactory)
-            ->createServerRequest('GET', 'http://localhost/ping'));
-        $this->assertSame($routes[3]->getName(), $foundRoute->getName());
-    }
-
-    /**
-     * @return void
-     */
-    public function testEventDispatcher() : void
-    {
-        $router = new Router();
-        $this->assertNull($router->getEventDispatcher());
-
-        $eventDispatcher = new EventDispatcher();
-        $router->setEventDispatcher($eventDispatcher);
-        $this->assertSame($eventDispatcher, $router->getEventDispatcher());
-
-        $router->setEventDispatcher(null);
-        $this->assertNull($router->getEventDispatcher());
-    }
-
-    /**
-     * @return void
-     */
-    public function testRouteEvent() : void
-    {
-        $routes = [
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-        ];
-
-        $request = (new ServerRequestFactory)
-            ->createServerRequest(
-                $routes[1]->getMethods()[1],
-                $routes[1]->getPath()
-            );
-
-        $eventDispatcher = new EventDispatcher();
-        $eventDispatcher->addListener(RouteEvent::NAME, function (RouteEvent $event) use ($routes, $request) {
-            $this->assertSame($routes[1]->getName(), $event->getRoute()->getName());
-            $this->assertSame($request, $event->getRequest());
-        });
-
-        $router = new Router();
-        $router->addRoute(...$routes);
-        $router->setEventDispatcher($eventDispatcher);
-        $router->run($request);
-    }
-
-    /**
-     * @return void
-     */
-    public function testRouteEventOverrideRequest() : void
-    {
-        $route = new Fixtures\Route();
-
-        $request = (new ServerRequestFactory)
-            ->createServerRequest(
-                $route->getMethods()[0],
-                $route->getPath()
-            );
-
-        $eventDispatcher = new EventDispatcher();
-        $eventDispatcher->addListener(RouteEvent::NAME, function (RouteEvent $event) use ($request) {
-            $event->setRequest($request->withAttribute('foo', 'bar'));
-            $this->assertNotSame($request, $event->getRequest());
-        });
-
-        $router = new Router();
-        $router->addRoute($route);
-        $router->setEventDispatcher($eventDispatcher);
-        $router->handle($request);
-    }
-
-    /**
-     * @return void
-     */
-    public function testResolveHost() : void
-    {
-        $router = new Router();
-        $router->addHost('foo', 'www1.foo.com', 'www2.foo.com');
-        $router->addHost('bar', 'www1.bar.com', 'www2.bar.com');
-
-        $this->assertSame('foo', $router->resolveHostname('www1.foo.com'));
-        $this->assertSame('foo', $router->resolveHostname('www2.foo.com'));
-        $this->assertSame('bar', $router->resolveHostname('www1.bar.com'));
-        $this->assertSame('bar', $router->resolveHostname('www2.bar.com'));
-        $this->assertNull($router->resolveHostname('example.com'));
-    }
-
-    /**
-     * @return void
-     */
-    public function testGetRoutesByHostname() : void
-    {
-        $router = new Router();
-        $router->addHost('foo', 'www1.foo.com', 'www2.foo.com');
-        $router->addHost('bar', 'www1.bar.com', 'www2.bar.com');
-
-        $routes = [
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-            new Fixtures\Route(),
-        ];
-
-        $routes[0]->setHost('foo');
-        $routes[2]->setHost('bar');
-        $routes[4]->setHost('bar');
-
-        $router->addRoute(...$routes);
-
-        $this->assertSame([
-            $routes[0],
-            $routes[1],
-            $routes[3],
-            $routes[5],
-        ], $router->getRoutesByHostname('www1.foo.com'));
-
-        $this->assertSame([
-            $routes[0],
-            $routes[1],
-            $routes[3],
-            $routes[5],
-        ], $router->getRoutesByHostname('www2.foo.com'));
-
-        $this->assertSame([
-            $routes[1],
-            $routes[2],
-            $routes[3],
-            $routes[4],
-            $routes[5],
-        ], $router->getRoutesByHostname('www1.bar.com'));
-
-        $this->assertSame([
-            $routes[1],
-            $routes[2],
-            $routes[3],
-            $routes[4],
-            $routes[5],
-        ], $router->getRoutesByHostname('www2.bar.com'));
-
-        $this->assertSame([
-            $routes[1],
-            $routes[3],
-            $routes[5],
-        ], $router->getRoutesByHostname('localhost'));
+        self::assertSame($eventOverriddenResponse, $router->handle($request));
     }
 }

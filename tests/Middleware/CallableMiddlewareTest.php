@@ -1,47 +1,37 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Tests\Middleware;
 
-/**
- * Import classes
- */
-use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\MockObject\MockObject;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Sunrise\Http\Router\Middleware\CallableMiddleware;
-use Sunrise\Http\Router\Tests\Fixtures;
+use PHPUnit\Framework\TestCase;
 
-/**
- * CallableMiddlewareTest
- */
-class CallableMiddlewareTest extends TestCase
+final class CallableMiddlewareTest extends TestCase
 {
+    private ServerRequestInterface&MockObject $mockedRequest;
+    private RequestHandlerInterface&MockObject $mockedRequestHandler;
+    private ResponseInterface&MockObject $mockedResponse;
 
-    /**
-     * @return void
-     */
-    public function testContracts() : void
+    protected function setUp(): void
     {
-        $callback = new Fixtures\Middlewares\BlankMiddleware();
-        $middleware = new CallableMiddleware($callback);
-
-        $this->assertInstanceOf(MiddlewareInterface::class, $middleware);
+        $this->mockedRequest = $this->createMock(ServerRequestInterface::class);
+        $this->mockedRequestHandler = $this->createMock(RequestHandlerInterface::class);
+        $this->mockedResponse = $this->createMock(ResponseInterface::class);
     }
 
-    /**
-     * @return void
-     */
-    public function testRun() : void
+    public function testProcess(): void
     {
-        $callback = new Fixtures\Middlewares\BlankMiddleware();
-        $middleware = new CallableMiddleware($callback);
+        $callback = function (ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface {
+            self::assertSame($this->mockedRequest, $request);
+            self::assertSame($this->mockedRequestHandler, $handler);
+            return $this->mockedResponse;
+        };
 
-        $this->assertSame($callback, $middleware->getCallback());
-
-        $request = $this->createMock(ServerRequestInterface::class);
-        $requestHandler = new Fixtures\Controllers\BlankController();
-        $middleware->process($request, $requestHandler);
-
-        $this->assertTrue($callback->isRunned());
+        self::assertSame($this->mockedResponse, (new CallableMiddleware($callback))->process($this->mockedRequest, $this->mockedRequestHandler));
     }
 }

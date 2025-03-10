@@ -1,16 +1,36 @@
 build:
-  environment:
-    php:
-      version: '8.0'
+  image: default-bionic
   nodes:
     analysis:
+      environment:
+        php: 8.3.16
       tests:
         override:
           - php-scrutinizer-run
     coverage:
+      environment:
+        php: 8.3.16
       tests:
         override:
           - command: XDEBUG_MODE=coverage php vendor/bin/phpunit --coverage-clover coverage.xml
             coverage:
               file: coverage.xml
               format: clover
+    php83:
+      environment:
+        php: 8.3.16
+      tests:
+        override:
+          - command: composer test
+    php82:
+      environment:
+        php: 8.2.27
+      tests:
+        override:
+          - command: composer test
+    php81:
+      environment:
+        php: 8.1.31
+      tests:
+        override:
+          - command: composer test

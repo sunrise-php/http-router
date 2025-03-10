@@ -1,169 +1,92 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Tests;
 
-/**
- * Import classes
- */
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Sunrise\Http\Router\Exception\UnresolvableReferenceException;
+use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Sunrise\Http\Router\MiddlewareResolverInterface;
 use Sunrise\Http\Router\ReferenceResolver;
-use Sunrise\Http\Router\ReferenceResolverInterface;
+use Sunrise\Http\Router\RequestHandlerResolverInterface;
+use Sunrise\Http\Router\ResponseResolverInterface;
 
-/**
- * ReferenceResolverTest
- */
-class ReferenceResolverTest extends TestCase
+final class ReferenceResolverTest extends TestCase
 {
-    use Fixtures\ContainerAwareTrait;
+    use TestKit;
 
-    /**
-     * @return void
-     */
-    public function testContracts() : void
+    private MiddlewareResolverInterface&MockObject $mockedMiddlewareResolver;
+    private RequestHandlerResolverInterface&MockObject $mockedRequestHandlerResolver;
+    private ServerRequestInterface&MockObject $mockedRequest;
+    private ResponseInterface&MockObject $mockedResponse;
+
+    protected function setUp(): void
     {
-        $resolver = new ReferenceResolver();
-
-        $this->assertInstanceOf(ReferenceResolverInterface::class, $resolver);
+        $this->mockedMiddlewareResolver = $this->createMock(MiddlewareResolverInterface::class);
+        $this->mockedRequestHandlerResolver = $this->createMock(RequestHandlerResolverInterface::class);
+        $this->mockedRequest = $this->mockServerRequest(ServerRequestInterface::class);
+        $this->mockedResponse = $this->createMock(ResponseInterface::class);
     }
 
-    /**
-     * @return void
-     */
-    public function testContainer() : void
+    public function testResolveMiddleware(): void
     {
-        $container = $this->getContainer([
-            Fixtures\Controllers\BlankController::class => new Fixtures\Controllers\BlankController(),
-            Fixtures\Middlewares\BlankMiddleware::class => new Fixtures\Middlewares\BlankMiddleware(),
-        ]);
-
-        $resolver = new ReferenceResolver();
-
-        $resolver->setContainer($container);
-        $this->assertSame($container, $resolver->getContainer());
-
-        $reference = Fixtures\Controllers\BlankController::class;
-        $requestHandler = $resolver->toRequestHandler($reference);
-        $this->assertSame($container->storage[Fixtures\Controllers\BlankController::class], $requestHandler);
-
-        $reference = [Fixtures\Controllers\BlankController::class, '__invoke'];
-        $requestHandler = $resolver->toRequestHandler($reference);
-        $requestHandlerCallback = $requestHandler->getCallback();
-        $this->assertSame($container->storage[Fixtures\Controllers\BlankController::class], $requestHandlerCallback[0]);
-
-        $reference = Fixtures\Middlewares\BlankMiddleware::class;
-        $middleware = $resolver->toMiddleware($reference);
-        $this->assertSame($container->storage[Fixtures\Middlewares\BlankMiddleware::class], $middleware);
-
-        $reference = [Fixtures\Middlewares\BlankMiddleware::class, '__invoke'];
-        $middleware = $resolver->toMiddleware($reference);
-        $middlewareCallback = $middleware->getCallback();
-        $this->assertSame($container->storage[Fixtures\Middlewares\BlankMiddleware::class], $middlewareCallback[0]);
+        $middleware = $this->createMock(MiddlewareInterface::class);
+        $this->mockedMiddlewareResolver->expects(self::once())->method('resolveMiddleware')->with('foo')->willReturn($middleware);
+        self::assertSame($middleware, (new ReferenceResolver($this->mockedMiddlewareResolver, $this->mockedRequestHandlerResolver))->resolveMiddleware('foo'));
     }
 
-    /**
-     * @return void
-     */
-    public function testRequestHandler() : void
+    public function testResolveRequestHandler(): void
     {
-        $resolver = new ReferenceResolver();
+        $requestHandler = $this->createMock(RequestHandlerInterface::class);
+        $this->mockedRequestHandlerResolver->expects(self::once())->method('resolveRequestHandler')->with('foo')->willReturn($requestHandler);
+        self::assertSame($requestHandler, (new ReferenceResolver($this->mockedMiddlewareResolver, $this->mockedRequestHandlerResolver))->resolveRequestHandler('foo'));
+    }
 
-        $reference = new Fixtures\Controllers\BlankController();
-        $requestHandler = $resolver->toRequestHandler($reference);
-        $this->assertSame($reference, $requestHandler);
+    public function testBuild(): void
+    {
+        $testObject = new class
+        {
+            public function middleware(mixed $foo, mixed $bar, ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+            {
+                TestCase::assertSame('bar', $foo);
+                TestCase::assertSame('baz', $bar);
+                return $handler->handle($request);
+            }
 
-        $reference = function () {
+            public function requestHandler(mixed $foo, mixed $bar): string
+            {
+                TestCase::assertSame('bar', $foo);
+                TestCase::assertSame('baz', $bar);
+                return '@response';
+            }
         };
 
-        $requestHandler = $resolver->toRequestHandler($reference);
-        $this->assertSame($reference, $requestHandler->getCallback());
+        $parameterResolvers = [];
+        $this->mockParameterResolver('foo', value: 'bar', context: $this->mockedRequest, calls: self::atLeastOnce(), registry: $parameterResolvers);
+        $this->mockParameterResolver('bar', value: 'baz', context: $this->mockedRequest, calls: self::atLeastOnce(), registry: $parameterResolvers);
 
-        $reference = Fixtures\Controllers\BlankController::class;
-        $requestHandler = $resolver->toRequestHandler($reference);
-        $this->assertInstanceOf($reference, $requestHandler);
-
-        $reference = [Fixtures\Controllers\BlankController::class, '__invoke'];
-        $requestHandler = $resolver->toRequestHandler($reference);
-        $this->assertInstanceOf($reference[0], $requestHandler->getCallback()[0]);
-        $this->assertSame($reference[1], $requestHandler->getCallback()[1]);
-    }
-
-    /**
-     * @return void
-     */
-    public function testMiddleware() : void
-    {
-        $resolver = new ReferenceResolver();
-
-        $reference = new Fixtures\Middlewares\BlankMiddleware();
-        $requestHandler = $resolver->toMiddleware($reference);
-        $this->assertSame($reference, $requestHandler);
-
-        $reference = function () {
-        };
-
-        $requestHandler = $resolver->toMiddleware($reference);
-        $this->assertSame($reference, $requestHandler->getCallback());
-
-        $reference = Fixtures\Middlewares\BlankMiddleware::class;
-        $requestHandler = $resolver->toMiddleware($reference);
-        $this->assertInstanceOf($reference, $requestHandler);
-
-        $reference = [Fixtures\Middlewares\BlankMiddleware::class, '__invoke'];
-        $requestHandler = $resolver->toMiddleware($reference);
-        $this->assertInstanceOf($reference[0], $requestHandler->getCallback()[0]);
-        $this->assertSame($reference[1], $requestHandler->getCallback()[1]);
-    }
-
-    /**
-     * @param mixed $reference
-     *
-     * @return void
-     *
-     * @dataProvider unresolvableRequestHandlerReferenceDataProvider
-     */
-    public function testUnresolvableRequestHandler($reference) : void
-    {
-        $resolver = new ReferenceResolver();
-        $this->expectException(UnresolvableReferenceException::class);
-        $resolver->toRequestHandler($reference);
-    }
-
-    /**
-     * @param mixed $reference
-     *
-     * @return void
-     *
-     * @dataProvider unresolvableMiddlewareReferenceDataProvider
-     */
-    public function testUnresolvableMiddleware($reference) : void
-    {
-        $resolver = new ReferenceResolver();
-        $this->expectException(UnresolvableReferenceException::class);
-        $resolver->toMiddleware($reference);
-    }
-
-    /**
-     * @return array
-     */
-    public function unresolvableRequestHandlerReferenceDataProvider() : array
-    {
-        return [
-            [['unknownClass', 'unknownMethod']],
-            ['unknownClass'],
-            [null],
+        /** @var list<ResponseResolverInterface&MockObject> $responseResolvers */
+        $responseResolvers = [
+            $this->createMock(ResponseResolverInterface::class),
+            $this->createMock(ResponseResolverInterface::class),
         ];
-    }
 
-    /**
-     * @return array
-     */
-    public function unresolvableMiddlewareReferenceDataProvider() : array
-    {
-        return [
-            [['unknownClass', 'unknownMethod']],
-            ['unknownClass'],
-            [null],
-        ];
+        $responseResolvers[0]->expects(self::atLeastOnce())->method('resolveResponse')->with('@response', self::anything(), $this->mockedRequest)->willReturn(null);
+        $responseResolvers[1]->expects(self::atLeastOnce())->method('resolveResponse')->with('@response', self::anything(), $this->mockedRequest)->willReturn($this->mockedResponse);
+
+        $container = $this->createMock(ContainerInterface::class);
+        $container->expects(self::atLeastOnce())->method('has')->with($testObject::class)->willReturn(true);
+        $container->expects(self::atLeastOnce())->method('get')->with($testObject::class)->willReturn($testObject);
+
+        $referenceResolver = ReferenceResolver::build($parameterResolvers, $responseResolvers, $container);
+        $middleware = $referenceResolver->resolveMiddleware([$testObject::class, 'middleware']);
+        $requestHandler = $referenceResolver->resolveRequestHandler([$testObject::class, 'requestHandler']);
+
+        self::assertSame($this->mockedResponse, $middleware->process($this->mockedRequest, $requestHandler));
     }
 }

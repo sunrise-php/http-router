@@ -1,43 +1,37 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2018, Anatoly Fenric
+ * @author Anatoly Nekhay <afenric@gmail.com>
+ * @copyright Copyright (c) 2018, Anatoly Nekhay
  * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-router
  */
 
+declare(strict_types=1);
+
 namespace Sunrise\Http\Router\Middleware;
 
-/**
- * Import classes
- */
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 /**
- * CallableMiddleware
- *
  * @since 2.8.0
  */
-class CallableMiddleware implements MiddlewareInterface
+final class CallableMiddleware implements MiddlewareInterface
 {
-
     /**
-     * The middleware callback
+     * @var callable(ServerRequestInterface, RequestHandlerInterface): ResponseInterface
      *
-     * @var callable
+     * @readonly
      */
     private $callback;
 
     /**
-     * Constructor of the class
-     *
-     * @param callable $callback
+     * @param callable(ServerRequestInterface, RequestHandlerInterface): ResponseInterface $callback
      */
     public function __construct(callable $callback)
     {
@@ -45,21 +39,9 @@ class CallableMiddleware implements MiddlewareInterface
     }
 
     /**
-     * Gets the middleware callback
-     *
-     * @return callable
-     *
-     * @since 2.10.0
+     * @inheritDoc
      */
-    public function getCallback() : callable
-    {
-        return $this->callback;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler) : ResponseInterface
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         return ($this->callback)($request, $handler);
     }
