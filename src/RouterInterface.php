@@ -57,7 +57,7 @@ interface RouterInterface extends RequestHandlerInterface
      *
      * @since 3.0.0
      */
-    public function buildRoute(RouteInterface $route, array $values = []): string;
+    public function buildRoute(RouteInterface $route, array $values = [], bool $strictly = false): string;
 
     /**
      * @throws HttpException
