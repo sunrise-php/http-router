@@ -16,7 +16,7 @@ namespace Sunrise\Http\Router\Annotation;
 use Attribute;
 
 /**
- * @link https://dev.sunrise-studio.io/docs/reference/router-annotations?id=responseheader
+ * @link https://dev.sunrise-studio.io/docs/reference/routing-annotations?id=responseheader
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]

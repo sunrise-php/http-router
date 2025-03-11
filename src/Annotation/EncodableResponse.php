@@ -17,7 +17,7 @@ use Attribute;
 use Sunrise\Coder\MediaTypeInterface;
 
 /**
- * @link https://dev.sunrise-studio.io/docs/reference/router-annotations?id=encodableresponse
+ * @link https://dev.sunrise-studio.io/docs/reference/routing-annotations?id=encodableresponse
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_METHOD)]

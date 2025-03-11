@@ -16,7 +16,7 @@ namespace Sunrise\Http\Router\Annotation;
 use Attribute;
 
 /**
- * @link https://dev.sunrise-studio.io/docs/reference/router-annotations?id=deletemethod
+ * @link https://dev.sunrise-studio.io/docs/reference/routing-annotations?id=deletemethod
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]

@@ -16,7 +16,7 @@ namespace Sunrise\Http\Router\Annotation;
 use Attribute;
 
 /**
- * @link https://dev.sunrise-studio.io/docs/reference/router-annotations?id=pathpostfix
+ * @link https://dev.sunrise-studio.io/docs/reference/routing-annotations?id=pathpostfix
  * @since 2.11.0
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]

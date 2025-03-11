@@ -16,7 +16,7 @@ namespace Sunrise\Http\Router\Annotation;
 use Attribute;
 
 /**
- * @link https://dev.sunrise-studio.io/docs/reference/router-annotations?id=patchapiroute
+ * @link https://dev.sunrise-studio.io/docs/reference/routing-annotations?id=patchapiroute
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD)]
