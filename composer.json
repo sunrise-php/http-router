@@ -42,9 +42,9 @@
     "ramsey/uuid": "^4.7",
     "squizlabs/php_codesniffer": "^3.11",
     "sunrise/http-message": "^3.4",
-    "symfony/console": "^6.4",
-    "symfony/uid": "^6.4",
-    "symfony/validator": "^6.4",
+    "symfony/console": "^7.0",
+    "symfony/uid": "^7.0",
+    "symfony/validator": "^7.0",
     "vimeo/psalm": "^6.5"
   },
   "autoload": {
