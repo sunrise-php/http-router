@@ -68,17 +68,16 @@ final class ArrayAccessPhpTypeSchemaResolver implements
             ->resolvePhpTypeSchema($arrayPhpType, $phpTypeHolder);
 
         if (
-            $phpTypeHolder instanceof ReflectionParameter ||
-            $phpTypeHolder instanceof ReflectionProperty
+            ! $phpTypeHolder instanceof ReflectionParameter
+            && ! $phpTypeHolder instanceof ReflectionProperty
+            || $phpTypeHolder->getAttributes(Subtype::class) === []
         ) {
-            if ($phpTypeHolder->getAttributes(Subtype::class) === []) {
-                $collectionElementPhpType = self::getCollectionElementPhpType($phpTypeName);
-                $collectionElementPhpTypeSchema = $this->openApiPhpTypeSchemaResolverManager
-                    ->resolvePhpTypeSchema($collectionElementPhpType, $phpTypeHolder);
+            $collectionElementPhpType = self::getCollectionElementPhpType($phpTypeName);
+            $collectionElementPhpTypeSchema = $this->openApiPhpTypeSchemaResolverManager
+                ->resolvePhpTypeSchema($collectionElementPhpType, $phpTypeHolder);
 
-                $phpTypeSchema['oneOf'][0]['items'] = $collectionElementPhpTypeSchema;
-                $phpTypeSchema['oneOf'][1]['additionalProperties'] = $collectionElementPhpTypeSchema;
-            }
+            $phpTypeSchema['oneOf'][0]['items'] = $collectionElementPhpTypeSchema;
+            $phpTypeSchema['oneOf'][1]['additionalProperties'] = $collectionElementPhpTypeSchema;
         }
 
         return $phpTypeSchema;
