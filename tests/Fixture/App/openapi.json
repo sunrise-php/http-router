@@ -183,10 +183,16 @@
                 "schema": {
                   "oneOf": [
                     {
-                      "type": "array"
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.View.PageView"
+                      }
                     },
                     {
-                      "type": "object"
+                      "type": "object",
+                      "additionalProperties": {
+                        "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.View.PageView"
+                      }
                     }
                   ]
                 }
