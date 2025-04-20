@@ -26,6 +26,7 @@ final class ValidatorConstraintViolationAdapter implements RouterConstraintViola
 {
     public function __construct(
         private readonly ValidatorConstraintViolationInterface $validatorConstraintViolation,
+        private readonly ?string $translationDomain = null,
     ) {
     }
 
@@ -75,6 +76,6 @@ final class ValidatorConstraintViolationAdapter implements RouterConstraintViola
 
     public function getTranslationDomain(): string
     {
-        return TranslationDomain::VALIDATOR;
+        return $this->translationDomain ?? TranslationDomain::VALIDATOR;
     }
 }
