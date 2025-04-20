@@ -20,6 +20,7 @@ use Sunrise\Http\Router\OpenApi\Type;
 use Symfony\Component\Uid\AbstractUid;
 use Symfony\Component\Uid\Uuid;
 
+use function is_a;
 use function is_subclass_of;
 
 /**
@@ -43,7 +44,7 @@ final class SymfonyUidPhpTypeSchemaResolver implements OpenApiPhpTypeSchemaResol
             'type' => Type::OAS_TYPE_NAME_STRING,
         ];
 
-        if (is_subclass_of($phpType->name, Uuid::class)) {
+        if (is_a($phpType->name, Uuid::class, true)) {
             $phpTypeSchema['format'] = 'uuid';
         }
 

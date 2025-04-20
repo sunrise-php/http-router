@@ -26,6 +26,42 @@
         "description": ""
       }
     },
+    "/api/sign-in": {
+      "post": {
+        "externalDocs": {
+          "description": "Find more info here",
+          "url": "https://example.com"
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Request-ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The operation was successful."
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.Dto.Auth.SignInRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "operationId": "api.signIn",
+        "tags": [],
+        "summary": "",
+        "description": ""
+      }
+    },
     "/api/products": {
       "post": {
         "externalDocs": {
@@ -308,6 +344,24 @@
   },
   "components": {
     "schemas": {
+      "Sunrise.Http.Router.Tests.Fixture.App.Dto.Auth.SignInRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "password"
+          },
+          "password": {
+            "type": "string",
+            "format": "password"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
       "Sunrise.Http.Router.Tests.Fixture.App.Dto.Product.ProductTagDto": {
         "type": "object",
         "additionalProperties": false,

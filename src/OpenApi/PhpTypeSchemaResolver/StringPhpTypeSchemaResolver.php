@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver;
 
 use ReflectionParameter;
+use ReflectionProperty;
 use Reflector;
 use SensitiveParameter;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
@@ -44,6 +45,18 @@ final class StringPhpTypeSchemaResolver implements OpenApiPhpTypeSchemaResolverI
         if ($phpTypeHolder instanceof ReflectionParameter) {
             if ($phpTypeHolder->getAttributes(SensitiveParameter::class) !== []) {
                 $phpTypeSchema['format'] = 'password';
+            }
+        }
+
+        if ($phpTypeHolder instanceof ReflectionProperty) {
+            foreach ($phpTypeHolder->getDeclaringClass()->getConstructor()?->getParameters() ?? [] as $parameter) {
+                if ($parameter->name === $phpTypeHolder->name) {
+                    if ($parameter->isPromoted() && $parameter->getAttributes(SensitiveParameter::class) !== []) {
+                        $phpTypeSchema['format'] = 'password';
+                    }
+
+                    break;
+                }
             }
         }
 
