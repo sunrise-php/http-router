@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Tests\Middleware;
 
-use LogicException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
@@ -144,15 +143,11 @@ final class PayloadDecodingMiddlewareTest extends TestCase
         $this->mockedRoute->expects(self::exactly(2))->method('getConsumedMediaTypes')->willReturn([$this->mockMediaType('application/json')]);
         $this->mockedRequest->expects(self::once())->method('getHeaderLine')->with('Content-Type')->willReturn('application/json');
         $this->mockedCodecManager->expects(self::once())->method('supportsMediaType')->withAnyParameters()->willReturn(false);
-        $this->mockedRoute->expects(self::once())->method('getName')->willReturn('foo');
         $this->mockedRequestBody->expects(self::never())->method('__toString');
         $this->mockedCodecManager->expects(self::never())->method('decode');
         $this->mockedRequest->expects(self::never())->method('withParsedBody');
-        $this->mockedRequestHandler->expects(self::never())->method('handle');
-        $middleware = new PayloadDecodingMiddleware($this->mockedCodecManager);
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('The route "foo" expects the media type "application/json" that is not supported by the codec manager.');
-        $middleware->process($this->mockedRequest, $this->mockedRequestHandler);
+        $this->mockedRequestHandler->expects(self::once())->method('handle')->with($this->mockedRequest)->willReturn($this->mockedResponse);
+        self::assertSame($this->mockedResponse, (new PayloadDecodingMiddleware($this->mockedCodecManager))->process($this->mockedRequest, $this->mockedRequestHandler));
     }
 
     public function testInvalidBody(): void

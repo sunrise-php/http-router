@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\Middleware;
 
-use LogicException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -26,7 +25,6 @@ use Sunrise\Http\Router\ServerRequest;
 use Sunrise\Http\Router\StringableMediaType;
 
 use function array_map;
-use function sprintf;
 
 /**
  * @since 3.0.0
@@ -48,11 +46,10 @@ final class PayloadDecodingMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $serverRequest = ServerRequest::create($request);
-        $route = $serverRequest->getRoute();
-        $serverConsumedMediaTypes = $route->getConsumedMediaTypes();
 
-        // The server expects nothing from the client, just keep going...
+        $serverConsumedMediaTypes = $serverRequest->getRoute()->getConsumedMediaTypes();
         if ($serverConsumedMediaTypes === []) {
+            // The server expects nothing from the client, just keep going...
             return $handler->handle($request);
         }
 
@@ -70,11 +67,7 @@ final class PayloadDecodingMiddleware implements MiddlewareInterface
         }
 
         if (!$this->codecManager->supportsMediaType($clientProducedMediaType)) {
-            throw new LogicException(sprintf(
-                'The route "%s" expects the media type "%s" that is not supported by the codec manager.',
-                $route->getName(),
-                $clientProducedMediaType->getIdentifier(),
-            ));
+            return $handler->handle($request);
         }
 
         try {
