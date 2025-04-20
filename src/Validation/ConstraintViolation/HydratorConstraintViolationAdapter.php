@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\Validation\ConstraintViolation;
 
 use Sunrise\Http\Router\Validation\ConstraintViolationInterface;
-use Sunrise\Hydrator\Dictionary\TranslationDomain;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 
 /**
@@ -67,6 +66,6 @@ final class HydratorConstraintViolationAdapter implements ConstraintViolationInt
 
     public function getTranslationDomain(): string
     {
-        return TranslationDomain::HYDRATOR;
+        return $this->hydratorConstraintViolation->getTranslationDomain();
     }
 }
