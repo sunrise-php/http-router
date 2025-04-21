@@ -20,8 +20,10 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 use function array_walk_recursive;
+use function function_exists;
 use function is_array;
 use function is_string;
+use function mb_trim;
 use function trim;
 
 /**
@@ -39,7 +41,7 @@ final class StringTrimmingMiddleware implements MiddlewareInterface
      */
     public function __construct(?Closure $trimmer = null)
     {
-        $this->trimmer = $trimmer ?? trim(...);
+        $this->trimmer = $trimmer ?? (function_exists('mb_trim') ? mb_trim(...) : trim(...));
     }
 
     /**

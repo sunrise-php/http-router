@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Sunrise\Coder\Codec\JsonCodec;
 use Sunrise\Coder\CodecManagerInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
 use Sunrise\Http\Router\OpenApi\OpenApiDocumentManager;
@@ -32,7 +33,11 @@ return [
     ],
 
     'router.openapi.document_media_type' => get('router.default_media_type'),
-    'router.openapi.document_encoding_context' => [],
+
+    'router.openapi.document_encoding_context' => [
+        JsonCodec::CONTEXT_KEY_ENCODING_FLAGS => JSON_UNESCAPED_SLASHES,
+    ],
+
     'router.openapi.document_filename' => null,
 
     // See https://dev.sunrise-studio.io/docs/reference/parameters?id=appoutput_timestamp_format
