@@ -48,7 +48,7 @@ interface RouterInterface extends RequestHandlerInterface
      *
      * @since 3.0.0
      */
-    public function runRoute(RouteInterface $route, ServerRequestInterface $request): ResponseInterface;
+    public function runRoute(RouteInterface|string $route, ServerRequestInterface $request): ResponseInterface;
 
     /**
      * @param array<string, mixed> $values
@@ -57,7 +57,7 @@ interface RouterInterface extends RequestHandlerInterface
      *
      * @since 3.0.0
      */
-    public function buildRoute(RouteInterface $route, array $values = [], bool $strictly = false): string;
+    public function buildRoute(RouteInterface|string $route, array $values = [], bool $strictly = false): string;
 
     /**
      * @throws HttpException
