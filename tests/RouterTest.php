@@ -236,6 +236,28 @@ final class RouterTest extends TestCase
         self::assertSame($this->mockedResponse, $this->createRouter([])->runRoute($route, $request));
     }
 
+    public function testRunRouteByName(): void
+    {
+        $request = $this->mockServerRequest(path: '/test');
+        $request->expects(self::any())->method('withAttribute')->withAnyParameters()->willReturnSelf();
+        $this->mockedReferenceResolver->expects(self::once())->method('resolveRequestHandler')->with('@test')->willReturn($this->mockedRequestHandler);
+        $this->mockedRequestHandler->expects(self::once())->method('handle')->with($request)->willReturn($this->mockedResponse);
+        self::assertSame($this->mockedResponse, $this->createRouter([
+            $this->mockLoader([
+                $this->mockRoute('test', path: '/test', requestHandler: '@test'),
+            ], calls: 1),
+        ])->runRoute('test', $request));
+    }
+
+    public function testRunRouteByUnknownName(): void
+    {
+        $router = $this->createRouter([]);
+        $request = $this->mockServerRequest(path: '/test');
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The route "test" does not exist.');
+        $router->runRoute('test', $request);
+    }
+
     public function testRunRouteAndPassAttributesToRequest(): void
     {
         $route = $this->mockRoute('test', path: '/test', requestHandler: $this->mockedRequestHandler);
@@ -245,7 +267,7 @@ final class RouterTest extends TestCase
             static function ($name, $value) use ($route, $request) {
                 self::assertContains([$name, $value], [[RouteInterface::class, $route], ['foo', 'bar']]);
                 return $request;
-            }
+            },
         );
         $this->mockedReferenceResolver->expects(self::once())->method('resolveRequestHandler')->withAnyParameters()->willReturnArgument(0);
         $this->mockedRequestHandler->expects(self::once())->method('handle')->with($request)->willReturn($this->mockedResponse);
@@ -264,7 +286,7 @@ final class RouterTest extends TestCase
                     self::assertSame($request, $event->request);
                     $event->request = $overriddenRequest;
                 }
-            }
+            },
         );
         $this->mockedReferenceResolver->expects(self::once())->method('resolveRequestHandler')->withAnyParameters()->willReturnArgument(0);
         $this->mockedRequestHandler->expects(self::once())->method('handle')->with($overriddenRequest)->willReturn($this->mockedResponse);
@@ -285,7 +307,7 @@ final class RouterTest extends TestCase
                     self::assertSame($this->mockedResponse, $event->response);
                     $event->response = $overriddenResponse;
                 }
-            }
+            },
         );
         self::assertSame($overriddenResponse, $this->createRouter([])->runRoute($route, $request));
     }
@@ -309,6 +331,24 @@ final class RouterTest extends TestCase
     {
         $route = $this->mockRoute('test', path: $routePath);
         self::assertSame($expectedPath, $this->createRouter([])->buildRoute($route, $variables, $strictly));
+    }
+
+    #[DataProvider('buildRouteDataProvider')]
+    public function testBuildRouteByName(string $routePath, string $expectedPath, array $variables = [], bool $strictly = false): void
+    {
+        self::assertSame($expectedPath, $this->createRouter([
+            $this->mockLoader([
+                $this->mockRoute('test', path: $routePath),
+            ], calls: 1),
+        ])->buildRoute('test', $variables, $strictly));
+    }
+
+    public function testBuildRouteByUnknownName(): void
+    {
+        $router = $this->createRouter([]);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The route "test" does not exist.');
+        $router->buildRoute('test');
     }
 
     public static function buildRouteDataProvider(): Generator
@@ -374,7 +414,7 @@ final class RouterTest extends TestCase
             static function ($name, $value) use ($route, $request) {
                 self::assertContains([$name, $value], [['foo', 'bar'], ['bar', 'baz'], [RouteInterface::class, $route]]);
                 return $request;
-            }
+            },
         );
 
         $this->mockedRequestHandler->expects(self::once())->method('handle')->with($request)->willReturn($this->mockedResponse);
@@ -392,7 +432,7 @@ final class RouterTest extends TestCase
                 if ($event instanceof RoutePostRunEvent) {
                     $event->response = $eventOverriddenResponse;
                 }
-            }
+            },
         );
 
         $router = $this->createRouter(
