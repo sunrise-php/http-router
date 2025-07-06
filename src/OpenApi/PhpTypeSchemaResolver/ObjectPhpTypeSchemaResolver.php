@@ -19,6 +19,7 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionProperty;
 use Reflector;
+use Sunrise\Http\Router\OpenApi\Annotation\SchemaName;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaNameResolverInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverInterface;
@@ -33,7 +34,6 @@ use Sunrise\Hydrator\TypeConverter\ObjectTypeConverter;
 
 use function class_exists;
 use function is_scalar;
-use function strtr;
 
 /**
  * @since 3.0.0
@@ -126,7 +126,18 @@ final class ObjectPhpTypeSchemaResolver implements
 
     public function resolvePhpTypeSchemaName(Type $phpType, Reflector $phpTypeHolder): string
     {
-        return strtr($phpType->name, '\\', '.');
+        /** @var class-string $className */
+        $className = $phpType->name;
+        $classReflection = new ReflectionClass($className);
+
+        /** @var list<ReflectionAttribute<SchemaName>> $annotations */
+        $annotations = $classReflection->getAttributes(SchemaName::class);
+        if (isset($annotations[0])) {
+            $annotation = $annotations[0]->newInstance();
+            return $annotation->value;
+        }
+
+        return $classReflection->getShortName();
     }
 
     private static function isIgnoredProperty(ReflectionProperty $property): bool

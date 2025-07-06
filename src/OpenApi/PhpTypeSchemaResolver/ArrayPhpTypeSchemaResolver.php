@@ -52,14 +52,7 @@ final class ArrayPhpTypeSchemaResolver implements
         $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();
 
         $phpTypeSchema = [
-            'oneOf' => [
-                [
-                    'type' => Type::OAS_TYPE_NAME_ARRAY,
-                ],
-                [
-                    'type' => Type::OAS_TYPE_NAME_OBJECT,
-                ],
-            ],
+            'type' => Type::OAS_TYPE_NAME_ARRAY,
         ];
 
         if (
@@ -75,12 +68,9 @@ final class ArrayPhpTypeSchemaResolver implements
                 $arrayElementPhpTypeSchema = $this->openApiPhpTypeSchemaResolverManager
                     ->resolvePhpTypeSchema($arrayElementPhpType, $phpTypeHolder);
 
-                $phpTypeSchema['oneOf'][0]['items'] = $arrayElementPhpTypeSchema;
-                $phpTypeSchema['oneOf'][1]['additionalProperties'] = $arrayElementPhpTypeSchema;
-
+                $phpTypeSchema['items'] = $arrayElementPhpTypeSchema;
                 if ($annotation->limit !== null) {
-                    $phpTypeSchema['oneOf'][0]['maxItems'] = $annotation->limit;
-                    $phpTypeSchema['oneOf'][1]['maxProperties'] = $annotation->limit;
+                    $phpTypeSchema['maxItems'] = $annotation->limit;
                 }
             }
         }

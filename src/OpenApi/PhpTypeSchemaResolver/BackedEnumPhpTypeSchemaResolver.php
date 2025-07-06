@@ -14,9 +14,12 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver;
 
 use BackedEnum;
+use ReflectionAttribute;
+use ReflectionClass;
 use ReflectionEnum;
 use ReflectionException;
 use Reflector;
+use Sunrise\Http\Router\OpenApi\Annotation\SchemaName;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaNameResolverInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverInterface;
@@ -26,7 +29,6 @@ use Sunrise\Http\Router\OpenApi\Type;
 use Sunrise\Http\Router\OpenApi\TypeFactory;
 
 use function is_subclass_of;
-use function strtr;
 
 /**
  * @since 3.0.0
@@ -79,6 +81,17 @@ final class BackedEnumPhpTypeSchemaResolver implements
 
     public function resolvePhpTypeSchemaName(Type $phpType, Reflector $phpTypeHolder): string
     {
-        return strtr($phpType->name, '\\', '.');
+        /** @var class-string $className */
+        $className = $phpType->name;
+        $classReflection = new ReflectionClass($className);
+
+        /** @var list<ReflectionAttribute<SchemaName>> $annotations */
+        $annotations = $classReflection->getAttributes(SchemaName::class);
+        if (isset($annotations[0])) {
+            $annotation = $annotations[0]->newInstance();
+            return $annotation->value;
+        }
+
+        return $classReflection->getShortName();
     }
 }
