@@ -25,6 +25,8 @@
     <UnnecessaryVarAnnotation errorLevel="suppress" />
     <UnresolvableInclude errorLevel="suppress" />
     <UnusedClass errorLevel="suppress" />
+    <UnusedFunctionCall errorLevel="suppress" />
     <UnusedParam errorLevel="suppress" />
+    <UnusedVariable errorLevel="suppress" />
   </issueHandlers>
 </psalm>
