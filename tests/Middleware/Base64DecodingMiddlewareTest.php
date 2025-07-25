@@ -54,6 +54,5 @@ final class Base64DecodingMiddlewareTest extends TestCase
         $actualResponse = $middleware->process($this->mockedRequest, $this->mockedRequestHandler);
         self::assertSame($this->mockedResponse, $actualResponse);
         self::assertSame('foo', \fread($this->resource, 4));
-
     }
 }
