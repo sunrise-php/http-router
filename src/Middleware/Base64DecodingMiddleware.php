@@ -38,8 +38,10 @@ final class Base64DecodingMiddleware implements MiddlewareInterface
         if ($request->getHeaderLine('Content-Encoding') === 'base64') {
             /** @var resource $resource */
             $resource = $request->getBody()->detach();
+
             // https://www.php.net/manual/en/filters.convert.php
             \stream_filter_append($resource, 'convert.base64-decode');
+            \rewind($resource);
 
             $body = $this->streamFactory->createStreamFromResource($resource);
             $request = $request->withBody($body);
