@@ -63,7 +63,6 @@ final class ArrayAccessPhpTypeSchemaResolver implements
         $phpTypeName = $phpType->name;
 
         $arrayPhpType = new Type(Type::PHP_TYPE_NAME_ARRAY, $phpType->allowsNull);
-        /** @var array{oneOf: array{0: array{type: 'array'}, 1: array{type: 'object'}}} $phpTypeSchema */
         $phpTypeSchema = $this->openApiPhpTypeSchemaResolverManager
             ->resolvePhpTypeSchema($arrayPhpType, $phpTypeHolder);
 
@@ -76,8 +75,7 @@ final class ArrayAccessPhpTypeSchemaResolver implements
             $collectionElementPhpTypeSchema = $this->openApiPhpTypeSchemaResolverManager
                 ->resolvePhpTypeSchema($collectionElementPhpType, $phpTypeHolder);
 
-            $phpTypeSchema['oneOf'][0]['items'] = $collectionElementPhpTypeSchema;
-            $phpTypeSchema['oneOf'][1]['additionalProperties'] = $collectionElementPhpTypeSchema;
+            $phpTypeSchema['items'] = $collectionElementPhpTypeSchema;
         }
 
         return $phpTypeSchema;

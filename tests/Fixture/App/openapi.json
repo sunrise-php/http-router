@@ -50,7 +50,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.Dto.Auth.SignInRequest"
+                "$ref": "#/components/schemas/SignInRequest"
               }
             }
           },
@@ -86,7 +86,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.Dto.Product.ProductCreateRequest"
+                "$ref": "#/components/schemas/ProductCreateRequest"
               }
             }
           },
@@ -206,7 +206,7 @@
             "in": "query",
             "name": "Query",
             "schema": {
-              "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.Dto.Page.PageListRequest"
+              "$ref": "#/components/schemas/PageListRequest"
             },
             "required": true
           }
@@ -217,20 +217,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "oneOf": [
-                    {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.View.PageView"
-                      }
-                    },
-                    {
-                      "type": "object",
-                      "additionalProperties": {
-                        "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.View.PageView"
-                      }
-                    }
-                  ]
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Page"
+                  }
                 }
               }
             }
@@ -263,7 +253,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.View.PageView"
+                  "$ref": "#/components/schemas/Page"
                 }
               }
             }
@@ -273,7 +263,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.Dto.Page.PageCreateRequest"
+                "$ref": "#/components/schemas/PageCreateRequest"
               }
             }
           },
@@ -317,7 +307,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.View.PageView"
+                  "$ref": "#/components/schemas/Page"
                 }
               }
             }
@@ -327,7 +317,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.Dto.Page.PageUpdateRequest"
+                "$ref": "#/components/schemas/PageUpdateRequest"
               }
             }
           },
@@ -344,7 +334,7 @@
   },
   "components": {
     "schemas": {
-      "Sunrise.Http.Router.Tests.Fixture.App.Dto.Auth.SignInRequest": {
+      "SignInRequest": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -362,7 +352,7 @@
           "password"
         ]
       },
-      "Sunrise.Http.Router.Tests.Fixture.App.Dto.Product.ProductTagDto": {
+      "ProductTagDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -375,7 +365,7 @@
           "id"
         ]
       },
-      "Sunrise.Http.Router.Tests.Fixture.App.Dictionary.ProductFeature": {
+      "ProductFeature": {
         "type": "string",
         "enum": [
           "fast-delivery",
@@ -805,9 +795,10 @@
           "UTC"
         ]
       },
-      "Sunrise.Http.Router.Tests.Fixture.App.Dictionary.ProductStatus": {
+      "ProductStatus": {
         "type": "integer",
         "format": "int64",
+        "example": 0,
         "enum": [
           0,
           1,
@@ -815,7 +806,7 @@
           3
         ]
       },
-      "Sunrise.Http.Router.Tests.Fixture.App.Dto.Product.ProductCreateRequest": {
+      "ProductCreateRequest": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -826,52 +817,33 @@
           "dKQLn8yyMsYG": [],
           "publicId": {
             "type": "integer",
-            "format": "int64"
+            "format": "int64",
+            "example": 0
           },
           "name": {
             "type": "string"
           },
           "price": {
             "type": "number",
-            "format": "double"
+            "format": "double",
+            "example": 0
           },
           "categoryId": {
             "type": "string",
             "format": "uuid"
           },
           "tags": {
-            "oneOf": [
-              {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.Dto.Product.ProductTagDto"
-                }
-              },
-              {
-                "type": "object",
-                "additionalProperties": {
-                  "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.Dto.Product.ProductTagDto"
-                }
-              }
-            ]
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductTagDto"
+            }
           },
           "features": {
-            "oneOf": [
-              {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.Dictionary.ProductFeature"
-                },
-                "maxItems": 2
-              },
-              {
-                "type": "object",
-                "additionalProperties": {
-                  "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.Dictionary.ProductFeature"
-                },
-                "maxProperties": 2
-              }
-            ]
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductFeature"
+            },
+            "maxItems": 2
           },
           "isModerated": {
             "type": "boolean"
@@ -887,7 +859,7 @@
           "status": {
             "allOf": [
               {
-                "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.Dictionary.ProductStatus"
+                "$ref": "#/components/schemas/ProductStatus"
               }
             ],
             "default": 0
@@ -908,7 +880,7 @@
           "timezone"
         ]
       },
-      "Sunrise.Http.Router.Tests.Fixture.App.Dto.Page.PageFilterRequest": {
+      "PageFilterRequest": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -924,7 +896,7 @@
           }
         }
       },
-      "Sunrise.Http.Router.Tests.Fixture.App.Dto.Common.PaginationDto": {
+      "PaginationDto": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -932,7 +904,8 @@
             "allOf": [
               {
                 "type": "integer",
-                "format": "int64"
+                "format": "int64",
+                "example": 0
               }
             ],
             "default": 20
@@ -941,26 +914,27 @@
             "allOf": [
               {
                 "type": "integer",
-                "format": "int64"
+                "format": "int64",
+                "example": 0
               }
             ],
             "default": 0
           }
         }
       },
-      "Sunrise.Http.Router.Tests.Fixture.App.Dto.Page.PageListRequest": {
+      "PageListRequest": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
           "filter": {
-            "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.Dto.Page.PageFilterRequest"
+            "$ref": "#/components/schemas/PageFilterRequest"
           },
           "pagination": {
-            "$ref": "#/components/schemas/Sunrise.Http.Router.Tests.Fixture.App.Dto.Common.PaginationDto"
+            "$ref": "#/components/schemas/PaginationDto"
           }
         }
       },
-      "Sunrise.Http.Router.Tests.Fixture.App.View.PageView": {
+      "Page": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -972,7 +946,7 @@
           "name"
         ]
       },
-      "Sunrise.Http.Router.Tests.Fixture.App.Dto.Page.PageCreateRequest": {
+      "PageCreateRequest": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -984,7 +958,7 @@
           "name"
         ]
       },
-      "Sunrise.Http.Router.Tests.Fixture.App.Dto.Page.PageUpdateRequest": {
+      "PageUpdateRequest": {
         "type": "object",
         "additionalProperties": false,
         "properties": {

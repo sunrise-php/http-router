@@ -38,6 +38,7 @@ final class FloatPhpTypeSchemaResolver implements OpenApiPhpTypeSchemaResolverIn
         return [
             'type' => Type::OAS_TYPE_NAME_NUMBER,
             'format' => 'double',
+            'example' => 0.0,
         ];
     }
 
