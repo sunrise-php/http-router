@@ -76,7 +76,7 @@ final class OpenApiPhpTypeSchemaResolverManager implements OpenApiPhpTypeSchemaR
             $phpTypeSchemaName = $phpTypeSchemaResolver->resolvePhpTypeSchemaName($phpType, $phpTypeHolder);
         }
 
-        if (isset($phpTypeSchemaName, $this->namedPhpTypeSchemas[$phpTypeSchemaName])) {
+        if (isset($phpTypeSchemaName) && isset($this->namedPhpTypeSchemas[$phpTypeSchemaName])) {
             $phpTypeSchemaReference = self::createPhpTypeSchemaReference($phpTypeSchemaName);
             return self::completePhpTypeSchema($phpType, $phpTypeSchemaReference);
         }
