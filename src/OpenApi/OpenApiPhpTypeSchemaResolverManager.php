@@ -102,6 +102,8 @@ final class OpenApiPhpTypeSchemaResolverManager implements OpenApiPhpTypeSchemaR
         foreach ($this->namedPhpTypeSchemas as $phpTypeSchemaName => $phpTypeSchema) {
             $document['components']['schemas'][$phpTypeSchemaName] = $phpTypeSchema;
         }
+
+        $this->namedPhpTypeSchemas = [];
     }
 
     /**
