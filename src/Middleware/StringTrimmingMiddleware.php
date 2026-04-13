@@ -41,6 +41,7 @@ final class StringTrimmingMiddleware implements MiddlewareInterface
      */
     public function __construct(?Closure $trimmer = null)
     {
+        /** @psalm-suppress MixedPropertyTypeCoercion */
         $this->trimmer = $trimmer ?? (function_exists('mb_trim') ? mb_trim(...) : trim(...));
     }
 
