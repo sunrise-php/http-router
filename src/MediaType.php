@@ -25,6 +25,14 @@ final class MediaType implements MediaTypeInterface
     ) {
     }
 
+    /**
+     * @since 3.3
+     */
+    public static function create(string $identifier): self
+    {
+        return new self($identifier);
+    }
+
     public function getIdentifier(): string
     {
         return $this->identifier;
