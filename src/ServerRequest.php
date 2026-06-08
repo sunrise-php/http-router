@@ -73,7 +73,7 @@ final class ServerRequest implements ServerRequestInterface
 
         [$identifier] = reset($values);
 
-        return new MediaType($identifier);
+        return MediaType::create($identifier);
     }
 
     /**
@@ -92,7 +92,7 @@ final class ServerRequest implements ServerRequestInterface
         ));
 
         foreach ($values as [$identifier]) {
-            yield new MediaType($identifier);
+            yield MediaType::create($identifier);
         }
     }
 
