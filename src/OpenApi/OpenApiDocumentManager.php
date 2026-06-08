@@ -17,7 +17,6 @@ use ReflectionAttribute;
 use RuntimeException;
 use Sunrise\Coder\CodecManagerInterface;
 use Sunrise\Http\Router\Helper\ReflectorHelper;
-use Sunrise\Http\Router\Helper\RouteSimplifier;
 use Sunrise\Http\Router\OpenApi\Annotation\Operation;
 use Sunrise\Http\Router\RequestHandlerReflectorInterface;
 use Sunrise\Http\Router\RouteInterface;
@@ -45,6 +44,7 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
         private readonly OpenApiOperationEnricherManagerInterface $openApiOperationEnricherManager,
         private readonly RequestHandlerReflectorInterface $requestHandlerReflector,
         private readonly CodecManagerInterface $codecManager,
+        private readonly OpenApiPathBuilderInterface $openApiPathBuilder = new OpenApiPathBuilder(),
     ) {
     }
 
@@ -154,7 +154,7 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
             $operation['deprecated'] = true;
         }
 
-        $path = RouteSimplifier::simplifyRoute($route->getPath());
+        $path = $this->openApiPathBuilder->buildPath($route);
         foreach ($route->getMethods() as $method) {
             $document['paths'][$path][strtolower($method)] = $operation;
         }
