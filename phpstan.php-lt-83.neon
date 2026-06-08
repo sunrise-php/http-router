@@ -1,3 +1,4 @@
 parameters:
   ignoreErrors:
     - '#Call to an undefined static method ReflectionMethod::createFromMethodName\(\)#'
+  reportUnmatchedIgnoredErrors: false
