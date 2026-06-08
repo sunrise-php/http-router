@@ -61,6 +61,7 @@ final class MiddlewareResolver implements MiddlewareResolverInterface
 
         // https://github.com/php/php-src/blob/3ed526441400060aa4e618b91b3352371fcd02a8/Zend/zend_API.c#L3884-L3932
         if (is_array($reference) && is_callable($reference, true)) {
+            // @phpstan-ignore-next-line
             /** @var array{0: class-string|object, 1: string} $reference */
 
             if (is_string($reference[0])) {
