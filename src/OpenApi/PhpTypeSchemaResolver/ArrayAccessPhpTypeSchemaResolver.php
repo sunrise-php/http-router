@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver;
 
 use ArrayAccess;
+use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionParameter;
@@ -69,7 +70,7 @@ final class ArrayAccessPhpTypeSchemaResolver implements
         if (
             ! $phpTypeHolder instanceof ReflectionParameter
             && ! $phpTypeHolder instanceof ReflectionProperty
-            || $phpTypeHolder->getAttributes(Subtype::class, \ReflectionAttribute::IS_INSTANCEOF) === []
+            || $phpTypeHolder->getAttributes(Subtype::class, ReflectionAttribute::IS_INSTANCEOF) === []
         ) {
             $collectionElementPhpType = self::getCollectionElementPhpType($phpTypeName);
             $collectionElementPhpTypeSchema = $this->openApiPhpTypeSchemaResolverManager
