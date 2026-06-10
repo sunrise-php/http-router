@@ -54,9 +54,13 @@ final class OpenApiPhpTypeSchemaResolverManager implements OpenApiPhpTypeSchemaR
     public function __construct(
         private readonly OpenApiConfiguration $openApiConfiguration,
         array $phpTypeSchemaResolvers = [],
+        bool $useDefaultPhpTypeSchemaResolvers = true,
     ) {
-        $this->setPhpTypeSchemaResolvers(self::getDefaultPhpTypeSchemaResolvers());
         $this->setPhpTypeSchemaResolvers($phpTypeSchemaResolvers);
+
+        if ($useDefaultPhpTypeSchemaResolvers) {
+            $this->setPhpTypeSchemaResolvers(self::getDefaultPhpTypeSchemaResolvers());
+        }
     }
 
     /**

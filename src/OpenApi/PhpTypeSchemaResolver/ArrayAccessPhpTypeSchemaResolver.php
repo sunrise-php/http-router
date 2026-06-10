@@ -69,7 +69,7 @@ final class ArrayAccessPhpTypeSchemaResolver implements
         if (
             ! $phpTypeHolder instanceof ReflectionParameter
             && ! $phpTypeHolder instanceof ReflectionProperty
-            || $phpTypeHolder->getAttributes(Subtype::class) === []
+            || $phpTypeHolder->getAttributes(Subtype::class, \ReflectionAttribute::IS_INSTANCEOF) === []
         ) {
             $collectionElementPhpType = self::getCollectionElementPhpType($phpTypeName);
             $collectionElementPhpTypeSchema = $this->openApiPhpTypeSchemaResolverManager

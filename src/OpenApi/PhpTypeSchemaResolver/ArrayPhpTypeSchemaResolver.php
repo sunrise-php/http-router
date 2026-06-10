@@ -60,7 +60,7 @@ final class ArrayPhpTypeSchemaResolver implements
             $phpTypeHolder instanceof ReflectionProperty
         ) {
             /** @var list<ReflectionAttribute<Subtype>> $annotations */
-            $annotations = $phpTypeHolder->getAttributes(Subtype::class);
+            $annotations = $phpTypeHolder->getAttributes(Subtype::class, ReflectionAttribute::IS_INSTANCEOF);
             if (isset($annotations[0])) {
                 $annotation = $annotations[0]->newInstance();
 

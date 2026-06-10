@@ -47,6 +47,8 @@ return [
     'router.openapi.default_response_description' => OpenApiConfiguration::DEFAULT_RESPONSE_DESCRIPTION,
 
     'router.openapi.php_type_schema_resolvers' => [],
+    'router.openapi.use_default_php_type_schema_resolvers' => true,
+
     'router.openapi.operation_enrichers' => [],
     'router.openapi.use_default_operation_enrichers' => true,
 
@@ -71,6 +73,7 @@ return [
         ->constructor(
             openApiConfiguration: get(OpenApiConfiguration::class),
             phpTypeSchemaResolvers: get('router.openapi.php_type_schema_resolvers'),
+            useDefaultPhpTypeSchemaResolvers: get('router.openapi.use_default_php_type_schema_resolvers'),
         ),
 
     OpenApiOperationEnricherManagerInterface::class => create(OpenApiOperationEnricherManager::class)
