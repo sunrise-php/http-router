@@ -19,7 +19,7 @@ use ReflectionClass;
 use ReflectionEnum;
 use ReflectionException;
 use Reflector;
-use Sunrise\Http\Router\OpenApi\Annotation\SchemaName;
+use Sunrise\Http\Router\OpenApi\Annotation\SchemaNameInterface;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaNameResolverInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverInterface;
@@ -85,11 +85,10 @@ final class BackedEnumPhpTypeSchemaResolver implements
         $className = $phpType->name;
         $classReflection = new ReflectionClass($className);
 
-        /** @var list<ReflectionAttribute<SchemaName>> $annotations */
-        $annotations = $classReflection->getAttributes(SchemaName::class, ReflectionAttribute::IS_INSTANCEOF);
+        /** @var list<ReflectionAttribute<SchemaNameInterface>> $annotations */
+        $annotations = $classReflection->getAttributes(SchemaNameInterface::class, ReflectionAttribute::IS_INSTANCEOF);
         if (isset($annotations[0])) {
-            $annotation = $annotations[0]->newInstance();
-            return $annotation->value;
+            return $annotations[0]->newInstance()->getSchemaName();
         }
 
         return $classReflection->getShortName();

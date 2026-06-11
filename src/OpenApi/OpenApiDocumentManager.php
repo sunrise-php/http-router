@@ -17,7 +17,7 @@ use ReflectionAttribute;
 use RuntimeException;
 use Sunrise\Coder\CodecManagerInterface;
 use Sunrise\Http\Router\Helper\ReflectorHelper;
-use Sunrise\Http\Router\OpenApi\Annotation\Operation;
+use Sunrise\Http\Router\OpenApi\Annotation\OperationInterface;
 use Sunrise\Http\Router\RequestHandlerReflectorInterface;
 use Sunrise\Http\Router\RouteInterface;
 use Throwable;
@@ -131,9 +131,10 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
         $requestHandler = $this->requestHandlerReflector->reflectRequestHandler($route->getRequestHandler());
 
         foreach (ReflectorHelper::getAncestry($requestHandler) as $member) {
-            /** @var ReflectionAttribute<Operation> $annotation */
-            foreach ($member->getAttributes(Operation::class, ReflectionAttribute::IS_INSTANCEOF) as $annotation) {
-                $operation = array_replace_recursive($operation, $annotation->newInstance()->value);
+            /** @var list<ReflectionAttribute<OperationInterface>> $annotations */
+            $annotations = $member->getAttributes(OperationInterface::class, ReflectionAttribute::IS_INSTANCEOF);
+            foreach ($annotations as $annotation) {
+                $operation = array_replace_recursive($operation, $annotation->newInstance()->getOperation());
             }
         }
 

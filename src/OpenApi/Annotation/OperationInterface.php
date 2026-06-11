@@ -13,21 +13,13 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\OpenApi\Annotation;
 
-use Attribute;
-
 /**
- * @since 3.2.0
+ * @since 3.3.0
  */
-#[Attribute(Attribute::TARGET_CLASS)]
-class SchemaName implements SchemaNameInterface
+interface OperationInterface
 {
-    public function __construct(
-        public readonly string $value,
-    ) {
-    }
-
-    public function getSchemaName(): string
-    {
-        return $this->value;
-    }
+    /**
+     * @return array<array-key, mixed>
+     */
+    public function getOperation(): array;
 }
