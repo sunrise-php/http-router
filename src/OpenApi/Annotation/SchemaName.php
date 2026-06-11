@@ -19,7 +19,7 @@ use Attribute;
  * @since 3.2.0
  */
 #[Attribute(Attribute::TARGET_CLASS)]
-final class SchemaName
+class SchemaName
 {
     public function __construct(
         public readonly string $value,

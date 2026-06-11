@@ -86,7 +86,7 @@ final class BackedEnumPhpTypeSchemaResolver implements
         $classReflection = new ReflectionClass($className);
 
         /** @var list<ReflectionAttribute<SchemaName>> $annotations */
-        $annotations = $classReflection->getAttributes(SchemaName::class);
+        $annotations = $classReflection->getAttributes(SchemaName::class, ReflectionAttribute::IS_INSTANCEOF);
         if (isset($annotations[0])) {
             $annotation = $annotations[0]->newInstance();
             return $annotation->value;
