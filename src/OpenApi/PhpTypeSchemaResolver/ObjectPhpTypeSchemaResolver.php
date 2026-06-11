@@ -19,6 +19,8 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionProperty;
 use Reflector;
+use Sunrise\Http\Router\OpenApi\Annotation\IgnorePropertyInterface;
+use Sunrise\Http\Router\OpenApi\Annotation\PropertyNameInterface;
 use Sunrise\Http\Router\OpenApi\Annotation\SchemaName;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaNameResolverInterface;
@@ -142,7 +144,8 @@ final class ObjectPhpTypeSchemaResolver implements
 
     private static function isIgnoredProperty(ReflectionProperty $property): bool
     {
-        return $property->getAttributes(Ignore::class) !== [];
+        return $property->getAttributes(Ignore::class) !== []
+            || $property->getAttributes(IgnorePropertyInterface::class, ReflectionAttribute::IS_INSTANCEOF) !== [];
     }
 
     private static function getPropertyName(ReflectionProperty $property): string
@@ -152,6 +155,13 @@ final class ObjectPhpTypeSchemaResolver implements
         if (isset($annotations[0])) {
             $annotation = $annotations[0]->newInstance();
             return $annotation->value;
+        }
+
+        /** @var list<ReflectionAttribute<PropertyNameInterface>> $annotations */
+        $annotations = $property->getAttributes(PropertyNameInterface::class, ReflectionAttribute::IS_INSTANCEOF);
+        if (isset($annotations[0])) {
+            $annotation = $annotations[0]->newInstance();
+            return $annotation->getPropertyName();
         }
 
         return $property->name;
