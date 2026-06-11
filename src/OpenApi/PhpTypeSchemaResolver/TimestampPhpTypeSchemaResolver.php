@@ -18,6 +18,7 @@ use ReflectionAttribute;
 use ReflectionParameter;
 use ReflectionProperty;
 use Reflector;
+use Sunrise\Http\Router\OpenApi\Annotation\TimestampFormatInterface;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
 use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
 use Sunrise\Http\Router\OpenApi\OpenApiConfigurationAwareInterface;
@@ -65,6 +66,17 @@ final class TimestampPhpTypeSchemaResolver implements
             if (isset($annotations[0])) {
                 $annotation = $annotations[0]->newInstance();
                 $timestampFormat = $annotation->value;
+            }
+
+            /** @var list<ReflectionAttribute<TimestampFormatInterface>> $annotations */
+            $annotations = $phpTypeHolder->getAttributes(
+                TimestampFormatInterface::class,
+                ReflectionAttribute::IS_INSTANCEOF,
+            );
+
+            if (isset($annotations[0])) {
+                $annotation = $annotations[0]->newInstance();
+                $timestampFormat = $annotation->getTimestampFormat();
             }
         }
 
