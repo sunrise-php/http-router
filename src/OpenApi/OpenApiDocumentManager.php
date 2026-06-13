@@ -139,8 +139,12 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
         }
 
         array_walk_recursive($operation, function (mixed &$value) use ($requestHandler): void {
-            if ($value instanceof Type) {
-                $value = $this->openApiPhpTypeSchemaResolverManager->resolvePhpTypeSchema($value, $requestHandler);
+            if ($value instanceof TypeInterface) {
+                $value = $this->openApiPhpTypeSchemaResolverManager
+                    ->resolvePhpTypeSchema($value, $requestHandler);
+            } elseif (\is_string($value) && \str_contains($value, '\\') && \class_exists($value)) {
+                $value = $this->openApiPhpTypeSchemaResolverManager
+                    ->resolvePhpTypeSchema(new Type($value), $requestHandler);
             }
         });
 

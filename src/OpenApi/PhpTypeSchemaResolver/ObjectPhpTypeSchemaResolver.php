@@ -27,7 +27,6 @@ use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaNameResolverInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerAwareInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerInterface;
-use Sunrise\Http\Router\OpenApi\Type;
 use Sunrise\Http\Router\OpenApi\TypeFactory;
 use Sunrise\Http\Router\OpenApi\TypeInterface;
 use Sunrise\Hydrator\Annotation\Alias;
