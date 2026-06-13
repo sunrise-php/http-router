@@ -29,6 +29,7 @@ use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerAwareInterfac
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerInterface;
 use Sunrise\Http\Router\OpenApi\Type;
 use Sunrise\Http\Router\OpenApi\TypeFactory;
+use Sunrise\Http\Router\OpenApi\TypeInterface;
 use Sunrise\Hydrator\Annotation\Alias;
 use Sunrise\Hydrator\Annotation\DefaultValue;
 use Sunrise\Hydrator\Annotation\Ignore;
@@ -56,9 +57,9 @@ final class ObjectPhpTypeSchemaResolver implements
     /**
      * @see ObjectTypeConverter
      */
-    public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
+    public function supportsPhpType(TypeInterface $phpType, Reflector $phpTypeHolder): bool
     {
-        $className = $phpType->name;
+        $className = $phpType->getName();
         if (!class_exists($className)) {
             return false;
         }
@@ -76,12 +77,12 @@ final class ObjectPhpTypeSchemaResolver implements
      *
      * @throws ReflectionException
      */
-    public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array
+    public function resolvePhpTypeSchema(TypeInterface $phpType, Reflector $phpTypeHolder): array
     {
         $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();
 
         /** @var class-string $phpTypeName */
-        $phpTypeName = $phpType->name;
+        $phpTypeName = $phpType->getName();
 
         $phpTypeSchema = [
             'type' => 'object',
@@ -126,10 +127,10 @@ final class ObjectPhpTypeSchemaResolver implements
         return -100;
     }
 
-    public function resolvePhpTypeSchemaName(Type $phpType, Reflector $phpTypeHolder): string
+    public function resolvePhpTypeSchemaName(TypeInterface $phpType, Reflector $phpTypeHolder): string
     {
         /** @var class-string $className */
-        $className = $phpType->name;
+        $className = $phpType->getName();
         $classReflection = new ReflectionClass($className);
 
         /** @var list<ReflectionAttribute<SchemaNameInterface>> $annotations */

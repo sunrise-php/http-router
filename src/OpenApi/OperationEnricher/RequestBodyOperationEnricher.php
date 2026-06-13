@@ -55,7 +55,7 @@ final class RequestBodyOperationEnricher implements
             $requestBodyType = TypeFactory::fromPhpTypeReflection($requestHandlerParameter->getType());
             if (
                 $requestHandlerParameter->getAttributes(RequestBody::class) !== [] ||
-                $requestBodyType->is(StreamInterface::class)
+                $requestBodyType->getName() === StreamInterface::class
             ) {
                 $requestBodySchema = $this->openApiPhpTypeSchemaResolverManager
                     ->resolvePhpTypeSchema($requestBodyType, $requestHandlerParameter);

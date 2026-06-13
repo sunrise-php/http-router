@@ -26,6 +26,7 @@ use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerAwareInterfac
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerInterface;
 use Sunrise\Http\Router\OpenApi\Type;
 use Sunrise\Http\Router\OpenApi\TypeFactory;
+use Sunrise\Http\Router\OpenApi\TypeInterface;
 use Sunrise\Hydrator\Annotation\Subtype;
 
 use function end;
@@ -46,9 +47,9 @@ final class ArrayAccessPhpTypeSchemaResolver implements
         $this->openApiPhpTypeSchemaResolverManager = $openApiPhpTypeSchemaResolverManager;
     }
 
-    public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
+    public function supportsPhpType(TypeInterface $phpType, Reflector $phpTypeHolder): bool
     {
-        return is_subclass_of($phpType->name, ArrayAccess::class);
+        return is_subclass_of($phpType->getName(), ArrayAccess::class);
     }
 
     /**
@@ -56,14 +57,14 @@ final class ArrayAccessPhpTypeSchemaResolver implements
      *
      * @throws ReflectionException
      */
-    public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array
+    public function resolvePhpTypeSchema(TypeInterface $phpType, Reflector $phpTypeHolder): array
     {
         $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();
 
         /** @var class-string<ArrayAccess<array-key, mixed>> $phpTypeName */
-        $phpTypeName = $phpType->name;
+        $phpTypeName = $phpType->getName();
 
-        $arrayPhpType = new Type(Type::PHP_TYPE_NAME_ARRAY, $phpType->allowsNull);
+        $arrayPhpType = new Type(Type::PHP_TYPE_NAME_ARRAY, $phpType->allowsNull());
         $phpTypeSchema = $this->openApiPhpTypeSchemaResolverManager
             ->resolvePhpTypeSchema($arrayPhpType, $phpTypeHolder);
 
@@ -92,7 +93,7 @@ final class ArrayAccessPhpTypeSchemaResolver implements
      *
      * @throws ReflectionException
      */
-    private static function getCollectionElementPhpType(string $className): Type
+    private static function getCollectionElementPhpType(string $className): TypeInterface
     {
         $constructorParameters = (new ReflectionClass($className))->getConstructor()?->getParameters() ?? [];
 

@@ -22,6 +22,7 @@ use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerAwareInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerInterface;
 use Sunrise\Http\Router\OpenApi\Type;
+use Sunrise\Http\Router\OpenApi\TypeInterface;
 use Sunrise\Hydrator\Annotation\Subtype;
 
 /**
@@ -39,15 +40,15 @@ final class ArrayPhpTypeSchemaResolver implements
         $this->openApiPhpTypeSchemaResolverManager = $openApiPhpTypeSchemaResolverManager;
     }
 
-    public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
+    public function supportsPhpType(TypeInterface $phpType, Reflector $phpTypeHolder): bool
     {
-        return $phpType->name == Type::PHP_TYPE_NAME_ARRAY;
+        return $phpType->getName() == Type::PHP_TYPE_NAME_ARRAY;
     }
 
     /**
      * @inheritDoc
      */
-    public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array
+    public function resolvePhpTypeSchema(TypeInterface $phpType, Reflector $phpTypeHolder): array
     {
         $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();
 

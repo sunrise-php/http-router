@@ -16,7 +16,7 @@ namespace Sunrise\Http\Router\OpenApi;
 /**
  * @since 3.0.0
  */
-final class Type
+final class Type implements TypeInterface
 {
     public const PHP_TYPE_NAME_VOID = 'void';
     public const PHP_TYPE_NAME_NULL = 'null';
@@ -36,13 +36,18 @@ final class Type
     public const OAS_TYPE_NAME_OBJECT = 'object';
 
     public function __construct(
-        public readonly string $name,
-        public readonly bool $allowsNull = false,
+        private readonly string $name,
+        private readonly bool $allowsNull = false,
     ) {
     }
 
-    public function is(string $typeName): bool
+    public function getName(): string
     {
-        return $this->name === $typeName;
+        return $this->name;
+    }
+
+    public function allowsNull(): bool
+    {
+        return $this->allowsNull;
     }
 }

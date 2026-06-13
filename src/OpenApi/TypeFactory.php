@@ -21,12 +21,12 @@ use ReflectionType;
  */
 final class TypeFactory
 {
-    public static function mixedPhpType(): Type
+    public static function mixedPhpType(): TypeInterface
     {
         return new Type(Type::PHP_TYPE_NAME_MIXED, allowsNull: true);
     }
 
-    public static function fromPhpTypeReflection(?ReflectionType $phpTypeReflection): Type
+    public static function fromPhpTypeReflection(?ReflectionType $phpTypeReflection): TypeInterface
     {
         if ($phpTypeReflection === null) {
             return self::mixedPhpType();

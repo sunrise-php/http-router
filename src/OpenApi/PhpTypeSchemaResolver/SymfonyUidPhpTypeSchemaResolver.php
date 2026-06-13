@@ -17,6 +17,7 @@ use Reflector;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverInterface;
 use Sunrise\Http\Router\OpenApi\Type;
+use Sunrise\Http\Router\OpenApi\TypeInterface;
 use Symfony\Component\Uid\AbstractUid;
 use Symfony\Component\Uid\Uuid;
 
@@ -28,15 +29,15 @@ use function is_subclass_of;
  */
 final class SymfonyUidPhpTypeSchemaResolver implements OpenApiPhpTypeSchemaResolverInterface
 {
-    public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
+    public function supportsPhpType(TypeInterface $phpType, Reflector $phpTypeHolder): bool
     {
-        return is_subclass_of($phpType->name, AbstractUid::class);
+        return is_subclass_of($phpType->getName(), AbstractUid::class);
     }
 
     /**
      * @inheritDoc
      */
-    public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array
+    public function resolvePhpTypeSchema(TypeInterface $phpType, Reflector $phpTypeHolder): array
     {
         $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();
 
@@ -44,7 +45,7 @@ final class SymfonyUidPhpTypeSchemaResolver implements OpenApiPhpTypeSchemaResol
             'type' => Type::OAS_TYPE_NAME_STRING,
         ];
 
-        if (is_a($phpType->name, Uuid::class, true)) {
+        if (is_a($phpType->getName(), Uuid::class, true)) {
             $phpTypeSchema['format'] = 'uuid';
         }
 

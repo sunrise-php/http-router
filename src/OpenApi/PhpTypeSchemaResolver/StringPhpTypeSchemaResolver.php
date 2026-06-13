@@ -20,21 +20,22 @@ use SensitiveParameter;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverInterface;
 use Sunrise\Http\Router\OpenApi\Type;
+use Sunrise\Http\Router\OpenApi\TypeInterface;
 
 /**
  * @since 3.0.0
  */
 final class StringPhpTypeSchemaResolver implements OpenApiPhpTypeSchemaResolverInterface
 {
-    public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
+    public function supportsPhpType(TypeInterface $phpType, Reflector $phpTypeHolder): bool
     {
-        return $phpType->name === Type::PHP_TYPE_NAME_STRING;
+        return $phpType->getName() === Type::PHP_TYPE_NAME_STRING;
     }
 
     /**
      * @inheritDoc
      */
-    public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array
+    public function resolvePhpTypeSchema(TypeInterface $phpType, Reflector $phpTypeHolder): array
     {
         $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();
 

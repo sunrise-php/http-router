@@ -24,6 +24,7 @@ use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
 use Sunrise\Http\Router\OpenApi\OpenApiConfigurationAwareInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverInterface;
 use Sunrise\Http\Router\OpenApi\Type;
+use Sunrise\Http\Router\OpenApi\TypeInterface;
 use Sunrise\Hydrator\Annotation\Format;
 
 use function date;
@@ -43,15 +44,15 @@ final class TimestampPhpTypeSchemaResolver implements
         $this->openApiConfiguration = $openApiConfiguration;
     }
 
-    public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
+    public function supportsPhpType(TypeInterface $phpType, Reflector $phpTypeHolder): bool
     {
-        return is_a($phpType->name, DateTimeImmutable::class, true);
+        return is_a($phpType->getName(), DateTimeImmutable::class, true);
     }
 
     /**
      * @inheritDoc
      */
-    public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array
+    public function resolvePhpTypeSchema(TypeInterface $phpType, Reflector $phpTypeHolder): array
     {
         $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();
 
