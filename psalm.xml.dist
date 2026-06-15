@@ -22,6 +22,7 @@
     <MixedAssignment errorLevel="suppress" />
     <PossiblyUnusedMethod errorLevel="suppress" />
     <PossiblyUnusedProperty errorLevel="suppress" />
+    <PropertyNotSetInConstructor errorLevel="suppress" />
     <UnnecessaryVarAnnotation errorLevel="suppress" />
     <UnresolvableInclude errorLevel="suppress" />
     <UnusedClass errorLevel="suppress" />
