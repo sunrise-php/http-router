@@ -19,10 +19,15 @@ use Attribute;
  * @since 3.2.0
  */
 #[Attribute(Attribute::TARGET_CLASS)]
-final class SchemaName
+class SchemaName implements SchemaNameInterface
 {
     public function __construct(
         public readonly string $value,
     ) {
+    }
+
+    public function getSchemaName(): string
+    {
+        return $this->value;
     }
 }

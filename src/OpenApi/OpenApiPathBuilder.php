@@ -13,15 +13,16 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\OpenApi;
 
-use Reflector;
+use Sunrise\Http\Router\Helper\RouteSimplifier;
+use Sunrise\Http\Router\RouteInterface;
 
 /**
- * @since 3.0.0
+ * @since 3.3.0
  */
-interface OpenApiPhpTypeSchemaNameResolverInterface
+final class OpenApiPathBuilder implements OpenApiPathBuilderInterface
 {
-    /**
-     * Please note that nullable should be ignored.
-     */
-    public function resolvePhpTypeSchemaName(TypeInterface $phpType, Reflector $phpTypeHolder): string;
+    public function buildPath(RouteInterface $route): string
+    {
+        return RouteSimplifier::simplifyRoute($route->getPath());
+    }
 }

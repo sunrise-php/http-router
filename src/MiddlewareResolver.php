@@ -63,7 +63,7 @@ final class MiddlewareResolver implements MiddlewareResolverInterface
         if (is_array($reference) && is_callable($reference, true)) {
             /** @var array{0: class-string|object, 1: string} $reference */
 
-            if (is_string($reference[0])) {
+            if (is_string($reference[0])) { // @phpstan-ignore-line varTag.nativeType
                 $reference[0] = $this->classResolver->resolveClass($reference[0]);
             }
 

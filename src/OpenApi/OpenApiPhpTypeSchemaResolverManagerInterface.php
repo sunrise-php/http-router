@@ -23,7 +23,7 @@ interface OpenApiPhpTypeSchemaResolverManagerInterface
     /**
      * @return array<array-key, mixed>
      */
-    public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array;
+    public function resolvePhpTypeSchema(TypeInterface $phpType, Reflector $phpTypeHolder): array;
 
     /**
      * @param array<array-key, mixed> $document

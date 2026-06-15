@@ -19,6 +19,7 @@ use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaNameResolverInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverInterface;
 use Sunrise\Http\Router\OpenApi\Type;
+use Sunrise\Http\Router\OpenApi\TypeInterface;
 
 /**
  * @since 3.0.0
@@ -451,15 +452,15 @@ final class TimezonePhpTypeSchemaResolver implements
         'UTC',
     ];
 
-    public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
+    public function supportsPhpType(TypeInterface $phpType, Reflector $phpTypeHolder): bool
     {
-        return $phpType->name === DateTimeZone::class;
+        return $phpType->getName() === DateTimeZone::class;
     }
 
     /**
      * @inheritDoc
      */
-    public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array
+    public function resolvePhpTypeSchema(TypeInterface $phpType, Reflector $phpTypeHolder): array
     {
         $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();
 
@@ -474,7 +475,7 @@ final class TimezonePhpTypeSchemaResolver implements
         return 0;
     }
 
-    public function resolvePhpTypeSchemaName(Type $phpType, Reflector $phpTypeHolder): string
+    public function resolvePhpTypeSchemaName(TypeInterface $phpType, Reflector $phpTypeHolder): string
     {
         return DateTimeZone::class;
     }

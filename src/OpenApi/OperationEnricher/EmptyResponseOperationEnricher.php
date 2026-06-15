@@ -49,8 +49,8 @@ final class EmptyResponseOperationEnricher extends AbstractResponseOperationEnri
             return;
         }
 
-        $responseBodyType = TypeFactory::fromPhpTypeReflection($requestHandler->getReturnType());
-        if (!$responseBodyType->is(Type::PHP_TYPE_NAME_VOID)) {
+        $responseType = TypeFactory::fromPhpTypeReflection($requestHandler->getReturnType());
+        if ($responseType->getName() !== Type::PHP_TYPE_NAME_VOID) {
             return;
         }
 

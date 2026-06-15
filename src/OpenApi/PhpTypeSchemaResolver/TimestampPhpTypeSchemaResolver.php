@@ -18,11 +18,13 @@ use ReflectionAttribute;
 use ReflectionParameter;
 use ReflectionProperty;
 use Reflector;
+use Sunrise\Http\Router\OpenApi\Annotation\TimestampFormatInterface;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
 use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
 use Sunrise\Http\Router\OpenApi\OpenApiConfigurationAwareInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverInterface;
 use Sunrise\Http\Router\OpenApi\Type;
+use Sunrise\Http\Router\OpenApi\TypeInterface;
 use Sunrise\Hydrator\Annotation\Format;
 
 use function date;
@@ -42,15 +44,15 @@ final class TimestampPhpTypeSchemaResolver implements
         $this->openApiConfiguration = $openApiConfiguration;
     }
 
-    public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
+    public function supportsPhpType(TypeInterface $phpType, Reflector $phpTypeHolder): bool
     {
-        return is_a($phpType->name, DateTimeImmutable::class, true);
+        return is_a($phpType->getName(), DateTimeImmutable::class, true);
     }
 
     /**
      * @inheritDoc
      */
-    public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array
+    public function resolvePhpTypeSchema(TypeInterface $phpType, Reflector $phpTypeHolder): array
     {
         $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();
 
@@ -65,6 +67,17 @@ final class TimestampPhpTypeSchemaResolver implements
             if (isset($annotations[0])) {
                 $annotation = $annotations[0]->newInstance();
                 $timestampFormat = $annotation->value;
+            }
+
+            /** @var list<ReflectionAttribute<TimestampFormatInterface>> $annotations */
+            $annotations = $phpTypeHolder->getAttributes(
+                TimestampFormatInterface::class,
+                ReflectionAttribute::IS_INSTANCEOF,
+            );
+
+            if (isset($annotations[0])) {
+                $annotation = $annotations[0]->newInstance();
+                $timestampFormat = $annotation->getTimestampFormat();
             }
         }
 

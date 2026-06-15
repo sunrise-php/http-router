@@ -17,8 +17,7 @@ use ReflectionAttribute;
 use RuntimeException;
 use Sunrise\Coder\CodecManagerInterface;
 use Sunrise\Http\Router\Helper\ReflectorHelper;
-use Sunrise\Http\Router\Helper\RouteSimplifier;
-use Sunrise\Http\Router\OpenApi\Annotation\Operation;
+use Sunrise\Http\Router\OpenApi\Annotation\OperationInterface;
 use Sunrise\Http\Router\RequestHandlerReflectorInterface;
 use Sunrise\Http\Router\RouteInterface;
 use Throwable;
@@ -45,6 +44,7 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
         private readonly OpenApiOperationEnricherManagerInterface $openApiOperationEnricherManager,
         private readonly RequestHandlerReflectorInterface $requestHandlerReflector,
         private readonly CodecManagerInterface $codecManager,
+        private readonly OpenApiPathBuilderInterface $openApiPathBuilder = new OpenApiPathBuilder(),
     ) {
     }
 
@@ -131,15 +131,20 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
         $requestHandler = $this->requestHandlerReflector->reflectRequestHandler($route->getRequestHandler());
 
         foreach (ReflectorHelper::getAncestry($requestHandler) as $member) {
-            /** @var ReflectionAttribute<Operation> $annotation */
-            foreach ($member->getAttributes(Operation::class, ReflectionAttribute::IS_INSTANCEOF) as $annotation) {
-                $operation = array_replace_recursive($operation, $annotation->newInstance()->value);
+            /** @var list<ReflectionAttribute<OperationInterface>> $annotations */
+            $annotations = $member->getAttributes(OperationInterface::class, ReflectionAttribute::IS_INSTANCEOF);
+            foreach ($annotations as $annotation) {
+                $operation = array_replace_recursive($operation, $annotation->newInstance()->getOperation());
             }
         }
 
         array_walk_recursive($operation, function (mixed &$value) use ($requestHandler): void {
-            if ($value instanceof Type) {
-                $value = $this->openApiPhpTypeSchemaResolverManager->resolvePhpTypeSchema($value, $requestHandler);
+            if ($value instanceof TypeInterface) {
+                $value = $this->openApiPhpTypeSchemaResolverManager
+                    ->resolvePhpTypeSchema($value, $requestHandler);
+            } elseif (\is_string($value) && \str_contains($value, '\\') && \class_exists($value)) {
+                $value = $this->openApiPhpTypeSchemaResolverManager
+                    ->resolvePhpTypeSchema(new Type($value), $requestHandler);
             }
         });
 
@@ -154,7 +159,7 @@ final class OpenApiDocumentManager implements OpenApiDocumentManagerInterface
             $operation['deprecated'] = true;
         }
 
-        $path = RouteSimplifier::simplifyRoute($route->getPath());
+        $path = $this->openApiPathBuilder->buildPath($route);
         foreach ($route->getMethods() as $method) {
             $document['paths'][$path][strtolower($method)] = $operation;
         }

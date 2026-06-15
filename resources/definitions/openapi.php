@@ -9,6 +9,8 @@ use Sunrise\Http\Router\OpenApi\OpenApiDocumentManager;
 use Sunrise\Http\Router\OpenApi\OpenApiDocumentManagerInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiOperationEnricherManager;
 use Sunrise\Http\Router\OpenApi\OpenApiOperationEnricherManagerInterface;
+use Sunrise\Http\Router\OpenApi\OpenApiPathBuilder;
+use Sunrise\Http\Router\OpenApi\OpenApiPathBuilderInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManager;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerInterface;
 use Sunrise\Http\Router\OpenApi\SwaggerConfiguration;
@@ -16,7 +18,6 @@ use Sunrise\Http\Router\RequestHandlerReflectorInterface;
 
 use function DI\create;
 use function DI\get;
-use function DI\string;
 
 return [
     'router.openapi.initial_document' => [
@@ -25,7 +26,7 @@ return [
     ],
 
     'router.openapi.initial_document.info' => [
-        'title' => string('{app.name}@{app.env}'),
+        'title' => get('app.name'),
         'version' => get('app.version'),
     ],
 
@@ -46,7 +47,10 @@ return [
     'router.openapi.default_response_description' => OpenApiConfiguration::DEFAULT_RESPONSE_DESCRIPTION,
 
     'router.openapi.php_type_schema_resolvers' => [],
+    'router.openapi.use_default_php_type_schema_resolvers' => true,
+
     'router.openapi.operation_enrichers' => [],
+    'router.openapi.use_default_operation_enrichers' => true,
 
     'router.swagger.template_filename' => SwaggerConfiguration::DEFAULT_TEMPLATE_FILENAME,
     'router.swagger.css_urls' => SwaggerConfiguration::DEFAULT_CSS_URLS,
@@ -69,6 +73,7 @@ return [
         ->constructor(
             openApiConfiguration: get(OpenApiConfiguration::class),
             phpTypeSchemaResolvers: get('router.openapi.php_type_schema_resolvers'),
+            useDefaultPhpTypeSchemaResolvers: get('router.openapi.use_default_php_type_schema_resolvers'),
         ),
 
     OpenApiOperationEnricherManagerInterface::class => create(OpenApiOperationEnricherManager::class)
@@ -76,7 +81,10 @@ return [
             openApiConfiguration: get(OpenApiConfiguration::class),
             openApiPhpTypeSchemaResolverManager: get(OpenApiPhpTypeSchemaResolverManagerInterface::class),
             operationEnrichers: get('router.openapi.operation_enrichers'),
+            useDefaultOperationEnrichers: get('router.openapi.use_default_operation_enrichers'),
         ),
+
+    OpenApiPathBuilderInterface::class => create(OpenApiPathBuilder::class),
 
     OpenApiDocumentManagerInterface::class => create(OpenApiDocumentManager::class)
         ->constructor(
@@ -85,6 +93,7 @@ return [
             openApiOperationEnricherManager: get(OpenApiOperationEnricherManagerInterface::class),
             requestHandlerReflector: get(RequestHandlerReflectorInterface::class),
             codecManager: get(CodecManagerInterface::class),
+            openApiPathBuilder: get(OpenApiPathBuilderInterface::class),
         ),
 
     SwaggerConfiguration::class => create()

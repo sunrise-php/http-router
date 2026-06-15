@@ -13,15 +13,12 @@ declare(strict_types=1);
 
 namespace Sunrise\Http\Router\OpenApi;
 
-use Reflector;
+use Sunrise\Http\Router\RouteInterface;
 
 /**
- * @since 3.0.0
+ * @since 3.3.0
  */
-interface OpenApiPhpTypeSchemaNameResolverInterface
+interface OpenApiPathBuilderInterface
 {
-    /**
-     * Please note that nullable should be ignored.
-     */
-    public function resolvePhpTypeSchemaName(TypeInterface $phpType, Reflector $phpTypeHolder): string;
+    public function buildPath(RouteInterface $route): string;
 }

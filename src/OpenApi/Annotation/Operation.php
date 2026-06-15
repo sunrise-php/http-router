@@ -19,7 +19,7 @@ use Attribute;
  * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-class Operation
+class Operation implements OperationInterface
 {
     /**
      * @param array<array-key, mixed> $value
@@ -27,5 +27,13 @@ class Operation
     public function __construct(
         public readonly array $value,
     ) {
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getOperation(): array
+    {
+        return $this->value;
     }
 }

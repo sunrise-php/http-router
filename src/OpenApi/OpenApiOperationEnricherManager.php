@@ -45,9 +45,13 @@ final class OpenApiOperationEnricherManager implements OpenApiOperationEnricherM
         private readonly OpenApiConfiguration $openApiConfiguration,
         private readonly OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager,
         array $operationEnrichers = [],
+        bool $useDefaultOperationEnrichers = true,
     ) {
-        $this->setOperationEnrichers(self::getDefaultOperationEnrichers());
         $this->setOperationEnrichers($operationEnrichers);
+
+        if ($useDefaultOperationEnrichers) {
+            $this->setOperationEnrichers(self::getDefaultOperationEnrichers());
+        }
     }
 
     /**

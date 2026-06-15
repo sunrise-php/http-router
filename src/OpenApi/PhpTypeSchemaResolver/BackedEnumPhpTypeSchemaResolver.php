@@ -19,14 +19,14 @@ use ReflectionClass;
 use ReflectionEnum;
 use ReflectionException;
 use Reflector;
-use Sunrise\Http\Router\OpenApi\Annotation\SchemaName;
+use Sunrise\Http\Router\OpenApi\Annotation\SchemaNameInterface;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaNameResolverInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerAwareInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerInterface;
-use Sunrise\Http\Router\OpenApi\Type;
 use Sunrise\Http\Router\OpenApi\TypeFactory;
+use Sunrise\Http\Router\OpenApi\TypeInterface;
 
 use function is_subclass_of;
 
@@ -46,9 +46,9 @@ final class BackedEnumPhpTypeSchemaResolver implements
         $this->openApiPhpTypeSchemaResolverManager = $openApiPhpTypeSchemaResolverManager;
     }
 
-    public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
+    public function supportsPhpType(TypeInterface $phpType, Reflector $phpTypeHolder): bool
     {
-        return is_subclass_of($phpType->name, BackedEnum::class);
+        return is_subclass_of($phpType->getName(), BackedEnum::class);
     }
 
     /**
@@ -56,12 +56,12 @@ final class BackedEnumPhpTypeSchemaResolver implements
      *
      * @throws ReflectionException
      */
-    public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array
+    public function resolvePhpTypeSchema(TypeInterface $phpType, Reflector $phpTypeHolder): array
     {
         $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();
 
         /** @var class-string<BackedEnum> $phpTypeName */
-        $phpTypeName = $phpType->name;
+        $phpTypeName = $phpType->getName();
 
         $enumPhpType = TypeFactory::fromPhpTypeReflection((new ReflectionEnum($phpTypeName))->getBackingType());
         $phpTypeSchema = $this->openApiPhpTypeSchemaResolverManager->resolvePhpTypeSchema($enumPhpType, $phpTypeHolder);
@@ -79,17 +79,16 @@ final class BackedEnumPhpTypeSchemaResolver implements
         return 0;
     }
 
-    public function resolvePhpTypeSchemaName(Type $phpType, Reflector $phpTypeHolder): string
+    public function resolvePhpTypeSchemaName(TypeInterface $phpType, Reflector $phpTypeHolder): string
     {
         /** @var class-string $className */
-        $className = $phpType->name;
+        $className = $phpType->getName();
         $classReflection = new ReflectionClass($className);
 
-        /** @var list<ReflectionAttribute<SchemaName>> $annotations */
-        $annotations = $classReflection->getAttributes(SchemaName::class);
+        /** @var list<ReflectionAttribute<SchemaNameInterface>> $annotations */
+        $annotations = $classReflection->getAttributes(SchemaNameInterface::class, ReflectionAttribute::IS_INSTANCEOF);
         if (isset($annotations[0])) {
-            $annotation = $annotations[0]->newInstance();
-            return $annotation->value;
+            return $annotations[0]->newInstance()->getSchemaName();
         }
 
         return $classReflection->getShortName();

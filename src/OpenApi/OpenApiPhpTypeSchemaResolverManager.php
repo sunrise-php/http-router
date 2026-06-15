@@ -54,15 +54,19 @@ final class OpenApiPhpTypeSchemaResolverManager implements OpenApiPhpTypeSchemaR
     public function __construct(
         private readonly OpenApiConfiguration $openApiConfiguration,
         array $phpTypeSchemaResolvers = [],
+        bool $useDefaultPhpTypeSchemaResolvers = true,
     ) {
-        $this->setPhpTypeSchemaResolvers(self::getDefaultPhpTypeSchemaResolvers());
         $this->setPhpTypeSchemaResolvers($phpTypeSchemaResolvers);
+
+        if ($useDefaultPhpTypeSchemaResolvers) {
+            $this->setPhpTypeSchemaResolvers(self::getDefaultPhpTypeSchemaResolvers());
+        }
     }
 
     /**
      * @inheritDoc
      */
-    public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array
+    public function resolvePhpTypeSchema(TypeInterface $phpType, Reflector $phpTypeHolder): array
     {
         $this->isPhpTypeSchemaResolversSorted or $this->sortPhpTypeSchemaResolvers();
 
@@ -124,7 +128,7 @@ final class OpenApiPhpTypeSchemaResolverManager implements OpenApiPhpTypeSchemaR
     }
 
     private function findPhpTypeSchemaResolver(
-        Type $phpType,
+        TypeInterface $phpType,
         Reflector $phpTypeHolder,
     ): ?OpenApiPhpTypeSchemaResolverInterface {
         foreach ($this->phpTypeSchemaResolvers as $phpTypeSchemaResolver) {
@@ -159,9 +163,9 @@ final class OpenApiPhpTypeSchemaResolverManager implements OpenApiPhpTypeSchemaR
      *
      * @return array<array-key, mixed>
      */
-    private static function completePhpTypeSchema(Type $phpType, array $phpTypeSchema): array
+    private static function completePhpTypeSchema(TypeInterface $phpType, array $phpTypeSchema): array
     {
-        if ($phpType->allowsNull) {
+        if ($phpType->allowsNull()) {
             $phpTypeSchema = [
                 'anyOf' => [
                     $phpTypeSchema,

@@ -19,14 +19,16 @@ use ReflectionClass;
 use ReflectionException;
 use ReflectionProperty;
 use Reflector;
-use Sunrise\Http\Router\OpenApi\Annotation\SchemaName;
+use Sunrise\Http\Router\OpenApi\Annotation\IgnorePropertyInterface;
+use Sunrise\Http\Router\OpenApi\Annotation\PropertyNameInterface;
+use Sunrise\Http\Router\OpenApi\Annotation\SchemaNameInterface;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaNameResolverInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerAwareInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerInterface;
-use Sunrise\Http\Router\OpenApi\Type;
 use Sunrise\Http\Router\OpenApi\TypeFactory;
+use Sunrise\Http\Router\OpenApi\TypeInterface;
 use Sunrise\Hydrator\Annotation\Alias;
 use Sunrise\Hydrator\Annotation\DefaultValue;
 use Sunrise\Hydrator\Annotation\Ignore;
@@ -54,9 +56,9 @@ final class ObjectPhpTypeSchemaResolver implements
     /**
      * @see ObjectTypeConverter
      */
-    public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
+    public function supportsPhpType(TypeInterface $phpType, Reflector $phpTypeHolder): bool
     {
-        $className = $phpType->name;
+        $className = $phpType->getName();
         if (!class_exists($className)) {
             return false;
         }
@@ -74,12 +76,12 @@ final class ObjectPhpTypeSchemaResolver implements
      *
      * @throws ReflectionException
      */
-    public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array
+    public function resolvePhpTypeSchema(TypeInterface $phpType, Reflector $phpTypeHolder): array
     {
         $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();
 
         /** @var class-string $phpTypeName */
-        $phpTypeName = $phpType->name;
+        $phpTypeName = $phpType->getName();
 
         $phpTypeSchema = [
             'type' => 'object',
@@ -124,17 +126,16 @@ final class ObjectPhpTypeSchemaResolver implements
         return -100;
     }
 
-    public function resolvePhpTypeSchemaName(Type $phpType, Reflector $phpTypeHolder): string
+    public function resolvePhpTypeSchemaName(TypeInterface $phpType, Reflector $phpTypeHolder): string
     {
         /** @var class-string $className */
-        $className = $phpType->name;
+        $className = $phpType->getName();
         $classReflection = new ReflectionClass($className);
 
-        /** @var list<ReflectionAttribute<SchemaName>> $annotations */
-        $annotations = $classReflection->getAttributes(SchemaName::class);
+        /** @var list<ReflectionAttribute<SchemaNameInterface>> $annotations */
+        $annotations = $classReflection->getAttributes(SchemaNameInterface::class, ReflectionAttribute::IS_INSTANCEOF);
         if (isset($annotations[0])) {
-            $annotation = $annotations[0]->newInstance();
-            return $annotation->value;
+            return $annotations[0]->newInstance()->getSchemaName();
         }
 
         return $classReflection->getShortName();
@@ -142,7 +143,8 @@ final class ObjectPhpTypeSchemaResolver implements
 
     private static function isIgnoredProperty(ReflectionProperty $property): bool
     {
-        return $property->getAttributes(Ignore::class) !== [];
+        return $property->getAttributes(Ignore::class) !== []
+            || $property->getAttributes(IgnorePropertyInterface::class, ReflectionAttribute::IS_INSTANCEOF) !== [];
     }
 
     private static function getPropertyName(ReflectionProperty $property): string
@@ -152,6 +154,13 @@ final class ObjectPhpTypeSchemaResolver implements
         if (isset($annotations[0])) {
             $annotation = $annotations[0]->newInstance();
             return $annotation->value;
+        }
+
+        /** @var list<ReflectionAttribute<PropertyNameInterface>> $annotations */
+        $annotations = $property->getAttributes(PropertyNameInterface::class, ReflectionAttribute::IS_INSTANCEOF);
+        if (isset($annotations[0])) {
+            $annotation = $annotations[0]->newInstance();
+            return $annotation->getPropertyName();
         }
 
         return $property->name;
