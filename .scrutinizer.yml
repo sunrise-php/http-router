@@ -1,36 +1,54 @@
+# https://www.php.net/releases/index.php
+
 build:
-  image: default-bionic
+  image: default-jammy
   nodes:
     analysis:
       environment:
-        php: 8.3.16
+        php: '8.5.6'
       tests:
         override:
           - php-scrutinizer-run
     coverage:
       environment:
-        php: 8.3.16
+        php: '8.5.6'
+      dependencies:
+        before:
+          - pecl channel-update pecl.php.net
+          - pecl install pcov
       tests:
         override:
-          - command: XDEBUG_MODE=coverage php vendor/bin/phpunit --coverage-clover coverage.xml --cache-directory .
+          - command: php -d pcov.enabled=1 -d pcov.directory=src vendor/bin/phpunit --coverage-clover coverage.xml
             coverage:
               file: coverage.xml
               format: clover
+    php85:
+      environment:
+        php: '8.5.6'
+      tests:
+        override:
+          - command: composer test
+    php84:
+      environment:
+        php: '8.4.21'
+      tests:
+        override:
+          - command: composer test
     php83:
       environment:
-        php: 8.3.16
+        php: '8.3.16'
       tests:
         override:
           - command: composer test
     php82:
       environment:
-        php: 8.2.27
+        php: '8.2.27'
       tests:
         override:
           - command: composer test
     php81:
       environment:
-        php: 8.1.31
+        php: '8.1.31'
       tests:
         override:
           - command: composer test
