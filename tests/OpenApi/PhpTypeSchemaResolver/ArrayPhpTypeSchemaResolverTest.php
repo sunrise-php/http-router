@@ -38,11 +38,7 @@ final class ArrayPhpTypeSchemaResolverTest extends TestCase
         $property = $this->createProperty('subtypedItems');
         $this->mockItemType($property, 'string', ['type' => 'string']);
         $phpTypeSchema = $this->createResolver()->resolvePhpTypeSchema(new Type('array'), $property);
-        self::assertSame([
-            'type' => 'array',
-            'items' => ['type' => 'string'],
-            'maxItems' => 2,
-        ], $phpTypeSchema);
+        self::assertSame(['type' => 'array', 'items' => ['type' => 'string'], 'maxItems' => 2], $phpTypeSchema);
     }
 
     public function testVar(): void
@@ -50,10 +46,7 @@ final class ArrayPhpTypeSchemaResolverTest extends TestCase
         $property = $this->createProperty('items');
         $this->mockItemType($property, PhpDocArrayItemFixture::class);
         $phpTypeSchema = $this->createResolver()->resolvePhpTypeSchema(new Type('array'), $property);
-        self::assertSame([
-            'type' => 'array',
-            'items' => ['type' => 'object'],
-        ], $phpTypeSchema);
+        self::assertSame(['type' => 'array', 'items' => ['type' => 'object']], $phpTypeSchema);
     }
 
     public function testListVar(): void
@@ -61,10 +54,7 @@ final class ArrayPhpTypeSchemaResolverTest extends TestCase
         $property = $this->createProperty('listItems');
         $this->mockItemType($property, PhpDocArrayItemFixture::class);
         $phpTypeSchema = $this->createResolver()->resolvePhpTypeSchema(new Type('array'), $property);
-        self::assertSame([
-            'type' => 'array',
-            'items' => ['type' => 'object'],
-        ], $phpTypeSchema);
+        self::assertSame(['type' => 'array', 'items' => ['type' => 'object']], $phpTypeSchema);
     }
 
     public function testNullableVar(): void
@@ -72,10 +62,7 @@ final class ArrayPhpTypeSchemaResolverTest extends TestCase
         $property = $this->createProperty('nullableItems');
         $this->mockItemType($property, PhpDocArrayItemFixture::class, allowsNull: true);
         $phpTypeSchema = $this->createResolver()->resolvePhpTypeSchema(new Type('array'), $property);
-        self::assertSame([
-            'type' => 'array',
-            'items' => ['type' => 'object'],
-        ], $phpTypeSchema);
+        self::assertSame(['type' => 'array', 'items' => ['type' => 'object']], $phpTypeSchema);
     }
 
     public function testNullableArrayVar(): void
@@ -83,10 +70,7 @@ final class ArrayPhpTypeSchemaResolverTest extends TestCase
         $property = $this->createProperty('nullableArray');
         $this->mockItemType($property, PhpDocArrayItemFixture::class);
         $phpTypeSchema = $this->createResolver()->resolvePhpTypeSchema(new Type('array'), $property);
-        self::assertSame([
-            'type' => 'array',
-            'items' => ['type' => 'object'],
-        ], $phpTypeSchema);
+        self::assertSame(['type' => 'array', 'items' => ['type' => 'object']], $phpTypeSchema);
     }
 
     public function testMixedVar(): void
