@@ -84,13 +84,11 @@ final class ArrayPhpTypeSchemaResolver implements
             }
         }
 
-        if ($phpTypeHolder instanceof ReflectionProperty) {
-            if (!isset($phpTypeSchema['items'])) {
-                $itemPhpType = $this->getItemTypeFromDocBlock($phpTypeHolder);
-                if ($itemPhpType !== null) {
-                    $phpTypeSchema['items'] = $this->openApiPhpTypeSchemaResolverManager
-                        ->resolvePhpTypeSchema($itemPhpType, $phpTypeHolder);
-                }
+        if (!isset($phpTypeSchema['items'])) {
+            $itemPhpType = $this->getItemTypeFromDocBlock($phpTypeHolder);
+            if ($itemPhpType !== null) {
+                $phpTypeSchema['items'] = $this->openApiPhpTypeSchemaResolverManager
+                    ->resolvePhpTypeSchema($itemPhpType, $phpTypeHolder);
             }
         }
 
@@ -102,8 +100,12 @@ final class ArrayPhpTypeSchemaResolver implements
         return 0;
     }
 
-    private function getItemTypeFromDocBlock(ReflectionProperty $phpTypeHolder): ?TypeInterface
+    private function getItemTypeFromDocBlock(Reflector $phpTypeHolder): ?TypeInterface
     {
+        if (! $phpTypeHolder instanceof ReflectionProperty) {
+            return null;
+        }
+
         $docComment = $phpTypeHolder->getDocComment();
         if ($docComment === false) {
             return null;
