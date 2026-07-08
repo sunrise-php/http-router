@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Nekhay <afenric@gmail.com>
- * @copyright Copyright (c) 2018, Anatoly Nekhay
+ * @author Anatolii Nekhai <afenric@gmail.com>
+ * @copyright Copyright (c) 2018, Anatolii Nekhai
  * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-router
  */
@@ -49,11 +49,11 @@ final class OpenApiPhpTypeSchemaResolverManager implements OpenApiPhpTypeSchemaR
     private bool $isPhpTypeSchemaResolversSorted = false;
 
     /**
-     * @param array<array-key, OpenApiPhpTypeSchemaResolverInterface> $phpTypeSchemaResolvers
+     * @param iterable<array-key, OpenApiPhpTypeSchemaResolverInterface> $phpTypeSchemaResolvers
      */
     public function __construct(
         private readonly OpenApiConfiguration $openApiConfiguration,
-        array $phpTypeSchemaResolvers = [],
+        iterable $phpTypeSchemaResolvers = [],
         bool $useDefaultPhpTypeSchemaResolvers = true,
     ) {
         $this->setPhpTypeSchemaResolvers($phpTypeSchemaResolvers);
@@ -111,9 +111,9 @@ final class OpenApiPhpTypeSchemaResolverManager implements OpenApiPhpTypeSchemaR
     }
 
     /**
-     * @param array<array-key, OpenApiPhpTypeSchemaResolverInterface> $phpTypeSchemaResolvers
+     * @param iterable<array-key, OpenApiPhpTypeSchemaResolverInterface> $phpTypeSchemaResolvers
      */
-    private function setPhpTypeSchemaResolvers(array $phpTypeSchemaResolvers): void
+    private function setPhpTypeSchemaResolvers(iterable $phpTypeSchemaResolvers): void
     {
         foreach ($phpTypeSchemaResolvers as $phpTypeSchemaResolver) {
             $this->phpTypeSchemaResolvers[] = $phpTypeSchemaResolver;
