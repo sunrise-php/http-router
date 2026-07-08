@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Nekhay <afenric@gmail.com>
- * @copyright Copyright (c) 2018, Anatoly Nekhay
+ * @author Anatolii Nekhai <afenric@gmail.com>
+ * @copyright Copyright (c) 2018, Anatolii Nekhai
  * @license https://github.com/sunrise-php/http-router/blob/master/LICENSE
  * @link https://github.com/sunrise-php/http-router
  */
@@ -39,12 +39,12 @@ final class OpenApiOperationEnricherManager implements OpenApiOperationEnricherM
     private bool $isOperationEnrichersSorted = false;
 
     /**
-     * @param array<array-key, OpenApiOperationEnricherInterface> $operationEnrichers
+     * @param iterable<array-key, OpenApiOperationEnricherInterface> $operationEnrichers
      */
     public function __construct(
         private readonly OpenApiConfiguration $openApiConfiguration,
         private readonly OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager,
-        array $operationEnrichers = [],
+        iterable $operationEnrichers = [],
         bool $useDefaultOperationEnrichers = true,
     ) {
         $this->setOperationEnrichers($operationEnrichers);
@@ -69,9 +69,9 @@ final class OpenApiOperationEnricherManager implements OpenApiOperationEnricherM
     }
 
     /**
-     * @param array<array-key, OpenApiOperationEnricherInterface> $operationEnrichers
+     * @param iterable<array-key, OpenApiOperationEnricherInterface> $operationEnrichers
      */
-    private function setOperationEnrichers(array $operationEnrichers): void
+    private function setOperationEnrichers(iterable $operationEnrichers): void
     {
         foreach ($operationEnrichers as $operationEnricher) {
             $this->operationEnrichers[] = $operationEnricher;
