@@ -46,7 +46,7 @@
     "symfony/console": "^6.4",
     "symfony/uid": "^6.4",
     "symfony/validator": "^6.4",
-    "vimeo/psalm": "^6.5"
+    "vimeo/psalm": "^7.0"
   },
   "autoload": {
     "files": [
